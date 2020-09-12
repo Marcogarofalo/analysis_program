@@ -2130,7 +2130,7 @@ printf("here\n");
             fit_FV[0]=interpolate_FX(argv, namefile, ikt, iks,xG,xmin,xmax,FV_jack_fit,  file_head , Njack ,1/* npar_fun,double*/,polynimial_degree_n );
             
             int_FA_from_H0=interpolate_FX(argv, namefile, ikt, iks,xG,xmin,xmax,FA_from_H0_jack_fit,  file_head , Njack ,1/* npar_fun,double*/,polynimial_degree_n );
-            int_FV_from_H0=interpolate_FX(argv, namefile, ikt, iks,xG,xmin,xmax,FV_from_H0_jack_fit,  file_head , Njack ,1/* npar_fun,double*/,polynimial_degree_n );
+            int_FV_from_H0=interpolate_FX(argv, namefile, ikt, iks,xG,xmin,xmax,FV_from_H0_HA_jack_fit,  file_head , Njack ,1/* npar_fun,double*/,polynimial_degree_n );
             
             m=mean_and_error(argv[4],Njack, fit_FAp1[0][0]);
             //fprintf(stdout,"%g  %g    %g   %g\n",(xmin+xmax)/2.,m[0],m[1],mass_jack_fit[i_m][Njack-1] );
@@ -2142,11 +2142,11 @@ printf("here\n");
             free(m);
      
             m=mean_and_error(argv[4],Njack, int_FA_from_H0[0]);
-            fprintf(interpolation_FA_from_H0,"%g  %g    %g   %g  \n",(xmin+xmax)/2.,m[0],m[1],mass_jack_fit[0][Njack-1]);
+            fprintf(interpolation_FA_from_H0,"%g  %g    %g   %g   %g \n",(xmin+xmax)/2.,m[0],m[1],mass_jack_fit[0][Njack-1],mass_jack_fit[0][Njack-1]/Zf_PS_jack_fit[0][Njack-1]);
             free(m);
 
             m=mean_and_error(argv[4],Njack, int_FV_from_H0[0]);
-            fprintf(interpolation_FV_from_H0,"%g  %g    %g   %g  \n",(xmin+xmax)/2.,m[0],m[1],mass_jack_fit[0][Njack-1]);
+            fprintf(interpolation_FV_from_H0,"%g  %g    %g   %g  %g \n",(xmin+xmax)/2.,m[0],m[1],mass_jack_fit[0][Njack-1],mass_jack_fit[0][Njack-1]/Zf_PS_jack_fit[0][Njack-1]);
            
             free(m);
             free(fit_FAp1[0][0]);free(fit_FAp1[0]);

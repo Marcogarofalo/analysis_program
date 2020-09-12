@@ -1348,57 +1348,52 @@ for(ix=0;ix<24;ix++ ){
         x[j][9]=0;
         x[j][10]=0;
         x[j][11]=phys_point[j][11];//=result.fpiMeV_exp[j]*result.w0MeV[j];
-        x[j][12]=phys_point[j][12];//=result.fpiMeV_exp[j]*result.w0MeV[j];
+        x[j][12]=phys_point[j][12];//=result.fpiMeV_exp[j]*result.w0MeV[j];?? fk?
     }
     for (i=0;i<500;i++){
         
         for(j=0;j<jack_tot;j++){
               x[j][1]=r0A;//=1e+10;//r0
               x[j][3]=phys_point[jack_tot-1][3]+((double)i)*h;//=result.MpiMeV[j]*result.w0MeV[j];
-             // x[j][5]=grephJ[8].M_PS[i_mK][j] * grephJ[8].w0[j];//M_K w0//grephJ[ensemble].M_PS[id_mass][j]*grephJ[ensemble][j];
-             // x[j][7]=grephJ[8].M_PS[i_mD][j] * grephJ[8].w0[j];//M_D w0//grephJ[ensemble].M_PS[id_mass][j]*grephJ[ensemble][j];
-             // x[j][8]=grephJ[8].M_PS[i_mDs][j] * grephJ[8].w0[j];//M_Ds w0//grephJ[ensemble].M_PS[id_mass][j]*grephJ[ensemble][j];
+              x[j][11]=phys_point[jack_tot-1][11]-(phys_point[jack_tot-1][11] -grephJ[10].Zf_PS[0][jack_tot-1] *grephJ[10].w0[jack_tot-1]  )*((double)i)/389.0;//=result.fpiMeV_exp[j]*result.w0MeV[j];
+
               r[j]=fit_info.function(fit_info.N,fit_info.Npar,x[j],fit_info.Npar,tif[j]);
         }
         m=mean_and_error_jack_biased(jack_tot,r);
-        fprintf(fA,"%g  %g  %g  %g\n",x[jack_tot-1][3],m[0],m[1],x[jack_tot-1][2]);
+        fprintf(fA,"%g  %g  %g  %g  %g\n",x[jack_tot-1][3],m[0],m[1],x[jack_tot-1][2],x[jack_tot-1][3]/x[jack_tot-1][11]);
         free(m);
         
         for(j=0;j<jack_tot;j++){
               x[j][1]=r0B;//=1e+10;//r0
               x[j][3]=phys_point[jack_tot-1][3]+((double)i)*h;//=result.MpiMeV[j]*result.w0MeV[j];
-              //x[j][5]=grephJ[3].M_PS[i_mK][j] * grephJ[3].w0[j];//M_K w0//grephJ[ensemble].M_PS[id_mass][j]*grephJ[ensemble][j];
-              //x[j][7]=grephJ[3].M_PS[i_mD][j] * grephJ[3].w0[j];//M_D w0//grephJ[ensemble].M_PS[id_mass][j]*grephJ[ensemble][j];
-              //x[j][8]=grephJ[3].M_PS[i_mDs][j] * grephJ[3].w0[j];//M_Ds w0//grephJ[ensemble].M_PS[id_mass][j]*grephJ[ensemble][j];
+              x[j][11]=phys_point[jack_tot-1][11]-(phys_point[jack_tot-1][11] -grephJ[6].Zf_PS[0][jack_tot-1] *grephJ[6].w0[jack_tot-1]  )*((double)i)/389.0;//=result.fpiMeV_exp[j]*result.w0MeV[j];
+//x[j][11]=phys_point[jack_tot-1][11]-((double)i)*h;//=result.fpiMeV_exp[j]*result.w0MeV[j];
+
               r[j]=fit_info.function(fit_info.N,fit_info.Npar,x[j],fit_info.Npar,tif[j]);
         }
         m=mean_and_error_jack_biased(jack_tot,r);
-        fprintf(fB,"%g  %g  %g  %g\n",x[jack_tot-1][3],m[0],m[1],x[jack_tot-1][2]);
+        fprintf(fB,"%g  %g  %g  %g  %g\n",x[jack_tot-1][3],m[0],m[1],x[jack_tot-1][2],x[jack_tot-1][3]/x[jack_tot-1][11]);
         free(m);
         
         for(j=0;j<jack_tot;j++){
               x[j][1]=r0D;//=1e+10;//r0
               x[j][3]=phys_point[jack_tot-1][3]+((double)i)*h;//=result.MpiMeV[j]*result.w0MeV[j];
-              //x[j][5]=grephJ[0].M_PS[i_mK][j] * grephJ[0].w0[j];//M_K w0//grephJ[ensemble].M_PS[id_mass][j]*grephJ[ensemble][j];
-              //x[j][7]=grephJ[0].M_PS[i_mD][j] * grephJ[0].w0[j];//M_D w0//grephJ[ensemble].M_PS[id_mass][j]*grephJ[ensemble][j];
-              //x[j][8]=grephJ[0].M_PS[i_mDs][j] * grephJ[0].w0[j];//M_Ds w0//grephJ[ensemble].M_PS[id_mass][j]*grephJ[ensemble][j];
+              x[j][11]=phys_point[jack_tot-1][11]-(phys_point[jack_tot-1][11] -grephJ[2].Zf_PS[0][jack_tot-1] *grephJ[2].w0[jack_tot-1]  )*((double)i)/250.0;//=result.fpiMeV_exp[j]*result.w0MeV[j];
               r[j]=fit_info.function(fit_info.N,fit_info.Npar,x[j],fit_info.Npar,tif[j]);
         }
         m=mean_and_error_jack_biased(jack_tot,r);
-        fprintf(fD,"%g  %g  %g  %g\n",x[jack_tot-1][3],m[0],m[1],x[jack_tot-1][2]);
+        fprintf(fD,"%g  %g  %g  %g  %g\n",x[jack_tot-1][3],m[0],m[1],x[jack_tot-1][2],x[jack_tot-1][3]/x[jack_tot-1][11]);
         free(m);
         
         
         for(j=0;j<jack_tot;j++){
               x[j][1]=1e+10;//r0
               x[j][3]=phys_point[jack_tot-1][3]+((double)i)*h;//=result.MpiMeV[j]*result.w0MeV[j];
-              x[j][5]=phys_point[j][5];//=result.MKMeV[j]*result.w0MeV[j];
-              x[j][7]=phys_point[j][7];//=result.MDMeV[j]*result.w0MeV[j];
-              x[j][8]=phys_point[j][8];//=result.MDMeV[j]*result.w0MeV[j];
+              x[j][11]=phys_point[jack_tot-1][11];
               r[j]=fit_info.function(fit_info.N,fit_info.Npar,x[j],fit_info.Npar,tif[j]);
         }
         m=mean_and_error_jack_biased(jack_tot,r);
-        fprintf(f,"%g  %g  %g  %g\n",x[jack_tot-1][3],m[0],m[1],x[jack_tot-1][2]);
+        fprintf(f,"%g  %g  %g  %g  %g\n",x[jack_tot-1][3],m[0],m[1],x[jack_tot-1][2],x[jack_tot-1][3]/x[jack_tot-1][11]);
         free(m);
 
         
@@ -1702,7 +1697,7 @@ void print_chiral_continuum_fit_phys(char **argv,int jack_tot,struct fit_result 
  
              
             //i_mDs=index_ensemble_twopt_fit(head[e],ikt,iks,0,0);
-              for (i=0;i<500;i++){
+              for (i=0;i<500;i++){   //v_gamma loop
                 for(j=0;j<jack_tot;j++){
                       
                     x[j][2]=((double)i)*h;//x_gamma
@@ -2217,19 +2212,19 @@ void print_data_without_p2k2_phys(char **argv,int jack_tot,struct fit_result fit
                 //fprintf(fc,"%g  %g   %g   %g  \t %g  %g  %g  %g\n",xp[Njack-1][2],xp[Njack-1][2] ,m[0],m[1],xp[Njack-1][3],xp[Njack-1][5],xp[Njack-1][7],xp[Njack-1][8]);
                 fprintf(fc,"%g  %g   %g   %g     \t",xp[Njack-1][2],xp[Njack-1][2] ,m[0],m[1] );
                 for (j=0;j<Njack;j++)
-                    F[j]=xp[j][3];
+                    F[j]=xp[j][3];   //Mpi w0
                 m=mean_and_error("jack",jack_tot,F);
                 fprintf(fc,"%g  %g ",m[0],m[1]);
                 for (j=0;j<Njack;j++)
-                    F[j]=xp[j][5];
+                    F[j]=xp[j][5];   //MK w0
                 m=mean_and_error("jack",jack_tot,F);
                 fprintf(fc,"%g  %g ",m[0],m[1]);
                 for (j=0;j<Njack;j++)
-                    F[j]=xp[j][7];
+                    F[j]=xp[j][7];   //MD w0
                 m=mean_and_error("jack",jack_tot,F);
                 fprintf(fc,"%g  %g ",m[0],m[1]);
                 for (j=0;j<Njack;j++)
-                    F[j]=xp[j][8];
+                    F[j]=xp[j][8];   //MDs w0
                 m=mean_and_error("jack",jack_tot,F);
                 fprintf(fc,"%g  %g \t",m[0],m[1]);
                 
