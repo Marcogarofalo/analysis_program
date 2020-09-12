@@ -622,40 +622,40 @@ void  files_declarations(char **argv,struct database_file_jack **jack_files,stru
     for (i=0;i<ensembles_reph;i++)
         (*head)[i].allocated=0;
     
-    setup_reading_jack( argv,&((*jack_files)[0]),&((*head)[0]),"../../beta1.726/cA211ab.53.24/analysis/main/jackknife");  
+    setup_reading_jack( argv,&((*jack_files)[0]),&((*head)[0]),"../../../PRACE/beta1.726/cA211ab.53.24/analysis/main/jackknife");  
     (*jack_files)[0].a=0.096;
     if (ensembles>1){
-        setup_reading_jack(argv, &((*jack_files)[1]),&((*head)[1]),"../../beta1.726/cA211ab.40.24/analysis/main/jackknife");  
+        setup_reading_jack(argv, &((*jack_files)[1]),&((*head)[1]),"../../../PRACE/beta1.726/cA211ab.40.24/analysis/main/jackknife");  
         (*jack_files)[1].a=0.096;
     }
     if (ensembles>2){
-        setup_reading_jack(argv, &((*jack_files)[2]),&((*head)[2]),"../../beta1.726/cA211ab.30.32/analysis/main/jackknife");  
+        setup_reading_jack(argv, &((*jack_files)[2]),&((*head)[2]),"../../../PRACE/beta1.726/cA211ab.30.32/analysis/main/jackknife");  
         (*jack_files)[2].a=0.096;
     }
     if (ensembles>3){
      //   setup_reading_jack(argv, &jack_files[3],&head[3],"../../beta1.726/cA211ab.12.48/analysis/main/jackknife");  
-        setup_reading_jack(argv, &((*jack_files)[3]),&((*head)[3]),"../../beta1.726/cA211ab.12.48_no_rew/analysis/main/jackknife");  
+        setup_reading_jack(argv, &((*jack_files)[3]),&((*head)[3]),"../../../PRACE/beta1.726/cA211ab.12.48_no_rew/analysis/main/jackknife");  
         (*jack_files)[3].a=0.096;
     }
     if (ensembles>4){
-        setup_reading_jack(argv, &((*jack_files)[4]),&((*head)[4]),"../../beta1.778/cB211ab.25.48/analysis/main/jackknife");  
+        setup_reading_jack(argv, &((*jack_files)[4]),&((*head)[4]),"../../../PRACE/beta1.778/cB211ab.25.48/analysis/main/jackknife");  
         (*jack_files)[4].a=0.081;
     }
     if (ensembles>5){
-        setup_reading_jack(argv,&((*jack_files)[5]),&((*head)[5]),"../../beta1.778/cB211ab.14.64/analysis/main/jackknife");  
+        setup_reading_jack(argv,&((*jack_files)[5]),&((*head)[5]),"../../../PRACE/beta1.778/cB211ab.14.64/analysis/main/jackknife");  
         (*jack_files)[5].a=0.070;
     }
     if (ensembles>6){
-        setup_reading_jack(argv,&((*jack_files)[6]),&((*head)[6]),"../../beta1.778/cB211ab.072.64/analysis/main/jackknife");  
+        setup_reading_jack(argv,&((*jack_files)[6]),&((*head)[6]),"../../../PRACE/beta1.778/cB211ab.072.64/analysis/main/jackknife");  
         (*jack_files)[6].a=0.081;
     }
     
     if (ensembles>7){
-        setup_reading_jack(argv, &((*jack_files)[7]),&((*head)[7]),"../../beta1.836/cC211ab.06.80/analysis/main/jackknife");  
+        setup_reading_jack(argv, &((*jack_files)[7]),&((*head)[7]),"../../../PRACE/beta1.836/cC211ab.06.80/analysis/main/jackknife");  
         (*jack_files)[7].a=0.070;
     }
     if (ensembles>8){
-        setup_reading_jack(argv, &((*jack_files)[8]),&((*head)[8]),"../../beta1.778/cB211ab.25.32/analysis/main/jackknife");  
+        setup_reading_jack(argv, &((*jack_files)[8]),&((*head)[8]),"../../../PRACE/beta1.778/cB211ab.25.32/analysis/main/jackknife");  
         (*jack_files)[8].a=0.081;
     }
     
