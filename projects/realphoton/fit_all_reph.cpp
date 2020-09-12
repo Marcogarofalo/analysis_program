@@ -2495,14 +2495,14 @@ double FV_pole(int n, int Nvar, double *x,int Npar,double  *P){
     return P[0]/(1+P[1]*x[0]);
 }
 
-void  compute_FApmFV(char **argv, double **phys_point, struct fit_all fit_chi2_good, const char *AV){
+void  compute_FApmFV(char **argv, double **phys_point, struct fit_all fit_chi2_good, const char *meson, const char *option){
     int i,j,order=3,ord,k;
     int ord1=1;
     int Njack=fit_chi2_good.out[0].Njack;
     int Nvar=fit_chi2_good.info[0].Nvar;
     int Nfits=fit_chi2_good.Nfits/2;
     double **taylor,**taylor1;
-    double **tay;
+    double **tay,CD_AV;
     double **tmp=(double**)  malloc((order+1)*sizeof(double*));
     double **tmpe=(double**) malloc((order+1)*sizeof(double*));
     double *C;
@@ -2510,33 +2510,44 @@ void  compute_FApmFV(char **argv, double **phys_point, struct fit_all fit_chi2_g
     double *sigma=(double*)  calloc((order+1),sizeof(double));
     double ***tmpc=(double***) malloc(sizeof(double**)* Nfits);
     double **cov=(double**) malloc(sizeof(double*)* (order+1));
+    
+    
+    error(strcmp(option,"pm")!=0  && strcmp(option,"_correlated_")!=0, 1, "compute_FApmFV", "option = %s\n  while ammitted options are : pm  _correlated_",option);
+    
+    
     for(ord=0;ord<order+1;ord++){
         tmp[ord]=(double*) malloc(fit_chi2_good.Nfits*sizeof(double));
         tmpe[ord]=(double*) malloc(fit_chi2_good.Nfits*sizeof(double));
         cov[ord]=(double*) calloc((order+1),sizeof(double));
     }
     char name[NAMESIZE];
-    mysprintf(name,NAMESIZE,"%s/systematics_FApmFV_%s.tex",argv[2],AV);
+    mysprintf(name,NAMESIZE,"%s/systematics_FA%sFV_%s.tex",argv[2],option,meson);
     FILE *f=NULL;
     f=open_file(name,"w+");
-    printf("result including  systematics in %s, combining %d mesures\n",AV,Nfits);
+    printf("result including  systematics in %s, combining %d mesures\n",meson,Nfits);
     error(fit_chi2_good.Nfits%2!=0,1,"error in compute_FApmFV","fit_chi2_good.Nfits should be a multiple of 2 , also check the order");
     for (i=0;i<Nfits;i++){
-        taylor=taylor_expand_fit_fun( argv, fit_chi2_good.out[i].Njack,   fit_chi2_good.out[i],   fit_chi2_good.info[i],  phys_point,   AV, ord1,0);//taylor of FA
+        taylor=taylor_expand_fit_fun( argv, fit_chi2_good.out[i].Njack,   fit_chi2_good.out[i],   fit_chi2_good.info[i],  phys_point,   meson, ord1,0);//taylor of FA
         k=i+Nfits;//index to FV
-        taylor1=taylor_expand_fit_fun( argv, fit_chi2_good.out[k].Njack,   fit_chi2_good.out[k],   fit_chi2_good.info[k],  phys_point,   AV, ord1,0);//taylor of FV
+        taylor1=taylor_expand_fit_fun( argv, fit_chi2_good.out[k].Njack,   fit_chi2_good.out[k],   fit_chi2_good.info[k],  phys_point,   meson, ord1,0);//taylor of FV
         tay=double_malloc_2(order+1,Njack);
         for (j=0;j<fit_chi2_good.out[i].Njack;j++){   
-            tay[3][j]=(taylor[0][j]+taylor[1][j])-(taylor1[0][j]+taylor1[1][j]);//FA+FV in xg=1
-            tay[2][j]=(taylor[0][j]+taylor[1][j])+(taylor1[0][j]+taylor1[1][j]);//FA-FV in xg=1
-            tay[1][j]=taylor[0][j]-taylor1[0][j];//FA-FV in xg=0
-            tay[0][j]=taylor[0][j]+taylor1[0][j];//FA+FV in xg=0
-            
-            
-            
+            if (strcmp(option,"pm")==0){
+                tay[3][j]=(taylor[0][j]+taylor[1][j])-(taylor1[0][j]+taylor1[1][j]);//FA+FV in xg=1
+                tay[2][j]=(taylor[0][j]+taylor[1][j])+(taylor1[0][j]+taylor1[1][j]);//FA-FV in xg=1
+                tay[1][j]=taylor[0][j]-taylor1[0][j];//FA-FV in xg=0
+                tay[0][j]=taylor[0][j]+taylor1[0][j];//FA+FV in xg=0
+            }
+            else if (strcmp(option,"_correlated_")==0){
+                tay[3][j]=taylor1[1][j];//D_V
+                tay[2][j]=taylor[1][j];//D_A
+                tay[1][j]=taylor1[0][j];//C_V
+                tay[0][j]=taylor[0][j];//C_A
+            }
             
         }
         tmpc[i]=covariance("jack",order+1,jack_tot,tay);
+
         for(ord=0;ord<order+1;ord++){
             C=mean_and_error_jack_biased(jack_tot,tay[ord]);
             tmp[ord][i]=C[0];
@@ -2546,6 +2557,7 @@ void  compute_FApmFV(char **argv, double **phys_point, struct fit_all fit_chi2_g
         free_tif(ord1+1,taylor);
         free_tif(ord1+1,taylor1);
         free_tif(order+1,tay);
+
         
     }
     printf("average\n");
@@ -2573,15 +2585,27 @@ void  compute_FApmFV(char **argv, double **phys_point, struct fit_all fit_chi2_g
         sigma[ord]=sqrt(sigma[ord]);
         
         printf("d%d=%g  +- %g\n",ord,ave[ord],sigma[ord]);
-        if (ord==0)
-            fprintf(f,"\\begin{equation}\n F_A+F_V|_{x_\\gamma=0}= %f \\pm %.2g\n\\end{equation}\n\t\t",ave[ord],sigma[ord]);
-        else if (ord==1)
-            fprintf(f,"\\begin{equation}\n F_A-F_V|_{x_\\gamma=0}= %f \\pm %.2g\n\\end{equation}\n\t\t",ave[ord],sigma[ord]);
-        else if (ord==2)
-            fprintf(f,"\\begin{equation}\n F_A+F_V|_{x_\\gamma=1}=(F_A+\\partial_{x} F_A)+(F_V+\\partial_{x} F_V)|_{x_\\gamma=0}= %f \\pm %.2g\n\\end{equation}\n\t\t",ave[ord],sigma[ord]);
-        else if (ord==3)
-            fprintf(f,"\\begin{equation}\n F_A-F_V|_{x_\\gamma=1}=(F_A+\\partial_{x} F_A)-(F_V+\\partial_{x} F_V)|_{x_\\gamma=0}= %f \\pm %.2g\n\\end{equation}\n\t\t",ave[ord],sigma[ord]);
-        
+        if (strcmp(option,"pm")==0){
+            if (ord==0)
+                fprintf(f,"\\begin{equation}\n F_A+F_V|_{x_\\gamma=0}= %f \\pm %.2g\n\\end{equation}\n\t\t",ave[ord],sigma[ord]);
+            else if (ord==1)
+                fprintf(f,"\\begin{equation}\n F_A-F_V|_{x_\\gamma=0}= %f \\pm %.2g\n\\end{equation}\n\t\t",ave[ord],sigma[ord]);
+            else if (ord==2)
+                fprintf(f,"\\begin{equation}\n F_A+F_V|_{x_\\gamma=1}=(F_A+\\partial_{x} F_A)+(F_V+\\partial_{x} F_V)|_{x_\\gamma=0}= %f \\pm %.2g\n\\end{equation}\n\t\t",ave[ord],sigma[ord]);
+            else if (ord==3)
+                fprintf(f,"\\begin{equation}\n F_A-F_V|_{x_\\gamma=1}=(F_A+\\partial_{x} F_A)-(F_V+\\partial_{x} F_V)|_{x_\\gamma=0}= %f \\pm %.2g\n\\end{equation}\n\t\t",ave[ord],sigma[ord]);
+        }
+        else if (strcmp(option,"_correlated_")==0){
+            if (ord==0)
+                fprintf(f,"\\begin{equation}\n C_A= %f \\pm %.2g\n\\end{equation}\n\t\t",ave[ord],sigma[ord]);
+            else if (ord==1)
+                fprintf(f,"\\begin{equation}\n C_V= %f \\pm %.2g\n\\end{equation}\n\t\t",ave[ord],sigma[ord]);
+            else if (ord==2)
+                fprintf(f,"\\begin{equation}\n D_A= %f \\pm %.2g\n\\end{equation}\n\t\t",ave[ord],sigma[ord]);
+            else if (ord==3)
+                fprintf(f,"\\begin{equation}\n D_V= %f \\pm %.2g\n\\end{equation}\n",ave[ord],sigma[ord]);
+            
+        }
         free(tmpe[ord]);
     }
     
@@ -2611,24 +2635,22 @@ void  compute_FApmFV(char **argv, double **phys_point, struct fit_all fit_chi2_g
     fclose(f);
     free(tmp);free(tmpe);free(sigma);free(ave);
     free_3(Nfits,order+1,tmpc);
-      
-
-   
-    for (k=0;k<Nfits*2;k++){
-        for (i=0;i<fit_chi2_good.info[k].Npar;i++){
-            free(fit_chi2_good.out[k].P[i]);
-            for (j=0;j<fit_chi2_good.info[k].Npar;j++){
-                free(fit_chi2_good.out[k].C[i][j]);
-            }
-            free(fit_chi2_good.out[k].C[i]);
-        }     
-        free(fit_chi2_good.out[k].chi2);
-        free(fit_chi2_good.out[k].P);
-        free(fit_chi2_good.out[k].C);
+    if (strcmp(option,"_correlated_")==0){
+        for (k=0;k<Nfits*2;k++){
+            for (i=0;i<fit_chi2_good.info[k].Npar;i++){
+                free(fit_chi2_good.out[k].P[i]);
+                for (j=0;j<fit_chi2_good.info[k].Npar;j++){
+                    free(fit_chi2_good.out[k].C[i][j]);
+                }
+                free(fit_chi2_good.out[k].C[i]);
+            }     
+            free(fit_chi2_good.out[k].chi2);
+            free(fit_chi2_good.out[k].P);
+            free(fit_chi2_good.out[k].C);
+        }
+        free(fit_chi2_good.info);
+        free(fit_chi2_good.out);
     }
-   free(fit_chi2_good.info);
-   free(fit_chi2_good.out);
-    
     
 }
 
@@ -5738,7 +5760,8 @@ int main(int argc, char **argv){
 printf("///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    intermopation at ms and mc   bar{MS} 2 GeV /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n");  
   
     fit_chi2_good.Nfits=0;
-  
+    fit_FA_FV.Nfits=0;
+
     for(Ns=0;Ns<Nsets;Ns++){
     
         argvNs[0]=argv[0];
@@ -5776,6 +5799,7 @@ printf("////////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_pion_treshold_Mpi(jack_files,  head ,jack_tot, grephJ,3 ,fit_info,0,1e+5);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{A^H}","FA_H_Pi_fpi_treshold_Mpi");
     
         printf("\n\n///////////////////////////////////////ChPT FA Pi_fpi p2k2   treshold Mpi ///////////////////////\n");
@@ -5788,6 +5812,7 @@ printf("////////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_pion_treshold_Mpi(jack_files,  head ,jack_tot, grephJ,3 ,fit_info,0,1e+5);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{A^H}","FA_H_Pi_fpi_p2k2_treshold_Mpi");
        
        /* printf("\n\n///////////////////////////////////////ChPT FA Pi_fpi_aMpi  ///////////////////////\n");
@@ -5821,6 +5846,7 @@ printf("////////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FA_pion_generic(jack_files,  head ,jack_tot, grephJ,3 ,fit_info);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{A^H}","FA_H_Pi_fpi_aMpi_M4_M4x");
         
         
@@ -5833,6 +5859,7 @@ printf("////////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FA_pion_generic(jack_files,  head ,jack_tot, grephJ,3 ,fit_info);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{A^H}","FA_H_Pi_fpi_aMpi_M4_M4x_p2k2");
 
 /*        printf("\n\n///////////////////////////////////////ChPT FA Pi_fpi_aMpi_M4_M4x  fix ///////////////////////\n");
@@ -5951,6 +5978,7 @@ printf("////////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_pion_treshold_Mpi(jack_files,  head ,jack_tot, grephJ,5 ,fit_info,0,1e+5);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{V^HA}","FV_HA_Pi_fpi_treshold_Mpi");
         
         printf("\n\n///////////////////////////////////////ChPT FV FA_H_Pi_fpi_p2k2_treshold_Mpi  ///////////////////////\n");
@@ -5963,6 +5991,7 @@ printf("////////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_pion_treshold_Mpi(jack_files,  head ,jack_tot, grephJ,5 ,fit_info,0,1e+5);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{V^HA}","FV_HA_Pi_fpi_p2k2_treshold_Mpi");
       
         
@@ -6002,6 +6031,7 @@ printf("////////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FA_pion_generic(jack_files,  head ,jack_tot, grephJ,5 ,fit_info);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{V^HA}","FV_HA_Pi_fpi_aMpi_M4_M4x");
        
         
@@ -6016,6 +6046,7 @@ printf("////////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FA_pion_generic(jack_files,  head ,jack_tot, grephJ,5 ,fit_info);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{V^HA}","FV_HA_Pi_fpi_aMpi_M4_M4x_p2k2");
        
        /* 
@@ -6102,7 +6133,10 @@ printf("////////////////////////////////////////////////////////////////////////
     
     compute_systematics(argvNs, phys_point,  fit_chi2_good, "FV_Piphys");
     fit_chi2_good.Nfits=0;
-   
+    compute_FApmFV(argvNs, phys_point,  fit_FA_FV, "Pi","pm");
+    compute_FApmFV(argvNs, phys_point,  fit_FA_FV, "Pi","_correlated_");
+    fit_FA_FV.Nfits=0;
+
 printf("\n\n///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n K\n/////////////////////////////////////////////////////////////////////////////////////////////\n");
    
      
@@ -6461,7 +6495,8 @@ printf("\n\n////////////////////////////////////////////////////////////////////
     
     compute_systematics(argvNs, phys_point,  fit_chi2_good, "FV_Kphys");
     fit_chi2_good.Nfits=0;
-    compute_FApmFV(argvNs, phys_point,  fit_FA_FV, "FApmFV_Kphys");
+    compute_FApmFV(argvNs, phys_point,  fit_FA_FV, "K","pm");
+    compute_FApmFV(argvNs, phys_point,  fit_FA_FV, "K","_correlated_");
     fit_FA_FV.Nfits=0;
    
 
