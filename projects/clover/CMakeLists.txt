@@ -8,6 +8,7 @@ add_target_with_lib(fit_all_beta fit_all_beta.cpp)
 add_target_with_lib(fit_all_clover fit_all_clover.cpp)
 add_target_with_lib(form_factors form_factors.cpp)
 add_target_with_lib(form_factors_out_max_twist form_factors_out_max_twist.cpp)
+add_target_with_lib(petros_correlators petros_correlators.cpp)
 
 
 
