@@ -202,7 +202,7 @@ void plotting_fit_pdf(char **argv, const char *string,int L, int T, double beta,
     fprintf(gnuplotPipe,"exit \n");
   
     pclose(gnuplotPipe);
-    mysprintf(instruction,NAMESIZE,"pdflatex -output-directory=%s/out %s.tex   > null  ",argv[3],name);
+    mysprintf(instruction,NAMESIZE,"pdflatex -output-directory=%s/out %s.tex   >> /dev/null  ",argv[3],name);
     system(instruction);
     
     mysprintf(instruction,NAMESIZE,"rm %s.tex %s/out/%s.log %s/out/%s.aux  %s-inc.eps %s-inc-eps-converted-to.pdf ",name,argv[3],name,argv[3],name,name,name);

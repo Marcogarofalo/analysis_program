@@ -24,82 +24,21 @@
 #include "continuum_reph.hpp"
 #include "tower.hpp"
 #include "mutils.hpp"
+#include "header_file_virph.hpp"
 
 #include <unistd.h>
 #include <omp.h>
 #include <vector> 
 
 
-
-struct flavour_t
-{
-  int qhat;
-  double kappa;
-  double mu;
-  double su3csw;
-  double u1csw;
-  double cF;
-  double cF_prime;
-  double th1;
-  double th2;
-  double th3;
-};
-
-struct inv_t
-{
-  int isolv;
-  double mu,th[3];
-};
-
-struct einv_t
-{
-  int isolv;
-  double mu,th0[3],tht[3],off;
-};
-
-struct combination_t
-{
-  int i0,it,is;
-  double mu1,mu2,off;
-  double th0[3],tht[3],ths[3];
-};
-
-struct  header_virph
-{
-    int twist;
-    int nf;
-    int nsrc,nsrcd;
-    int l0,l1,l2,l3;
-    int nk,nmoms;
-    double beta,ksea,musea,csw;
-    double *k,*mu,**mom;
-    int allocated=0; 
-  int tmax;
-  int x0;
-  int stype;
-  int ninv;
-  int neinv;
-  int nsolv;
-  int nhits;
-  int ncomb;
-  int ngsm;
-  double epsgsm;
-  int nqsml,nqsm0,nqsm;
-  double epsqsm;
-  flavour_t gflv;
-  std::vector<combination_t> comb;
-  std::vector<inv_t> inv;
-  std::vector<einv_t> einv;
-  
-} vir_header;
-
+struct  kinematic kinematic_2pt;
+struct  kinematic_G kinematic_2pt_G;
 
 int head_allocated=0;
 
 int Nboot=100;
 int fdA,fdV;
-struct  kinematic kinematic_2pt;
-struct  kinematic_G kinematic_2pt_G;
+
 #include <iostream>     // std::cout
 #include <fstream>      // std::ifstream
 int r_value(int r)
@@ -110,67 +49,58 @@ int r_value(int r)
     else error(0==0,1,"r_value nor 0 neither 1","");
     return vr;
 }
-void get_kinematic( int ik2, int ik1,int imom2, int imom1 ){
-    kinematic_2pt.ik2=ik2;
-    kinematic_2pt.ik1=ik1;
 
-    kinematic_2pt.k2=file_head.k[ik2+file_head.nk];
-    kinematic_2pt.k1=file_head.k[ik1+file_head.nk];
+  
+void get_kinematic( struct combination_t head ){
+    kinematic_2pt.ik1=head.i0;
+    kinematic_2pt.ik2=head.is;
+
+    kinematic_2pt.k1=head.mu1;
+    kinematic_2pt.k2=head.mu2;
     
-    kinematic_2pt.mom2=-file_head.mom[imom2][3];
+    kinematic_2pt.mom1=head.th0[2];
+    kinematic_2pt.mom2=-head.ths[2];
     if (kinematic_2pt.mom2==0) kinematic_2pt.mom2=0;
-    kinematic_2pt.mom1=file_head.mom[imom1][3];
+    
 
-    kinematic_2pt.mom02=file_head.mom[imom2][0];
-    kinematic_2pt.mom01=file_head.mom[imom1][0];
+    kinematic_2pt.mom01=head.th0[0];
+    kinematic_2pt.mom02=head.ths[0];
     
-    kinematic_2pt.r2=-1;
+    
     kinematic_2pt.r1=1;
-    
-    
-    int i ;
-    kinematic_2pt.Mom2[0]=file_head.mom[imom2][0];
-    kinematic_2pt.Mom1[0]=file_head.mom[imom1][0];
- 
-    for (i=1;i<4;i++){
-        kinematic_2pt.Mom2[i]=-file_head.mom[imom2][i];
-        if (kinematic_2pt.Mom2[i]==0) kinematic_2pt.Mom2[i]=0;
-        kinematic_2pt.Mom1[i]=file_head.mom[imom1][i];
- 
-    }
-        
- 
+    kinematic_2pt.r2=-1;
+
 }
 
 
-void get_kinematic_G( int ikt, int iks,int imom0, int imomt, int imoms ){
-    
+void get_kinematic_G( struct header_virph head ,int icomb ){
     double Pi=3.141592653589793;
     double k[4],p[4];
     double L[4];
     int i;
   
-    L[0]=file_head.l0; L[1]=file_head.l1; L[2]=file_head.l2; L[3]=file_head.l3;         
+    L[0]=head.tmax; L[1]=head.tmax/2; L[2]=head.tmax/2; L[3]=head.tmax/2;         
 
-    kinematic_2pt_G.i=index_n_twopt_G_fit(ikt,iks,imom0,imomt,imoms);
-    kinematic_2pt_G.kt=file_head.k[ikt+file_head.nk];
-    kinematic_2pt_G.ks=file_head.k[iks+file_head.nk];
+    auto c=head.comb[icomb];
+    kinematic_2pt_G.i=0;//index_n_twopt_G_fit(head.ikt,head.iks,head.imom0,head.imomt,head.imoms);
+    kinematic_2pt_G.kt=c.mu1;//file_head.k[ikt+file_head.nk];
+    kinematic_2pt_G.ks=c.mu2;//file_head.k[iks+file_head.nk];
     
-    kinematic_2pt_G.ikt=ikt;
-    kinematic_2pt_G.iks=iks;
+    kinematic_2pt_G.ikt=c.it;//ikt;
+    kinematic_2pt_G.iks=c.is;//iks;
     kinematic_2pt_G.rt=1;
     kinematic_2pt_G.rs=-1;
     
-    kinematic_2pt_G.Mom0[0]=file_head.mom[imom0][0];
-    kinematic_2pt_G.Momt[0]=file_head.mom[imomt][0];
-    kinematic_2pt_G.Moms[0]=file_head.mom[imoms][0];
+    kinematic_2pt_G.Mom0[0]=0;//file_head.mom[imom0][0];
+    kinematic_2pt_G.Momt[0]=0;//file_head.mom[imomt][0];
+    kinematic_2pt_G.Moms[0]=0;//file_head.mom[imoms][0];
     
     for (i=1;i<4;i++){
-        kinematic_2pt_G.Mom0[i]=file_head.mom[imom0][i];
+        kinematic_2pt_G.Mom0[i]=c.th0[i-1];//file_head.mom[imom0][i];
         if (kinematic_2pt_G.Mom0[i]==0) kinematic_2pt_G.Mom0[i]=0;
-        kinematic_2pt_G.Momt[i]=file_head.mom[imomt][i];
+        kinematic_2pt_G.Momt[i]=c.tht[i-1];//file_head.mom[imomt][i];
         if (kinematic_2pt_G.Momt[i]==0) kinematic_2pt_G.Momt[i]=0;
-        kinematic_2pt_G.Moms[i]=-file_head.mom[imoms][i];
+        kinematic_2pt_G.Moms[i]=-c.ths[i-1];//-file_head.mom[imoms][i];
         if (kinematic_2pt_G.Moms[i]==0) kinematic_2pt_G.Moms[i]=0;
     }
     
@@ -233,7 +163,6 @@ void get_kinematic_G( int ikt, int iks,int imom0, int imomt, int imoms ){
     */
 }
 
-
 double timestamp()
 {
 	struct timeval tm;
@@ -272,146 +201,198 @@ void init_mass_index()
 
 }
 
-static void  print_file_head(FILE *stream)
+static void  print_file_head(FILE *stream,struct header_virph header)
 {
-    int i;
     
-    fprintf(stream,"twist= %d\n",file_head.twist);
-    fprintf(stream,"nf=%d\n",file_head.nf);
-    fprintf(stream,"nsrc=%d\n",file_head.nsrc);
-    fprintf(stream,"L0=%d\n",file_head.l0);
-    fprintf(stream,"L1=%d\n",file_head.l1);
-    fprintf(stream,"L2=%d\n",file_head.l2);
-    fprintf(stream,"L3=%d\n",file_head.l3);
-    fprintf(stream,"mus=%d\n",file_head.nk);
-    fprintf(stream,"moms=%d\n",file_head.nmoms);
+    fprintf(stream,"tmax =%d\n",header.tmax);
+    fprintf(stream,"x0   =%d\n",header.x0);
+    fprintf(stream,"stype=%d\n",header.stype);
+    fprintf(stream,"ninv =%d\n",header.ninv);
+    fprintf(stream,"neinv=%d\n",header.neinv);
+    fprintf(stream,"nsolv=%d\n",header.nsolv);
+    fprintf(stream,"nhits=%d\n",header.nhits);
+    fprintf(stream,"ncomb=%d\n",header.ncomb);
+    fprintf(stream,"ngsm =%d\n",header.ngsm);
+    fprintf(stream,"nqsml=%d\n",header.nqsml);
+    fprintf(stream,"nqsm0=%d\n",header.nqsm0);
+    fprintf(stream,"nqsm =%d\n",header.nqsm);
     
-    fprintf(stream,"beta=%f\n",file_head.beta);
-    fprintf(stream,"ksea=%f\n",file_head.ksea);
-    fprintf(stream,"musea=%f\n",file_head.musea);
-    fprintf(stream,"csw=%f\n",file_head.csw);
+    fprintf(stream,"epsgsm=%f\n",header.epsgsm);
+    fprintf(stream,"epsqsm=%f\n",header.epsqsm);
    
-    fprintf(stream,"masses=");
-    for(i=file_head.nk;i<2*file_head.nk;++i)
-            fprintf(stream,"%f\t",file_head.k[i]);
-    fprintf(stream,"\n");
+    fprintf(stream,"gflv.qhat    =%d\n",header.gflv.qhat);
+
+    fprintf(stream,"gflv.kappa   =%f\n",header.gflv.kappa);
+    fprintf(stream,"gflv.mu      =%f\n",header.gflv.mu);
+    fprintf(stream,"gflv.su3csw  =%f\n",header.gflv.su3csw);
+    fprintf(stream,"gflv.u1csw   =%f\n",header.gflv.u1csw);
+    fprintf(stream,"gflv.cF      =%f\n",header.gflv.cF);
+    fprintf(stream,"gflv.cF_prime=%f\n",header.gflv.cF_prime);
+    fprintf(stream,"gflv.th1     =%f\n",header.gflv.th1);
+    fprintf(stream,"gflv.th2     =%f\n",header.gflv.th2);
+    fprintf(stream,"gflv.th3     =%f\n",header.gflv.th3);
     
-    fprintf(stream,"momenta=");
-    for(i=0;i<file_head.nmoms;++i)
-           fprintf(stream,"%f  %f   %f   %f\n",file_head.mom[i][0],file_head.mom[i][1],file_head.mom[i][2],file_head.mom[i][3]);
+
+      
+    for(int icomb=0;icomb<header.ncomb;++icomb)
+        {
+        auto c=header.comb[icomb];
+        fprintf(stream,"icomb=%d\n",icomb);
+        fprintf(stream,"i0 it is=%d  %d  %d\n",c.i0,c.it,c.is);
+        fprintf(stream,"mu0  mut  off=%f  %f  %f\n",c.mu1,c.mu2,c.off);
+        fprintf(stream,"th0=%f  %f  %f\n",c.th0[0],c.th0[1],c.th0[2]);
+        fprintf(stream,"tht=%f  %f  %f\n",c.tht[0],c.tht[1],c.tht[2]);
+        fprintf(stream,"ths=%f  %f  %f\n",c.ths[0],c.ths[1],c.ths[2]);
+    
+    }
+    
+    for(int inv=0;inv<header.ninv;++inv)
+    {
+      auto v=header.inv[inv];
+      fprintf(stream,"inversion=%d\n",inv);
+      fprintf(stream,"mu=%f\n",v.mu);
+      fprintf(stream,"th0=%f  %f  %f\n",v.th[0],v.th[1],v.th[2]);
+
+      
+    }
+     
 }
 
-static void  read_file_head_bin(FILE *stream)
+static void  read_file_head_bin(FILE *stream, struct header_virph &header)
 {
     
+   
+    for(auto& i : {&header.tmax,&header.x0,&header.stype,&header.ninv,&header.neinv,&header.nsolv,&header.nhits,&header.ncomb,&header.ngsm,&header.nqsml, &header.nqsm0,&header.nqsm})
+        bin_read(*i,stream);
+ 
+    header.inv.resize(header.ninv);
+    header.comb.resize(header.ncomb);
+    header.einv.resize(header.neinv);
+
+    fread(&header.epsgsm,sizeof(double),1,stream);
+    fread(&header.epsqsm,sizeof(double),1,stream);
+    
+    fread(&header.gflv.qhat,sizeof(int),1,stream);
+    
+    for(auto& d : {&header.gflv.kappa,&header.gflv.mu,&header.gflv.su3csw,&header.gflv.u1csw,&header.gflv.cF,&header.gflv.cF_prime,&header.gflv.th1,&header.gflv.th2,&header.gflv.th3})
+        bin_read(*d,stream);
+    
+    for(int icomb=0;icomb<header.ncomb;++icomb)
+        {
+        auto& c=header.comb[icomb];
+        for(auto& i : {&c.i0,&c.it,&c.is})
+            bin_read(*i,stream);
+        for(auto& d : {&c.mu1,&c.mu2,&c.off})
+            bin_read(*d,stream);
+        for(auto& d : {&c.th0[0],&c.th0[1],&c.th0[2]})
+            bin_read(*d,stream);
+        for(auto& d : {&c.tht[0],&c.tht[1],&c.tht[2]})
+            bin_read(*d,stream);
+        for(auto& d : {&c.ths[0],&c.ths[1],&c.ths[2]})
+            bin_read(*d,stream);
+    }
+    
+    for(int inv=0;inv<header.ninv;++inv)
+    {
+      auto& v=header.inv[inv];
+      for(auto& d : {&v.mu,&v.th[0],&v.th[1],&v.th[2]})
+            bin_read(*d,stream);
+    }
+    header.header_size=ftell(stream);      
         
-   
-    fread(&vir_header.tmax,sizeof(int),1,stream);
-    fread(&vir_header.x0,sizeof(int),1,stream);
-    fread(&vir_header.stype,sizeof(int),1,stream);
-    fread(&vir_header.ninv,sizeof(int),1,stream);
-    fread(&vir_header.neinv,sizeof(int),1,stream);
-    fread(&vir_header.nsolv,sizeof(int),1,stream);
-    fread(&vir_header.nhits,sizeof(int),1,stream);
-    fread(&vir_header.ncomb,sizeof(int),1,stream);
-    fread(&vir_header.ngsm,sizeof(int),1,stream);
-    fread(&vir_header.nqsml,sizeof(int),1,stream);
-    fread(&vir_header.nqsm0,sizeof(int),1,stream);
-    fread(&vir_header.nqsm,sizeof(int),1,stream);
-   
-    
-    for(auto i : {vir_header.tmax,vir_header.x0,vir_header.stype,vir_header.ninv,vir_header.neinv,vir_header.nsolv,vir_header.nhits,vir_header.ncomb,vir_header.ngsm,vir_header.nqsml&vir_header.nqsm0,vir_header.nqsm})
-    std::cout<< i<<std::endl;
-    
-    exit(0);
-
-
-    int i;
-    int nk_old,nmoms_old;
-    if(file_head.allocated==1){
-        nk_old=file_head.nk;
-        nmoms_old=file_head.nmoms;
-    }
-    
-    fread(&file_head.twist,sizeof(int),1,stream);
-    fread(&file_head.nf,sizeof(int),1,stream);
-    fread(&file_head.nsrc,sizeof(int),1,stream);
-    fread(&file_head.l0,sizeof(int),1,stream);
-    fread(&file_head.l1,sizeof(int),1,stream);
-    fread(&file_head.l2,sizeof(int),1,stream);
-    fread(&file_head.l3,sizeof(int),1,stream);
-    fread(&file_head.nk,sizeof(int),1,stream);
-    fread(&file_head.nmoms,sizeof(int),1,stream);
-    if(file_head.allocated==1)
-        error(nk_old!=file_head.nk || nmoms_old!=file_head.nmoms,1,"read_file_head_jack", " file head nk or nmoms has changed %d %d -> %d %d",nk_old,nmoms_old,file_head.nk,file_head.nmoms );
-
-    fread(&file_head.beta,sizeof(double),1,stream);
-    fread(&file_head.ksea,sizeof(double),1,stream);
-    fread(&file_head.musea,sizeof(double),1,stream);
-    fread(&file_head.csw,sizeof(double),1,stream);
-   
-    if(file_head.allocated==0){
-        file_head.k=(double*)  malloc(sizeof(double)*2*file_head.nk);
-        file_head.mom=(double**) malloc(sizeof(double*)*file_head.nmoms);
-        for(i=0;i<file_head.nmoms;i++) 
-            file_head.mom[i]=(double*) malloc(sizeof(double)*4);
-        file_head.allocated=1;
-    }
-    for(i=0;i<2*file_head.nk;++i)
-    	fread(&file_head.k[i],sizeof(double),1,stream);
-    
-    
-    for(i=0;i<file_head.nmoms;i++) {
-        fread(&file_head.mom[i][0],sizeof(double),1,stream);
-        fread(&file_head.mom[i][1],sizeof(double),1,stream);
-        fread(&file_head.mom[i][2],sizeof(double),1,stream);
-        fread(&file_head.mom[i][3],sizeof(double),1,stream);
-
-    }
+  
 }
-static void  write_file_head(FILE *stream)
+static void  write_file_head(FILE *stream, struct header_virph header)
 {
-    int i;    
     
-    fwrite(&file_head.twist,sizeof(int),1,stream);
-    fwrite(&file_head.nf,sizeof(int),1,stream);
-    fwrite(&file_head.nsrc,sizeof(int),1,stream);
-    fwrite(&file_head.l0,sizeof(int),1,stream);
-    fwrite(&file_head.l1,sizeof(int),1,stream);
-    fwrite(&file_head.l2,sizeof(int),1,stream);
-    fwrite(&file_head.l3,sizeof(int),1,stream);
-    fwrite(&file_head.nk,sizeof(int),1,stream);
-    fwrite(&file_head.nmoms,sizeof(int),1,stream);
-    
-    fwrite(&file_head.beta,sizeof(double),1,stream);
-    fwrite(&file_head.ksea,sizeof(double),1,stream);
-    fwrite(&file_head.musea,sizeof(double),1,stream);
-    fwrite(&file_head.csw,sizeof(double),1,stream);
+    for(auto& i : {&header.tmax,&header.x0,&header.stype,&header.ninv,&header.neinv,&header.nsolv,&header.nhits,&header.ncomb,&header.ngsm,&header.nqsml, &header.nqsm0,&header.nqsm})
+        bin_write(*i,stream);
+ 
    
-    fwrite(file_head.k,sizeof(double),2*file_head.nk,stream);
-
-    for(i=0;i<file_head.nmoms;i++)  
-        fwrite(file_head.mom[i],sizeof(double),4,stream);
+    fwrite(&header.epsgsm,sizeof(double),1,stream);
+    fwrite(&header.epsqsm,sizeof(double),1,stream);
+    
+    fwrite(&header.gflv.qhat,sizeof(int),1,stream);
+    
+    for(auto& d : {&header.gflv.kappa,&header.gflv.mu,&header.gflv.su3csw,&header.gflv.u1csw,&header.gflv.cF,&header.gflv.cF_prime,&header.gflv.th1,&header.gflv.th2,&header.gflv.th3})
+        bin_write(*d,stream);
+    
+    for(int icomb=0;icomb<header.ncomb;++icomb)
+        {
+        auto& c=header.comb[icomb];
+        for(auto& i : {&c.i0,&c.it,&c.is})
+            bin_write(*i,stream);
+        for(auto& d : {&c.mu1,&c.mu2,&c.off})
+            bin_write(*d,stream);
+        for(auto& d : {&c.th0[0],&c.th0[1],&c.th0[2]})
+            bin_write(*d,stream);
+        for(auto& d : {&c.tht[0],&c.tht[1],&c.tht[2]})
+            bin_write(*d,stream);
+        for(auto& d : {&c.ths[0],&c.ths[1],&c.ths[2]})
+            bin_write(*d,stream);
+    }
+    
+    for(int inv=0;inv<header.ninv;++inv)
+    {
+      auto& v=header.inv[inv];
+      for(auto& d : {&v.mu,&v.th[0],&v.th[1],&v.th[2]})
+            bin_write(*d,stream);
+    }
+          
 }
 
-void read_nconfs(int *s, int *c, FILE *stream){
+void read_nconfs( FILE *stream,struct header_virph &header){
 
    long int tmp;
+   int& s=header.file_size;
+   int& c=header.file_nconf;
 
-   fread(s,sizeof(int),1,stream);
-   
+  
    fseek(stream, 0, SEEK_END);
    tmp = ftell(stream);
-   tmp-= sizeof(double)* (file_head.nmoms*4 + file_head.nk*2+4 )+ sizeof(int)*10 ;
-   //tmp-= sizeof(int)*2;
-   (*c)= tmp/ (sizeof(int)+ (*s)*sizeof(double) );
+   tmp-= header.header_size ;
+   
+   //ncorr=2 HA and HV,  in general there is H_{A/V}^{\mu\alpha}
+   int mus=4,alphas=4, ncorr=2;
+   //  2 stands for re im;
+   s=2*ncorr*mus*alphas*header.tmax*header.ncomb*header.nqsml;
+   std::cout<< "size="<<s<<std::endl;
+
+   c= (tmp)/ ( sizeof(int)+(s)*sizeof(double) );
+
+   
+   std::cout<< "confs="<<c<<std::endl;
+   fseek(stream, header.header_size, SEEK_SET);
  
-  rewind(stream);
-  read_file_head_bin(stream);
-  fread(s,sizeof(int),1,stream);
 
 }
 
+
+
+void read_nconfs_2pt( FILE *stream,struct header_virph &header){
+
+   long int tmp;
+   int& s=header.file_size;
+   int& c=header.file_nconf;
+
+  
+   fseek(stream, 0, SEEK_END);
+   tmp = ftell(stream);
+   tmp-= header.header_size ;
+   
+   int ncorr=5;
+   // 2 stand for re im
+   s=2*header.tmax*header.ninv*header.ninv*header.nqsml*ncorr;
+   std::cout<< "size="<<s<<std::endl;
+
+   c= (tmp)/ ( sizeof(int)+(s)*sizeof(double));
+
+   
+   std::cout<< "confs="<<c<<std::endl;
+   fseek(stream, header.header_size, SEEK_SET);
+ 
+
+}
 
 double *constant_fit(int M, double in){
     double *r;
@@ -442,20 +423,6 @@ int index_n_minus_r( int r)
 }
 
 
-
-/*
-void read_chunk(FILE *stream,int index, double *obs, double **to_write,int vol, int si){
-       int t;  
-       fseek(stream, index, SEEK_CUR);
-       fread(obs,sizeof(double),2*si*file_head.l0,stream); 
-   
-       for(t=0;t<file_head.l0;t++){
-           to_write[t][0]+=obs[si*t*2];
-           to_write[t][1]+=obs[si*t*2+1];
-       }
-       vol++;
-
-}*/
 void read_chunk(FILE *stream,int tmp,int index, double *obs, double **to_write,int *vol, int si){
        int t;  
        fseek(stream,tmp+ index, SEEK_SET);
@@ -468,135 +435,51 @@ void read_chunk(FILE *stream,int tmp,int index, double *obs, double **to_write,i
        *vol+=1;
 
 }
-/*
-void read_twopt_Nconfs(FILE *stream,int size, int Nconfs,int var , double ****to_write,int si, int ii,int ik1, int ik2, int imom1, int imom2 ){
-  long int tmp;
-   int iiconf,N,s;
-   double *obs;
-   int cik1, cik2;
-   int cimom1,cimom2,cr1;
-   int t,vol=0,index,index1,i;
-   double re,im;
-   int    vol3=file_head.l1*file_head.l2*file_head.l3; 
-   int diff;
-
-   tmp= sizeof(double)* (file_head.nmoms*4 + file_head.nk*2+4 )+ sizeof(int)*(11) ;
-   fseek(stream, tmp, SEEK_SET);
-  // tmp+=sizeof(double)*iconf*size+sizeof(int)*iconf;
-
-   obs=(double*) malloc(2*si*file_head.l0*sizeof(double)); 
-   
-   cimom1=index_n_minus_theta(imom1);
-   cimom2=index_n_minus_theta(imom2);
-   cik1=index_n_minus_kappa(ik1);
-   cik2=index_n_minus_kappa(ik2);
-   
-   tmp=sizeof(double)*size+sizeof(int);
-   for (i=0;i<Nconfs;i++){
-   
-   index=sizeof(double)*2*index_n_twopt(si,ii,0,ik1,ik2,imom1,imom2);
-   fseek(stream, index, SEEK_CUR);
-
-   fread(obs,sizeof(double),2*si*file_head.l0,stream); 
-   
-   for(t=0;t<file_head.l0;t++){
-       to_write[i][var][t][0]=obs[si*t*2];
-       to_write[i][var][t][1]=obs[si*t*2+1];
-   }
-   vol++;
-   
-   index1=sizeof(double)*2*index_n_twopt(si,ii,0,ik1,ik2,imom2,imom1);
-   diff=index1-index;
-   index=index1;
-   read_chunk(stream,  diff,  obs,  to_write[i][var], vol,  si);
-  
-   index1=sizeof(double)*2*index_n_twopt(si,ii,0,ik2,ik1,imom1,imom2);
-   diff=index1-index;
-   index=index1;
-   read_chunk(stream,  diff,  obs,  to_write[i][var], vol,  si);
-
-   if (  cimom1>=0 &&  cimom2 >=0 ){ 
-       index1=sizeof(double)*2*index_n_twopt(si,ii,0,ik1,ik2,cimom1,cimom2);
-       diff=index1-index;
-       index=index1;
-       read_chunk(stream,  diff,  obs,  to_write[i][var], vol,  si);
-
-       index1=sizeof(double)*2*index_n_twopt(si,ii,0,ik1,ik2,cimom2,cimom1);
-       diff=index1-index;
-       index=index1;
-       read_chunk(stream,  diff,  obs,  to_write[i][var], vol,  si);
-
-       index1=sizeof(double)*2*index_n_twopt(si,ii,0,ik2,ik1,cimom1,cimom2);
-       diff=index1-index;
-       index=index1;
-       read_chunk(stream,  diff,  obs,  to_write[i][var], vol,  si);
 
 
-   }
-   diff=tmp-index;
-   fseek(stream, diff, SEEK_CUR);
-   
-   for(t=0;t<file_head.l0;t++){
-  	   to_write[i][var][t][0]/=( (double) vol*vol3 );
-	   to_write[i][var][t][1]/=( (double) vol*vol3 );
-   }
 
-   }   
-   free(obs);
-
-    
-}*/
-void read_twopt(FILE *stream,int size, int iconf , double **to_write,int si, int ii,int ik1, int ik2, int imom1, int imom2 ){
+void read_twopt(FILE *stream,int size, int iconf , double **to_write, int icorr ,struct header_virph header, int icomb, int smearing ){
    
    long int tmp;
    double *obs;
-   //int cik1, cik2;
-   int cimom1,cimom2,cr1;
-   int t,vol=0,index;
-   double re,im;
-   int    vol3=file_head.l1*file_head.l2*file_head.l3; 
-
-   tmp= sizeof(double)* (file_head.nmoms*4 + file_head.nk*2+4 )+ sizeof(int)*(11) ;
-   tmp+=sizeof(double)*iconf*size+sizeof(int)*iconf;
-
-   obs=(double*) malloc(2*si*file_head.l0*sizeof(double)); 
+   int vol=0,index;
+   int    vol3=header.tmax*header.tmax*header.tmax/8.0; 
+   auto c=header.comb[icomb];
    
-   cimom1=index_n_minus_theta(imom1);
-   cimom2=index_n_minus_theta(imom2);
-   //cik1=index_n_minus_kappa(ik1);
-   //cik2=index_n_minus_kappa(ik2);
-   
-   index=sizeof(double)*2*index_n_twopt(si,ii,0,ik1,ik2,imom1,imom2);
+   tmp=header.header_size;// sizeof(double)* (file_head.nmoms*4 + file_head.nk*2+4 )+ sizeof(int)*(11) ;
+   tmp+=sizeof(double)*iconf*size+sizeof(int)*(iconf+1);
+
+   fseek(stream, tmp-sizeof(int), SEEK_SET);
+   int ii;
+   fread(&ii,sizeof(int),1,stream); 
+  
+   obs=(double*) malloc(2*header.tmax*sizeof(double)); 
+    
+   int ire=0,ix0=0;
+   int iin=
+   index=sizeof(double)*(  ire+2*(ix0+header.tmax*(smearing +header.nqsml*(c.i0+header.ninv*(c.is+header.ninv*icorr))))  );
    fseek(stream, tmp+index, SEEK_SET);
 
-   fread(obs,sizeof(double),2*si*file_head.l0,stream); 
+   fread(obs,sizeof(double),2*header.tmax,stream); 
    
-   for(t=0;t<file_head.l0;t++){
-       to_write[t][0]=obs[si*t*2];
-       to_write[t][1]=obs[si*t*2+1];
+   for(int t=0;t<header.tmax;t++){
+       to_write[t][0]=obs[t*2];
+       to_write[t][1]=obs[t*2+1];
    }
    vol++;
    
-   index=sizeof(double)*2*index_n_twopt(si,ii,0,ik1,ik2,imom2,imom1);
-   read_chunk(stream, tmp, index,  obs,  to_write, &vol,  si);
-  
-   index=sizeof(double)*2*index_n_twopt(si,ii,0,ik2,ik1,imom1,imom2);
-   read_chunk(stream, tmp, index,  obs,  to_write, &vol,  si);
-
-   if (  cimom1>=0 &&  cimom2 >=0 ){ 
-       index=sizeof(double)*2*index_n_twopt(si,ii,0,ik1,ik2,cimom1,cimom2);
-       read_chunk(stream, tmp, index,  obs,  to_write, &vol,  si);
-
-       index=sizeof(double)*2*index_n_twopt(si,ii,0,ik1,ik2,cimom2,cimom1);
-       read_chunk(stream, tmp, index,  obs,  to_write, &vol,  si);
-
-       index=sizeof(double)*2*index_n_twopt(si,ii,0,ik2,ik1,cimom1,cimom2);
-       read_chunk(stream, tmp, index,  obs,  to_write, &vol,  si);
-
-
+   index=sizeof(double)*(ire+2*(ix0+header.tmax*(smearing +header.nqsml*(c.is+header.ninv*(c.i0+header.ninv*icorr)))));
+   fseek(stream,tmp+ index, SEEK_SET);
+   fread(obs,sizeof(double),2*header.tmax,stream); 
+   /*
+   for(int t=0;t<header.tmax;t++){
+       to_write[t][0]+=obs[t*2];
+       to_write[t][1]+=obs[t*2+1];
    }
+   vol++;
+  */
    
-   for(t=0;t<file_head.l0;t++){
+   for(int t=0;t<header.tmax;t++){
   	   to_write[t][0]/=( (double) vol*vol3 );
 	   to_write[t][1]/=( (double) vol*vol3 );
    }
@@ -607,81 +490,6 @@ void read_twopt(FILE *stream,int size, int iconf , double **to_write,int si, int
    free(obs);
 
 }
-
-/*
-
-void read_twopt(FILE *stream,int size, int iconf , double **to_write,int si, int ii,int ik1, int ik2, int imom1, int imom2 ){
-   
-   long int tmp;
-   int iiconf,N,s;
-   double *obs;
-   int cik1, cik2;
-   int cimom1,cimom2,cr1;
-   int t,vol,index;
-   double re,im;
-   int    vol3=file_head.l1*file_head.l2*file_head.l3; 
-
-   tmp= sizeof(double)* (file_head.nmoms*4 + file_head.nk*2+4 )+ sizeof(int)*(11) ;
-   tmp+=sizeof(double)*iconf*size+sizeof(int)*iconf;
-
-   obs=(double*) malloc(2*sizeof(double)); 
-   
-   cimom1=index_n_minus_theta(imom1);
-   cimom2=index_n_minus_theta(imom2);
-   cik1=index_n_minus_kappa(ik1);
-   cik2=index_n_minus_kappa(ik2);
-
-   
-	for(t=0;t<file_head.l0;t++){
-	   re=0;im=0;vol=0;
-	   index=sizeof(double)*2*index_n_twopt(si,ii,t,ik1,ik2,imom1,imom2);
-       fseek(stream, tmp+index, SEEK_SET);
-       fread(obs,sizeof(double),2,stream); 
-       re+= obs[0];
-       im+= obs[1];
-       vol++;
-       index=sizeof(double)*2*index_n_twopt(si,ii,t,ik1,ik2,imom2,imom1);
-       fseek(stream, tmp+index, SEEK_SET);
-       fread(obs,sizeof(double),2,stream); 
-       re+= obs[0];
-       im+= obs[1];
-       vol++;
-       index=sizeof(double)*2*index_n_twopt(si,ii,t,ik2,ik1,imom1,imom2);
-       fseek(stream, tmp+index, SEEK_SET);
-       fread(obs,sizeof(double),2,stream); 
-       re+= obs[0];
-       im+= obs[1];
-       vol++;
-	   if (  cimom1>=0 &&  cimom2 >=0 )
-  	   { 
-  	       index=sizeof(double)*2*index_n_twopt(si,ii,t,ik1,ik2,cimom1,cimom2);
-           fseek(stream, tmp+index, SEEK_SET);
-           fread(obs,sizeof(double),2,stream); 
-           re+= obs[0];
-           im+= obs[1];
-           vol++;
-  	       index=sizeof(double)*2*index_n_twopt(si,ii,t,ik1,ik2,cimom2,cimom1);
-           fseek(stream, tmp+index, SEEK_SET);
-           fread(obs,sizeof(double),2,stream); 
-           re+= obs[0];
-           im+= obs[1];
-           vol++;
-  	       index=sizeof(double)*2*index_n_twopt(si,ii,t,ik2,ik1,cimom1,cimom2);
-           fseek(stream, tmp+index, SEEK_SET);
-           fread(obs,sizeof(double),2,stream); 
-           re+= obs[0];
-           im+= obs[1];
-           vol++;
-             	
-  	   }
-	   to_write[t][0]=re/( (double) vol*vol3 );
-	   to_write[t][1]=im/( (double) vol*vol3 );
-	}
-
-
-   free(obs);
-
-}*/
 
 void ave_polarization_gamma_A(  double **to_write,int si, double y, double *obs)
 {
@@ -1156,13 +964,13 @@ void read_twoptgamma_Nconfs(FILE *stream,int size, int Nconfs,int var , double *
     
 }
  
-void setup_single_file_jack(char  *save_name,char **argv, const char  *name,int Njack){
+void setup_single_file_jack(char  *save_name,char **argv, const char  *name,int Njack, struct header_virph header){
      FILE *f;
      mysprintf(save_name,NAMESIZE,"%s/%s",argv[3],name);
      f=fopen(save_name,"w+");
      error(f==NULL,1,"setup_file_jack ",
          "Unable to open output jackknife file %s/%s",argv[3],name);
-     write_file_head(f);
+     write_file_head(f,header);
      fwrite(&Njack,sizeof(int),1,f);
      fclose(f);
 }
@@ -1176,27 +984,27 @@ void setup_single_file_jack_ASCI(char  *save_name, char **argv,const char  *name
      fclose(f);
 }
 
-void setup_file_jack(char **argv,int Njack){
-     setup_single_file_jack(file_jack.M_PS,argv,"jackknife/M_{PS}_jack",Njack);
-     setup_single_file_jack(file_jack.f_PS,argv,"jackknife/f_{PS}_jack",Njack);
-     setup_single_file_jack(file_jack.Zf_PS,argv,"jackknife/Zf_{PS}_jack",Njack);
+void setup_file_jack(char **argv,int Njack,struct header_virph header){
+     setup_single_file_jack(file_jack.M_PS,argv,"jackknife/M_{PS}_jack",Njack,header);
+     setup_single_file_jack(file_jack.f_PS,argv,"jackknife/f_{PS}_jack",Njack,header);
+     setup_single_file_jack(file_jack.Zf_PS,argv,"jackknife/Zf_{PS}_jack",Njack,header);
     
-     setup_single_file_jack(file_jack.FV,argv,"jackknife/FV_jack",Njack);
-     setup_single_file_jack(file_jack.FA,argv,"jackknife/FA_jack",Njack);
+     setup_single_file_jack(file_jack.FV,argv,"jackknife/FV_jack",Njack,header);
+     setup_single_file_jack(file_jack.FA,argv,"jackknife/FA_jack",Njack,header);
      
-     setup_single_file_jack(file_jack.FV_autoplateaux,argv,"jackknife/FV_autoplateaux_jack",Njack);
-     setup_single_file_jack(file_jack.FA_autoplateaux,argv,"jackknife/FA_autoplateaux_jack",Njack);
+     setup_single_file_jack(file_jack.FV_autoplateaux,argv,"jackknife/FV_autoplateaux_jack",Njack,header);
+     setup_single_file_jack(file_jack.FA_autoplateaux,argv,"jackknife/FA_autoplateaux_jack",Njack,header);
      
-     setup_single_file_jack(file_jack.FAp,argv,"jackknife/FAp_jack",Njack);
-     setup_single_file_jack(file_jack.FV_exclude,argv,"jackknife/FV_exclude_jack",Njack);
-     setup_single_file_jack(file_jack.FAp1_exclude,argv,"jackknife/FAp1_jack",Njack);
-     setup_single_file_jack(file_jack.xG,argv,"jackknife/xG_jack",Njack);
+     setup_single_file_jack(file_jack.FAp,argv,"jackknife/FAp_jack",Njack,header);
+     setup_single_file_jack(file_jack.FV_exclude,argv,"jackknife/FV_exclude_jack",Njack,header);
+     setup_single_file_jack(file_jack.FAp1_exclude,argv,"jackknife/FAp1_jack",Njack,header);
+     setup_single_file_jack(file_jack.xG,argv,"jackknife/xG_jack",Njack,header);
 
-     setup_single_file_jack(file_jack.FA_from_H0,argv,"jackknife/FA_from_H0_jack",Njack);
-     setup_single_file_jack(file_jack.FA_from_H0_autoplateaux,argv,"jackknife/FA_from_H0_autoplateaux_jack",Njack);
-     setup_single_file_jack(file_jack.FV_from_H0,argv,"jackknife/FV_from_H0_jack",Njack);
-     setup_single_file_jack(file_jack.FV_from_H0_autoplateaux,argv,"jackknife/FV_from_H0_autoplateaux_jack",Njack);
-     setup_single_file_jack(file_jack.FV_from_H0_HA,argv,"jackknife/FV_from_H0_HA_jack",Njack);
+     setup_single_file_jack(file_jack.FA_from_H0,argv,"jackknife/FA_from_H0_jack",Njack,header);
+     setup_single_file_jack(file_jack.FA_from_H0_autoplateaux,argv,"jackknife/FA_from_H0_autoplateaux_jack",Njack,header);
+     setup_single_file_jack(file_jack.FV_from_H0,argv,"jackknife/FV_from_H0_jack",Njack,header);
+     setup_single_file_jack(file_jack.FV_from_H0_autoplateaux,argv,"jackknife/FV_from_H0_autoplateaux_jack",Njack,header);
+     setup_single_file_jack(file_jack.FV_from_H0_HA,argv,"jackknife/FV_from_H0_HA_jack",Njack,header);
 
 
 }
@@ -1221,13 +1029,12 @@ void allocate_jack_fit(struct jack_fit jack_fit, int sizePP){
 
 int main(int argc, char **argv){
    int sizePP, sizeAmuP,sizeAmuGP,sizeVV,sizeVmuGP;
-   int i,j,t,iG,iG0;
    clock_t t1,t2;
    double dt;
    int *sym;
 
    int *iconf,confs;
-   double ****data,****data_bin,**tmp; 
+   double **tmp; 
    char c;
    double *in;
 
@@ -1238,7 +1045,7 @@ int main(int argc, char **argv){
    double *fit,***y,*x,*m,*me;
    
 
-   double ****conf_jack,**r,**met;
+   double **r,**met;
    int Ncorr=1;
    int t0=2;
    
@@ -1250,9 +1057,9 @@ int main(int argc, char **argv){
    FILE  *plateaux_H_H0_A=NULL;
    
    char bin_name[NAMESIZE];
-   
-    struct jack_fit jack_fit;
-   
+   struct header_virph header,header_2pt;
+   struct jack_fit jack_fit;
+
    error(argc!=6,1,"main ",
          "usage argc!=5: ./form_factors blind/see/read_plateaux -p inpath   jack/boot  pdf/only_fit_R/no");
 
@@ -1374,7 +1181,7 @@ int main(int argc, char **argv){
       plateaux_H_H0_A=open_file(kinematic_2pt_G.plateau_H_H0_A,"r");
       
   }
-   // f=fopen("./meas_2pts_bin10.dat","r");
+/*   // f=fopen("./meas_2pts_bin10.dat","r");
    mysprintf(bin_name,NAMESIZE,"_bin10_conf.realph.dat");
    //mysprintf(bin_name,NAMESIZE,"_conf.realph.dat");
 
@@ -1384,15 +1191,13 @@ int main(int argc, char **argv){
    oAmuPo=fopen(namefile,"r"); error(oAmuPo==NULL,1, "main","2pt file %s not found",namefile ); 
    mysprintf(namefile,NAMESIZE,"%s/data/oAmuGPo-gs%s",argv[3],bin_name);
    oAmuGPo=fopen(namefile,"r"); error(oAmuGPo==NULL,1, "main","2pt file %s not found",namefile );   
-   std::ifstream oAmuGPopp (namefile, std::ifstream::binary);  
+   //std::ifstream oAmuGPopp (namefile, std::ifstream::binary);  
 
-   //mysprintf(namefile,"%s/data/oVVo-ss_conf.realph.dat",argv[3]);
-  // oVVo=fopen(namefile,"r"); error(oVVo==NULL,1, "main","2pt file %s not found",namefile );
    mysprintf(namefile,NAMESIZE,"%s/data/oVmuGPo-gs%s",argv[3],bin_name);
    oVmuGPo=fopen(namefile,"r"); error(oVmuGPo==NULL,1, "main","2pt file %s not found",namefile );
-   std::ifstream oVmuGPopp (namefile, std::ifstream::binary);   
+   //std::ifstream oVmuGPopp (namefile, std::ifstream::binary);   
 
-   
+  
    read_file_head_bin(oPPo);
    read_nconfs(&sizePP,&confs,oPPo);   
    printf("oPPo\t size=%d  confs=%d  \n",sizePP,confs);
@@ -1405,939 +1210,107 @@ int main(int argc, char **argv){
    read_nconfs(&sizeAmuGP,&confs,oAmuGPo);   
    printf("oAmuGPo\t size=%d  confs=%d \n",sizeAmuGP,confs);
  
- /*  read_file_head_bin(oVVo);
-   read_nconfs(&sizeVV,&confs,oVVo);   
-   printf("oVVo\t size=%d  confs=%d \n",sizeVV,confs);
-*/
+
    read_file_head_bin(oVmuGPo);
    read_nconfs(&sizeVmuGP,&confs,oVmuGPo);   
    printf("oVmuGPo\t size=%d  confs=%d \n",sizeVmuGP,confs);
- 
+ */
+   mysprintf(namefile,NAMESIZE,"%s/data/conf.virtualph.dat2",argv[3]);
+   oPPo=open_file(namefile,"r");
+   read_file_head_bin(oPPo,header_2pt);
+   print_file_head(stdout,header_2pt);
+   std::cout << "\n-----end header_2pt-----\n"<<  std::endl;
    
+   std::cout << "the header size is " << header_2pt.header_size << " bytes?"<<  std::endl;
+   read_nconfs_2pt(oPPo,header_2pt);
+   std::cout << "Nconf= " << header_2pt.file_nconf <<  std::endl;
+      
+   for (int i =0 ; i< header_2pt.file_nconf;i++){
+       int iconf;
+       bin_read(iconf,oPPo);
+       fseek(oPPo,header_2pt.file_size*sizeof(double),SEEK_CUR);
+       std::cout << iconf <<"  ";
+   }  
+   std::cout <<  std::endl;
    
-   print_file_head(outfile);
-   print_file_head(outfile_oPp);
-   print_file_head(outfile_f);
-   print_file_head(outfile_RA);
-   print_file_head(outfile_H_H0_A);
-   print_file_head(outfile_H_H0_A_autoplateaux);
-   print_file_head(outfile_HmH0_V);
-   print_file_head(outfile_HmH0_V_autoplateaux);
-   print_file_head(outfile_HmH0_V_HA);
-   print_file_head(outfile_RV);
-   print_file_head(outfile_RA_autoplateaux);
-   print_file_head(outfile_RV_autoplateaux);
+   mysprintf(namefile,NAMESIZE,"%s/data/conf.virtualph.dat",argv[3]);
+   oAmuGPo=open_file(namefile,"r");
+   read_file_head_bin(oAmuGPo,header);
+   //print_file_head(stdout,header);
+   std::cout << "\n-----end header_2pt-----\n"<<  std::endl;
+   
+   std::cout << "the header size is " << header.header_size << " bytes?"<<  std::endl;
+   read_nconfs(oAmuGPo,header);
+   std::cout << "Nconf= " << header.file_nconf <<  std::endl;
+   for (int i =0 ; i< header.file_nconf;i++){
+       int iconf;
+       bin_read(iconf,oAmuGPo);
+       fseek(oAmuGPo,header.file_size*sizeof(double),SEEK_CUR);
+       std::cout << iconf <<"  ";
+   }  
+   std::cout <<  std::endl;
+   
+   error(header_2pt.file_nconf!=header_2pt.file_nconf, 1, "main","Configuration number in file 2pt differs form 2pt_gamma file");
+   confs=header_2pt.file_nconf;
+   
+   print_file_head(outfile,header);
+   print_file_head(outfile_oPp,header);
+   print_file_head(outfile_f,header);
+   print_file_head(outfile_RA,header);
+   print_file_head(outfile_H_H0_A,header);
+   print_file_head(outfile_H_H0_A_autoplateaux,header);
+   print_file_head(outfile_HmH0_V,header);
+   print_file_head(outfile_HmH0_V_autoplateaux,header);
+   print_file_head(outfile_HmH0_V_HA,header);
+   print_file_head(outfile_RV,header);
+   print_file_head(outfile_RA_autoplateaux,header);
+   print_file_head(outfile_RV_autoplateaux,header);
 
    fflush(outfile);
 
    bin=1;
    Neff=confs/bin;
-   Njack=Neff+1;
+   if( strcmp(argv[4],"jack")==0)
+                Njack=Neff+1;
+   if( strcmp(argv[4],"boot")==0)
+                Njack=Nbootstrap+1;
+
  
-   setup_file_jack(argv,Njack);
-   int ks_min=0,ks_max=3;
-   if (ks_max>file_head.nk) ks_max=file_head.nk;
-   int kt_min=0,kt_max=file_head.nk;
+   setup_file_jack(argv,Njack,header);
    
-////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////
-//confs=25;
-//printf("number of confs set manually to %d\n",confs);
-////////////////////////////////////////////////////////////////////
-   iconf=(int*) malloc(sizeof(int)*confs);
+   double ****data,****data_bin,****conf_jack; 
+   int var=1;
+   data=       calloc_corr(confs, var,  header.tmax );
    
-   
-   int var=22/*6*/,si_2pt,si;
-   
-   
-   //data=       calloc_corr(confs, var*var,  file_head.l0 );
-   //lambda0=    calloc_corr(Njack, var,  file_head.l0 );
-   //projected_O=calloc_corr(Njack, var,  file_head.l0);
-     
-   int ii, imom1, imom2, ik1,ik2,ik3;
-   ii=0;
-   imom1=0;
-   imom2=0;
-   ik1=0;
-   ik2=0;
-   ik3=0;
-   int tmin=15, tmax=20, sep=1;
-   int yn;
-  
-   char name[NAMESIZE];
-   int index;
-   
-   int vol=0;
-   
-   int cik3, cik2,cik1, cimom1,cimom2,counter,r1,r2,cr1,cr2;
-  
-   
-   
-   print_file_head(m_pcac); 
-   
-   
-   double **mass_jack_fit,**f_PS_jack_fit,**Zf_PS_jack_fit, **oPp_jack_fit,**RA_jack_fit,**RV_jack_fit,**RA_autoplateaux_jack_fit,**RV_autoplateaux_jack_fit;
-   double **FA_jack_fit,**FV_jack_fit,**kp,**xG,**FAp_jack_fit,**FA_autoplateaux_jack_fit,**FV_autoplateaux_jack_fit;
-   double **H_H0,**H_H0_autoplateaux,**HmH0,**HmH0_autoplateaux,**HmH0_HA,**FA_from_H0_jack_fit,**FA_from_H0_autoplateaux_jack_fit,**FV_from_H0_jack_fit,**FV_from_H0_HA_jack_fit;
-   double **FV_from_H0_autoplateaux_jack_fit;
-   double **FAxg_jack_fit,**FVxg_jack_fit;
-   double **fp_mx;
-   mass_jack_fit=      (double**) malloc(sizeof(double*)*sizePP/file_head.l0);
-   oPp_jack_fit=      (double**) malloc(sizeof(double*)*sizePP/file_head.l0);
-   f_PS_jack_fit= (double**) malloc(sizeof(double*)*sizePP/file_head.l0);
-   Zf_PS_jack_fit= (double**) malloc(sizeof(double*)*sizePP/file_head.l0);
+   double **mass_jack_fit=      (double**) malloc(sizeof(double*)*header.ncomb*header.nqsml);
 
-   RA_jack_fit= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   H_H0= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   H_H0_autoplateaux= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   HmH0= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   HmH0_autoplateaux= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   HmH0_HA= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   FAp_jack_fit= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   RA_autoplateaux_jack_fit= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   FA_autoplateaux_jack_fit= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   FA_jack_fit= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   kp= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   xG= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   fp_mx= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
+   for(int smearing=0; smearing<header.nqsml; smearing++){
+      if(smearing==0) 
+          mysprintf(namefile,NAMESIZE,"M_{PS}^{ll}");
+      if(smearing==1) 
+          mysprintf(namefile,NAMESIZE,"M_{PS}^{s_1l}");
 
-   
-   RV_jack_fit= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   FV_jack_fit= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   RV_autoplateaux_jack_fit= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   FV_autoplateaux_jack_fit= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-
-   r=(double**) malloc(sizeof(double*)*file_head.l0);
-   
-   FAxg_jack_fit= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   FA_from_H0_jack_fit= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   FA_from_H0_autoplateaux_jack_fit= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   FV_from_H0_jack_fit= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   FV_from_H0_autoplateaux_jack_fit= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   FV_from_H0_HA_jack_fit= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-
-   
-
-   FVxg_jack_fit= (double**) malloc(sizeof(double*)*sizePP*file_head.nmoms/file_head.l0);
-   
-   for(i=0;i<file_head.l0;i++)
-       r[i]=(double*) malloc(sizeof(double)*Njack);
-
- double a ,b;
-  
-   
-   //M=calloc_corr(file_head.l0, Njack,  var );
-   //vec=calloc_corr(file_head.l0, Njack,  var );
-  // lambda=calloc_corr(file_head.l0, Njack,  var );
- t1=clock();       a=timestamp();
- 
- 
-//   for (ii=0;ii<si_2pt;ii++){
-  
-   for(ik1=0;ik1<1;ik1++){     //for(ik1=0;ik1<=ik2;ik1++){
-        if ( strcmp(argv[1],"read_plateaux")==0 ){
-            go_to_line(plateaux_masses,ik1);
-            go_to_line(plateaux_f,ik1); 
-            go_to_line(plateaux_RA,ik1);
-            go_to_line(plateaux_RV,ik1);
-        }
-   for(ik2=0;ik2<file_head.nk;ik2++){
-   for(imom2=0;imom2<file_head.nmoms;imom2++){
-   for(imom1=0;imom1<file_head.nmoms;imom1++){
-       
-       /*
-       cr2=index_n_minus_r(r2);
-       cr1=index_n_minus_r(r1);
-       cimom1=index_n_minus_theta(imom1);
-       cimom2=index_n_minus_theta(imom2);
+   for(int icomb=0; icomb<header.ncomb; icomb++){
+      get_kinematic(header.comb[icomb]);
+      get_kinematic_G(header, icomb);
       
- 
-       for (i=0;i<confs;i++){
-          read_twopt(oPPo,sizePP,i ,data[i][0],1,0,ik1,ik2,imom1,imom2 );
-          read_twopt(oAmuPo,sizeAmuP,i ,data[i][1],4,0,ik1,ik2 ,imom1,imom2);
-          read_twopt(oAmuPo,sizeAmuP,i ,data[i][2],4,1,ik1,ik2 ,imom1,imom2 );
-          read_twopt(oAmuPo,sizeAmuP,i ,data[i][3],4,2,ik1,ik2 ,imom1,imom2 );
-          read_twopt(oAmuPo,sizeAmuP,i ,data[i][4],4,3,ik1,ik2 ,imom1,imom2 );
-
-          read_twopt(oVVo,sizeVV,i ,data[i][5],4,0,ik1,ik2,imom1,imom2 );
-    
-       }
-       symmetrise_corr(confs, 0, file_head.l0,data);
-       antisymmetrise_corr(confs, 1, file_head.l0,data);
- 
-       data_bin=binning(confs, var*var, file_head.l0 ,data, bin);
-
-       if( strcmp(argv[4],"jack")==0)
-       conf_jack=create_jack(Neff, var*var, file_head.l0, data_bin);
-       if( strcmp(argv[4],"boot")==0)
-       conf_jack=create_boot(Neff,Nboot, var*var, file_head.l0, data_bin);
-       
-   
-printf("here\n");
-       i=index_n_twopt_fit(ik1,ik2,imom1,imom2);
-       get_kinematic( ik1,  ik2,imom1,  imom2 );
-       
-    
-       if( strcmp(argv[4],"jack")==0){
-            mass_jack_fit[i]=compute_effective_mass(  argv, kinematic_2pt, (char*) "oPPo", conf_jack,  Njack ,plateaux_masses,outfile ,0);
-            oPp_jack_fit[i]=compute_oPp_ll(  argv, kinematic_2pt,  (char*) "oPp", conf_jack, mass_jack_fit[i],  Njack ,plateaux_masses,outfile_oPp );
-            Zf_PS_jack_fit[i]=compute_Zf_PS_ll(  argv, kinematic_2pt,  (char*) "oPPo", conf_jack, mass_jack_fit[i],  Njack ,plateaux_f,outfile_Zf );
-            f_PS_jack_fit[i]=compute_f_PS_ll(  argv, kinematic_2pt,  (char*) "oAmuPo", conf_jack, mass_jack_fit[i],  Njack ,plateaux_f,outfile_f );
-       } 
-       if( strcmp(argv[4],"boot")==0){
-            mass_jack_fit[i]=compute_effective_mass(  argv, kinematic_2pt, (char*) "oPPo", conf_jack,  Nboot+1 ,plateaux_masses,outfile ,0);
-            oPp_jack_fit[i]=compute_oPp_ll(  argv, kinematic_2pt,  (char*) "oPp", conf_jack, mass_jack_fit[i],  Nboot+1 ,plateaux_masses,outfile_oPp );
-            Zf_PS_jack_fit[i]=compute_Zf_PS_ll(  argv, kinematic_2pt,  (char*) "oPPo", conf_jack, mass_jack_fit[i],  Nboot+1 ,plateaux_f,outfile_Zf );
-            f_PS_jack_fit[i]=compute_f_PS_ll(  argv, kinematic_2pt,  (char*) "oAmuPo", conf_jack, mass_jack_fit[i],  Nboot+1 ,plateaux_f,outfile_f );
-       }
-      
-       
-       free_corr(Neff, var*var, file_head.l0 ,data_bin);
-       free_jack(Njack,var*var , file_head.l0, conf_jack);
-        */
-    }}  }} //end loop  ik1 ik2 imom2 imom1
-
-     
-
-     t2=clock();       b=timestamp();
-
-       dt=(double)(t2-t1)/(double)(CLOCKS_PER_SEC);
-  printf("time to read clock %f, real  %f\n",dt,b-a);
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////     
-///////////////////real photon        
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
-     t1=clock();
-      data=       calloc_corr(confs, var,  file_head.l0 );
-  sym=(int*) malloc(sizeof(int)*var);
-  int ikt,iks,imom0,imomt,imoms;   
-  int i_m;
-  double go;
-  FILE *f_ODE=NULL;
-  for(iks=ks_min;iks<ks_max;iks++){
-  for(ikt=kt_min;ikt<kt_max;ikt++){     
-   for(imoms=0;imoms<file_head.nmoms;imoms++){
-   for(imomt=0;imomt<file_head.nmoms;imomt++){
-   for(imom0=0;imom0<file_head.nmoms;imom0++){       
-       
-     a=timestamp();  
-        if(imomt==0){  
-            for (i=0;i<confs;i++){
-               read_twopt(oPPo,sizePP,i ,data[i][0],1,0,ikt,iks,imom0,imoms );
-               read_twopt(oAmuPo,sizeAmuP,i ,data[i][1],4,0,ikt,iks ,imom0,imoms);
-           
-                    
-            }
-        }
-       
-      
-       for (i=0;i<confs;i++){
-       //   read_twopt(oPPo,sizePP,i ,data[i][0],1,0,ikt,iks,imom0,imoms );
-              read_twopt_gamma(oAmuGPo,sizeAmuGP,i ,data[i][2],"oAmuGPo",8,ikt,iks,imom0,imomt,imoms ); sym[2]=0;
-              read_twopt_gamma(oAmuGPo,sizeAmuGP,i ,data[i][4],"oAmuGPo",8,ikt,iks,imom0,imom0,imoms ); sym[4]=0;
-   //if(ikt==0) if (iks==0)  if (imomt==0) if (imoms==0) printf("%g   %g\n",data[i][0][0][0],data[i][0][0][1]);
-              read_twopt_gamma_jr(oAmuGPo,sizeAmuGP,i ,data[i][6],"oAmuGPo",8,ikt,iks,imom0,imomt,imoms,1 ); sym[6]=0;
-              read_twopt_gamma_jr(oAmuGPo,sizeAmuGP,i ,data[i][7],"oAmuGPo",8,ikt,iks,imom0,imomt,imoms,2 ); sym[7]=0;
-              read_twopt_gamma_jr(oAmuGPo,sizeAmuGP,i ,data[i][8],"oAmuGPo",8,ikt,iks,imom0,imomt,imoms,5 ); sym[8]=0;
-              read_twopt_gamma_jr(oAmuGPo,sizeAmuGP,i ,data[i][9],"oAmuGPo",8,ikt,iks,imom0,imomt,imoms,6 ); sym[9]=0;
-              
-              read_twopt_gamma_jr(oAmuGPo,sizeAmuGP,i ,data[i][10],"oAmuGPo",8,ikt,iks,imom0,imom0,imoms,1 ); sym[10]=0;
-              read_twopt_gamma_jr(oAmuGPo,sizeAmuGP,i ,data[i][11],"oAmuGPo",8,ikt,iks,imom0,imom0,imoms,2 ); sym[11]=0;
-              read_twopt_gamma_jr(oAmuGPo,sizeAmuGP,i ,data[i][12],"oAmuGPo",8,ikt,iks,imom0,imom0,imoms,5 ); sym[12]=0;
-              read_twopt_gamma_jr(oAmuGPo,sizeAmuGP,i ,data[i][13],"oAmuGPo",8,ikt,iks,imom0,imom0,imoms,6 ); sym[13]=0;
-
-       }
-      
-
-      
-        for (i=0;i<confs;i++){
-            read_twopt_gamma(oVmuGPo,sizeVmuGP,i ,data[i][3],"oVmuGPo",8,ikt,iks,imom0,imomt,imoms ); sym[3]=1;
-            read_twopt_gamma(oVmuGPo,sizeVmuGP,i ,data[i][5],"oVmuGPo",8,ikt,iks,imom0,imom0,imoms ); sym[5]=1;
-            
-            read_twopt_gamma_jr(oVmuGPo,sizeVmuGP,i ,data[i][14],"oVmuGPo",8,ikt,iks,imom0,imomt,imoms,1 ); sym[14]=1;
-            read_twopt_gamma_jr(oVmuGPo,sizeVmuGP,i ,data[i][15],"oVmuGPo",8,ikt,iks,imom0,imomt,imoms,2 ); sym[15]=1;
-            read_twopt_gamma_jr(oVmuGPo,sizeVmuGP,i ,data[i][16],"oVmuGPo",8,ikt,iks,imom0,imomt,imoms,5 ); sym[16]=1;
-            read_twopt_gamma_jr(oVmuGPo,sizeVmuGP,i ,data[i][17],"oVmuGPo",8,ikt,iks,imom0,imomt,imoms,6 ); sym[17]=1;
-              
-            read_twopt_gamma_jr(oVmuGPo,sizeVmuGP,i ,data[i][18],"oVmuGPo",8,ikt,iks,imom0,imom0,imoms,1 ); sym[18]=1;
-            read_twopt_gamma_jr(oVmuGPo,sizeVmuGP,i ,data[i][19],"oVmuGPo",8,ikt,iks,imom0,imom0,imoms,2 ); sym[19]=1;
-            read_twopt_gamma_jr(oVmuGPo,sizeVmuGP,i ,data[i][20],"oVmuGPo",8,ikt,iks,imom0,imom0,imoms,5 ); sym[20]=1;
-            read_twopt_gamma_jr(oVmuGPo,sizeVmuGP,i ,data[i][21],"oVmuGPo",8,ikt,iks,imom0,imom0,imoms,6 ); sym[21]=1;
-            
-        }
-        b=timestamp();
-        printf("time=%f\n",b-a);
-        
-        
-     //   read_twoptgamma_Nconfs(oAmuGPo,sizeAmuGP,confs,0 ,data,8,1,ikt,iks,imom0,imomt,imoms );
-     //   read_twoptgamma_Nconfs(oVmuGPo,sizeVmuGP,confs,1 ,data,8,1,ikt,iks,imom0,imomt,imoms );
-
-       symmetrise_corr(confs, 0, file_head.l0,data);
-
-       if(imomt==0){  
-           antisymmetrise_corr(confs, 1, file_head.l0,data);
-           symmetric_derivative_corr(confs, 1, file_head.l0,data);
-           //forward_derivative_corr(confs, 1, file_head.l0,data);
-       }
-       symmetrise_corr(confs, 2, file_head.l0,data);
-       symmetrise_corr(confs, 4, file_head.l0,data);
-       antisymmetrise_corr(confs, 3, file_head.l0,data);
-       antisymmetrise_corr(confs, 5, file_head.l0,data);
-       
-       
-       data_bin=binning(confs, var, file_head.l0 ,data, bin);
-       conf_jack=create_jack(Neff, var, file_head.l0, data_bin);
-
-       
-       i=index_n_twopt_fit(ikt,iks,imom0,imoms);       
-       i_m=index_n_twopt_fit(ikt,iks,0,0);      
-       get_kinematic( ikt,  iks,imom0,  imoms );
-       
-       get_kinematic_G( ikt,  iks,imom0,imomt,  imoms );
-       iG=index_n_twopt_G_fit(ikt,iks,imom0,imomt,imoms);
-       /*
-       if (ikt==0 && iks==0){
-           mysprintf(namefile,NAMESIZE,"%s/data_ODE/oAmuGPo-pion-mom0%d-momt%d-moms%d",argv[3],imom0,imomt,imoms);
-           f_ODE=open_file(namefile,"w+");
-                for (j=0;j<Njack;j++){
-                    for (t=0;t<file_head.l0;t++){
-                        fprintf(f_ODE,"%d   %.15g\n",t,conf_jack[j][2][t][0]);
-                    }
-                }
-           fclose(f_ODE);    
-           mysprintf(namefile,NAMESIZE,"%s/data_ODE/oVmuGPo-pion-mom0%d-momt%d-moms%d",argv[3],imom0,imomt,imoms);
-           f_ODE=open_file(namefile,"w+");
-                for (j=0;j<Njack;j++){
-                    for (t=0;t<file_head.l0;t++){
-                        fprintf(f_ODE,"%d   %.15g\n",t,conf_jack[j][3][t][1]);
-                    }
-                }
-           fclose(f_ODE);   
-           if(imomt==0){ 
-                mysprintf(namefile,NAMESIZE,"%s/data_ODE/oP5P5o-pion-mom0%d-moms%d",argv[3],imom0,imoms);
-                f_ODE=open_file(namefile,"w+");
-                        for (j=0;j<Njack;j++){
-                            for (t=0;t<file_head.l0;t++){
-                                fprintf(f_ODE,"%d   %.15g\n",t,conf_jack[j][0][t][0]);
-                            }
-                        }
-                fclose(f_ODE);
-           }
-       }
-       if (ikt==3 && iks==1){
-           mysprintf(namefile,NAMESIZE,"%s/data_ODE/oAmuGPo-Ds%d-%d-mom0%d-momt%d-moms%d",argv[3],ikt,iks,imom0,imomt,imoms);
-           f_ODE=open_file(namefile,"w+");
-                for (j=0;j<Njack;j++){
-                    for (t=0;t<file_head.l0;t++){
-                        fprintf(f_ODE,"%d   %.15g\n",t,conf_jack[j][2][t][0]);
-                    }
-                }
-           fclose(f_ODE);     
-           mysprintf(namefile,NAMESIZE,"%s/data_ODE/oVmuGPo-Ds%d-%d-mom0%d-momt%d-moms%d",argv[3],ikt,iks,imom0,imomt,imoms);
-           f_ODE=open_file(namefile,"w+");
-                for (j=0;j<Njack;j++){
-                    for (t=0;t<file_head.l0;t++){
-                        fprintf(f_ODE,"%d   %.15g\n",t,conf_jack[j][3][t][1]);
-                    }
-                }
-           fclose(f_ODE);   
-           if(imomt==0){ 
-                mysprintf(namefile,NAMESIZE,"%s/data_ODE/oP5P5o-Ds%d-%d-mom0%d-moms%d",argv[3],ikt,iks,imom0,imoms);
-                f_ODE=open_file(namefile,"w+");
-                        for (j=0;j<Njack;j++){
-                            for (t=0;t<file_head.l0;t++){
-                                fprintf(f_ODE,"%d   %.15g\n",t,conf_jack[j][0][t][0]);
-                            }
-                        }
-                fclose(f_ODE);
-           }
-       }
-       
-       if (ikt==3 && iks==0){
-           mysprintf(namefile,NAMESIZE,"%s/data_ODE/oAmuGPo-D%d-%d-mom0%d-momt%d-moms%d",argv[3],ikt,iks,imom0,imomt,imoms);
-           f_ODE=open_file(namefile,"w+");
-                for (j=0;j<Njack;j++){
-                    for (t=0;t<file_head.l0;t++){
-                        fprintf(f_ODE,"%d   %.15g\n",t,conf_jack[j][2][t][0]);
-                    }
-                }
-           fclose(f_ODE);     
-           mysprintf(namefile,NAMESIZE,"%s/data_ODE/oVmuGPo-D%d-%d-mom0%d-momt%d-moms%d",argv[3],ikt,iks,imom0,imomt,imoms);
-           f_ODE=open_file(namefile,"w+");
-                for (j=0;j<Njack;j++){
-                    for (t=0;t<file_head.l0;t++){
-                        fprintf(f_ODE,"%d   %.15g\n",t,conf_jack[j][3][t][1]);
-                    }
-                }
-           fclose(f_ODE);   
-           if(imomt==0){ 
-                mysprintf(namefile,NAMESIZE,"%s/data_ODE/oP5P5o-D%d-%d-mom0%d-moms%d",argv[3],ikt,iks,imom0,imoms);
-                f_ODE=open_file(namefile,"w+");
-                        for (j=0;j<Njack;j++){
-                            for (t=0;t<file_head.l0;t++){
-                                fprintf(f_ODE,"%d   %.15g\n",t,conf_jack[j][0][t][0]);
-                            }
-                        }
-                fclose(f_ODE);
-           }
-       }*/
-       if(imomt==0){  
-            mass_jack_fit[i]=compute_effective_mass(  argv, kinematic_2pt, (char*) "oPPo", conf_jack,  Njack ,&plateaux_masses,outfile ,0, "M_{PS}^{ll}");
-            oPp_jack_fit[i]=compute_oPp_ll(  argv, kinematic_2pt,  (char*) "oPp", conf_jack, mass_jack_fit[i],  Njack ,plateaux_masses,outfile_oPp );
-            Zf_PS_jack_fit[i]=compute_Zf_PS_ll(  argv, kinematic_2pt,  (char*) "oPPo", conf_jack, mass_jack_fit[i],  Njack ,plateaux_masses,outfile_Zf );// !!!!!Zf_PS=(mu1+mu2) oPp/M^2 anche ad impulso diverso da zero  !!! da correggere
-            f_PS_jack_fit[i]=compute_f_PS_ll(  argv, kinematic_2pt,  (char*) "oAmuPo", conf_jack, mass_jack_fit[i], oPp_jack_fit[i] ,Njack ,plateaux_f,outfile_f );
-       }
-
-      // RA_jack_fit[iG]=compute_CAmur(  argv, kinematic_2pt_G,  (char*) "oAmuGPo", conf_jack ,  Njack ,plateaux_f,outfile_CA ,1,sym);
-       RA_jack_fit[iG]=compute_Rmur(  argv, kinematic_2pt_G,  (char*) "oAmuGPo", conf_jack, mass_jack_fit[i],  mass_jack_fit[i_m],   oPp_jack_fit[i] ,  Njack ,plateaux_RA,outfile_RA ,2,sym);
-       H_H0[iG]=H_over_H0(  argv, kinematic_2pt_G,  (char*) "H_H0_A", conf_jack,  mass_jack_fit[i],  mass_jack_fit[i_m],   oPp_jack_fit[i],  Njack ,plateaux_H_H0_A,outfile_H_H0_A ,2,sym);
-
-       RA_autoplateaux_jack_fit[iG]=compute_Rmur_auto_plateau(  argv, kinematic_2pt_G,  (char*) "oAmuGPo", conf_jack, mass_jack_fit[i],  mass_jack_fit[i_m],   oPp_jack_fit[i] ,  Njack ,plateaux_RA,outfile_RA_autoplateaux ,2,sym);
-       H_H0_autoplateaux[iG]=H_over_H0_autoplateaux(  argv, kinematic_2pt_G,  (char*) "H_H0_A", conf_jack, mass_jack_fit[i],  mass_jack_fit[i_m],   oPp_jack_fit[i] ,  Njack ,plateaux_RA,outfile_H_H0_A_autoplateaux ,2,sym);
-
-      //RA_jack_fit[iG]=compute_Rmur_from_meff(  argv, kinematic_2pt_G,  (char*) "oAmuGPo", conf_jack, mass_jack_fit[i],  mass_jack_fit[i_m], Njack ,plateaux_RA,outfile_RA ,2,sym);
-           
-       //RA_jack_fit[iG]=compute_Rmur_from_meff(  argv, kinematic_2pt_G,  (char*) "oAmuGPo", conf_jack,   Njack ,plateaux_f,outfile_RA ,1,sym);
-      // HA_jack_fit[iG]=compute_Rmur_from_meff(  argv, kinematic_2pt_G,  (char*) "oAmuGPo", conf_jack,   Njack ,plateaux_f,outfile_RA ,1,sym);
-
-       
-       RV_jack_fit[iG]=compute_Rmur(  argv, kinematic_2pt_G,  (char*) "oVmuGPo", conf_jack, mass_jack_fit[i],  mass_jack_fit[i_m],   oPp_jack_fit[i] ,  Njack ,plateaux_RV,outfile_RV, 3,sym);
-       RV_autoplateaux_jack_fit[iG]=compute_Rmur_auto_plateau(  argv, kinematic_2pt_G,  (char*) "oVmuGPo", conf_jack, mass_jack_fit[i],  mass_jack_fit[i_m],   oPp_jack_fit[i] ,  Njack ,plateaux_RV,outfile_RV_autoplateaux, 3,sym);
-       // RV_jack_fit[iG]=compute_Rmur_from_meff(  argv, kinematic_2pt_G,  (char*) "oVmuGPo", conf_jack, mass_jack_fit[i],  mass_jack_fit[i_m], Njack ,plateaux_RV,outfile_RV ,3,sym);
-       HmH0[iG]=H_minus_H0(  argv, kinematic_2pt_G,  (char*) "HmH0_V", conf_jack,  mass_jack_fit[i],  mass_jack_fit[i_m],   oPp_jack_fit[i],  Njack ,plateaux_RV,outfile_HmH0_V ,3,sym);
-       HmH0_autoplateaux[iG]=H_minus_H0_autoplateaux(  argv, kinematic_2pt_G,  (char*) "oVmuGPo", conf_jack, mass_jack_fit[i],  mass_jack_fit[i_m],   oPp_jack_fit[i] ,  Njack ,plateaux_RV,outfile_HmH0_V_autoplateaux ,3,sym);
-
-       HmH0_HA[iG]=H_minus_H0_HA(  argv, kinematic_2pt_G,  (char*) "HmH0_HA_V", conf_jack,  mass_jack_fit[i],  mass_jack_fit[i_m],   oPp_jack_fit[i],Zf_PS_jack_fit[i_m],  Njack ,plateaux_RV,outfile_HmH0_V_HA ,3,sym);
-
-       
-       free_corr(Neff, var, file_head.l0 ,data_bin);
-       free_jack(Njack,var , file_head.l0, conf_jack);
-       
-   }}}}} //end loop  ikt iks imom0 imomt imoms
-   
-   free_corr(confs, var,  file_head.l0 ,data);
-   fclose(outfile);     fclose(outfile_oPp);      fclose(outfile_Zf);     fclose(outfile_f);
-printf("here\n");
-
-       t2=clock();
-       dt=(double)(t2-t1)/(double)(CLOCKS_PER_SEC);
-       printf("time to read clock %f, real  %f\n",dt,b-a);
-
-       
-   double HA,ecurlp,ecurlk;
-
-       
-       
-        fprintf(outfile_RA_vs_kp,"#k\\cdot p      RA    err\n");
-   for(iks=ks_min;iks<ks_max;iks++){
-   for(ikt=kt_min;ikt<kt_max;ikt++){     
-      if ( strcmp(argv[1],"read_plateaux")==0 ){
-            go_to_line(plateaux_masses,ik1);
-            go_to_line(plateaux_f,ik1); 
-            go_to_line(plateaux_RA,ik1);
-            go_to_line(plateaux_RV,ik1);
-        }
-   fprintf(outfile_FV_vs_kp,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   fprintf(outfile_FV_vs_kp_exclude,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   fprintf(outfile_FA_vs_kp,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   fprintf(outfile_RA_vs_kp,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   fprintf(outfile_FAp1_vs_kp,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   fprintf(outfile_FAp1_vs_kp_exclude,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   fprintf(outfile_FAoverFP,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-
-   fprintf(outfile_RA_POS_wuhan,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-
-   fprintf(outfile_FAxg,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   fprintf(outfile_FVxg,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   
-   fprintf(outfile_FA_from_H0,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   fprintf(outfile_FA_from_H0_autoplateaux,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   fprintf(outfile_FV_from_H0,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   fprintf(outfile_FV_from_H0_autoplateaux,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   fprintf(outfile_FV_from_H0_HA,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-
-   
-   fprintf(outfile_FA_autoplateaux_vs_kp,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   fprintf(outfile_FV_autoplateaux_vs_kp,"#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-
-   for(imoms=0;imoms<file_head.nmoms;imoms++){
-   for(imomt=0;imomt<file_head.nmoms;imomt++){
-   for(imom0=0;imom0<file_head.nmoms;imom0++){       
-  
-        i=index_n_twopt_fit(ikt,iks,imom0,imoms);       
-        i_m=index_n_twopt_fit(ikt,iks,0,0);       
-        iG=index_n_twopt_G_fit(ikt,iks,imom0,imomt,imoms);
-        
-        get_kinematic_G( ikt,  iks,imom0,imomt,  imoms );
-         
-       
-       
-       /*FA*/
-       FA_jack_fit[iG]=(double*) malloc(sizeof(double)*Njack);
-       FA_autoplateaux_jack_fit[iG]=(double*) malloc(sizeof(double)*Njack);
-       kp[iG]=         (double*) malloc(sizeof(double)*Njack);
-       xG[iG]=         (double*) malloc(sizeof(double)*Njack);
-       fp_mx[iG]=         (double*) malloc(sizeof(double)*Njack);
-       double *ave,sign,*ave1;
-       for(j=0;j<Njack;j++){
-            sign=RA_jack_fit[iG][j]/fabs(RA_jack_fit[iG][j]);
-            FA_jack_fit[iG][j]=RA_jack_fit[iG][j]+sign*f_PS_jack_fit[i][j]*kinematic_2pt_G.eps1[1];
-            kp[iG][j]=(mass_jack_fit[i][j]*kinematic_2pt_G.E_g)- kinematic_2pt_G.kp;
-            //kp[iG][j]=(0.5.*sinh(mass_jack_fit[i][j]*2)*kinematic_2pt_G.E_g)- kinematic_2pt_G.kp;
-            //kp[iG][j]=(sqrt(mass_jack_fit[i_m][j]*mass_jack_fit[i_m][j]+kinematic_2pt_G.p[3]*kinematic_2pt_G.p[3]  )*kinematic_2pt_G.E_g)- kinematic_2pt_G.kp;
-            xG[iG][j]=2*kp[iG][j]/(mass_jack_fit[i_m][j]*mass_jack_fit[i_m][j]);
-            FA_jack_fit[iG][j]=FA_jack_fit[iG][j]*mass_jack_fit[i_m][j]/(-kp[iG][j]*kinematic_2pt_G.eps1[1]);
-            fp_mx[iG][j]=2*Zf_PS_jack_fit[i_m][j]/( mass_jack_fit[i_m][j]  *xG[iG][j]);
-            
-            sign=RA_autoplateaux_jack_fit[iG][j]/fabs(RA_autoplateaux_jack_fit[iG][j]);
-            FA_autoplateaux_jack_fit[iG][j]=RA_autoplateaux_jack_fit[iG][j]+sign*f_PS_jack_fit[i][j]*kinematic_2pt_G.eps1[1];
-            FA_autoplateaux_jack_fit[iG][j]=FA_autoplateaux_jack_fit[iG][j]*mass_jack_fit[i_m][j]/(-kp[iG][j]*kinematic_2pt_G.eps1[1]);
-
-       }
-      
-        ave1=mean_and_error_jack(Njack, fp_mx[iG]);
-        ave=mean_and_error_jack(Njack, xG[iG]);
-        if( strcmp(argv[4],"jack")==0)
-               m=mean_and_error_jack(Njack, RA_jack_fit[iG]);
-         if( strcmp(argv[4],"boot")==0)
-               m=mean_and_error_boot(Njack, RA_jack_fit[iG]); 
-       
-       fprintf(outfile_RA_vs_kp,"%g     %g     %g \n",ave[0],m[0],m[1] );
-       free(m);
-       
-       
-       
-       if( strcmp(argv[4],"jack")==0)
-               m=mean_and_error_jack(Njack, FA_jack_fit[iG]);
-       if( strcmp(argv[4],"boot")==0)
-               m=mean_and_error_boot(Njack, FA_jack_fit[iG]); 
-       fprintf(outfile_FA_vs_kp,"%g   %g    %g     %g \n",ave[0],ave[1],m[0],m[1] );
-       free(m);
-
-       write_jack_bin(Njack,FA_jack_fit[iG],file_jack.FA);
-
-       m=mean_and_error(argv[4],Njack, FA_autoplateaux_jack_fit[iG]); 
-
-       fprintf(outfile_FA_autoplateaux_vs_kp,"%g   %g    %g     %g \n",ave[0],ave[1],m[0],m[1] );
-       free(m);
-       write_jack_bin(Njack,FA_autoplateaux_jack_fit[iG],file_jack.FA_autoplateaux);
-
-       
-       
-/////////////////////////////////////////////////////////////////////////////////////////////
-       ////////////////////////////////////////////
-       FAp_jack_fit[iG]=(double*) malloc(sizeof(double)*Njack);
-
-       for(j=0;j<Njack;j++){
-            //FAp_jack_fit[iG][j]=-RA_jack_fit[iG][j]/(kinematic_2pt_G.eps1[1] );
-            //FAp_jack_fit[iG][j]=FAp_jack_fit[iG][j]*mass_jack_fit[i_m][j]/(kp[iG][j]);
-            FAp_jack_fit[iG][j]=(H_H0[iG][j]-1.)*mass_jack_fit[i_m][j]/(kp[iG][j]);
-            FAp_jack_fit[iG][j]=FAp_jack_fit[iG][j]*Zf_PS_jack_fit[i_m][j];
-            FAp_jack_fit[iG][j]+=fp_mx[iG][j];
-       }
-      
-       if( strcmp(argv[4],"jack")==0)
-               m=mean_and_error_jack(Njack, FAp_jack_fit[iG]);
-       if( strcmp(argv[4],"boot")==0)
-               m=mean_and_error_boot(Njack, FAp_jack_fit[iG]); 
-      
-       fprintf(outfile_RA_POS_wuhan,"%g   %g    %g     %g    %g    %g \n",ave[0],ave[1],m[0],m[1],ave1[0],ave1[1] );
-       free(m);
-
-       
-/////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////
-       /*FA x_g/2 +f_p*/
-
-       for(j=0;j<Njack;j++){
-            FAp_jack_fit[iG][j]=-RA_jack_fit[iG][j]/(kinematic_2pt_G.eps1[1] );// * f_PS_jack_fit[i][j]);
-       
-       }
-      
-      
-       if( strcmp(argv[4],"jack")==0)
-               m=mean_and_error_jack(Njack, FAp_jack_fit[iG]);
-       if( strcmp(argv[4],"boot")==0)
-               m=mean_and_error_boot(Njack, FAp_jack_fit[iG]); 
-       fprintf(outfile_FAoverFP,"%g   %g    %g     %g \n",ave[0],ave[1],m[0],m[1] );
-       write_jack_bin(Njack,FAp_jack_fit[iG],file_jack.FAp);
-       fprintf(outfile_FAp1_vs_kp,"%g   %g    %g     %g \n",ave[0],ave[1],m[0],m[1] );
-       if ( abs(imom0- imoms)<pdiffmax ){
-             if ( abs(imomt- imoms)<pdiffmax ){
-
-       		 write_jack_bin(Njack,FA_jack_fit[iG],file_jack.FAp1_exclude);
-		//fprintf(outfile_FAp1_vs_kp_exclude,"#mu1=%g   #mu2=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-       		 fprintf(outfile_FAp1_vs_kp_exclude,"%g   %g    %g     %g \n",ave[0],ave[1],m[0],m[1] );
-             }
-       }
-       
-       free(m);
-       
-       
-////////////////FA*xG 
-       
-       FAxg_jack_fit[iG]=(double*) malloc(sizeof(double)*Njack);
-
-       for(j=0;j<Njack;j++){
-
-            sign=RA_jack_fit[iG][j]/fabs(RA_jack_fit[iG][j]);
-            FAxg_jack_fit[iG][j]=RA_jack_fit[iG][j]+sign*f_PS_jack_fit[i][j]*kinematic_2pt_G.eps1[1];
-            FAxg_jack_fit[iG][j]=FAxg_jack_fit[iG][j]*2/(-kinematic_2pt_G.eps1[1]*mass_jack_fit[i_m][j]);
-            //   FAxg_jack_fit[iG][j]=FA_jack_fit[iG][j]*xG[iG][j];
-        }
-        
-           
-       if( strcmp(argv[4],"jack")==0)
-               m=mean_and_error_jack(Njack, FAxg_jack_fit[iG]);
-       if( strcmp(argv[4],"boot")==0)
-               m=mean_and_error_boot(Njack, FAxg_jack_fit[iG]); 
-       fprintf(outfile_FAxg,"%g   %g    %g     %g \n",ave[0],ave[1],m[0],m[1] );
-       
-       free(m);
-
-////////////////// H/H0-1
-       FA_from_H0_jack_fit[iG]=(double*) malloc(sizeof(double)*Njack);
-       iG0=index_n_twopt_G_fit(ikt,iks,imom0,imom0,imoms);
-
-       for(j=0;j<Njack;j++){
-
-            FA_from_H0_jack_fit[iG][j]=(H_H0[iG][j]-1.)*mass_jack_fit[i_m][j]/(kp[iG][j]);
-            FA_from_H0_jack_fit[iG][j]=FA_from_H0_jack_fit[iG][j]*Zf_PS_jack_fit[i_m][j];
-        }
-       if( strcmp(argv[4],"jack")==0)
-               m=mean_and_error_jack(Njack, FA_from_H0_jack_fit[iG]);
-       if( strcmp(argv[4],"boot")==0)
-               m=mean_and_error_boot(Njack, FA_from_H0_jack_fit[iG]); 
-       fprintf(outfile_FA_from_H0,"%g   %g    %g     %g   \t\t %g    %g \n",ave[0],ave[1],m[0],m[1],kinematic_2pt_G.p[3],kinematic_2pt_G.k[3] );
-       
-       write_jack_bin(Njack,FA_from_H0_jack_fit[iG],file_jack.FA_from_H0);
-
-       free(m);
-       
-       ////////////////// H/H0-1
-       FA_from_H0_autoplateaux_jack_fit[iG]=(double*) malloc(sizeof(double)*Njack);
-       iG0=index_n_twopt_G_fit(ikt,iks,imom0,imom0,imoms);
-
-       for(j=0;j<Njack;j++){
-
-            FA_from_H0_autoplateaux_jack_fit[iG][j]=(H_H0_autoplateaux[iG][j]-1.)*mass_jack_fit[i_m][j]/(kp[iG][j]);
-            FA_from_H0_autoplateaux_jack_fit[iG][j]=FA_from_H0_autoplateaux_jack_fit[iG][j]*Zf_PS_jack_fit[i_m][j];
-        }
-       if( strcmp(argv[4],"jack")==0)
-               m=mean_and_error_jack(Njack, FA_from_H0_autoplateaux_jack_fit[iG]);
-       if( strcmp(argv[4],"boot")==0)
-               m=mean_and_error_boot(Njack, FA_from_H0_autoplateaux_jack_fit[iG]); 
-       fprintf(outfile_FA_from_H0_autoplateaux,"%g   %g    %g     %g   \t\t %g    %g \n",ave[0],ave[1],m[0],m[1],kinematic_2pt_G.p[3],kinematic_2pt_G.k[3] );
-       
-       write_jack_bin(Njack,FA_from_H0_autoplateaux_jack_fit[iG],file_jack.FA_from_H0_autoplateaux);
-
-       free(m);
-
-///////////////////       /*FV*//////////////////// /////////////////// /////////////////// 
-       FV_jack_fit[iG]=(double*) malloc(sizeof(double)*Njack);
-       FV_from_H0_jack_fit[iG]=(double*) malloc(sizeof(double)*Njack);
-       FV_from_H0_autoplateaux_jack_fit[iG]=(double*) malloc(sizeof(double)*Njack);
-       FV_from_H0_HA_jack_fit[iG]=(double*) malloc(sizeof(double)*Njack);
-       FV_autoplateaux_jack_fit[iG]=(double*) malloc(sizeof(double)*Njack);
-       
-       for(j=0;j<Njack;j++){
-            
-            FV_jack_fit[iG][j]=-RV_jack_fit[iG][j]*mass_jack_fit[i_m][j];
-            FV_jack_fit[iG][j]/=(kinematic_2pt_G.E_g*kinematic_2pt_G.eps1_curl_p[1]-mass_jack_fit[i][j]*kinematic_2pt_G.eps1_curl_k[1]);
-           // FV_jack_fit[iG][j]*=xG[iG][j];
-            FV_autoplateaux_jack_fit[iG][j]=-RV_autoplateaux_jack_fit[iG][j]*mass_jack_fit[i_m][j];
-            FV_autoplateaux_jack_fit[iG][j]/=(kinematic_2pt_G.E_g*kinematic_2pt_G.eps1_curl_p[1]-mass_jack_fit[i][j]*kinematic_2pt_G.eps1_curl_k[1]);
-            
-            //FV_from_H0_jack_fit[iG][j]=-HmH0[iG][j]*mass_jack_fit[i_m][j];
-            //FV_from_H0_jack_fit[iG][j]/=(kinematic_2pt_G.E_g*kinematic_2pt_G.eps1_curl_p[1]-mass_jack_fit[i][j]*kinematic_2pt_G.eps1_curl_k[1]);
-            FV_from_H0_jack_fit[iG][j]=HmH0[iG][j];
-            
-            FV_from_H0_autoplateaux_jack_fit[iG][j]=-HmH0_autoplateaux[iG][j]*mass_jack_fit[i_m][j];
-            FV_from_H0_autoplateaux_jack_fit[iG][j]/=(kinematic_2pt_G.E_g*kinematic_2pt_G.eps1_curl_p[1]-mass_jack_fit[i][j]*kinematic_2pt_G.eps1_curl_k[1]);
-           
-            
-            //FV_from_H0_HA_jack_fit[iG][j]=-HmH0_HA[iG][j]*mass_jack_fit[i_m][j]*Zf_PS_jack_fit[i][j];
-            //FV_from_H0_HA_jack_fit[iG][j]/=(kinematic_2pt_G.E_g*kinematic_2pt_G.eps1_curl_p[1]-mass_jack_fit[i][j]*kinematic_2pt_G.eps1_curl_k[1]);
-            FV_from_H0_HA_jack_fit[iG][j]=HmH0_HA[iG][j];
-            //FV_from_H0_HA_jack_fit[iG][j]=HmH0_HA[iG][j]*mass_jack_fit[i_m][j]*Zf_PS_jack_fit[i_m][j];
-
-       }
-       
-       if( strcmp(argv[4],"jack")==0)
-               m=mean_and_error_jack(Njack, FV_jack_fit[iG]);
-       if( strcmp(argv[4],"boot")==0)
-               m=mean_and_error_boot(Njack, FV_jack_fit[iG]); 
-       fprintf(outfile_FV_vs_kp,"%g   %g    %g     %g \n",ave[0],ave[1],m[0],m[1] );
-
-       write_jack_bin(Njack,FV_jack_fit[iG],file_jack.FV);
-       write_jack_bin(Njack,xG[iG],file_jack.xG);
-       
-       
-       if ( abs(imom0- imoms)<pdiffmax ){
-                  if ( abs(imomt- imoms)<pdiffmax ){
-                    fprintf(outfile_FV_vs_kp_exclude,"%g   %g    %g     %g \n",ave[0],ave[1],m[0],m[1] );
-       	
-                   // write_jack_bin(Njack,FV_jack_fit[iG],file_jack.FV_exclude);
-                  }
-       }
-
-       free(m);
-       
-       m=mean_and_error(argv[4],Njack, FV_autoplateaux_jack_fit[iG]); 
-       fprintf(outfile_FV_autoplateaux_vs_kp,"%g   %g    %g     %g \n",ave[0],ave[1],m[0],m[1] );
-       write_jack_bin(Njack,FV_autoplateaux_jack_fit[iG],file_jack.FV_autoplateaux);
-       free(m);
-       
-       m=mean_and_error(argv[4],Njack, FV_from_H0_jack_fit[iG]); 
-       fprintf(outfile_FV_from_H0,"%g   %g    %g     %g \n",ave[0],ave[1],m[0],m[1] );
-       write_jack_bin(Njack,FV_from_H0_jack_fit[iG],file_jack.FV_from_H0);
-       free(m);
-       
-       m=mean_and_error(argv[4],Njack, FV_from_H0_autoplateaux_jack_fit[iG]); 
-       fprintf(outfile_FV_from_H0_autoplateaux,"%g   %g    %g     %g \n",ave[0],ave[1],m[0],m[1] );
-       write_jack_bin(Njack,FV_from_H0_autoplateaux_jack_fit[iG],file_jack.FV_from_H0_autoplateaux);
-       free(m);
-       
-       
-       m=mean_and_error(argv[4],Njack, FV_from_H0_HA_jack_fit[iG]); 
-       fprintf(outfile_FV_from_H0_HA,"%g   %g    %g     %g \n",ave[0],ave[1],m[0],m[1] );
-       write_jack_bin(Njack,FV_from_H0_HA_jack_fit[iG],file_jack.FV_from_H0_HA);
-       free(m);
-       
-////////////////FV*xG       
-       FVxg_jack_fit[iG]=(double*) malloc(sizeof(double)*Njack);
-
-       for(j=0;j<Njack;j++)
-           FVxg_jack_fit[iG][j]=FV_jack_fit[iG][j]*xG[iG][j];
-           
-       if( strcmp(argv[4],"jack")==0)
-               m=mean_and_error_jack(Njack, FVxg_jack_fit[iG]);
-       if( strcmp(argv[4],"boot")==0)
-               m=mean_and_error_boot(Njack, FVxg_jack_fit[iG]); 
-       fprintf(outfile_FVxg,"%g   %g    %g     %g \n",ave[0],ave[1],m[0],m[1] );
-
-       free(m);
-       free(ave);
-       free(ave1);
-       
-       
-   }}} 
-   fprintf(outfile_FAxg,"\n\n");
-   fprintf(outfile_FA_from_H0,"\n\n");
-   fprintf(outfile_FA_from_H0_autoplateaux,"\n\n");
-   fprintf(outfile_FVxg,"\n\n");
-  
-   fprintf(outfile_FV_vs_kp,"\n\n");
-   fprintf(outfile_FV_vs_kp_exclude,"\n\n");
-   fprintf(outfile_FV_from_H0,"\n\n");
-   fprintf(outfile_FV_from_H0_autoplateaux,"\n\n");
-   fprintf(outfile_FV_from_H0_HA,"\n\n");
-
-   
-   fprintf(outfile_FA_vs_kp,"\n\n");
-   fprintf(outfile_RA_vs_kp,"\n\n");
-   fprintf(outfile_RA_POS_wuhan,"\n\n");
-   fprintf(outfile_FAp1_vs_kp_exclude,"\n\n");
-   fprintf(outfile_FAp1_vs_kp,"\n\n");
-   fprintf(outfile_FAoverFP,"\n\n");
-   
-   fprintf(outfile_FV_autoplateaux_vs_kp,"\n\n");
-   fprintf(outfile_FA_autoplateaux_vs_kp,"\n\n");
-
-
-   }} //end loop  ikt iks imom0 imomt imoms
-   
-   
-   double ***fit_FAp1,**int_FA_from_H0,**int_FV_from_H0;
-   fit_FAp1=(double***) malloc(sizeof(double**)*file_head.nk*file_head.nk);
-    double ***fit_FV;
-   fit_FV=(double***) malloc(sizeof(double**)*file_head.nk*file_head.nk);
-   double xmin, xmax,dx,xMAX;
-   int Neff1;
-   
-   
-   
-   for(iks=ks_min;iks<ks_max;iks++){
-   for(ikt=kt_min;ikt<kt_max;ikt++){     
-   fprintf(interpolation_FA,"\n\n#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   fprintf(interpolation_FV,"\n\n#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   fprintf(interpolation_FA_from_H0,"\n\n#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   fprintf(interpolation_FV_from_H0,"\n\n#mut=%g   #mus=%g \n",file_head.k[file_head.nk+ikt],  file_head.k[file_head.nk+iks] );
-   i=ikt+iks*file_head.nk;
-   i_m=index_n_twopt_fit(ikt,iks,0,0);    
-
-//   mysprintf(namefile,"FA-ikt%d-iks%d",ikt,iks); 
-//   fit_FAp1[i]=fit_FX(argv, namefile, ikt, iks,xG,FA_jack_fit,  file_head , Njack ,2/* npar_fun,double*/,polynimial_degree_n);
-//   free(fit_FAp1[i]);
-
-   mysprintf(namefile,NAMESIZE,"FAp-ikt%d-iks%d",ikt,iks); 
-//   fit_FAp1[i]=fit_FX(argv, namefile, ikt, iks,xG,FA_jack_fit,  file_head , Njack ,2/* npar_fun,double*/,polynimial_degree_n )
-  // fit_FAp1[i]=fit_FX(argv, namefile, ikt, iks,xG,FAp_jack_fit,  file_head , Njack ,2/* npar_fun,double*/,polynimial_degree_n/*poles_degree_n*/ );
-
-   mysprintf(namefile,NAMESIZE,"FV-ikt%d-iks%d",ikt,iks); 
-   //fit_FV[i]=fit_FX(argv, namefile, ikt, iks,xG,FV_jack_fit,  file_head , Njack ,2/* npar_fun,double*/,polynimial_degree_n );
-/*
-      if( strcmp(argv[4],"jack")==0)
-               m=mean_and_error_jack(Njack, fit_FAp1[i][0]);
-       if( strcmp(argv[4],"boot")==0)
-               m=mean_and_error_boot(Njack, fit_FAp1[i][0]); 
-       printf("FAoverFP=(%g +-  %g)",m[0],m[1] );
-     
-      if( strcmp(argv[4],"jack")==0)
-               m=mean_and_error_jack(Njack, fit_FAp1[i][1]);
-       if( strcmp(argv[4],"boot")==0)
-               m=mean_and_error_boot(Njack, fit_FAp1[1][1]); 
-       printf("+(1/xG)*(    %g     %g) \n",m[0],m[1] );
-      
-    free(fit_FAp1[i][0]);free(fit_FAp1[i][1]);
-    free(fit_FV[i][0]);free(fit_FV[i][1]);
-  */    
-    if (ikt==0 && iks==0){dx=0.2; xMAX=4;}
-    else if (ikt==0 && iks==1){dx=0.2; xMAX=1.8;} else if (ikt==1 && iks==0){dx=0.2; xMAX=1.8;}
-    else if (ikt==0 && iks==2){dx=0.2; xMAX=1.8;} else if (ikt==2 && iks==0){dx=0.2; xMAX=1.8;}
-    else  {dx=0.02; xMAX=0.4;} 
-   
-    xmin=0;
-    xmax=xmin+dx;
-    for (j=0;j<((int) (xMAX/dx));j++){
-        
-        
-        Neff1=0;
-        for(imom0=0;imom0<file_head.nmoms;imom0++){       
-        for(imomt=0;imomt<file_head.nmoms;imomt++){
-        for(imoms=0;imoms<file_head.nmoms;imoms++){
-            i=index_n_twopt_G_fit(ikt,iks,imom0,imomt,imoms);
-            if (xG[i][Njack-1]>xmin &&  xG[i][Njack-1]<xmax){
-                Neff1=Neff1+1;
-                //printf("%g\t",xG[i][Njack-1]);
-            }
-        }}}
-        //printf("\nikt=%d   iks=%d   xg[%g,%g]  Neff1=%d\n ",ikt,iks,xmin,xmax,Neff1);
-        if (Neff1!=0){
-            fit_FAp1[0]=interpolate_FX(argv, namefile, ikt, iks,xG,xmin,xmax,FA_jack_fit,  file_head , Njack ,1/* npar_fun,double*/,polynimial_degree_n/*poles_degree_n*/ );
-            fit_FV[0]=interpolate_FX(argv, namefile, ikt, iks,xG,xmin,xmax,FV_jack_fit,  file_head , Njack ,1/* npar_fun,double*/,polynimial_degree_n );
-            
-            int_FA_from_H0=interpolate_FX(argv, namefile, ikt, iks,xG,xmin,xmax,FA_from_H0_jack_fit,  file_head , Njack ,1/* npar_fun,double*/,polynimial_degree_n );
-            int_FV_from_H0=interpolate_FX(argv, namefile, ikt, iks,xG,xmin,xmax,FV_from_H0_jack_fit,  file_head , Njack ,1/* npar_fun,double*/,polynimial_degree_n );
-            
-            m=mean_and_error(argv[4],Njack, fit_FAp1[0][0]);
-            //fprintf(stdout,"%g  %g    %g   %g\n",(xmin+xmax)/2.,m[0],m[1],mass_jack_fit[i_m][Njack-1] );
-            fprintf(interpolation_FA,"%g  %g    %g   %g\n",(xmin+xmax)/2.,m[0],m[1],mass_jack_fit[0][Njack-1] );
-            free(m);
-            
-            m=mean_and_error(argv[4],Njack, fit_FV[0][0]);
-            fprintf(interpolation_FV,"%g  %g    %g   %g  \n",(xmin+xmax)/2.,m[0],m[1],mass_jack_fit[0][Njack-1]);
-            free(m);
-     
-            m=mean_and_error(argv[4],Njack, int_FA_from_H0[0]);
-            fprintf(interpolation_FA_from_H0,"%g  %g    %g   %g  \n",(xmin+xmax)/2.,m[0],m[1],mass_jack_fit[0][Njack-1]);
-            free(m);
-
-            m=mean_and_error(argv[4],Njack, int_FV_from_H0[0]);
-            fprintf(interpolation_FV_from_H0,"%g  %g    %g   %g  \n",(xmin+xmax)/2.,m[0],m[1],mass_jack_fit[0][Njack-1]);
-           
-            free(m);
-            free(fit_FAp1[0][0]);free(fit_FAp1[0]);
-            free(fit_FV[0][0]);free(fit_FV[0]);
-            free(int_FA_from_H0[0]);free(int_FA_from_H0);
-            free(int_FV_from_H0[0]);free(int_FV_from_H0);
-        }
-        xmin=xmin+dx;
-        xmax=xmin+dx;
-    }
-   /*   for(j=0;j<Njack;j++){
-          fit_FAp1[i][1][j]=fit_FAp1[i][1][j]*f_PS_jack_fit[i_m][j]*mass_jack_fit[i_m][j];
+      for (int iconf=0; iconf<confs; iconf++ ){
+            read_twopt(oPPo, header_2pt.file_size, iconf ,data[iconf][0], 0/*icorr*/, header_2pt, icomb,smearing );
       }
-      if( strcmp(argv[4],"jack")==0)
-               m=mean_and_error_jack(Njack, fit_FAp1[i][1]);
-       if( strcmp(argv[4],"boot")==0)
-               m=mean_and_error_boot(Njack, fit_FAp1[1][1]); 
-       printf("FA=(%g   +-  %g) \n",m[0],m[1] );*/
+      symmetrise_corr(confs, 0, header.tmax,data);
+      
+      data_bin=binning(confs, var, header.tmax ,data, bin);
+      conf_jack=create_resampling(argv[4],Neff, var, header.tmax, data_bin);
+      
+      
+      // initialise the old header so that compute_effective_mass works
+      file_head.nk=header.ninv;
+      file_head.l0=header.tmax;
+      
+      int i=icomb+smearing *header.ncomb;
+      mass_jack_fit[i]=compute_effective_mass(  argv, kinematic_2pt, (char*) "oPPo", conf_jack,  Njack ,&plateaux_masses,outfile ,0/*index in data*/, namefile);
+    
    }}
-   
-   free(sym);free(iconf);free(fit_FAp1);free(fit_FV);
-      
-   for(i=0;i<file_head.l0;i++)
-      free(r[i]);
-   free(r); 
-   
-  // fclose(outfile);
-   fclose(m_pcac);
-   fclose(oPPo);
-  fclose(interpolation_FA); fclose(interpolation_FV); fclose(interpolation_FA_from_H0); fclose(interpolation_FV_from_H0);
-   //free_corr(confs, var*var, file_head.l0 ,data);
-
-   //for (i=0;i<confs;i++)
-       //free(out[i]);
-  
-  for(iks=ks_min;iks<ks_max;iks++){
-  for(ikt=kt_min;ikt<kt_max;ikt++){     
-  for(imoms=0;imoms<file_head.nmoms;imoms++){
-  for(imomt=0;imomt<file_head.nmoms;imomt++){
-  for(imom0=0;imom0<file_head.nmoms;imom0++){  
-      i=index_n_twopt_fit(ikt,iks,imom0,imoms);       
-      iG=index_n_twopt_G_fit(ikt,iks,imom0,imomt,imoms);
-      if(imomt==0){  
-        
-        free(mass_jack_fit[i]);
-        free(oPp_jack_fit[i]);
-        free(f_PS_jack_fit[i]);
-        free(Zf_PS_jack_fit[i]);
-      }
-      free(RA_jack_fit[iG]);       
-      free(H_H0[iG]);   
-      free(H_H0_autoplateaux[iG]);   
-      free(HmH0[iG]);       
-      free(HmH0_autoplateaux[iG]);       
-      free(HmH0_HA[iG]);       
-      free(FAp_jack_fit[iG]);       
-      free(RA_autoplateaux_jack_fit[iG]);       
-      free(FA_autoplateaux_jack_fit[iG]);       
-      free(FA_jack_fit[iG]);       
-      free(kp[iG]);       
-      free(xG[iG]);       
-      free(fp_mx[iG]);       
-      free(RV_jack_fit[iG]);       
-      free(FV_jack_fit[iG]);       
-      free(RV_autoplateaux_jack_fit[iG]);       
-      free(FV_autoplateaux_jack_fit[iG]);    
-      
-      free(FAxg_jack_fit[iG]);    
-      free(FA_from_H0_jack_fit[iG]);    
-      free(FVxg_jack_fit[iG]);    
-      
  
-      
-  }}}}}
-  
-  free(mass_jack_fit);
-  free(oPp_jack_fit);
-  free(f_PS_jack_fit);
-  free(Zf_PS_jack_fit);
-  free(RA_jack_fit);       
-  free(H_H0);       
-  free(H_H0_autoplateaux);       
-  free(HmH0);       
-  free(HmH0_autoplateaux);       
-  free(HmH0_HA);       
-  free(FAp_jack_fit);       
-  free(RA_autoplateaux_jack_fit);       
-  free(FA_autoplateaux_jack_fit);       
-  free(FA_jack_fit);       
-  free(kp);       
-  free(xG);       
-  free(fp_mx);       
-  free(RV_jack_fit);       
-  free(FV_jack_fit);       
-  free(RV_autoplateaux_jack_fit);       
-  free(FV_autoplateaux_jack_fit);    
-      
-  free(FAxg_jack_fit);    
-  free(FA_from_H0_jack_fit);    
-  free(FVxg_jack_fit);    
- 
-   
-
     return 0;   
 }
