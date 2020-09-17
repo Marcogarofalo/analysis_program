@@ -227,6 +227,7 @@ void plotting_fit_pdf_G(char **argv, const char *string ,double **corr,int tmin,
      
     
     for(i=1;i<T/2;i++){
+        if (corr[i][0]!=corr[i][0]) return ;
         fprintf(temp,"%d \t %.15g \t %.15g\n",i,corr[i][0],corr[i][1]);
     }
     fclose(temp);
@@ -242,12 +243,12 @@ void plotting_fit_pdf_G(char **argv, const char *string ,double **corr,int tmin,
     fprintf(gnuplotPipe,"set mytics 2\n");
     fprintf(gnuplotPipe,"set key spacing 1.2\n");
 
-    mysprintf(name,NAMESIZE,"{%s_%s_L%dT%d_b%.4f_ks%.7f_mus%.4f_mut_%.4f_rt_%d_mus_%.4f_rs_%d_theta0_%.4f_thetat_%.4f_thetas_%.4f}",string,contraction,L,T,beta,k_sea,mu_sea,
+    mysprintf(name,NAMESIZE,"%s_%s_L%dT%d_b%.4f_ks%.7f_mus%.4f_mut_%.4f_rt_%d_mus_%.4f_rs_%d_theta0_%.4f_thetat_%.4f_thetas_%.4f",string,contraction,L,T,beta,k_sea,mu_sea,
             kinematic_2pt_G.kt,kinematic_2pt_G.rt,kinematic_2pt_G.ks,kinematic_2pt_G.rs,
             kinematic_2pt_G.Mom0[3],kinematic_2pt_G.Momt[3],kinematic_2pt_G.Moms[3]);
     fprintf(gnuplotPipe,"set output '%s.tex'\n",name);
     
-    fprintf(gnuplotPipe,"set title 'L%dT%d  %s $\\beta=%.4f$ $\\kappa_{sea}=%.7f$  $\\mu_{sea}=%.4f$'\n",L,T,contraction,beta,k_sea,mu_sea);
+    fprintf(gnuplotPipe,"set title '$L%dT%d$  $%s$ $\\beta=%.4f$ $\\kappa_{sea}=%.7f$  $\\mu_{sea}=%.4f$'\n",L,T,contraction,beta,k_sea,mu_sea);
     int tmax_plot,tmin_plot;
     if (tmin-8 <0) tmin_plot=0;
     else tmin_plot=tmin-8;
@@ -270,7 +271,7 @@ void plotting_fit_pdf_G(char **argv, const char *string ,double **corr,int tmin,
     fprintf(gnuplotPipe,"exit \n");
   
     pclose(gnuplotPipe);
-    mysprintf(instruction,NAMESIZE,"pdflatex -output-directory=%s/out %s.tex  > null",argv[3],name);
+    mysprintf(instruction,NAMESIZE,"pdflatex -output-directory=%s/out %s.tex  > /dev/null &",argv[3],name);
     system(instruction);
     
     mysprintf(instruction,NAMESIZE,"rm %s.tex %s/out/%s.log %s/out/%s.aux  %s-inc.eps %s-inc-eps-converted-to.pdf",name,argv[3],name,argv[3],name,name,name);

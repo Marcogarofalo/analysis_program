@@ -60,7 +60,7 @@ double   *H_over_H0_vir(char **option ,struct kinematic_G kinematic_2pt_G , char
 
    if (sym[index]==0);   mysprintf(label,NAMESIZE,"H_H0_A_mu");
    if (sym[index]==1);   mysprintf(label,NAMESIZE,"H_H0_V_mu");
-   fit=fit_plateaux_G(option, kinematic_2pt_G ,  name,"H_H0_{mu}",mt,r,  Njack,plateaux_masses,outfile);
+   fit=fit_plateaux_G(option, kinematic_2pt_G ,  name,"H_H0_A",mt,r,  Njack,plateaux_masses,outfile);
   // write_jack_bin(Njack,fit,file_jack.f_PS);
 
      
@@ -139,7 +139,7 @@ double   *H_minus_H0_HA_vir(char **option ,struct kinematic_G kinematic_2pt_G , 
 
    if (sym[index]==0);   mysprintf(label,NAMESIZE,"H_H0_A_mu");
    if (sym[index]==1);   mysprintf(label,NAMESIZE,"HmH0_V_mu");
-   fit=fit_plateaux_G(option, kinematic_2pt_G ,  name,"HmH0_HA_{mu}",mt,r,  Njack,plateaux_masses,outfile);
+   fit=fit_plateaux_G(option, kinematic_2pt_G ,  name,"HmH0_V_HA",mt,r,  Njack,plateaux_masses,outfile);
   // write_jack_bin(Njack,fit,file_jack.f_PS);
 
      
