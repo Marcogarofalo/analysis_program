@@ -14,6 +14,7 @@
 #include <typeinfo>
 #include <vector>
  
+#include "mutils.hpp"
 struct flavour_t
 {
   int qhat;
@@ -151,8 +152,88 @@ struct  header_virph
   }
   
 
-  
- 
+
+int find_icomb_with_opposite_mu(struct  header_virph header, int icomb){
+    int ci=-1;
+    int i0=header.comb[icomb].i0;
+    int is=header.comb[icomb].is;
+    int found=0;
+    
+     
+    for (int i =0; i<header.ncomb;i++ ){
+        if (header.comb[i].i0==is   &&  header.comb[i].is==i0  )
+        if (fabs(header.comb[i].off-header.comb[icomb].off )<1e-10)
+        if (fabs(header.comb[i].th0[0]-header.comb[icomb].th0[0] )<1e-10)    
+        if (fabs(header.comb[i].tht[0]-header.comb[icomb].tht[0] )<1e-10)        
+        if (fabs(header.comb[i].ths[0]-header.comb[icomb].ths[0] )<1e-10)
+        if (fabs(header.comb[i].th0[1]-header.comb[icomb].th0[1] )<1e-10)    
+        if (fabs(header.comb[i].tht[1]-header.comb[icomb].tht[1] )<1e-10)        
+        if (fabs(header.comb[i].ths[1]-header.comb[icomb].ths[1] )<1e-10)
+        if (fabs(header.comb[i].th0[2]-header.comb[icomb].th0[2] )<1e-10)    
+        if (fabs(header.comb[i].tht[2]-header.comb[icomb].tht[2] )<1e-10)        
+        if (fabs(header.comb[i].ths[2]-header.comb[icomb].ths[2] )<1e-10){
+                    ci=i;
+                    found++;
+        }
+    }
+    
+    if (found!=1){
+    auto c=header.comb[icomb];
+        printf("icomb=%d\n",icomb);
+        printf("i0 it is=%d  %d  %d\n",c.i0,c.it,c.is);
+        printf("mu0  mut  off=%f  %f  %f\n",c.mu1,c.mu2,c.off);
+        printf("th0=%f  %f  %f\n",c.th0[0],c.th0[1],c.th0[2]);
+        printf("tht=%f  %f  %f\n",c.tht[0],c.tht[1],c.tht[2]);
+        printf("ths=%f  %f  %f\n",c.ths[0],c.ths[1],c.ths[2]);
+        printf("find_icomb_with_opposite_mu");
+        printf("Either there is no combination with opposite mu either there are many");
+        exit(3);
+    }
+
+    return ci;
+}  
+
+int find_icomb_k0(struct  header_virph header, int icomb){
+    int ci=-1;
+    int found=0;
+    int foundk;
+          
+    for (int i =0; i<header.ncomb;i++ ){
+        foundk=0;
+        for (int k=0; k<3;k++){
+            if (fabs(header.comb[i].th0[k]-header.comb[i].tht[k] )<1e-10){
+                if (fabs(header.comb[i].th0[k]-header.comb[icomb].th0[k] )<1e-10)
+                if (fabs(header.comb[i].ths[k]-header.comb[icomb].ths[k] )<1e-10)
+                if (fabs(header.comb[i].mu1-header.comb[icomb].mu1 )<1e-10)    
+                if (fabs(header.comb[i].mu2-header.comb[icomb].mu2 )<1e-10)        
+                if (fabs(header.comb[i].off-header.comb[icomb].off )<1e-10){
+                    foundk++;
+                }
+            }
+                    
+        }
+        if (foundk==3){
+            ci=i;
+            found++;
+        }
+          
+    }
+    
+    if (found!=1){
+        auto c=header.comb[icomb];
+        printf("icomb=%d\n",icomb);
+        printf("i0 it is=%d  %d  %d\n",c.i0,c.it,c.is);
+        printf("mu0  mut  off=%f  %f  %f\n",c.mu1,c.mu2,c.off);
+        printf("th0=%f  %f  %f\n",c.th0[0],c.th0[1],c.th0[2]);
+        printf("tht=%f  %f  %f\n",c.tht[0],c.tht[1],c.tht[2]);
+        printf("ths=%f  %f  %f\n",c.ths[0],c.ths[1],c.ths[2]);
+        printf("find_icomb_with_opposite_mu");
+        printf("Either there is no combination with opposite mu either there are many");
+        exit(3);
+    }
+        
+    return ci;
+}  
  
  
 #endif

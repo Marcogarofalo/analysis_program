@@ -4,6 +4,10 @@ project(analysis_program CXX)
 
 set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_CXX_FLAGS "-fopenmp   -pedantic  -g -O0 -pg -no-pie  -lm -lgmp -lfftw3 ")
+#-g # then compile , then open gdb, write the commands : file $namefile; run  $options ; bt
+# valgrind --leak-check=yes --track-origins=yes  ./program   #compile with -g to have line number
+
+
 
 # no need to install Eigen with cmake and use find package
 # Also it does not work
@@ -46,7 +50,7 @@ macro(add_target_with_lib TARGETNAME)
   target_link_libraries(${TARGETNAME} PUBLIC non_linear_fit)
   target_link_libraries(${TARGETNAME} PUBLIC pion)
   target_link_libraries(${TARGETNAME} PUBLIC m_eff1)
-  
+  target_link_libraries(${TARGETNAME} PUBLIC virtualphoton_routines)
 #target_link_libraries(${TARGETNAME} PUBLIC Kokkos::kokkos)
 endmacro()
 

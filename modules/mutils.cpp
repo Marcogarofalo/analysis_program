@@ -816,5 +816,5 @@ void mysprintf(char *str, size_t size, const char *format, ...){
     va_end (args);
     error(i>=size,0,"mysprintf","string size=%d larger then the size of char=%d ",i,size);
     snprintf(str,size,"%s",str_internal);
-    
+    free(str_internal);
 }

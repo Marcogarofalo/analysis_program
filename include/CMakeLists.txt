@@ -215,6 +215,15 @@ target_include_directories(m_eff1 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 
 
+add_library(
+    virtualphoton_routines STATIC
+    virtualphoton_routines.hpp
+    ../modules/virtualphoton/routines_H.cpp
+) 
+
+target_include_directories(virtualphoton_routines PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+
+
 
 
 

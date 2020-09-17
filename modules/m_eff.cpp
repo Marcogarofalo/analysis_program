@@ -1348,7 +1348,7 @@ double   *H_minus_H0_HA(char **option ,struct kinematic_G kinematic_2pt_G , char
            kinematic_2pt_G.ks,kinematic_2pt_G.rs, kinematic_2pt_G.Moms[3] );
    kp=mass_jack_fit_k2k1[Njack-1]*kinematic_2pt_G.E_g- kinematic_2pt_G.kp;
    xG=2*kp/(mass_rest[Njack-1]*mass_rest[Njack-1]);
-   double kin=kinematic_2pt_G.E_g*kinematic_2pt_G.eps2_curl_p[1]-mass_jack_fit_k2k1[j]*kinematic_2pt_G.eps2_curl_k[1];
+   double kin=kinematic_2pt_G.E_g*kinematic_2pt_G.eps2_curl_p[1]-mass_jack_fit_k2k1[Njack-1]*kinematic_2pt_G.eps2_curl_k[1];
    fprintf(outfile,"## E_g=%g      E_gT=%g     E=%g     xG=%g  index=%d   kin=%g\n",kinematic_2pt_G.E_g,kinematic_2pt_G.E_gT,mass_jack_fit_k2k1[Njack-1],xG ,line,kin);
    for(i=1;i<file_head.l0/2;i++){    
            for (j=0;j<Njack;j++){  
