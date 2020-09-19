@@ -25,7 +25,7 @@
  
 #include <omp.h>
 
-int ensemble_omega_jacob=7;
+int ensemble_omega_jacob=8;
 
 
 
@@ -122,30 +122,41 @@ double **fit_Omegaw0_from_M(struct database_file_jack  *jack_files,  struct head
         }
    }
    double **strange_jacob=double_malloc_2(ensemble_omega_jacob,nk);
-            strange_jacob[6][0]=0.0128;
-            strange_jacob[6][1]=0.0161;   
-            strange_jacob[6][2]=0.0193;   
-            
-            strange_jacob[5][0]=0.017;   
-            strange_jacob[5][1]=0.0195;   
-            strange_jacob[5][2]=0.0220;   
-            
+            if (ensemble_omega_jacob>8){
+             //B25.32
+            strange_jacob[8][0]=0.0148;   
+            strange_jacob[8][1]=0.0185;   
+            strange_jacob[8][2]=0.0222; 
+            }
+            //C06
+            strange_jacob[7][0]=0.0128;
+            strange_jacob[7][1]=0.0161;   
+            strange_jacob[7][2]=0.0193;   
+            //B072
+            strange_jacob[6][0]=0.017;   
+            strange_jacob[6][1]=0.0195;   
+            strange_jacob[6][2]=0.0220;   
+            //B14
+            strange_jacob[5][0]=0.0148;   
+            strange_jacob[5][1]=0.0185;   
+            strange_jacob[5][2]=0.0222;   
+            //B25
             strange_jacob[4][0]=0.0148;   
             strange_jacob[4][1]=0.0185;   
             strange_jacob[4][2]=0.0222;   
-            
+            //A12
             strange_jacob[3][0]=0.0182;   
             strange_jacob[3][1]=0.0227;   
             strange_jacob[3][2]=0.0273;   
-            
+            //A30
             strange_jacob[2][0]=0.0182;   
             strange_jacob[2][1]=0.0227;   
             strange_jacob[2][2]=0.0273;   
-            
+            //A40
             strange_jacob[1][0]=0.0182;   
             strange_jacob[1][1]=0.0227;   
             strange_jacob[1][2]=0.0273;   
-            
+            //A53
             strange_jacob[0][0]=0.0182;   
             strange_jacob[0][1]=0.0227;   
             strange_jacob[0][2]=0.0273;   
@@ -373,7 +384,7 @@ for (ms=0;ms<nk;ms++){
 
          if(j==Njack-1){
             printf("\n\n");
-            double KM,Kf;
+            double Kf;
             
             printf("P0=%f;  P1=%f; P2=%g  MKw2-Mpi22=%f;\n",tmp[0],tmp[1],tmp[2],mref[ms]  );
             chi2m=mean_and_error(jack_files[0].sampling,Njack, chi2);
