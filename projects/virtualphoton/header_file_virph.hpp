@@ -185,8 +185,8 @@ int find_icomb_with_opposite_mu(struct  header_virph header, int icomb){
         printf("th0=%f  %f  %f\n",c.th0[0],c.th0[1],c.th0[2]);
         printf("tht=%f  %f  %f\n",c.tht[0],c.tht[1],c.tht[2]);
         printf("ths=%f  %f  %f\n",c.ths[0],c.ths[1],c.ths[2]);
-        printf("find_icomb_with_opposite_mu");
-        printf("Either there is no combination with opposite mu either there are many");
+        printf("find_icomb_with_opposite_mu\n");
+        printf("Either there is no combination with opposite mu either there are many\n");
         exit(3);
     }
 
@@ -227,10 +227,11 @@ int find_icomb_k0(struct  header_virph header, int icomb){
         printf("th0=%f  %f  %f\n",c.th0[0],c.th0[1],c.th0[2]);
         printf("tht=%f  %f  %f\n",c.tht[0],c.tht[1],c.tht[2]);
         printf("ths=%f  %f  %f\n",c.ths[0],c.ths[1],c.ths[2]);
-        printf("find_icomb_with_opposite_mu");
-        printf("Either there is no combination with opposite mu either there are many");
+        printf("find_icomb_with_opposite_mu\n");
+        printf("Either there is no combination with opposite mu either there are many\n");
         exit(3);
     }
+   
         
     return ci;
 }  

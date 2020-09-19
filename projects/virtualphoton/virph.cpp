@@ -444,7 +444,7 @@ void read_twopt(FILE *stream,int size, int iconf , double **to_write, int icorr 
    long int tmp;
    double *obs;
    int vol=0,index;
-   int    vol3=header.tmax*header.tmax*header.tmax/8.0; 
+   //int    vol3=1;//header.tmax*header.tmax*header.tmax/8.0; 
    auto c=header.comb[icomb];
    
    tmp=header.header_size;// sizeof(double)* (file_head.nmoms*4 + file_head.nk*2+4 )+ sizeof(int)*(11) ;
@@ -453,7 +453,6 @@ void read_twopt(FILE *stream,int size, int iconf , double **to_write, int icorr 
    obs=(double*) malloc(2*header.tmax*sizeof(double)); 
     
    int ire=0,ix0=0;
-   int iin=
    index=sizeof(double)*(  ire+2*(ix0+header.tmax*(smearing +header.nqsml*(c.i0+header.ninv*(c.is+header.ninv*icorr))))  );
    fseek(stream, tmp+index, SEEK_SET);
 
@@ -464,7 +463,7 @@ void read_twopt(FILE *stream,int size, int iconf , double **to_write, int icorr 
        to_write[t][1]=obs[t*2+1];
    }
    vol++;
-   /*
+  /* 
    index=sizeof(double)*(ire+2*(ix0+header.tmax*(smearing +header.nqsml*(c.is+header.ninv*(c.i0+header.ninv*icorr)))));
    fseek(stream,tmp+ index, SEEK_SET);
    fread(obs,sizeof(double),2*header.tmax,stream); 
@@ -477,8 +476,8 @@ void read_twopt(FILE *stream,int size, int iconf , double **to_write, int icorr 
   */
    
    for(int t=0;t<header.tmax;t++){
-  	   to_write[t][0]/=( (double) vol*vol3 );
-	   to_write[t][1]/=( (double) vol*vol3 );
+  	   to_write[t][0]/=( (double) vol );
+	   to_write[t][1]/=( (double) vol );
    }
    
    
@@ -537,7 +536,7 @@ void ave_polarization_gamma_A(  double **to_write,int si, double y, double *obs,
 {
     double re,im;
     int vol,ix0;
-    int vol3=header.tmax*header.tmax*header.tmax/8.;
+    int vol3=1;//header.tmax*header.tmax*header.tmax/8.;
     for(ix0=0;ix0<header.tmax;ix0++){
             re=0;vol=0;im=0;
   
@@ -566,7 +565,7 @@ void ave_polarization_gamma_V(  double **to_write,int si, double y, double *obs,
 {
     double re,im;
     int vol,ix0;
-    int vol3=header.tmax*header.tmax*header.tmax/8.; 
+    int vol3=1;//header.tmax*header.tmax*header.tmax/8.; 
      for(ix0=0;ix0<header.tmax;ix0++){
 	   re=0;vol=0;im=0;
        
@@ -594,22 +593,20 @@ void ave_polarization_gamma_V(  double **to_write,int si, double y, double *obs,
 
 double  *contract_eps(double *obs ,struct header_virph header){
     double *H=(double*) malloc(sizeof(double)*4*2*2*header.tmax);  //[mu r  reim   ix0]  
-    int vol,ix0;
     int ndim=4;
+    
     for(int ix0=0;ix0<header.tmax;ix0++){
     for(int reim=0;reim<2;reim++){    
         for (int alpha=0;alpha<ndim;alpha++){
             int idH=reim+2*( alpha +ndim*( 0+ 2*ix0));
             H[idH]=0;  
             for (int mu=0;mu<ndim;mu++){
-                
-                int index=reim+2*(ix0+header.tmax*(alpha+ndim*(mu)));
+                int index=reim+2*(ix0+header.tmax*(alpha +ndim*(mu)));
                 H[idH]+=obs[index]*kinematic_2pt_G.eps1[mu]; 
             }
             idH=reim+2*( alpha +ndim*( 1+ 2*ix0));
             H[idH]=0;  
             for (int mu=0;mu<4;mu++){
-                
                 int index=reim+2*(ix0+header.tmax*(alpha +ndim*(mu)));
                 H[idH]+=obs[index]*kinematic_2pt_G.eps2[mu];         
             }
@@ -627,7 +624,6 @@ void read_twopt_gamma(FILE *stream,int size, int iconf , double **to_write ,stru
    long int tmp;
    double *obs,*H;
    int index;
-   int    vol3=header.tmax*header.tmax*header.tmax/8.0; 
    
    tmp=header.header_size;// sizeof(double)* (file_head.nmoms*4 + file_head.nk*2+4 )+ sizeof(int)*(11) ;
    tmp+=sizeof(double)*iconf*size+sizeof(int)*(iconf+1);
@@ -640,13 +636,9 @@ void read_twopt_gamma(FILE *stream,int size, int iconf , double **to_write ,stru
    yt=-1./3.;
    ys=2./3.;
    
-   fseek(stream, tmp-sizeof(int), SEEK_SET);
-   int ii;
-   fread(&ii,sizeof(int),1,stream); 
-   //std::cout << ii << std::endl;
-  
    
-   for(int ix0=0;ix0<file_head.l0;ix0++){
+   
+   for(int ix0=0;ix0<header.tmax;ix0++){
        to_write[ix0][0]=0;
 	   to_write[ix0][1]=0;
    }
@@ -659,10 +651,11 @@ void read_twopt_gamma(FILE *stream,int size, int iconf , double **to_write ,stru
    int corr;
    if (strcmp(name,"oAmuGPo")==0) corr=0;
    else if (strcmp(name,"oVmuGPo")==0) corr=1;
+   else error(1==1,3,"read_twopt_gamma", "name is not oAmuGPo or oVmuGPo \n name=%s",name);
    
    obs=(double*) malloc(2*header.tmax*ndim*ndim*sizeof(double)); 
-
-   index=sizeof(double)*(  ire+2*(ix0 +header.tmax*(alpha+ndim*(mu+ndim*( smearing + header.nqsml*(icomb +corr*header.ncomb  ))))) );
+                        
+   index=sizeof(double)*(  ire+2*(ix0 +header.tmax*(alpha+ndim*(mu+ndim*( smearing + header.nqsml*(icomb +header.ncomb*corr  ))))) );
    fseek(stream, tmp+index, SEEK_SET);
    fread(obs,sizeof(double),2*header.tmax*ndim*ndim,stream); 
    
@@ -675,7 +668,8 @@ void read_twopt_gamma(FILE *stream,int size, int iconf , double **to_write ,stru
    free(H);
    
    int ci=find_icomb_with_opposite_mu(header,icomb);
-   index=sizeof(double)*(  ire+2*(ix0 +header.tmax*(alpha+ndim*(mu+ndim*( smearing + header.nqsml*(ci +corr*header.ncomb  ))))) );
+   index=sizeof(double)*(  ire+2*(ix0 +header.tmax*(alpha+ndim*(mu+ndim*( smearing + header.nqsml*(ci +header.ncomb*corr  ))))) );
+   
    fseek(stream, tmp+index, SEEK_SET);
    fread(obs,sizeof(double),2*header.tmax*ndim*ndim,stream); 
    
@@ -1180,6 +1174,7 @@ int main(int argc, char **argv){
    confs=header_2pt.file_nconf;
    
    print_file_head(outfile,header);
+   print_file_head(outfile_Zf,header);
    print_file_head(outfile_oPp,header);
    print_file_head(outfile_f,header);
    print_file_head(outfile_RA,header);
@@ -1219,6 +1214,9 @@ int main(int argc, char **argv){
       if(smearing==0) mysprintf(namefile,NAMESIZE,"M_{PS}^{ll}");
       if(smearing==1) mysprintf(namefile,NAMESIZE,"M_{PS}^{s_1l}");
    for(int icomb=0; icomb<header.ncomb; icomb++){
+      // initialise the old header so that compute_effective_mass works
+      file_head.nk=header.ninv;
+      file_head.l0=header.tmax;
       get_kinematic(header.comb[icomb]);
       get_kinematic_G(header, icomb);
 
@@ -1236,18 +1234,26 @@ int main(int argc, char **argv){
 
       }
       symmetrise_corr(confs, 0, header.tmax,data);
-      symmetrise_corr(confs, 2, file_head.l0,data);
-      symmetrise_corr(confs, 4, file_head.l0,data);
-      antisymmetrise_corr(confs, 3, file_head.l0,data);
-      antisymmetrise_corr(confs, 5, file_head.l0,data);
+      symmetrise_corr(confs, 2, header.tmax,data);
+      symmetrise_corr(confs, 4, header.tmax,data);
+      antisymmetrise_corr(confs, 3, header.tmax,data);
+      antisymmetrise_corr(confs, 5, header.tmax,data);
 
       data_bin=binning(confs, var, header.tmax ,data, bin);
       conf_jack=create_resampling(argv[4],Neff, var, header.tmax, data_bin);
       
-      
-      // initialise the old header so that compute_effective_mass works
-      file_head.nk=header.ninv;
-      file_head.l0=header.tmax;
+      if (smearing==0 && icomb==1){
+             FILE *aaa;
+           aaa=open_file("prova_A.txt","w+");
+           for (int t=0;t<file_head.l0;t++)
+               fprintf(aaa,"%d   %g    %g  %g    %g\n",t,conf_jack[Njack-1][2][t][0],conf_jack[Njack-1][2][t][1], conf_jack[Njack-1][4][t][0],conf_jack[Njack-1][4][t][1]);
+           fclose(aaa);
+           aaa=open_file("prova_V.txt","w+");
+           for (int t=0;t<file_head.l0;t++)
+               fprintf(aaa,"%d   %g    %g  %g    %g\n",t,conf_jack[Njack-1][3][t][0],conf_jack[Njack-1][3][t][1], conf_jack[Njack-1][5][t][0],conf_jack[Njack-1][5][t][1]);
+           fclose(aaa);
+            
+       }
       
       int i=icomb+smearing *header.ncomb;
       int iG=icomb+smearing *header.ncomb;
@@ -1255,7 +1261,7 @@ int main(int argc, char **argv){
       Zf_PS_jack_fit[i]=compute_Zf_PS_ll(  argv, kinematic_2pt,  (char*) "oPPo", conf_jack, mass_jack_fit[i],  Njack ,plateaux_masses,outfile_Zf );
       
       H_H0[iG]=H_over_H0_vir(  argv, kinematic_2pt_G,  (char*) "H_H0_A", conf_jack,  mass_jack_fit[i],  mass_jack_fit[i], Njack ,plateaux_H_H0_A,outfile_H_H0_A ,2,sym);
-      HmH0_HA[iG]=H_minus_H0_HA_vir(  argv, kinematic_2pt_G,  (char*) "HmH0_HA_V", conf_jack,  mass_jack_fit[i],  mass_jack_fit[i],   Zf_PS_jack_fit[i],  Njack ,plateaux_RV,outfile_HmH0_V_HA ,3,sym);
+      HmH0_HA[iG]=H_minus_H0_HA_vir(  argv, kinematic_2pt_G,  (char*) "HmH0_V_HA", conf_jack,  mass_jack_fit[i],  mass_jack_fit[i],   Zf_PS_jack_fit[i],  Njack ,plateaux_RV,outfile_HmH0_V_HA ,3,sym);
       //free
       free_corr(Neff, var, header.tmax ,data_bin);
       free_jack(Njack,var , header.tmax, conf_jack);

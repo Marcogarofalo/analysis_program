@@ -8,7 +8,6 @@ set(CMAKE_CXX_FLAGS "-fopenmp   -pedantic  -g -O0 -pg -no-pie  -lm -lgmp -lfftw3
 # valgrind --leak-check=yes --track-origins=yes  ./program   #compile with -g to have line number
 
 
-
 # no need to install Eigen with cmake and use find package
 # Also it does not work
 #set(Eigen3_DIR /home/marco/library/eigen-gitlab/install/share/eigen3/cmake)
