@@ -1170,7 +1170,7 @@ int main(int argc, char **argv){
    }  
    std::cout <<  std::endl;
    
-   error(header_2pt.file_nconf!=header_2pt.file_nconf, 1, "main","Configuration number in file 2pt differs form 2pt_gamma file");
+   error(header_2pt.file_nconf!=header.file_nconf, 1, "main","Configuration number in file 2pt differs form 2pt_gamma file");
    confs=header_2pt.file_nconf;
    
    print_file_head(outfile,header);
