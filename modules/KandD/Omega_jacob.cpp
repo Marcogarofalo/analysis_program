@@ -128,10 +128,12 @@ double **fit_Omegaw0_from_M(struct database_file_jack  *jack_files,  struct head
             strange_jacob[8][1]=0.0185;   
             strange_jacob[8][2]=0.0222; 
             }
+            if (ensemble_omega_jacob>7){
             //C06
             strange_jacob[7][0]=0.0128;
             strange_jacob[7][1]=0.0161;   
-            strange_jacob[7][2]=0.0193;   
+            strange_jacob[7][2]=0.0193;
+            }
             //B072
             strange_jacob[6][0]=0.017;   
             strange_jacob[6][1]=0.0195;   
