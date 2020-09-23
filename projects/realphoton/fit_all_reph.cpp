@@ -2512,7 +2512,7 @@ void  compute_FApmFV(char **argv, double **phys_point, struct fit_all fit_chi2_g
     double **cov=(double**) malloc(sizeof(double*)* (order+1));
     
     
-    error(strcmp(option,"pm")!=0  && strcmp(option,"_correlated_")!=0, 1, "compute_FApmFV", "option = %s\n  while ammitted options are : pm  _correlated_",option);
+    error(strcmp(option,"pm")!=0  && strcmp(option,"_correlated_")!=0 && strcmp(option,"_correlated_pole_")!=0 , 1, "compute_FApmFV", "option = %s\n  while ammitted options are : pm  _correlated_   _correlated_pole_",option);
     
     
     for(ord=0;ord<order+1;ord++){
@@ -2541,6 +2541,12 @@ void  compute_FApmFV(char **argv, double **phys_point, struct fit_all fit_chi2_g
             else if (strcmp(option,"_correlated_")==0){
                 tay[3][j]=taylor1[1][j];//D_V
                 tay[2][j]=taylor[1][j];//D_A
+                tay[1][j]=taylor1[0][j];//C_V
+                tay[0][j]=taylor[0][j];//C_A
+            }
+            else if (strcmp(option,"_correlated_pole_")==0){
+                tay[3][j]=-taylor1[1][j]/taylor1[0][j];//D_V
+                tay[2][j]=-taylor[1][j]/taylor[0][j];//D_A
                 tay[1][j]=taylor1[0][j];//C_V
                 tay[0][j]=taylor[0][j];//C_A
             }
@@ -2606,6 +2612,17 @@ void  compute_FApmFV(char **argv, double **phys_point, struct fit_all fit_chi2_g
                 fprintf(f,"\\begin{equation}\n D_V= %f \\pm %.2g\n\\end{equation}\n",ave[ord],sigma[ord]);
             
         }
+        else if (strcmp(option,"_correlated_pole_")==0){
+            if (ord==0)
+                fprintf(f,"\\begin{equation}\n \\tilde C_A= %f \\pm %.2g\n\\end{equation}\n\t\t",ave[ord],sigma[ord]);
+            else if (ord==1)
+                fprintf(f,"\\begin{equation}\n \\tilde C_V= %f \\pm %.2g\n\\end{equation}\n\t\t",ave[ord],sigma[ord]);
+            else if (ord==2)
+                fprintf(f,"\\begin{equation}\n \\tilde D_A= %f \\pm %.2g\n\\end{equation}\n\t\t",ave[ord],sigma[ord]);
+            else if (ord==3)
+                fprintf(f,"\\begin{equation}\n \\tilde D_V= %f \\pm %.2g\n\\end{equation}\n",ave[ord],sigma[ord]);
+            
+        }
         free(tmpe[ord]);
     }
     
@@ -2635,7 +2652,7 @@ void  compute_FApmFV(char **argv, double **phys_point, struct fit_all fit_chi2_g
     fclose(f);
     free(tmp);free(tmpe);free(sigma);free(ave);
     free_3(Nfits,order+1,tmpc);
-    if (strcmp(option,"_correlated_")==0){
+    if (strcmp(option,"_correlated_")==0 || strcmp(option,"_correlated_pole_")==0 ){
         for (k=0;k<Nfits*2;k++){
             for (i=0;i<fit_chi2_good.info[k].Npar;i++){
                 free(fit_chi2_good.out[k].P[i]);
@@ -4012,10 +4029,11 @@ int main(int argc, char **argv){
 
     struct fit_type fit_info;
     struct fit_result  fit_out;
-    struct fit_all  fit_chi2_good ,fit_FA_FV;
+    struct fit_all  fit_chi2_good ,fit_FA_FV, fit_FA_FV_pole;
     fit_chi2_good.Nfits=0;
     fit_info.Nvar=13;
     fit_FA_FV.Nfits=0;
+    fit_FA_FV_pole.Nfits=0;
 
     char *argvNs[5];
     double **phys_point;
@@ -6710,6 +6728,7 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_Dphys(jack_files,  head ,jack_tot, grephJ,3 ,fit_info);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{A^H}","FA_H_Dphys_poly2_simply_Mx");
         
         
@@ -6720,6 +6739,7 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_Dphys(jack_files,  head ,jack_tot, grephJ,3 ,fit_info);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{A^H}","FA_H_Dphys_poly2_simply_ax_Mx");
       
     
@@ -6729,7 +6749,7 @@ printf("\n\n////////////////////////////////////////////////////////////////////
     
     compute_systematics(argvNs, phys_point,  fit_chi2_good, "FA_Dphys_poly");
     fit_chi2_good.Nfits=0;
-    
+
     
     
     for(Ns=0;Ns<Nsets;Ns++){
@@ -6752,6 +6772,7 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_Dphys_treshold(jack_files,  head ,jack_tot, grephJ,3 ,fit_info,r0A-10,r0A+10);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV_pole=save_fit(fit_FA_FV_pole,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{A^H}","FA_H_Dphys_pole_simply_Mx");
 
         printf("\n\n FA for D meson pole simply ax Mx\n");
@@ -6761,6 +6782,7 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_Dphys_treshold(jack_files,  head ,jack_tot, grephJ,3 ,fit_info,r0A-10,r0A+10);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV_pole=save_fit(fit_FA_FV_pole,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{A^H}","FA_H_Dphys_pole_simply_ax_Mx");
 
         
@@ -6968,6 +6990,7 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_Dphys(jack_files,  head ,jack_tot, grephJ,5 ,fit_info);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{V^HA}","FV_HA_Dphys_poly2_simply_Mx");
        
  
@@ -6978,6 +7001,7 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_Dphys(jack_files,  head ,jack_tot, grephJ,5 ,fit_info);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{V^HA}","FV_HA_Dphys_poly2_simply_ax_Mx");
       
         
@@ -6986,6 +7010,9 @@ printf("\n\n////////////////////////////////////////////////////////////////////
     
     compute_systematics(argvNs, phys_point,  fit_chi2_good, "FV_Dphys_poly");
     fit_chi2_good.Nfits=0;
+    compute_FApmFV(argvNs, phys_point,  fit_FA_FV, "D_poly","pm");
+    compute_FApmFV(argvNs, phys_point,  fit_FA_FV, "D_poly","_correlated_");
+    fit_FA_FV.Nfits=0;
     
      for(Ns=0;Ns<Nsets;Ns++){
     
@@ -7006,6 +7033,7 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_Dphys_treshold(jack_files,  head ,jack_tot, grephJ,5 ,fit_info, r0A-10.1, r0A+10.1);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV_pole=save_fit(fit_FA_FV_pole,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{V^HA}","FV_HA_Dphys_pole_simply_Mx");
 
          printf("\n\n FV for D pole simply ax Mx \n");
@@ -7015,6 +7043,7 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_Dphys_treshold(jack_files,  head ,jack_tot, grephJ,5 ,fit_info, r0A-10.1, r0A+10.1);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV_pole=save_fit(fit_FA_FV_pole,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{V^HA}","FV_HA_Dphys_pole_simply_ax_Mx");
 
         
@@ -7024,7 +7053,9 @@ printf("\n\n////////////////////////////////////////////////////////////////////
     
     compute_systematics(argvNs, phys_point,  fit_chi2_good, "FV_Dphys_pole");
     fit_chi2_good.Nfits=0;
-    
+    compute_FApmFV(argvNs, phys_point,  fit_FA_FV_pole, "D_pole","_correlated_pole_");
+    fit_FA_FV_pole.Nfits=0;
+     
   
 printf("\n\n///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n Ds \n/////////////////////////////////////////////////////////////////////////////////////////////\n");
        
@@ -7257,6 +7288,7 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_Dsphys(jack_files,  head ,jack_tot, grephJ,3 ,fit_info);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{A^H}","FA_H_Dsphys_poly2_simply_Mx");
      
         printf("\n\n FA for Ds meson poly2  simply  ax M4\n");
@@ -7266,6 +7298,7 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_Dsphys(jack_files,  head ,jack_tot, grephJ,3 ,fit_info);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{A^H}","FA_H_Dsphys_poly2_simply_ax_Mx");
       
 
@@ -7274,7 +7307,7 @@ printf("\n\n////////////////////////////////////////////////////////////////////
     
     compute_systematics(argvNs, phys_point,  fit_chi2_good, "FA_Dsphys_poly");
     fit_chi2_good.Nfits=0;
-       
+   
     
     for(Ns=0;Ns<Nsets;Ns++){
     
@@ -7289,22 +7322,24 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         grephJ=create_generalised_jack( jack_files, head, &jack_tot ,mass_index, &rephJ);
 
       
-         printf("\n\n FA for Ds meson pole  simply Mx\n");
+        printf("\n\n FA for Ds meson pole  simply Mx\n");
         fit_info.Npar=5;
         fit_info.N=1;
         fit_info.function=FA_FV_Dphys_pole_simply_Mx ;
         
         fit_out=fit_FAV_Dsphys_treshold(jack_files,  head ,jack_tot, grephJ,3 ,fit_info,r0A-10.1,r0A+10.1);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV_pole=save_fit(fit_FA_FV_pole,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{A^H}","FA_H_Dsphys_pole_simply_Mx");
 
-         printf("\n\n FA for Ds meson pole  simply ax Mx \n");
+        printf("\n\n FA for Ds meson pole  simply ax Mx \n");
         fit_info.Npar=6;
         fit_info.N=1;
         fit_info.function=FA_FV_Dphys_pole_simply_ax_Mx ;
         
         fit_out=fit_FAV_Dsphys_treshold(jack_files,  head ,jack_tot, grephJ,3 ,fit_info,r0A-10.1,r0A+10.1);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV_pole=save_fit(fit_FA_FV_pole,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{A^H}","FA_H_Dsphys_pole_simply_ax_Mx");
 
         free_data( &jack_files, &head,&jack_tot, &grephJ);
@@ -7539,6 +7574,7 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_Dsphys_treshold(jack_files,  head ,jack_tot, grephJ,5 ,fit_info,r0A-10.1,r0A+10.1);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{V^HA}","FV_HA_Dsphys_poly_simply_Mx");
 
         printf("\n\n FV for Ds meson poly  simply ax Mx\n");
@@ -7548,6 +7584,7 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_Dsphys_treshold(jack_files,  head ,jack_tot, grephJ,5 ,fit_info,r0A-10.1,r0A+10.1);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{V^HA}","FV_HA_Dsphys_poly_simply_ax_Mx");
         
 
@@ -7556,6 +7593,9 @@ printf("\n\n////////////////////////////////////////////////////////////////////
     
     compute_systematics(argvNs, phys_point,  fit_chi2_good, "FV_Dsphys_poly");
     fit_chi2_good.Nfits=0;
+    compute_FApmFV(argvNs, phys_point,  fit_FA_FV, "Ds_poly","pm");
+    compute_FApmFV(argvNs, phys_point,  fit_FA_FV, "Ds_poly","_correlated_");
+    fit_FA_FV.Nfits=0;
     
     
     for(Ns=0;Ns<Nsets;Ns++){
@@ -7577,6 +7617,7 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_Dsphys_treshold(jack_files,  head ,jack_tot, grephJ,5 ,fit_info,r0A-10.1,r0A+10.1);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV_pole=save_fit(fit_FA_FV_pole,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{V^HA}","FV_HA_Dsphys_pole_simply_Mx");
 
         printf("\n\n FV for Ds meson pole  simply ax Mx\n");
@@ -7586,6 +7627,7 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         
         fit_out=fit_FAV_Dsphys_treshold(jack_files,  head ,jack_tot, grephJ,5 ,fit_info,r0A-10.1,r0A+10.1);
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        fit_FA_FV_pole=save_fit(fit_FA_FV_pole,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{V^HA}","FV_HA_Dsphys_pole_simply_ax_Mx");
         
 
@@ -7594,6 +7636,8 @@ printf("\n\n////////////////////////////////////////////////////////////////////
     
     compute_systematics(argvNs, phys_point,  fit_chi2_good, "FV_Dsphys_pole");
     fit_chi2_good.Nfits=0;
+    compute_FApmFV(argvNs, phys_point,  fit_FA_FV_pole, "Ds_pole","_correlated_pole_");
+    fit_FA_FV_pole.Nfits=0;
     
     free_tif(jack_tot,phys_point);
     free_results();
