@@ -405,6 +405,12 @@ for (ms=0;ms<nk;ms++){
        
          free(tmp);
     }
+    for(i=0;i<Npar;i++){
+        double *ave=mean_and_error(jack_files[0].sampling,Njack, par[i]);
+        printf("P%d= %g   %g\t",i,ave[0],ave[1]);
+        free(ave);
+    }
+    printf("\n");
     chi2m=mean_and_error(jack_files[0].sampling,Njack, par[1]);
     if(chi2m[0]<=chi2m[1]*0.5){
         printf("slope is zero\n");
