@@ -84,9 +84,11 @@ void get_kinematic_G( struct header_virph head ,int icomb ){
 
     auto c=head.comb[icomb];
     kinematic_2pt_G.i=icomb;//index_n_twopt_G_fit(head.ikt,head.iks,head.imom0,head.imomt,head.imoms);
+    kinematic_2pt_G.k0=c.mu1;//file_head.k[ikt+file_head.nk];
     kinematic_2pt_G.kt=c.mu1;//file_head.k[ikt+file_head.nk];
     kinematic_2pt_G.ks=c.mu2;//file_head.k[iks+file_head.nk];
     
+    kinematic_2pt_G.ik0=c.i0;//ikt;
     kinematic_2pt_G.ikt=c.it;//ikt;
     kinematic_2pt_G.iks=c.is;//iks;
     kinematic_2pt_G.rt=1;
@@ -1257,18 +1259,89 @@ int main(int argc, char **argv){
       
       int i=icomb+smearing *header.ncomb;
       int iG=icomb+smearing *header.ncomb;
+      int i_m=icomb_2pt_p0k0( header,  icomb)+smearing *header.ncomb;
+      int i_ml=icomb_2pt_p0k0( header,  icomb)+0 *header.ncomb;
       mass_jack_fit[i]=compute_effective_mass(  argv, kinematic_2pt, (char*) "oPPo", conf_jack,  Njack ,&plateaux_masses,outfile ,0/*index in data*/, namefile);
       Zf_PS_jack_fit[i]=compute_Zf_PS_ll(  argv, kinematic_2pt,  (char*) "oPPo", conf_jack, mass_jack_fit[i],  Njack ,plateaux_masses,outfile_Zf );
       
-      H_H0[iG]=H_over_H0_vir(  argv, kinematic_2pt_G,  (char*) "H_H0_A", conf_jack,  mass_jack_fit[i],  mass_jack_fit[i], Njack ,plateaux_H_H0_A,outfile_H_H0_A ,2,sym);
-      HmH0_HA[iG]=H_minus_H0_HA_vir(  argv, kinematic_2pt_G,  (char*) "HmH0_V_HA", conf_jack,  mass_jack_fit[i],  mass_jack_fit[i],   Zf_PS_jack_fit[i],  Njack ,plateaux_RV,outfile_HmH0_V_HA ,3,sym);
+      H_H0[iG]=H_over_H0_vir(  argv, kinematic_2pt_G,  (char*) "H_H0_A", conf_jack,  mass_jack_fit[i],  mass_jack_fit[i_m], Njack ,plateaux_H_H0_A,outfile_H_H0_A ,2,sym);
+      HmH0_HA[iG]=H_minus_H0_HA_vir(  argv, kinematic_2pt_G,  (char*) "HmH0_V_HA", conf_jack,  mass_jack_fit[i],  mass_jack_fit[i_m],   Zf_PS_jack_fit[i_ml],  Njack ,plateaux_RV,outfile_HmH0_V_HA ,3,sym);
       //free
       free_corr(Neff, var, header.tmax ,data_bin);
       free_jack(Njack,var , header.tmax, conf_jack);
 
    }}
- 
-   free_corr(confs, var, header.tmax ,data);
+   
+   fclose(outfile);     fclose(outfile_oPp);      fclose(outfile_Zf);     fclose(outfile_f);
+   printf("We have done with plateaux let's move on\n");
+
+   int imu1=-1,imu2=-1;
+   for(int smearing=0; smearing<header.nqsml; smearing++){
+   for(int icomb=0; icomb<header.ncomb; icomb++){
+      
+      file_head.nk=header.ninv;
+      file_head.l0=header.tmax;
+      get_kinematic(header.comb[icomb]);
+      get_kinematic_G(header, icomb);
+      if(imu1!=kinematic_2pt_G.ik0  || imu2!=kinematic_2pt_G.iks ){
+        fprintf(outfile_FA_from_H0,"\n\n#mut=%g   #mus=%g \n",kinematic_2pt_G.k0,  kinematic_2pt_G.ks );
+        fprintf(outfile_FV_from_H0_HA,"\n\n#mut=%g   #mus=%g \n",kinematic_2pt_G.k0, kinematic_2pt_G.ks);
+
+        imu1=kinematic_2pt_G.ik0;
+        imu2=kinematic_2pt_G.iks;
+      }
+      
+      int iG=icomb+smearing *header.ncomb;
+      int i=iG;
+      int i_m=icomb_2pt_p0k0( header,  icomb)+smearing *header.ncomb;
+      int i_ml=icomb_2pt_p0k0( header,  icomb)+0 *header.ncomb;
+      ////////////////// H/H0-1
+      double *ave;
+      double *xG=(double*) malloc(sizeof(double)*header.ncomb*header.nqsml);
+      double *kp=(double*) malloc(sizeof(double)*header.ncomb*header.nqsml);
+      for(int j=0;j<Njack;j++){
+            
+            kp[j]=(mass_jack_fit[i][j]*kinematic_2pt_G.E_g)- kinematic_2pt_G.kp;
+            xG[j]=2*kp[j]/(mass_jack_fit[i_m][j]*mass_jack_fit[i_m][j]);
+      }
+      write_jack_bin(Njack,xG,file_jack.xG);
+      ave=mean_and_error_jack(Njack, xG);
+
+      double *FA_from_H0_jack_fit=(double*) malloc(sizeof(double)*Njack);
+
+      for(int j=0;j<Njack;j++){
+            FA_from_H0_jack_fit[j]=(H_H0[iG][j]-1.)*mass_jack_fit[i_m][j]/(kp[j]);
+            FA_from_H0_jack_fit[j]=FA_from_H0_jack_fit[j]*Zf_PS_jack_fit[i_ml][j];
+      }
+       /*if( strcmp(argv[4],"jack")==0)
+               m=mean_and_error_jack(Njack, FA_from_H0_jack_fit);
+       if( strcmp(argv[4],"boot")==0)
+               m=mean_and_error_boot(Njack, FA_from_H0_jack_fit); 
+       */
+       m=mean_and_error(argv[4],Njack, FA_from_H0_jack_fit);
+       fprintf(outfile_FA_from_H0,"%g   %g    %g     %g   \t\t %g    %g \n",ave[0],ave[1],m[0],m[1],kinematic_2pt_G.p[3],kinematic_2pt_G.k[3] );
+       write_jack_bin(Njack,FA_from_H0_jack_fit,file_jack.FA_from_H0);
+
+       free(FA_from_H0_jack_fit);
+       free(m);
+       //////////////////////////FV
+       
+       double *FV_from_H0_HA_jack_fit=(double*) malloc(sizeof(double)*Njack);
+       for(int j=0;j<Njack;j++){
+           FV_from_H0_HA_jack_fit[j]=HmH0_HA[iG][j];
+       }
+       m=mean_and_error(argv[4],Njack, FV_from_H0_HA_jack_fit);
+       fprintf(outfile_FV_from_H0_HA,"%g   %g    %g     %g   \t\t %g    %g \n",ave[0],ave[1],m[0],m[1],kinematic_2pt_G.p[3],kinematic_2pt_G.k[3] );
+       write_jack_bin(Njack,FV_from_H0_HA_jack_fit,file_jack.FV_from_H0_HA);
+
+       free(FA_from_H0_jack_fit);
+       free(m);
+       
+       free(ave);
+    ///////////////////
+   }}
+   
+    free_corr(confs, var, header.tmax ,data);
    free_2(header.ncomb*header.nqsml,mass_jack_fit);
    return 0;   
 }

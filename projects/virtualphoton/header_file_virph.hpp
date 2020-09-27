@@ -236,5 +236,49 @@ int find_icomb_k0(struct  header_virph header, int icomb){
     return ci;
 }  
  
+
+int icomb_2pt_p0k0(struct  header_virph header, int icomb){
+    int ci=-1;
+    int found=0;
+    int foundk;
+          
+    for (int i =0; i<header.ncomb;i++ ){
+        foundk=0;
+        for (int k=0; k<3;k++){
+            if (fabs(header.comb[i].th0[k]-header.comb[i].tht[k] )<1e-10){
+                if (fabs(header.comb[i].th0[k]-0 )<1e-10)
+                if (fabs(header.comb[i].ths[k]-0 )<1e-10)
+                if (fabs(header.comb[i].mu1-header.comb[icomb].mu1 )<1e-10)    
+                if (fabs(header.comb[i].mu2-header.comb[icomb].mu2 )<1e-10)        
+                if (fabs(header.comb[i].off-header.comb[icomb].off )<1e-10){
+                    foundk++;
+                }
+            }
+                    
+        }
+        if (foundk==3){
+            ci=i;
+            found++;
+        }
+          
+    }
+    
+    if (found!=1){
+        auto c=header.comb[icomb];
+        printf("icomb=%d\n",icomb);
+        printf("i0 it is=%d  %d  %d\n",c.i0,c.it,c.is);
+        printf("mu0  mut  off=%f  %f  %f\n",c.mu1,c.mu2,c.off);
+        printf("th0=%f  %f  %f\n",c.th0[0],c.th0[1],c.th0[2]);
+        printf("tht=%f  %f  %f\n",c.tht[0],c.tht[1],c.tht[2]);
+        printf("ths=%f  %f  %f\n",c.ths[0],c.ths[1],c.ths[2]);
+        printf("find_icomb_with_opposite_mu\n");
+        printf("Either there is no combination with opposite mu either there are many\n");
+        exit(3);
+    }
+   
+        
+    return ci;
+}   
+ 
  
 #endif

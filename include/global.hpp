@@ -84,8 +84,8 @@ struct  kinematic
 
 struct  kinematic_G
 {
-    double kt,ks;
-    int ikt,iks;
+    double k0,kt,ks;
+    int ik0,ikt,iks;
     double Mom0[4],Momt[4],Moms[4];
     double p[4],k[4];
     int rt,rs,i;
