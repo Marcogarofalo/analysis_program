@@ -49,6 +49,7 @@ double   *H_over_H0_vir(char **option ,struct kinematic_G kinematic_2pt_G , char
               r[i][j]=conf_jack[j][index][i][ii]/conf_jack[j][index+2][i][ii];    // index+2 is the correlator at p =0
               r[i][j]=r[i][j]/exp(-(file_head.l0/2-i)*kinematic_2pt_G.E_g );
               //r[i][j]=r[i][j]*E_gT/E_gT0;
+              //r[i][j]=log(conf_jack[j][index][i][ii]/conf_jack[j][index][i+1][ii]);
            }
            if( strcmp(option[4],"jack")==0)
                mt[i]=mean_and_error_jack(Njack, r[i]);
@@ -127,6 +128,7 @@ double   *H_minus_H0_HA_vir(char **option ,struct kinematic_G kinematic_2pt_G , 
               
               r[i][j]/=(kinematic_2pt_G.E_g*kinematic_2pt_G.eps2_curl_p[1]-mass_jack_fit_k2k1[j]*kinematic_2pt_G.eps2_curl_k[1]);
               r[i][j]*=kinematic_2pt_G.eps1[1];
+              //r[i][j]=log(conf_jack[j][index][i][ii]/conf_jack[j][index][i+1][ii]);
         
            }
            if( strcmp(option[4],"jack")==0)
