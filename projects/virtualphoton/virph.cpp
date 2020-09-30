@@ -214,6 +214,8 @@ static void  print_file_head(FILE *stream,struct header_virph header)
     fprintf(stream,"neinv=%d\n",header.neinv);
     fprintf(stream,"nsolv=%d\n",header.nsolv);
     fprintf(stream,"nhits=%d\n",header.nhits);
+    fprintf(stream,"phptype=%d\n",header.phptype);
+    fprintf(stream,"z0=%d\n",header.z0);
     fprintf(stream,"ncomb=%d\n",header.ncomb);
     fprintf(stream,"ngsm =%d\n",header.ngsm);
     fprintf(stream,"nqsml=%d\n",header.nqsml);
@@ -265,7 +267,7 @@ static void  read_file_head_bin(FILE *stream, struct header_virph &header)
 {
     
    
-    for(auto& i : {&header.tmax,&header.x0,&header.stype,&header.ninv,&header.neinv,&header.nsolv,&header.nhits,&header.ncomb,&header.ngsm,&header.nqsml, &header.nqsm0,&header.nqsm})
+    for(auto& i : {&header.tmax,&header.x0,&header.stype,&header.phptype,&header.z0,&header.ninv,&header.neinv,&header.nsolv,&header.nhits,&header.ncomb,&header.ngsm,&header.nqsml, &header.nqsm0,&header.nqsm})
         bin_read(*i,stream);
  
     header.inv.resize(header.ninv);
@@ -308,7 +310,7 @@ static void  read_file_head_bin(FILE *stream, struct header_virph &header)
 static void  write_file_head(FILE *stream, struct header_virph header)
 {
     
-    for(auto& i : {&header.tmax,&header.x0,&header.stype,&header.ninv,&header.neinv,&header.nsolv,&header.nhits,&header.ncomb,&header.ngsm,&header.nqsml, &header.nqsm0,&header.nqsm})
+    for(auto& i : {&header.tmax,&header.x0,&header.stype,&header.phptype,&header.z0,&header.ninv,&header.neinv,&header.nsolv,&header.nhits,&header.ncomb,&header.ngsm,&header.nqsml, &header.nqsm0,&header.nqsm})
         bin_write(*i,stream);
  
    

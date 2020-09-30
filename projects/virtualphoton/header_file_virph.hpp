@@ -65,6 +65,8 @@ struct  header_virph
   int neinv;
   int nsolv;
   int nhits;
+  int phptype;
+  int z0;
   int ncomb;
   int ngsm;
   double epsgsm;
