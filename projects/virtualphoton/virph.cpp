@@ -640,6 +640,9 @@ void read_twopt_gamma(FILE *stream,int size, int iconf , double **to_write ,stru
    yt=-1./3.;
    ys=2./3.;
    
+   yt=2./3.;
+   ys=-1./3.;
+   
    
    
    for(int ix0=0;ix0<header.tmax;ix0++){
@@ -1336,7 +1339,7 @@ int main(int argc, char **argv){
        fprintf(outfile_FV_from_H0_HA,"%g   %g    %g     %g   \t\t %g    %g \n",ave[0],ave[1],m[0],m[1],kinematic_2pt_G.p[3],kinematic_2pt_G.k[3] );
        write_jack_bin(Njack,FV_from_H0_HA_jack_fit,file_jack.FV_from_H0_HA);
 
-       free(FA_from_H0_jack_fit);
+       free(FV_from_H0_HA_jack_fit);
        free(m);
        
        free(ave);

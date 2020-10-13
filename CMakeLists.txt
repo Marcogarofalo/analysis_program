@@ -9,15 +9,21 @@ set(CMAKE_CXX_FLAGS "-fopenmp   -pedantic  -g -O0 -pg -no-pie  -lm -lgmp -lfftw3
 
 
 # no need to install Eigen with cmake and use find package
-# Also it does not work
-#set(Eigen3_DIR /home/marco/library/eigen-gitlab/install/share/eigen3/cmake)
-#find_package (Eigen3 3.3 REQUIRED NO_MODULE)
-
 SET( EIGEN3_INCLUDE_DIR /home/marco/library/eigen )
 IF( NOT EIGEN3_INCLUDE_DIR )
     MESSAGE( FATAL_ERROR "Please point the environment variable EIGEN3_INCLUDE_DIR to the include directory of your Eigen3 installation.")
 ENDIF()
 INCLUDE_DIRECTORIES ( "${EIGEN3_INCLUDE_DIR}" )
+
+#using the globally installed version of Eigen: sudo apt-get libeigen3-dev
+# Eigen
+#if(NOT DEFINED EIGEN3_INCLUDE_DIR)
+#  find_package(Eigen3 REQUIRED)
+#endif()
+#target_include_directories(eigen SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR})
+
+
+
 
 
 add_subdirectory(include  include)
