@@ -1081,7 +1081,16 @@ int main(int argc, char **argv){
    mysprintf(namefile,NAMESIZE,"%s/out/interpolation_FV_from_H0.txt",argv[3]);
    FILE *interpolation_FV_from_H0=open_file(namefile,"w+");
 
+   mysprintf(namefile,NAMESIZE,"%s/out/meffHA.txt",argv[3]);
+   FILE *outfile_meffHA=open_file(namefile,"w+");
    
+   mysprintf(namefile,NAMESIZE,"%s/out/meffHV.txt",argv[3]);
+   FILE *outfile_meffHV=open_file(namefile,"w+");
+   
+   mysprintf(namefile,NAMESIZE,"%s/out/HA.txt",argv[3]);
+   FILE *outfile_HA=open_file(namefile,"w+");
+   mysprintf(namefile,NAMESIZE,"%s/out/HV.txt",argv[3]);
+   FILE *outfile_HV=open_file(namefile,"w+");
    
    double E_B,E_Pi, x_SCHET,q2,vec_pB,vec_pPi;
    int Neff,Njack,bin=1;
@@ -1193,7 +1202,11 @@ int main(int argc, char **argv){
    print_file_head(outfile_RV,header);
    print_file_head(outfile_RA_autoplateaux,header);
    print_file_head(outfile_RV_autoplateaux,header);
-
+   print_file_head(outfile_meffHA,header);
+   print_file_head(outfile_meffHV,header);
+   print_file_head(outfile_HA,header);
+   print_file_head(outfile_HV,header);
+   
    fflush(outfile);
 
    bin=1;
@@ -1268,6 +1281,17 @@ int main(int argc, char **argv){
       int i_ml=icomb_2pt_p0k0( header,  icomb)+0 *header.ncomb;
       mass_jack_fit[i]=compute_effective_mass(  argv, kinematic_2pt, (char*) "oPPo", conf_jack,  Njack ,&plateaux_masses,outfile ,0/*index in data*/, namefile);
       Zf_PS_jack_fit[i]=compute_Zf_PS_ll(  argv, kinematic_2pt,  (char*) "oPPo", conf_jack, mass_jack_fit[i],  Njack ,plateaux_masses,outfile_Zf );
+
+      double *tmp_mass;
+      tmp_mass=H_AV(  argv, kinematic_2pt_G,  (char*) "m_eff_HA", conf_jack,   mass_jack_fit[i],  mass_jack_fit[i_m], Njack, plateaux_H_H0_A, outfile_HA,2,sym);
+      free(tmp_mass);
+      tmp_mass=H_AV(  argv, kinematic_2pt_G,  (char*) "m_eff_HV", conf_jack,   mass_jack_fit[i],  mass_jack_fit[i_m], Njack, plateaux_RV    , outfile_HV,3,sym);
+      free(tmp_mass);
+      tmp_mass=meffH(  argv, kinematic_2pt_G,  (char*) "m_eff_HA", conf_jack,   mass_jack_fit[i],  mass_jack_fit[i_m], Njack, plateaux_H_H0_A, outfile_meffHA,2,sym);
+      free(tmp_mass);
+      tmp_mass=meffH(  argv, kinematic_2pt_G,  (char*) "m_eff_HV", conf_jack,   mass_jack_fit[i],  mass_jack_fit[i_m], Njack, plateaux_RV    , outfile_meffHV,3,sym);
+      free(tmp_mass);
+      
       
       H_H0[iG]=H_over_H0_vir(  argv, kinematic_2pt_G,  (char*) "H_H0_A", conf_jack,  mass_jack_fit[i],  mass_jack_fit[i_m], Njack ,plateaux_H_H0_A,outfile_H_H0_A ,2,sym);
       HmH0_HA[iG]=H_minus_H0_HA_vir(  argv, kinematic_2pt_G,  (char*) "HmH0_V_HA", conf_jack,  mass_jack_fit[i],  mass_jack_fit[i_m],   Zf_PS_jack_fit[i_ml],  Njack ,plateaux_RV,outfile_HmH0_V_HA ,3,sym);
@@ -1276,7 +1300,7 @@ int main(int argc, char **argv){
       free_jack(Njack,var , header.tmax, conf_jack);
 
    }}
-   
+   fclose(outfile_meffHA);  fclose(outfile_meffHV);
    fclose(outfile);     fclose(outfile_oPp);      fclose(outfile_Zf);     fclose(outfile_f);
    printf("We have done with plateaux let's move on\n");
 
@@ -1302,8 +1326,8 @@ int main(int argc, char **argv){
       int i_ml=icomb_2pt_p0k0( header,  icomb)+0 *header.ncomb;
       ////////////////// H/H0-1
       double *ave;
-      double *xG=(double*) malloc(sizeof(double)*header.ncomb*header.nqsml);
-      double *kp=(double*) malloc(sizeof(double)*header.ncomb*header.nqsml);
+      double *xG=(double*) malloc(sizeof(double)*Njack/*header.ncomb*header.nqsml*/);
+      double *kp=(double*) malloc(sizeof(double)*Njack/*header.ncomb*header.nqsml*/);
       for(int j=0;j<Njack;j++){
             
             kp[j]=(mass_jack_fit[i][j]*kinematic_2pt_G.E_g)- kinematic_2pt_G.kp;
