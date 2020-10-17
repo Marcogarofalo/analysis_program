@@ -421,6 +421,9 @@ for (ms=0;ms<nk;ms++){
        for (j=0;j<Njack;j++){
             fK[ms][j]=r1->MOmegaMeV[j]  - sqrt( r1->MOmegaMeV[j]*r1->MOmegaMeV[j]-4.* par[0][j]*par[1][j]*r1->MpiMeV[j]*r1->MpiMeV[j]  );
             fK[ms][j]=fK[ms][j]/(2.*par[1][j]*r1->MpiMeV[j]*r1->MpiMeV[j] );//w0 at that reference ms mass
+            //compute Omega from w0
+            //fK[ms][j]=par[0][j]+par[1][j]*r1->MpiMeV[j]*r1->MpiMeV[j] *(0.1701*0.1701/(197.3*197.3));
+            //fK[ms][j]/=(0.1701/(197.3));
        }
     }
     free(chi2m);
@@ -521,6 +524,8 @@ for (ms=0;ms<nk;ms++){
             in=r1->MKMeV[j]*r1->MKMeV[j]-r1->MpiMeV[j]*r1->MpiMeV[j]/2.;
             out[0][j]=1.-sqrt( 1.-4.* par[0][j]*par[1][j]*in  );
             out[0][j]=out[0][j]/(2.*par[1][j]*in);
+            // compute Omega from w0
+            //out[0][j]=par[0][j]+par[1][j]*(r1->MKMeV[j]*r1->MKMeV[j]-r1->MpiMeV[j]*r1->MpiMeV[j]/2.)*(0.1701*0.1701/(197.3*197.3));
         }
     }
     free(chi2m);free_2(Npar,par);
