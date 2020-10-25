@@ -244,7 +244,7 @@ static void  print_file_head(FILE *stream,struct header_virph header)
         auto c=header.comb[icomb];
         fprintf(stream,"icomb=%d\n",icomb);
         fprintf(stream,"i0 it is=%d  %d  %d\n",c.i0,c.it,c.is);
-        fprintf(stream,"mu0  mut  off=%f  %f  %f\n",c.mu1,c.mu2,c.off);
+        fprintf(stream,"mu0  mus  off=%f  %f  %f\n",c.mu1,c.mu2,c.off);
         fprintf(stream,"th0=%f  %f  %f\n",c.th0[0],c.th0[1],c.th0[2]);
         fprintf(stream,"tht=%f  %f  %f\n",c.tht[0],c.tht[1],c.tht[2]);
         fprintf(stream,"ths=%f  %f  %f\n",c.ths[0],c.ths[1],c.ths[2]);

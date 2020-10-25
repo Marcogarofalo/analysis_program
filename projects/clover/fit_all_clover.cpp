@@ -947,6 +947,16 @@ void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,do
          
          
      }
+     if(strcmp(Mtype,"M1a")==0){
+         (*ZpA)=fake_sampling(jackboot,0.4748,0.0024,jack_tot,321);//M2 2Gev  petros report Oct/2020  
+         (*ZpB)=fake_sampling(jackboot,0.4784,0.0034,jack_tot,3214);//M2 2Gev petros report Oct/2020
+         (*ZpC)=fake_sampling(jackboot,0.4871,0.0026,jack_tot,32145);//M2 2Gev  petros report Oct/2020
+     }
+     if(strcmp(Mtype,"M1b")==0){
+         (*ZpA)=fake_sampling(jackboot,0.4748,0.0026,jack_tot,321);//M2 2Gev  petros report Oct/2020  
+         (*ZpB)=fake_sampling(jackboot,0.4775,0.0027,jack_tot,3214);//M2 2Gev petros report Oct/2020
+         (*ZpC)=fake_sampling(jackboot,0.4873,0.0027,jack_tot,32145);//M2 2Gev  petros report Oct/2020
+     }
      else if(strcmp(Mtype,"M2a")==0){ //(9)??
          double cp=1.03496; 
          /*(*ZpA)=fake_sampling(jackboot,cp* 0.4744,cp*0.0016,jack_tot,321);//M2 2Gev  Enrico-Matteo  19/05/2020  constant
@@ -955,10 +965,12 @@ void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,do
          //(*ZpA)=fake_sampling(jackboot,0.500,0.001,jack_tot,321);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
          //(*ZpB)=fake_sampling(jackboot,0.501,0.002,jack_tot,3214);//M2 2Gev Enrico-Matteo  28/05/2020  constant
          //(*ZpC)=fake_sampling(jackboot,0.503,0.002,jack_tot,32145);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
-         (*ZpA)=fake_sampling(jackboot,0.496,0.002,jack_tot,321);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
-         (*ZpB)=fake_sampling(jackboot,0.495,0.002,jack_tot,3214);//M2 2Gev Enrico-Matteo  28/05/2020  constant
-         (*ZpC)=fake_sampling(jackboot,0.499,0.002,jack_tot,32145);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
-         
+         //(*ZpA)=fake_sampling(jackboot,0.496,0.002,jack_tot,321);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
+         //(*ZpB)=fake_sampling(jackboot,0.495,0.002,jack_tot,3214);//M2 2Gev Enrico-Matteo  28/05/2020  constant
+         //(*ZpC)=fake_sampling(jackboot,0.499,0.002,jack_tot,32145);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
+         (*ZpA)=fake_sampling(jackboot,0.5050,0.0024,jack_tot,321);//M2 2Gev  petros report Oct/2020  
+         (*ZpB)=fake_sampling(jackboot,0.5013,0.0026,jack_tot,3214);//M2 2Gev petros report Oct/2020
+         (*ZpC)=fake_sampling(jackboot,0.5024,0.0023,jack_tot,32145);//M2 2Gev  petros report Oct/2020
      }
      else if(strcmp(Mtype,"M2b")==0){//(9)??
          double cp= 0.972164;
@@ -971,10 +983,12 @@ void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,do
          //(*ZpA)=fake_sampling(jackboot,0.508,0.001,jack_tot,321);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
          //(*ZpB)=fake_sampling(jackboot,0.5054,0.002,jack_tot,3214);//M2 2Gev Enrico-Matteo  28/05/2020  constant
          //(*ZpC)=fake_sampling(jackboot,0.506,0.002,jack_tot,32145);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
-         (*ZpA)=fake_sampling(jackboot,0.502,0.001,jack_tot,321);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
-         (*ZpB)=fake_sampling(jackboot,0.499,0.002,jack_tot,3214);//M2 2Gev Enrico-Matteo  28/05/2020  constant
-         (*ZpC)=fake_sampling(jackboot,0.501,0.002,jack_tot,32145);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
-         
+         //(*ZpA)=fake_sampling(jackboot,0.502,0.001,jack_tot,321);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
+         //(*ZpB)=fake_sampling(jackboot,0.499,0.002,jack_tot,3214);//M2 2Gev Enrico-Matteo  28/05/2020  constant
+         //(*ZpC)=fake_sampling(jackboot,0.501,0.002,jack_tot,32145);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
+         (*ZpA)=fake_sampling(jackboot,0.5119,0.0024,jack_tot,321);//M2 2Gev  petros report Oct/2020  
+         (*ZpB)=fake_sampling(jackboot,0.5075,0.0023,jack_tot,3214);//M2 2Gev petros report Oct/2020
+         (*ZpC)=fake_sampling(jackboot,0.5060,0.0024,jack_tot,32145);//M2 2Gev  petros report Oct/2020
      }
       //w0A=fake_sampling(jackboot,1.8346689, 0.005178046,*jack_tot);
       //w0A=fake_sampling(jackboot,1.83005,3.48173757101e-3,*jack_tot,rand());// MG fit in M_PS^2
@@ -1528,7 +1542,10 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
     tif=fit_to_tif(fit_info.Npar,jack_tot,fit);
     
     printf("chi2=%g\n",fit_out.chi2[jack_tot-1] );
-    chi2m=mean_and_error_jack_biased(jack_tot,fit_out.chi2);
+    chi2m=mean_and_error( argv[1],jack_tot,fit_out.chi2);
+    //for(j=0;j<jack_tot;j++)
+    //       error(fabs(fit_out.chi2[j]-chi2m[0])/chi2m[1]>3.0/sqrt(jack_tot-2), 44,"print fit info","chi2 of jacknife=%d  is %g    while the average is %g +- %g",j,fit_out.chi2[j],chi2m[0],chi2m[1] );
+      
     /*
     for(j=0;j<jack_tot;j++){
         fk=der_fun_Nf_h(fit_info.N,  fit_info.Nvar, phys_point[j], fit_info.Npar,tif[j],  fit_info.function,  0.00001);
@@ -1537,7 +1554,7 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
         free(fk);
     }*/
     for (i=0;i<fit_info.Npar;i++){
-        Ci[i]=mean_and_error_jack_biased(jack_tot,fit[i]);
+        Ci[i]=mean_and_error( argv[1],jack_tot,fit[i]);
     }
     fprintf(ftex,"\\begin{align}\n");
     fprintf(ftex,"& \\chi^2/d.o.f.= %+.5f \\pm \t%.2g \\\\ \n",chi2m[0],chi2m[1]);
@@ -1892,7 +1909,6 @@ int main(int argc, char **argv){
     {    free(Ci[i]);   free(fit[i]);}
     free(Ci);free(fit);    
     free(tmp1);
-    exit(0);
 /*
     printf("\n\n///////////////////////////////////////Pion of m_l ///////////////////////\n");
     fit_info.Npar=6;
@@ -1911,18 +1927,33 @@ int main(int argc, char **argv){
    double *tmp3=(double*) malloc(sizeof(double)*jack_tot);
 
    
-    printf("\n\n///////////////////////////////////////Pion of m_l GL   w0 M1 ///////////////////////\n");
+    printf("\n\n///////////////////////////////////////Pion of m_l GL   w0 M1a ///////////////////////\n");
     fit_info.Npar=6;
     fit_info.N=2;
     fit_info.function=fit_Fpi_and_Mpi_GL;
         
-    init_Z( jack_files, head, jack_tot, &gjack, "w0","M1");
+    init_Z( jack_files, head, jack_tot, &gjack, "w0","M1a");
 
         
     fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
  
     //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
-    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M1");
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M1a");
+    
+    
+    printf("\n\n///////////////////////////////////////Pion of m_l GL   w0 M1b ///////////////////////\n");
+    fit_info.Npar=6;
+    fit_info.N=2;
+    fit_info.function=fit_Fpi_and_Mpi_GL;
+        
+    init_Z( jack_files, head, jack_tot, &gjack, "w0","M1b");
+
+        
+    fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
+ 
+    //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M1b");
+    
     
     printf("\n\n///////////////////////////////////////Pion of m_l GL   w0 M2a ///////////////////////\n");
     fit_info.Npar=6;
@@ -1948,6 +1979,8 @@ int main(int argc, char **argv){
 
      //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M2b");
+    
+    
     printf("\n\n///////////////////////////////////////K of m_s GL   w0 M2b ///////////////////////\n");
 
     fit_info.Npar=7;

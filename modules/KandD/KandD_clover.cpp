@@ -472,7 +472,7 @@ for (e=0;e<ensembles;e++){
                  for (j=0;j<Njack;j++)
                     rm[j]=x[j][ms+n*nk][v];
                  tmp=mean_and_error(jack_files[0].sampling,Njack, rm);
-                 if (fabs(tmp[1])<1e-6) {printf("e=%d    v=%d   %g +- %g\n", e,v,tmp[0],tmp[1] ); tmp[1]=tmp[0]/1.0e+8; }
+                 //if (fabs(tmp[1])<1e-6) {printf("e=%d    v=%d   %g +- %g\n", e,v,tmp[0],tmp[1] ); tmp[1]=tmp[0]/1.0e+8; }
                  sigmax[ms+n*nk][v]=tmp[1];
                  free(tmp);
                  }
@@ -499,10 +499,9 @@ for (e=0;e<ensembles;e++){
         printf("%g    %g    %g  %g    %g  \n",x[Njack-1][ms][0],y[Njack-1][ms][0],y[Njack-1][ms][1],y[Njack-1][ms+nk][0],y[Njack-1][ms+nk][1]);
         free(fit[ms]);
    }
-   for(i=0;i<Npar;i++)
-       printf("P%d=%g;  \t ",i,r[i][e][Njack-1]);
-   printf("\n");
-   //printf("P0=%g;  \t P1=%g;\n",r[0][e][Njack-1],r[1][e][Njack-1]);
+   //for(i=0;i<Npar;i++)
+   //    printf("P%d=%g;  \t ",i,r[i][e][Njack-1]);
+   //printf("\n");
    
    
     chi2m=mean_and_error(jack_files[0].sampling,Njack, chi2);
@@ -524,14 +523,13 @@ for (e=0;e<ensembles;e++){
    free(y); free(guess);
    im=mass_index[0][1][0];
    //printf("A53: Mk(ms1)=%f   ms1=%f\n",gJ[0].M_PS_jack[im][Njack-1],head[0].k[head[0].nk+ik2_min+0]*gJ[0].w0[Njack-1] );
-   printf("ms0  MK0w^2    fkw0   ms1  MK1W^2   fkw1    ms2    MK0w^2     fkw2  \n"); 
+   //printf("ms0  MK0w^2    fkw0   ms1  MK1W^2   fkw1    ms2    MK0w^2     fkw2  \n"); 
    for (e=0;e<ensembles;e++)
    {
        for (ms=0;ms<nk;ms++){
            im=mass_index[e][1+ms][0];
-           printf("%g  %g   %g\n",  head[e].k[head[e].nk+ik2_min+ms]*gJ[e].w0[Njack-1]/gJ[e].Zp[Njack-1],pow(gJ[e].M_PS_jack[im][Njack-1]* gJ[e].w0[Njack-1],2),
-                 gJ[e].f_PS_jack[im][Njack-1]   *  gJ[e].w0[Njack-1] 
-           );  
+           //printf("%g  %g   %g\n",  head[e].k[head[e].nk+ik2_min+ms]*gJ[e].w0[Njack-1]/gJ[e].Zp[Njack-1],pow(gJ[e].M_PS_jack[im][Njack-1]* gJ[e].w0[Njack-1],2),
+           //      gJ[e].f_PS_jack[im][Njack-1]   *  gJ[e].w0[Njack-1] );  
         }
            printf("\n");
   // printf("%d   MKw2(ms=%f)=%f    MKw2=%f      fk=%f     \n",e   ,  head[e].k[head[e].nk+ik2_min+0]*gJ[e].w0[Njack-1]/gJ[e].Zp[Njack-1]   ,pow(gJ[e].M_PS_jack[im][Njack-1]* gJ[e].w0[Njack-1],2) ,r[0][e][Njack-1]+mref[0]*r[1][e][Njack-1],r[2][e][Njack-1]+mref[0]*r[3][e][Njack-1] );
@@ -658,7 +656,7 @@ for (ms=0;ms<nk;ms++){
                for (j=0;j<Njack;j++)
                      rm[j]=x[j][e+count][v];
                tmp=mean_and_error(jack_files[0].sampling,Njack, rm);
-               if (fabs(tmp[1])<1e-6) {printf("e=%d    v=%d   %g +- %g\n", e,v,tmp[0],tmp[1] ); tmp[1]=fabs(tmp[0])/1.0e+8; }
+               //if (fabs(tmp[1])<1e-6) {printf("e=%d    v=%d   %g +- %g\n", e,v,tmp[0],tmp[1] ); tmp[1]=fabs(tmp[0])/1.0e+8; }
                sigmax[e+count][v]=tmp[1];
                free(tmp);
            }
