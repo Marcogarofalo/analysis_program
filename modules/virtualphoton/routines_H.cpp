@@ -46,6 +46,14 @@ double   *H_AV(char **option ,struct kinematic_G kinematic_2pt_G , char* name, d
            for (j=0;j<Njack;j++){            
               ii=sym[index];
               r[i][j]=(conf_jack[j][index][i][ii]);
+              r[i][j]/=exp(-i*mass_jack_fit_k2k1[j]-(file_head.l0/2-i)*kinematic_2pt_G.E_g );
+           }
+           
+   }
+   double norm=r[file_head.l0/4][Njack-1];
+   for(i=1;i<file_head.l0/2;i++){    
+           for (j=0;j<Njack;j++){            
+              r[i][j]/=norm;//;
            }
            if( strcmp(option[4],"jack")==0)
                mt[i]=mean_and_error_jack(Njack, r[i]);

@@ -1598,7 +1598,7 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
     fprintf(ftex,"\\begin{align}\n");
     fprintf(ftex,"& \\chi^2/d.o.f.= %+.5f \\pm \t%.2g \\\\ \n",chi2m[0],chi2m[1]);
     for (i=0;i<fit_info.Npar;i++){
-         if (strcmp(namefile,"fit_Mpi_Fpi")==0 ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1")==0  ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M2a")==0 ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M2b")==0){
+         if (strcmp(namefile,"fit_Mpi_Fpi")==0 ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1")==0  ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M2a")==0 ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M2b")==0 ||strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1a")==0 || strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1b")==0  ){
              if(i==0)     fprintf(ftex,"& Bw_{0}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
              if(i==1)     fprintf(ftex,"& fw_{0}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
              if(i==2)     fprintf(ftex,"& \\bar{\\ell_3}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
