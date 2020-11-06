@@ -160,7 +160,6 @@ void plotting_fit_pdf(char **argv, const char *string,int L, int T, double beta,
     int ik2=kinematic_2pt.ik2;
     int ik1=kinematic_2pt.ik1;
     
-    
     for(i=1;i<T/2;i++){
         fprintf(temp,"%d \t %.15g \t %.15g\n",i,corr[i][0],corr[i][1]);
     }
@@ -184,11 +183,11 @@ void plotting_fit_pdf(char **argv, const char *string,int L, int T, double beta,
     
     fprintf(gnuplotPipe,"set title '%d-%d, L%dT%d  %s $\\beta=%.4f$ $\\kappa_{sea}=%.7f$  $\\mu_{sea}=%.4f$'\n",ik2,ik1,L,T,contraction,beta,k_sea,mu_sea);
     int tmax_plot,tmin_plot;
-    if (tmin-L/4 <0) tmin_plot=0;
-    else tmin_plot=tmin-L/4;
-    if (tmax+L/6 >T/2) tmax_plot=T/2;
-    else tmax_plot=tmax+L/6;
-    
+    if (tmin-T/8 <0) tmin_plot=0;
+    else tmin_plot=tmin-T/8;
+    if (tmax+T/12 >T/2) tmax_plot=T/2;
+    else tmax_plot=tmax+T/12;
+       
     double ymax_plot,ymin_plot;
     ymax_plot=fit[0]+35*fit[1];
     ymin_plot=fit[0]-25*fit[1];

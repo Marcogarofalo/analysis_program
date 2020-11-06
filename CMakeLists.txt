@@ -63,6 +63,7 @@ endmacro()
 add_subdirectory(projects/realphoton  realphoton)
 add_subdirectory(projects/clover  clover)
 add_subdirectory(projects/virtualphoton  virtualphoton)
+add_subdirectory(tools tools)
 
 
 
