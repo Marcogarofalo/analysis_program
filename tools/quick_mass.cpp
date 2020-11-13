@@ -515,9 +515,10 @@ int main(int argc, char **argv){
  
    cout << "Numbers of lines in the file : " << count << endl;
    confs=count/T;
-   int Njack=confs;
    int bin=1;
-   int Neff=Njack/bin;
+   int Neff=confs/bin;
+   int Njack=Neff+1;
+   
    cout << "Numbers of configurations in the file : " << confs << endl;
    
    
@@ -527,8 +528,15 @@ int main(int argc, char **argv){
    
    for (int iconf=0; iconf< confs ;iconf++){
        for (int t =0; t< T ;t++){
-           fscanf(infile,"%lf",&data[iconf][0][t][0]);
-           data[iconf][0][t][0]*=-1;
+           int tt;
+           //fscanf(infile,"%d  %lf",&tt,&data[iconf][0][t][0]);
+           //error(t!=tt, 1, "main: reading","time do not match  conf=%d   t=%d  read %d",iconf ,t,tt);
+           double a ,b,c;
+           fscanf(infile,"%d  %lf %lf %lf %lf",&tt,&data[iconf][0][t][0],&a,&b,&c);
+           error(t!=tt, 1, "main: reading","time do not match  conf=%d   t=%d  read %d",iconf ,t,tt);
+           
+           //fscanf(infile,"%lf",&data[iconf][0][t][0]);
+           //data[iconf][0][t][0]*=-1;
        }
     }
 
@@ -539,7 +547,7 @@ int main(int argc, char **argv){
 
     double *mass,*Zfpi;
     mysprintf(argv[3],NAMESIZE,"./");
-    mysprintf(argv[5],NAMESIZE,"pdf"); 
+    mysprintf(argv[5],NAMESIZE,"no"); 
     mass=compute_effective_mass(  argv, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,0,"M_{PS}^{ll}");
     Zfpi=compute_Zf_PS_ll(  argv, kinematic_2pt, (char*) "P5P5", conf_jack, mass,  Njack ,plateaux_masses,outfile );
     

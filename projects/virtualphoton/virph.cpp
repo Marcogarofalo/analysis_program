@@ -1226,6 +1226,7 @@ int main(int argc, char **argv){
    data=       calloc_corr(confs, var,  header.tmax );
    
    double **mass_jack_fit=      (double**) malloc(sizeof(double*)*header.ncomb*header.nqsml);
+   double **oPp_jack_fit=      (double**) malloc(sizeof(double*)*header.ncomb*header.nqsml);
    double **H_H0=               (double**) malloc(sizeof(double*)*header.ncomb*header.nqsml);
    double **HmH0_HA=            (double**) malloc(sizeof(double*)*header.ncomb*header.nqsml);
    double **Zf_PS_jack_fit=     (double**) malloc(sizeof(double*)*header.ncomb*header.nqsml);
@@ -1261,7 +1262,7 @@ int main(int argc, char **argv){
 
       data_bin=binning(confs, var, header.tmax ,data, bin);
       conf_jack=create_resampling(argv[4],Neff, var, header.tmax, data_bin);
-      
+     /* 
       if (smearing==0 && icomb==1){
              FILE *aaa;
            aaa=open_file("prova_A.txt","w+");
@@ -1274,13 +1275,14 @@ int main(int argc, char **argv){
            fclose(aaa);
             
        }
-      
+      */
       int i=icomb+smearing *header.ncomb;
       int iG=icomb+smearing *header.ncomb;
       int i_m=icomb_2pt_p0k0( header,  icomb)+smearing *header.ncomb;
       int i_ml=icomb_2pt_p0k0( header,  icomb)+0 *header.ncomb;
       mass_jack_fit[i]=compute_effective_mass(  argv, kinematic_2pt, (char*) "oPPo", conf_jack,  Njack ,&plateaux_masses,outfile ,0/*index in data*/, namefile);
       Zf_PS_jack_fit[i]=compute_Zf_PS_ll(  argv, kinematic_2pt,  (char*) "oPPo", conf_jack, mass_jack_fit[i],  Njack ,plateaux_masses,outfile_Zf );
+      oPp_jack_fit[i]=compute_oPp_ll(  argv, kinematic_2pt,  (char*) "oPp", conf_jack, mass_jack_fit[i],  Njack ,plateaux_masses,outfile_oPp );
 
       double *tmp_mass;
       tmp_mass=H_AV(  argv, kinematic_2pt_G,  (char*) "m_eff_HA", conf_jack,   mass_jack_fit[i],  mass_jack_fit[i_m], Njack, plateaux_H_H0_A, outfile_HA,2,sym);
