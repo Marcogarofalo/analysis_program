@@ -1004,6 +1004,8 @@ int main(int argc, char **argv){
    FILE *outfile        =NULL; mysprintf(namefile,NAMESIZE,"%s/out/out_E0.txt",argv[3]);        outfile=fopen(namefile,"w+");       error(outfile==NULL,1,"main ", "Unable to open %s file",namefile);
    FILE *m_pcac         =NULL; mysprintf(namefile,NAMESIZE,"%s/out/m_pcac.txt",argv[3]);        m_pcac=fopen(namefile,"w+");        error(m_pcac==NULL,1,"main ", "Unable to open %s file",namefile);
    FILE *outfile_oPp     =NULL; mysprintf(namefile,NAMESIZE,"%s/out/oPp.txt",argv[3]);  outfile_oPp=fopen(namefile,"w+");    error(outfile_oPp==NULL,1,"main ",  "Unable to open %s file",namefile);
+   mysprintf(namefile,NAMESIZE,"%s/out/oPp_s.txt",argv[3]);
+   FILE *outfile_oPp_s     =open_file(namefile,"w+");  
    FILE *outfile_RA     =NULL; mysprintf(namefile,NAMESIZE,"%s/out/RA.txt",argv[3]);                outfile_RA=fopen(namefile,"w+");    error(outfile_RA==NULL,1,"main ",  "Unable to open %s file",namefile);
    FILE *outfile_CA     =NULL; mysprintf(namefile,NAMESIZE,"%s/out/CA.txt",argv[3]);                outfile_CA=fopen(namefile,"w+");    error(outfile_CA==NULL,1,"main ",  "Unable to open %s file",namefile);
    FILE *outfile_RV     =NULL; mysprintf(namefile,NAMESIZE,"%s/out/RV.txt",argv[3]);                outfile_RV=fopen(namefile,"w+");    error(outfile_RV==NULL,1,"main ",  "Unable to open %s file",namefile);
@@ -1220,13 +1222,14 @@ int main(int argc, char **argv){
    setup_file_jack(argv,Njack,header);
    
    
-   int var=6,*sym;
+   int var=7,*sym;
    double ****data,****data_bin,****conf_jack;
    sym=(int*) malloc(sizeof(int)*var);
    data=       calloc_corr(confs, var,  header.tmax );
    
    double **mass_jack_fit=      (double**) malloc(sizeof(double*)*header.ncomb*header.nqsml);
    double **oPp_jack_fit=      (double**) malloc(sizeof(double*)*header.ncomb*header.nqsml);
+   double **oPp_s_jack_fit=      (double**) malloc(sizeof(double*)*header.ncomb*header.nqsml);
    double **H_H0=               (double**) malloc(sizeof(double*)*header.ncomb*header.nqsml);
    double **HmH0_HA=            (double**) malloc(sizeof(double*)*header.ncomb*header.nqsml);
    double **Zf_PS_jack_fit=     (double**) malloc(sizeof(double*)*header.ncomb*header.nqsml);
@@ -1244,8 +1247,9 @@ int main(int argc, char **argv){
       int icombk0=find_icomb_k0(header, icomb);
       
       for (int iconf=0; iconf<confs; iconf++ ){
-            read_twopt(oPPo, header_2pt.file_size, iconf ,data[iconf][0], 0/*icorr*/, header_2pt, icomb,smearing );
+            read_twopt(oPPo, header_2pt.file_size, iconf ,data[iconf][0], 0/*icorr*/, header_2pt, icomb,smearing );//PP
             read_twopt(oPPo, header_2pt.file_size, iconf ,data[iconf][1], 1/*icorr*/, header_2pt, icomb,smearing );//oAmuPo
+            read_twopt(oPPo, header_2pt.file_size, iconf ,data[iconf][6], 0/*icorr*/, header_2pt, icomb,0/*smearing*/ ); //PP not smeared
             
             read_twopt_gamma(oAmuGPo, header.file_size, iconf ,data[iconf][2],  header, "oAmuGPo", icomb,smearing); sym[2]=0;
             read_twopt_gamma(oAmuGPo, header.file_size, iconf ,data[iconf][4],  header, "oAmuGPo", icombk0,smearing); sym[4]=0;
@@ -1255,6 +1259,8 @@ int main(int argc, char **argv){
 
       }
       symmetrise_corr(confs, 0, header.tmax,data);
+      symmetrise_corr(confs, 6, header.tmax,data);
+
       symmetrise_corr(confs, 2, header.tmax,data);
       symmetrise_corr(confs, 4, header.tmax,data);
       antisymmetrise_corr(confs, 3, header.tmax,data);
@@ -1282,12 +1288,18 @@ int main(int argc, char **argv){
       int i_ml=icomb_2pt_p0k0( header,  icomb)+0 *header.ncomb;
       mass_jack_fit[i]=compute_effective_mass(  argv, kinematic_2pt, (char*) "oPPo", conf_jack,  Njack ,&plateaux_masses,outfile ,0/*index in data*/, namefile);
       Zf_PS_jack_fit[i]=compute_Zf_PS_ll(  argv, kinematic_2pt,  (char*) "oPPo", conf_jack, mass_jack_fit[i],  Njack ,plateaux_masses,outfile_Zf );
-      oPp_jack_fit[i]=compute_oPp_ll(  argv, kinematic_2pt,  (char*) "oPp", conf_jack, mass_jack_fit[i],  Njack ,plateaux_masses,outfile_oPp );
-
+      
+      oPp_jack_fit[i]=compute_oPp_ll(  argv, kinematic_2pt,  (char*) "oPp", conf_jack, mass_jack_fit[i],  Njack ,plateaux_masses,outfile_oPp,6 );
+      if (smearing >0 ){
+          oPp_s_jack_fit[i]=compute_oPp_s(  argv, kinematic_2pt,  (char*) "oPp_s", conf_jack, oPp_jack_fit[i],  Njack ,plateaux_masses,outfile_oPp_s ,6,0);
+          for(int j=0 ; j<Njack; j++ ){
+                oPp_jack_fit[i][j]=oPp_s_jack_fit[i][j];
+          }
+      }
       double *tmp_mass;
-      tmp_mass=H_AV(  argv, kinematic_2pt_G,  (char*) "m_eff_HA", conf_jack,   mass_jack_fit[i],  mass_jack_fit[i_m], Njack, plateaux_H_H0_A, outfile_HA,2,sym);
+      tmp_mass=H_AV(  argv, kinematic_2pt_G,  (char*) "m_eff_HA", conf_jack,   mass_jack_fit[i],  mass_jack_fit[i_m], oPp_jack_fit[i], Njack, plateaux_H_H0_A, outfile_HA,2,sym);
       free(tmp_mass);
-      tmp_mass=H_AV(  argv, kinematic_2pt_G,  (char*) "m_eff_HV", conf_jack,   mass_jack_fit[i],  mass_jack_fit[i_m], Njack, plateaux_RV    , outfile_HV,3,sym);
+      tmp_mass=H_AV(  argv, kinematic_2pt_G,  (char*) "m_eff_HV", conf_jack,   mass_jack_fit[i],  mass_jack_fit[i_m], oPp_jack_fit[i], Njack, plateaux_RV    , outfile_HV,3,sym);
       free(tmp_mass);
       tmp_mass=meffH(  argv, kinematic_2pt_G,  (char*) "m_eff_HA", conf_jack,   mass_jack_fit[i],  mass_jack_fit[i_m], Njack, plateaux_H_H0_A, outfile_meffHA,2,sym);
       free(tmp_mass);
@@ -1303,7 +1315,7 @@ int main(int argc, char **argv){
 
    }}
    fclose(outfile_meffHA);  fclose(outfile_meffHV);
-   fclose(outfile);     fclose(outfile_oPp);      fclose(outfile_Zf);     fclose(outfile_f);
+   fclose(outfile);     fclose(outfile_oPp);  fclose(outfile_oPp_s);     fclose(outfile_Zf);     fclose(outfile_f);
    printf("We have done with plateaux let's move on\n");
 
    int imu1=-1,imu2=-1;

@@ -15,7 +15,7 @@
 
 
 
-double   *H_AV(char **option ,struct kinematic_G kinematic_2pt_G , char* name, double ****conf_jack,double *mass_jack_fit_k2k1, double* mass_rest,int Njack ,FILE *plateaux_masses,FILE *outfile,int index,int *sym )
+double   *H_AV(char **option ,struct kinematic_G kinematic_2pt_G , char* name, double ****conf_jack,double *mass_jack_fit_k2k1,  double* mass_rest, double *oPp, int Njack ,FILE *plateaux_masses,FILE *outfile,int index,int *sym )
 {
    int line=kinematic_2pt_G.i;
    if ( strcmp(option[1],"read_plateaux")==0 )
@@ -47,13 +47,15 @@ double   *H_AV(char **option ,struct kinematic_G kinematic_2pt_G , char* name, d
               ii=sym[index];
               r[i][j]=(conf_jack[j][index][i][ii]);
               r[i][j]/=exp(-i*mass_jack_fit_k2k1[j]-(file_head.l0/2-i)*kinematic_2pt_G.E_g );
+              r[i][j]/=oPp[j];
+              r[i][j]*=2*mass_jack_fit_k2k1[j];
            }
            
    }
-   double norm=r[file_head.l0/4][Njack-1];
+   //double norm=1;//fabs(r[file_head.l0/4][Njack-1]);
    for(i=1;i<file_head.l0/2;i++){    
            for (j=0;j<Njack;j++){            
-              r[i][j]/=norm;//;
+              //r[i][j]/=norm;//;
            }
            if( strcmp(option[4],"jack")==0)
                mt[i]=mean_and_error_jack(Njack, r[i]);

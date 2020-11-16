@@ -1695,7 +1695,7 @@ printf("here\n");
        }*/
        if(imomt==0){  
             mass_jack_fit[i]=compute_effective_mass(  argv, kinematic_2pt, (char*) "oPPo", conf_jack,  Njack ,&plateaux_masses,outfile ,0, "M_{PS}^{ll}");
-            oPp_jack_fit[i]=compute_oPp_ll(  argv, kinematic_2pt,  (char*) "oPp", conf_jack, mass_jack_fit[i],  Njack ,plateaux_masses,outfile_oPp );
+            oPp_jack_fit[i]=compute_oPp_ll(  argv, kinematic_2pt,  (char*) "oPp", conf_jack, mass_jack_fit[i],  Njack ,plateaux_masses,outfile_oPp, 0 );
             Zf_PS_jack_fit[i]=compute_Zf_PS_ll(  argv, kinematic_2pt,  (char*) "oPPo", conf_jack, mass_jack_fit[i],  Njack ,plateaux_masses,outfile_Zf );// !!!!!Zf_PS=(mu1+mu2) oPp/M^2 anche ad impulso diverso da zero  !!! da correggere
             f_PS_jack_fit[i]=compute_f_PS_ll(  argv, kinematic_2pt,  (char*) "oAmuPo", conf_jack, mass_jack_fit[i], oPp_jack_fit[i] ,Njack ,plateaux_f,outfile_f );
        }

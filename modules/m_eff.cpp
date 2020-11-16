@@ -840,7 +840,7 @@ double   *compute_Zf_PS_ll(char **option ,struct kinematic kinematic_2pt , char*
     return fit;    
     
 }
-double   *compute_oPp_ll(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, double *mass_jack_fit_k2k1,int Njack ,FILE *plateaux_masses,FILE *outfile )
+double   *compute_oPp_ll(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, double *mass_jack_fit_k2k1,int Njack ,FILE *plateaux_masses,FILE *outfile , int id)
 {
    int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    if ( strcmp(option[1],"read_plateaux")==0 )
@@ -861,7 +861,7 @@ double   *compute_oPp_ll(char **option ,struct kinematic kinematic_2pt , char* n
    fprintf(outfile,"#mass=%g\n",mass_jack_fit_k2k1[Njack-1]);
    for(i=1;i<file_head.l0/2;i++){    
            for (j=0;j<Njack;j++){
-              r[i][j]=matrix_element_ll(i,conf_jack[j][0],mass_jack_fit_k2k1[j]);
+              r[i][j]=matrix_element_ll(i,conf_jack[j][id],mass_jack_fit_k2k1[j]);
 
            }
            if( strcmp(option[4],"jack")==0)
@@ -888,7 +888,58 @@ double   *compute_oPp_ll(char **option ,struct kinematic kinematic_2pt , char* n
     return fit;    
     
 }
-          
+   
+   
+double   *compute_oPp_s(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, double *oPp_l,int Njack ,FILE *plateaux_masses,FILE *outfile , int i_ll, int i_ls)
+{
+   int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
+   if ( strcmp(option[1],"read_plateaux")==0 )
+   	go_to_line(plateaux_masses,line);
+
+   double **r,*m,**mt,*fit;
+   int i,j,yn;
+    
+   r=(double**) malloc(sizeof(double*)*file_head.l0);
+   for(i=0;i<file_head.l0;i++)
+       r[i]=(double*) malloc(sizeof(double)*Njack);
+   mt=(double**) malloc(sizeof(double*)*file_head.l0);
+
+
+   fprintf(outfile,"##matrix elemnt oPp(t) from %s  propagators:1) mu %.5f r %d theta %.5f 2) mu %.5f r %d theta %.5f\n",name,
+           kinematic_2pt.k2,kinematic_2pt.r2,kinematic_2pt.mom2,
+           kinematic_2pt.k1,kinematic_2pt.r1, kinematic_2pt.mom1 );
+   //fprintf(outfile,"#mass=%g\n",mass_jack_fit_k2k1[Njack-1]);
+   for(i=1;i<file_head.l0/2;i++){    
+           for (j=0;j<Njack;j++){
+              //r[i][j]=matrix_element_ll(i,conf_jack[j][0],mass_jack_fit_k2k1[j]);
+              r[i][j]=conf_jack[j][i_ls][i][0]/conf_jack[j][i_ll][i][0];
+              r[i][j]*=oPp_l[j];
+
+           }
+           if( strcmp(option[4],"jack")==0)
+               mt[i]=mean_and_error_jack(Njack, r[i]);
+           if( strcmp(option[4],"boot")==0)
+               mt[i]=mean_and_error_boot(Njack, r[i]);
+           fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
+   }
+
+   fit=fit_plateaux(option, kinematic_2pt ,  name,"oPp",mt,r,  Njack,plateaux_masses,outfile);
+   write_jack_bin(Njack,fit,file_jack.f_PS);
+
+     
+   for(i=1;i<file_head.l0/2;i++)
+      free(mt[i]);
+   free(mt);
+   for(i=0;i<file_head.l0;i++)
+      free(r[i]);
+   free(r);
+       
+   fflush(outfile);
+     
+    
+    return fit;    
+    
+}   
 
 double   *compute_f_PS_ll(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, double *mass_jack_fit_k2k1, double *oPp_jack_fit ,int Njack ,FILE *plateaux_masses,FILE *outfile )
 {

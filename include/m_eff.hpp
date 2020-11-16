@@ -30,7 +30,8 @@ double   *compute_f_PS_GEVP(char **option ,struct kinematic kinematic_2pt , char
 double Rmur(int t, double ***in,double mass, double oPp,struct kinematic_G kinematic_2pt_G,int index,int *sym);
 
 extern double   *compute_Zf_PS_ll(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, double *mass_jack_fit_k2k1,int Njack ,FILE *plateaux_masses,FILE *outfile );
-extern double   *compute_oPp_ll(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, double *mass_jack_fit_k2k1,int Njack ,FILE *plateaux_masses,FILE *outfile );
+extern double   *compute_oPp_ll(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, double *mass_jack_fit_k2k1,int Njack ,FILE *plateaux_masses,FILE *outfile , int id);
+double   *compute_oPp_s(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, double *oPp_ll,int Njack ,FILE *plateaux_masses,FILE *outfile , int i_ll, int i_ls);
 extern double   *compute_f_PS_ll(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, double *mass_jack_fit_k2k1, double *oPp_jack_fit,int Njack ,FILE *plateaux_masses,FILE *outfile );
 
 extern double   *compute_Rmur(char **option ,struct kinematic_G kinematic_2pt , char* name, double ****conf_jack, double *mass_jack_fit_k2k1, double* mass_rest, double *oPp_PS_jack_fit, int Njack ,FILE *plateaux_masses,FILE *outfile , int index,int *sym);
