@@ -980,9 +980,11 @@ double rtbis(double (*func)(double , double,int,double*),double input,int Npar, 
 }
 
 
-double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),double n, int Nvar, double *x,int Npar, double *P, int ivar,double input, double x1, double x2, double xacc)
+double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double input, double x1, double x2, double xacc)
 //Using bisection, find the root of a function func-input known to lie between x1 and x2. The root,
 //returned as rtbis, will be refined until its accuracy is ±xacc.
+//func return different values for different n
+//it solves function=input 
 {
 
     double *xt = (double*) malloc(sizeof(double)*Nvar);

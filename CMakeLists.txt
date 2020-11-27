@@ -56,6 +56,7 @@ macro(add_target_with_lib TARGETNAME)
   target_link_libraries(${TARGETNAME} PUBLIC pion)
   target_link_libraries(${TARGETNAME} PUBLIC m_eff1)
   target_link_libraries(${TARGETNAME} PUBLIC virtualphoton_routines)
+  target_link_libraries(${TARGETNAME} PUBLIC gamma_analysis)
 #target_link_libraries(${TARGETNAME} PUBLIC Kokkos::kokkos)
 endmacro()
 

@@ -224,6 +224,14 @@ add_library(
 target_include_directories(virtualphoton_routines PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 
+add_library(
+    gamma_analysis STATIC
+    gamma_analysis.hpp
+    ../modules/Gamma.cpp
+) 
+
+target_include_directories(gamma_analysis PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+
 
 
 

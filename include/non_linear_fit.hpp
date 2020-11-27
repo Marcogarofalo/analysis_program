@@ -34,7 +34,7 @@ double  *non_linear_fit_Nf_sigmax_covariance(int N, int *ensemble ,double **x, d
 
 double rtsafe(void (*funcd)(double,int,double*, double *, double *),int Npar,double *P , double x1, double x2,double xacc);//non funziona rotine di merda!
 double rtbis(double (*func)(double,double,int,double*),double input,int Npar, double *P, double x1, double x2, double xacc);
-double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),double n, int Nvar, double *x,int Npar, double *P, int ivar,double input, double x1, double x2, double xacc);
+double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double input, double x1, double x2, double xacc);
 double *der_fun_Nf_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(int,int,double*,int,double*), double h);
 double *derN_fun_Nf_var_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(int,int,double*,int,double*), double h,int N);
 

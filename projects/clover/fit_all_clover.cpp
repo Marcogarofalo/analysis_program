@@ -242,6 +242,56 @@ double fit_Fpi_and_Mpi_GL(int n, int Nvar, double *x,int Npar,double  *P){
 
 
 
+double fit_FpiMpi4_and_Mpi2_GL(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Mw2=0,xi;
+    double pi=3.141592653589793;
+    double Bw, fw, l3b, P2, l4b, P4,ZP;
+         Bw=P[0], fw=P[1], l3b=P[2], P2=P[3], l4b=P[4], P4=P[5] ;
+   
+    double mw=x[0], w0=x[1], dmpi2=x[2], dfpi=x[3];
+    int Lsize=(int(x[4]));
+    double L_w=(x[4]) /w0;
+    double KM,Kf;
+   
+    double P1=-l3b-2*log( v_Mpiw0 /(4*pi*fw));
+    double P3=2*l4b+4*log(   v_Mpiw0/(4*pi*fw) );
+    
+    
+    double Delta=FVE_GL_fast( L_w, mw, fw, Bw);
+    
+    
+    
+    xi=2*Bw*mw/(16.*pi*pi*fw*fw);
+    
+    if (n==0){
+        
+        Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2;
+        Mw2*=2*Bw*mw*(1-0.25 *Delta)*(1-0.25 *Delta);
+        
+    }
+    if (n==1){// fit fot w0^5fpi Mpi^4
+        double ML=sqrt(2*Bw*mw)*L_w;
+        Mw2= (4.*pi)* (4.*pi)* (4.*pi)* (4.*pi);
+        Mw2*= fw * fw *fw * fw * fw *xi*xi;
+        Mw2*= (1.+ 2.*(l4b-l3b) *xi + xi*xi *P[6] +(1./(w0*w0))*P4 );
+        Mw2*=(1.+ P[7]*xi*xi *exp(-ML)/ pow(ML,3./2.));
+        
+    }
+    if (n==2){
+        Mw2=(1-0.25 *Delta);  //KM   M(inf)=M(L)/KM
+        
+    }
+    if (n==3){
+        Mw2=1;  //KfMpi4   M(inf)=M(L)/Kf
+        
+    }
+    
+     return Mw2;
+    
+}
+
+
 double fit_FK_and_MK_GL(int n, int Nvar, double *x,int Npar,double  *P){
     
     double Mw2=0,xi;
@@ -630,11 +680,11 @@ void setup_reading_list_jack( struct  database_file_jack *jack_files, struct hea
       N=setup_reading_single_jack(head,&(jack_files->f_M_PS)  ,jack_files->M_PS );
       
       N1=setup_reading_single_jack(head,&(jack_files->f_M_PS_GEVP)       ,jack_files->M_PS_GEVP );
-      error(N!=N1,1,"setup_reading_list_jack","jacknifes have not the same number");
+      error(N!=N1,1,"setup_reading_list_jack","jacknifes  in %s have not the same number",jack_files->M_PS_GEVP  );
       N1=setup_reading_single_jack(head,&(jack_files->f_f_PS)       ,jack_files->f_PS );
-      error(N!=N1,1,"setup_reading_list_jack","jacknifes have not the same number");
+      error(N!=N1,1,"setup_reading_list_jack","jacknifes in %s have not the same number", jack_files->f_PS );
       N1=setup_reading_single_jack(head,&(jack_files->f_f_PS_ls_ss)       ,jack_files->f_PS_ls_ss );
-      error(N!=N1,1,"setup_reading_list_jack","jacknifes have not the same number");
+      error(N!=N1,1,"setup_reading_list_jack","jacknifes in %s have not the same number", jack_files->f_PS_ls_ss);
       
       
       jack_files->Njack=N;
@@ -1487,10 +1537,10 @@ void print_chiral_continuum_fit(char **argv,int jack_tot,struct fit_result fit_o
         x[j]=(double*) malloc(sizeof(double)*fit_info.Nvar);
         //mw=x[0], w0=x[1], dmpi2=x[2], dfpi=x[3];
         x[j][0]=0;//mlw
-        x[j][1]=1e+6;//r0
+        x[j][1]=1e+5;//r0
         x[j][2]=1e+8;//Mpi2
         x[j][3]=1e+8;//fpi
-        x[j][4]=1e+10;//L such that L/w=1e+4
+        x[j][4]=1e+12;//L such that L/w=1e+4
         
     }
     for (i=0;i<100;i++){
@@ -1598,14 +1648,16 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
     fprintf(ftex,"\\begin{align}\n");
     fprintf(ftex,"& \\chi^2/d.o.f.= %+.5f \\pm \t%.2g \\\\ \n",chi2m[0],chi2m[1]);
     for (i=0;i<fit_info.Npar;i++){
-         if (strcmp(namefile,"fit_Mpi_Fpi")==0 ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1")==0  ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M2a")==0 ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M2b")==0 ||strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1a")==0 || strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1b")==0  ){
+         if (strcmp(namefile,"fit_Mpi_Fpi")==0 ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1")==0  ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M2a")==0 ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M2b")==0 ||strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1a")==0 || strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1b")==0  ||
+           strcmp(namefile,"fit_FpiMpi4_GL_w0_M1a")==0        ){
              if(i==0)     fprintf(ftex,"& Bw_{0}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
-             if(i==1)     fprintf(ftex,"& fw_{0}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
-             if(i==2)     fprintf(ftex,"& \\bar{\\ell_3}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
-             if(i==3)     fprintf(ftex,"& P_2= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
-             if(i==4)     fprintf(ftex,"& \\bar{\\ell_4}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
-             if(i==5)     fprintf(ftex,"& P_4= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
-
+             else if(i==1)     fprintf(ftex,"& fw_{0}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
+             else if(i==2)     fprintf(ftex,"& \\bar{\\ell_3}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
+             else if(i==3)     fprintf(ftex,"& P_2= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
+             else if(i==4)     fprintf(ftex,"& \\bar{\\ell_4}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
+             else if(i==5)     fprintf(ftex,"& P_4= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
+             else
+                 fprintf(ftex,"& P_{%d}= %+.5f \\pm \t%.2g   \\\\ \n",i,Ci[i][0],Ci[i][1]);
 
         }
         else
@@ -1657,6 +1709,19 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
     double *xi=(double*) malloc(sizeof(double)*jack_tot);
     double *tmp3=(double*) malloc(sizeof(double)*jack_tot);
     double *w0_MILC_MeV=fake_sampling(argv[1],v_w0MeV,err_w0fm/197.326963 ,jack_tot,123);
+    
+    double **x=(double**) malloc(sizeof(double*)*jack_tot);
+    for(j=0;j<jack_tot;j++){
+        x[j]=(double*) malloc(sizeof(double)*fit_info.Nvar);
+        //mw=x[0], w0=x[1], dmpi2=x[2], dfpi=x[3];
+        x[j][0]=0;//mlw
+        x[j][1]=1e+6;//r0
+        x[j][2]=phys_point[j][2];//Mpi2
+        x[j][3]=phys_point[j][3];//fpi
+        x[j][4]=1e+10;//L such that L/w=1e+4
+        
+    }
+    
     for (j=0;j<jack_tot;j++){
         
        
@@ -1665,6 +1730,16 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
        phys_point[j][0]=xi[j];
        r1.fpiw[j]=fPSw_chiral_FVE(  xi[j],fit_info.Npar,tif[j]);
        w0_estimate[j]=r1.fpiw[j]/(v_fpiMeV_exp/197.326963);
+       if(strcmp(namefile,"fit_FpiMpi4_GL_w0_M1a")==0 ){
+         /*  xi[j]=rtbis_func_eq_input(fit_info.function ,
+                                     0,//double n
+                                     fit_info.Nvar, x,fit_info.Npar, tif[j], 
+                                     0,//ivar
+                                     in, 0.0001, 0.01, 1e-10);//gives mw  */
+           x[j][0]=xi[j];
+           r1.fpiw[j]=fit_info.function(1,fit_info.Nvar,x[j],fit_info.Npar,tif[j])  / pow(fit_info.function(0,fit_info.Nvar,x[j],fit_info.Npar,tif[j]),2);
+           w0_estimate[j]=r1.fpiw[j]/(v_fpiMeV_exp/197.326963);
+       }
        
        r1.w0fm[j]= w0_estimate[j] ;
        r1.w0MeV[j]= w0_estimate[j]/197.326963 ;
@@ -1675,6 +1750,7 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
        
        
        tmp3[j]=r1.fpiMeV_exp[j]/(r1.fw[j] /r1.w0MeV[j]);
+       
        
     }
     double **C1=(double**) malloc(sizeof(double*)*2);
@@ -1740,7 +1816,7 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
     free(fit_out.chi2);
     free(fit_out.P);
     free(fit_out.C);
-    
+    free_2(jack_tot,x);
     free_2(jack_tot,tif);
     //free_tif(fit_info.Npar,fit);
     fclose(ftex);fclose(fgp);free(chi2m);free(tmp); free(Ci);
@@ -1965,6 +2041,21 @@ int main(int argc, char **argv){
     double **C1;
    double *tmp3=(double*) malloc(sizeof(double)*jack_tot);
 
+    printf("\n\n///////////////////////////////////////Pion Mpi^2 and fpiMpi^4  GL  w0 M1a ///////////////////////\n");
+    fit_info.Npar=8;
+    fit_info.N=2;
+    fit_info.function=fit_FpiMpi4_and_Mpi2_GL;
+        
+    init_Z( jack_files, head, jack_tot, &gjack, "w0","M1a");
+
+        
+    fit_out=fit_Mpi_fwMpi4_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
+ 
+    //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_FpiMpi4_GL_w0_M1a");
+ 
+   
+   
    
     printf("\n\n///////////////////////////////////////Pion of m_l GL   w0 M1a ///////////////////////\n");
     fit_info.Npar=6;

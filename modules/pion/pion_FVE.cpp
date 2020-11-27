@@ -73,7 +73,7 @@ double Mw2_over_fw2_chiral_FVE_a0_minus(double  input, double x,int Npar,double 
     double Mw2=0,xi;
     double pi=3.141592653589793;
     double Bw, fw, l3b, P2, l4b;
-    if (Npar==6)
+    if (Npar>=6 )
          Bw=P[0], fw=P[1], l3b=P[2], P2=P[3], l4b=P[4];
     else if (Npar==4)//flag 2019
          Bw=P[0], fw=P[1], l3b=flagl3b, P2=P[2], l4b=flagl4b;
