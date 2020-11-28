@@ -1736,9 +1736,31 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
                                      fit_info.Nvar, x,fit_info.Npar, tif[j], 
                                      0,//ivar
                                      in, 0.0001, 0.01, 1e-10);//gives mw  */
+           
            x[j][0]=xi[j];
            r1.fpiw[j]=fit_info.function(1,fit_info.Nvar,x[j],fit_info.Npar,tif[j])  / pow(fit_info.function(0,fit_info.Nvar,x[j],fit_info.Npar,tif[j]),2);
            w0_estimate[j]=r1.fpiw[j]/(v_fpiMeV_exp/197.326963);
+           
+           w0_estimate[j]=0.171;//first guess
+           double res=1;
+           while (  res >1e-6){
+                in=r1.MpiMeV[j]*r1.MpiMeV[j]*r1.MpiMeV[j]*r1.MpiMeV[j]*r1.fpiMeV_exp[j];
+                in*=pow(w0_estimate[j]/197.326963,5);//input w0^5 fpi Mpi^4  // we need w0 in MeV-1
+                
+                xi[j]=rtbis_func_eq_input(fit_info.function ,
+                                            1,//double n
+                                            fit_info.Nvar, x[j],fit_info.Npar, tif[j], 
+                                            0,//ivar
+                                            in, 0.0001, 0.01, 1e-10); // find mw such imposing in= w0^5 fpi Mpi^4 
+                x[j][0]=xi[j]; 
+                double tmp_Mw2=fit_info.function(0,fit_info.Nvar,x[j],fit_info.Npar,tif[j]);// compute Mpi^2w0 at mw
+                double w0_tmp=sqrt(tmp_Mw2)/(r1.MpiMeV[j]/197.326963);
+                res=w0_estimate[j]-w0_tmp;
+                
+                w0_estimate[j]=w0_estimate[j] +res/2.;
+                r1.fpiw[j]=fit_info.function(1,fit_info.Nvar,x[j],fit_info.Npar,tif[j])  / pow(fit_info.function(0,fit_info.Nvar,x[j],fit_info.Npar,tif[j]),2);
+                //printf("guess w0=%f   res=%f\n" ,w0_estimate[j],res);
+           }
        }
        
        r1.w0fm[j]= w0_estimate[j] ;
