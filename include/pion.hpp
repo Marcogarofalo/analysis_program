@@ -59,6 +59,8 @@ double **fit_fw_of_Mw_chiral_FVE_P40(struct database_file_jack  *jack_files,  st
 
 //Pion_clover.c
 struct fit_result fit_Mpi_fw_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info);
+struct fit_result fit_Mpi_fw_chiral_FVE_clover_treshold(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info, double threshold);
 struct fit_result fit_Mpi_fwMpi4_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info);
+struct fit_result fit_Mpi_fwMpi4_chiral_FVE_clover_threshold(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info, double threshold);
 
 #endif

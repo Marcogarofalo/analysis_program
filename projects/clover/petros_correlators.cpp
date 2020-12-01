@@ -311,6 +311,41 @@ void read_twopt(FILE *stream,int size, int iconf , double **to_write,int si, int
 }
 
 
+void read_twopt_r1r2(FILE *stream,int size, int iconf , double **to_write,int si, int ii, int imom2, int imom1, int ik2, int r2, int ik1,int r1 ){
+   
+   long int tmp;
+   int iiconf,N,s;
+   double *obs;
+   int mik1, mik2;
+   int mimom1,mimom2,mr1,mr2;
+   int t,vol,index;
+   double re,im;
+ 
+   tmp= sizeof(double)* (file_head.nmoms*4 + file_head.nk*2+4 )+ sizeof(int)*(12) ;
+   tmp+=sizeof(double)*iconf*size+sizeof(int)*iconf;
+   fseek(stream, tmp, SEEK_SET);
+
+   obs=(double*) malloc(size*sizeof(double)); 
+   fread(obs,sizeof(double),size,stream);   
+   
+   mimom1=index_minus_theta(imom1);
+   mimom2=index_minus_theta(imom2);
+   mr1=index_minus_r(r1);
+   mr2=index_minus_r(r2);
+
+   for(t=0;t<file_head.l0;t++){
+	   re=0;vol=0;im=0;
+	   index=2*index_twopt(si,ii,t,imom2,imom1,ik2,r2,ik1,r1);
+	   re+= obs[index];
+       im+= obs[index+1];
+       vol++;
+       
+	   to_write[t][0]=re/( (double) vol );
+	   to_write[t][1]=im/( (double) vol );
+   }
+   free(obs);
+}
+
  
 void extract_threept(double *to_read , double **to_write,int si, int ii, int imom1, int imom2, int ik1, int ik2 ,int ik3,int sym ){
 
@@ -669,17 +704,64 @@ int main(int argc, char **argv){
           read_twopt(f_ls,size,i ,data[i][1],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1 );
           read_twopt(f_sl,size,i ,data[i][2],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1 );
           read_twopt(f_ss,size,i ,data[i][3],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1 );
+          
+          
           if(  strcmp(name,"P5P5")==0 ){ 
                for(t=0;t<file_head.l0;t++) {
                     fprintf(outfile_PP,"%d   %.15f   %.15f   %.15f   %.15f\n",t,data[i][0][t][0],data[i][1][t][0],data[i][2][t][0],data[i][3][t][0]);
                     fprintf(outfile_PPi,"%d   %.15f   %.15f   %.15f   %.15f\n",t,data[i][0][t][0],data[i][1][t][0],data[i][2][t][0],data[i][3][t][0]);
                }
           }
+          
+          
        }
       fclose(outfile_PPi);
       
  
 }}   }}}} // end loop imom1 imom2 r1 ik1 r2 ik2  
+ 
+ for(ik1=0;ik1<file_head.nk;ik1++){     //for(ik1=0;ik1<=ik2;ik1++){
+   for(r1=0;r1<2;r1++){  // it is not a loop, r1=0
+   for(ik2=ik1;ik2<file_head.nk;ik2++){
+   for(r2=0;r2<2;r2++){    // it is not a loop, r2=0
+   for(imom2=0;imom2<file_head.nmoms;imom2++){
+   for(imom1=0;imom1<file_head.nmoms;imom1++){
+       mr2=index_minus_r(r2);
+       mr1=index_minus_r(r1);
+       mimom1=index_minus_theta(imom1);
+       mimom2=index_minus_theta(imom2);
+      
+
+       /*   P5P5 mass*/ 
+       contraction_index(&ii,"P5P5");
+       contraction_name(ii,name);
+       
+       mysprintf(namefile,NAMESIZE,"%s/Petros/PP_ik1_%.5f_ik2_%.5f_r1_%d_r2_%d.txt",argv[3],file_head.k[file_head.nk+ik1],file_head.k[file_head.nk+ik2],r1,r2);
+       outfile_PPi=open_file(namefile,"w+");
+
+
+       for (i=0;i<confs;i++){
+      // extract_twopt(out[i] ,data[i][0],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1 );
+          read_twopt_r1r2(f_ll,size,i ,data[i][0],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1 );
+          read_twopt_r1r2(f_ls,size,i ,data[i][1],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1 );
+          read_twopt_r1r2(f_sl,size,i ,data[i][2],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1 );
+          read_twopt_r1r2(f_ss,size,i ,data[i][3],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1 );
+          
+          
+          if(  strcmp(name,"P5P5")==0 ){ 
+               for(t=0;t<file_head.l0;t++) {
+                    fprintf(outfile_PPi,"%d   %.15f   %.15f   %.15f   %.15f\n",t,data[i][0][t][0],data[i][1][t][0],data[i][2][t][0],data[i][3][t][0]);
+               }
+          }
+          
+          
+       }
+      fclose(outfile_PPi);
+      
+ 
+}}   }}}} // end loop imom1 imom2 r1 ik1 r2 ik2  
+ 
+ 
  
     return 0;   
 }

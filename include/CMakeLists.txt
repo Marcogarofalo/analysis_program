@@ -198,6 +198,7 @@ add_library(
     pion STATIC
     pion.hpp
     ../modules/pion/Pion_clover.cpp
+    ../modules/pion/Pion_clover_treshold.cpp
     ../modules/pion/pion_FVE.cpp
     ../modules/pion/pion.cpp
 ) 

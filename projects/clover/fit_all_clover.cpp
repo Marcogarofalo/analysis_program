@@ -2127,20 +2127,20 @@ int main(int argc, char **argv){
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_FpiMpi4_GL_w0_M1a");
  
     
-    /*printf("\n\n///////////////////////////////////////Pion Mpi^2 and fpiMpi^4  linear  w0 M1a ///////////////////////\n");
+    printf("\n\n///////////////////////////////////////Pion Mpi^2 and fpiMpi^4  linear  w0 M1a ///////////////////////\n");
     fit_info.Npar=6;
     fit_info.N=2;
     fit_info.function=fit_FpiMpi4_and_Mpi2_linear;
         
     init_Z( jack_files, head, jack_tot, &gjack, "w0","M1a");
 
-    double threshold_Mpiw=0.29 ;//0.164 ~19MeV 
-    fit_out=fit_Mpi_fwMpi4_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, threshold_Mpiw);
+    double threshold_Mpiw=0.20 ;//0.164 ~19MeV 
+    fit_out=fit_Mpi_fwMpi4_chiral_FVE_clover_threshold(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, threshold_Mpiw);
  
     //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_FpiMpi4_GL_w0_M1a_threshold");
  
-   */
+   
    
    
     printf("\n\n///////////////////////////////////////Pion of m_l GL   w0 M1a ///////////////////////\n");
@@ -2154,6 +2154,10 @@ int main(int argc, char **argv){
     fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
  
     //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M1a");
+    
+    threshold_Mpiw=0.20;
+    fit_out=fit_Mpi_fw_chiral_FVE_clover_treshold(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, threshold_Mpiw);
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M1a");
     
     
