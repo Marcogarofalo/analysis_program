@@ -28,8 +28,10 @@
 #define v_w0GeV ((v_w0fm/197.326963)*1000)
 #define v_w0MeV (v_w0fm/197.326963)
 
-#define v_MpiMeV 134.80
-#define err_MpiMeV 0.004
+//#define v_MpiMeV 134.80
+//#define err_MpiMeV 0.3
+#define v_MpiMeV 134.98
+#define err_MpiMeV 0.01
 #define v_Mpiw0  (v_MpiMeV*v_w0MeV)
 
 #define v_MKMeV 494.2
@@ -44,7 +46,8 @@
 
 
 #define v_fpiMeV_exp  130.41
-#define err_fpiMeV_exp  0.0001
+#define err_fpiMeV_exp  0.2
+//#define err_fpiMeV_exp  0.0001
 
 #define v_fKMeV_exp  155.0 
 #define err_fKMeV_exp  1.9
