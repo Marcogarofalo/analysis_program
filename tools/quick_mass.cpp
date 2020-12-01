@@ -477,14 +477,28 @@ int main(int argc, char **argv){
 
    error(argc!=6,1,"main ",
          "usage:./quinck_mass  blind/see/read_plateaux file T  mu1 mu2");
+    char **option;
+    option=(char **) malloc(sizeof(char*)*6);
+    option[0]=(char *) malloc(sizeof(char)*NAMESIZE);
+    option[1]=(char *) malloc(sizeof(char)*NAMESIZE);
+    option[2]=(char *) malloc(sizeof(char)*NAMESIZE);
+    option[3]=(char *) malloc(sizeof(char)*NAMESIZE);
+    option[4]=(char *) malloc(sizeof(char)*NAMESIZE);
+    option[5]=(char *) malloc(sizeof(char)*NAMESIZE);
 
+    mysprintf(option[1],NAMESIZE,argv[1]); // blind/see/read_plateaux
+    mysprintf(option[2],NAMESIZE,"-p"); // -p
+    mysprintf(option[3],NAMESIZE,"./"); // path
+    mysprintf(option[4],NAMESIZE,"jack"); //resampling
+    mysprintf(option[5],NAMESIZE,"no"); // pdf
+   printf("%s\n",option[4] );
    int T=atoi(argv[3]);
    
    double mu1=atof(argv[4]);
    double mu2=atof(argv[5]);
    printf("mu=%g  %g\n",mu1,mu2);
    char namefile[NAMESIZE];
-   mysprintf(argv[4],NAMESIZE,"jack");
+   //mysprintf(argv[4],NAMESIZE,"jack");
    
    file_head.l0=T;
    file_head.l1=T/2;file_head.l2=T/2;file_head.l3=T/2;
@@ -524,7 +538,7 @@ int main(int argc, char **argv){
    
    data=calloc_corr(confs, 2,  file_head.l0 );
    
-   setup_file_jack(argv,Njack);
+   setup_file_jack(option,Njack);
    
    for (int iconf=0; iconf< confs ;iconf++){
        for (int t =0; t< T ;t++){
@@ -532,7 +546,7 @@ int main(int argc, char **argv){
            //fscanf(infile,"%d  %lf",&tt,&data[iconf][0][t][0]);
            //error(t!=tt, 1, "main: reading","time do not match  conf=%d   t=%d  read %d",iconf ,t,tt);
            double a ,b,c;
-           fscanf(infile,"%d  %lf %lf %lf %lf",&tt,&data[iconf][0][t][0],&a,&b,&c);
+           fscanf(infile,"%d  %lf %lf",&tt,&data[iconf][0][t][0],&a);
            error(t!=tt, 1, "main: reading","time do not match  conf=%d   t=%d  read %d",iconf ,t,tt);
            
            //fscanf(infile,"%lf",&data[iconf][0][t][0]);
@@ -542,14 +556,15 @@ int main(int argc, char **argv){
 
     symmetrise_corr(confs, 0, file_head.l0,data);
     data_bin=binning(confs, 1, file_head.l0 ,data, bin);
-    conf_jack=create_resampling(argv[4],Neff, 1, file_head.l0, data_bin);
+    conf_jack=create_resampling(option[4],Neff, 1, file_head.l0, data_bin);
     get_kinematic( 0,0,  1, 0,0,  0 );
+    printf("option[4]=%s\n",option[4]);
 
     double *mass,*Zfpi;
-    mysprintf(argv[3],NAMESIZE,"./");
-    mysprintf(argv[5],NAMESIZE,"no"); 
-    mass=compute_effective_mass(  argv, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,0,"M_{PS}^{ll}");
-    Zfpi=compute_Zf_PS_ll(  argv, kinematic_2pt, (char*) "P5P5", conf_jack, mass,  Njack ,plateaux_masses,outfile );
+    
+       
+    mass=compute_effective_mass(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,0,"M_{PS}^{ll}");
+    Zfpi=compute_Zf_PS_ll(  option, kinematic_2pt, (char*) "P5P5", conf_jack, mass,  Njack ,plateaux_masses,outfile );
     
     
     free(mass);free(Zfpi);

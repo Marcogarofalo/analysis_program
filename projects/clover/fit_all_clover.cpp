@@ -292,6 +292,56 @@ double fit_FpiMpi4_and_Mpi2_GL(int n, int Nvar, double *x,int Npar,double  *P){
 }
 
 
+double fit_FpiMpi4_and_Mpi2_linear(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Mw2=0,xi;
+    double pi=3.141592653589793;
+    double Bw, fw, l3b, P2, l4b, P4,ZP;
+         Bw=P[0], fw=P[1], l3b=P[2], P2=P[3], l4b=P[4], P4=P[5] ;
+   
+    double mw=x[0], w0=x[1], dmpi2=x[2], dfpi=x[3];
+    int Lsize=(int(x[4]));
+    double L_w=(x[4]) /w0;
+    double KM,Kf;
+   
+    double P1=-l3b-2*log( v_Mpiw0 /(4*pi*fw));
+    double P3=2*l4b+4*log(   v_Mpiw0/(4*pi*fw) );
+    
+    
+    double Delta=FVE_GL_fast( L_w, mw, fw, Bw);
+    
+    
+    
+    xi=2*Bw*mw/(16.*pi*pi*fw*fw);
+    
+    if (n==0){
+        
+        Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2;
+        Mw2*=2*Bw*mw*(1-0.25 *Delta)*(1-0.25 *Delta);
+        
+    }
+    if (n==1){// fit fot w0^5fpi Mpi^4
+        double ML=sqrt(2*Bw*mw)*L_w;
+        Mw2= (4.*pi)* (4.*pi)* (4.*pi)* (4.*pi);
+        Mw2*= fw * fw *fw * fw * fw *xi*xi;
+        Mw2*= (1.+ 2.*(l4b-l3b) *xi + xi*xi *0. +(1./(w0*w0))*P4 );
+        Mw2*=(1.+ 0.*xi*xi *exp(-ML)/ pow(ML,3./2.));
+        
+    }
+    if (n==2){
+        Mw2=(1-0.25 *Delta);  //KM   M(inf)=M(L)/KM
+        
+    }
+    if (n==3){
+        Mw2=1;  //KfMpi4   M(inf)=M(L)/Kf
+        
+    }
+    
+     return Mw2;
+    
+}
+
+
 double fit_FK_and_MK_GL(int n, int Nvar, double *x,int Npar,double  *P){
     
     double Mw2=0,xi;
@@ -1013,7 +1063,7 @@ void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,do
           //(*w0B)=fake_sampling(jackboot,2.1316 ,0.0024 ,jack_tot,1234);// petros-from jacob 31/07/20 fit  M_PS^2/f_PS^2
           //(*w0C)=fake_sampling(jackboot,2.5039, 0.0017,jack_tot,12345);//  petros-from jacob 31/07/20 fit  M_PS^2/f_PS^2
           (*w0A)=fake_sampling(jackboot,1.8353,  0.0035,jack_tot,123);  // petros-from jacob 31/07/20 fit   in M_PS^2/f_PS^2
-          (*w0B)=fake_sampling(jackboot,2.1300 ,0.0027 ,jack_tot,1234);// petros-from jacob 31/07/20 fit  M_PS^2/f_PS^2
+          (*w0B)=fake_sampling(jackboot,2.1300 ,0.0017 ,jack_tot,1234);// petros-from jacob 31/07/20 fit  M_PS^2/f_PS^2
           (*w0C)=fake_sampling(jackboot,2.5039, 0.0017,jack_tot,12345);//  petros-from jacob 31/07/20 fit  M_PS^2/f_PS^2
           
       }
@@ -2076,7 +2126,21 @@ int main(int argc, char **argv){
     //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_FpiMpi4_GL_w0_M1a");
  
-   
+    
+    /*printf("\n\n///////////////////////////////////////Pion Mpi^2 and fpiMpi^4  linear  w0 M1a ///////////////////////\n");
+    fit_info.Npar=6;
+    fit_info.N=2;
+    fit_info.function=fit_FpiMpi4_and_Mpi2_linear;
+        
+    init_Z( jack_files, head, jack_tot, &gjack, "w0","M1a");
+
+    double threshold_Mpiw=0.29 ;//0.164 ~19MeV 
+    fit_out=fit_Mpi_fwMpi4_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, threshold_Mpiw);
+ 
+    //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_FpiMpi4_GL_w0_M1a_threshold");
+ 
+   */
    
    
     printf("\n\n///////////////////////////////////////Pion of m_l GL   w0 M1a ///////////////////////\n");
