@@ -242,6 +242,55 @@ double fit_Fpi_and_Mpi_GL(int n, int Nvar, double *x,int Npar,double  *P){
 
 
 
+
+double fit_Fpi_and_Mpi_GL_NL0_am(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Mw2=0,xi;
+    double pi=3.141592653589793;
+    double Bw, fw, l3b, P2, l4b, P4,ZP;
+         Bw=P[0], fw=P[1], l3b=P[2], P2=P[3], l4b=P[4], P4=P[5];
+   
+    double mw=x[0], w0=x[1], dmpi2=x[2], dfpi=x[3];
+    int Lsize=(int(x[4]));
+    double L_w=(x[4]) /w0;
+    double KM,Kf;
+   
+    double P1=-l3b-2*log( v_Mpiw0 /(4*pi*fw));
+    double P3=2*l4b+4*log(   v_Mpiw0/(4*pi*fw) );
+    
+    
+    double Delta=FVE_GL_fast( L_w, mw, fw, Bw);
+    
+    
+    
+    xi=2*Bw*mw/(16.*pi*pi*fw*fw);
+    
+    if (n==0){
+        
+        Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2 +(1./(w0*w0))*mw*P[6] + mw*mw *P[7];
+        Mw2*=2*Bw*mw*(1-0.25 *Delta)*(1-0.25 *Delta);
+        
+    }
+    if (n==1){
+        
+        Mw2=fw*(1-2*xi*log(xi)+P3*xi)+(1./(w0*w0))*P4+(1./(w0*w0))*mw*P[8] + mw*mw *P[9];
+        Mw2*=(1+Delta);
+        
+    }
+    if (n==2){
+        Mw2=(1-0.25 *Delta);  //KM   M(inf)=M(L)/KM
+        
+    }
+    if (n==3){
+        Mw2=(1+Delta);  //Kf   M(inf)=M(L)/Kf
+        
+    }
+    
+     return Mw2;
+    
+}
+
+
 double fit_FpiMpi4_and_Mpi2_GL(int n, int Nvar, double *x,int Npar,double  *P){
     
     double Mw2=0,xi;
@@ -1698,8 +1747,8 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
     fprintf(ftex,"\\begin{align}\n");
     fprintf(ftex,"& \\chi^2/d.o.f.= %+.5f \\pm \t%.2g \\\\ \n",chi2m[0],chi2m[1]);
     for (i=0;i<fit_info.Npar;i++){
-         if (strcmp(namefile,"fit_Mpi_Fpi")==0 ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1")==0  ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M2a")==0 ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M2b")==0 ||strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1a")==0 || strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1b")==0  ||
-           strcmp(namefile,"fit_FpiMpi4_GL_w0_M1a")==0        ){
+        /* if (strcmp(namefile,"fit_Mpi_Fpi")==0 ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1")==0  ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M2a")==0 ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M2b")==0 ||strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1a")==0 || strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1b")==0  ||
+           strcmp(namefile,"fit_FpiMpi4_GL_w0_M1a")==0        ){*/
              if(i==0)     fprintf(ftex,"& Bw_{0}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
              else if(i==1)     fprintf(ftex,"& fw_{0}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
              else if(i==2)     fprintf(ftex,"& \\bar{\\ell_3}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
@@ -1709,10 +1758,11 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
              else
                  fprintf(ftex,"& P_{%d}= %+.5f \\pm \t%.2g   \\\\ \n",i,Ci[i][0],Ci[i][1]);
 
-        }
+       /* }
         else
                 fprintf(ftex,"& P_{%d}= %+.5f \\pm \t%.2g   \\\\ \n",i,Ci[i][0],Ci[i][1]);
-        
+        */
+       
         //s=smean_and_error("jack",jack_tot,fit[i]);
         //fprintf(ftex,"P_{%d}= %s  &\\quad  ",i,s);
         //free((void*)s);
@@ -1730,7 +1780,7 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
     for (i=0;i<fit_info.Npar;i++){       
         free(Ci[i]);
     }
-    
+  /*  
         fprintf(ftex,"{\\tiny\\begin{gather}\n C=\\begin{pmatrix}\n");
     for(j=0;j<jack_tot;j++){
         for (i=0;i<fit_info.Npar;i++){
@@ -1753,6 +1803,7 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
         else fprintf(ftex,"\n");
     }
     fprintf(ftex,"\\end{pmatrix}\n\\end{gather}}\n");
+    */
    /////////////////////////////////////////////////////////// compute m_ud
     double in;
     double *w0_estimate=(double*) malloc(sizeof(double)*jack_tot);
@@ -2156,9 +2207,13 @@ int main(int argc, char **argv){
     //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M1a");
     
+    threshold_Mpiw=0.24;
+    fit_out=fit_Mpi_fw_chiral_FVE_clover_treshold(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, threshold_Mpiw);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M1a_260MeV");
+    
     threshold_Mpiw=0.20;
     fit_out=fit_Mpi_fw_chiral_FVE_clover_treshold(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, threshold_Mpiw);
-    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M1a");
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M1a_190MeV");
     
     
     printf("\n\n///////////////////////////////////////Pion of m_l GL   w0 M1b ///////////////////////\n");
@@ -2174,6 +2229,14 @@ int main(int argc, char **argv){
     //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M1b");
     
+    threshold_Mpiw=0.24;
+    fit_out=fit_Mpi_fw_chiral_FVE_clover_treshold(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, threshold_Mpiw);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M1b_260MeV");
+    
+    threshold_Mpiw=0.20;
+    fit_out=fit_Mpi_fw_chiral_FVE_clover_treshold(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, threshold_Mpiw);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M1b_190MeV");
+    
     
     printf("\n\n///////////////////////////////////////Pion of m_l GL   w0 M2a ///////////////////////\n");
     fit_info.Npar=6;
@@ -2187,6 +2250,16 @@ int main(int argc, char **argv){
     
     //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result,gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M2a");
+    
+    
+    threshold_Mpiw=0.24;
+    fit_out=fit_Mpi_fw_chiral_FVE_clover_treshold(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, threshold_Mpiw);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M2a_260MeV");
+    
+    threshold_Mpiw=0.20;
+    fit_out=fit_Mpi_fw_chiral_FVE_clover_treshold(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, threshold_Mpiw);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M2a_190MeV");
+    
       printf("\n\n///////////////////////////////////////Pion of m_l GL   w0 M2b ///////////////////////\n");
     fit_info.Npar=6;
     fit_info.N=2;
@@ -2200,6 +2273,28 @@ int main(int argc, char **argv){
      //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M2b");
     
+    
+    threshold_Mpiw=0.24;
+    fit_out=fit_Mpi_fw_chiral_FVE_clover_treshold(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, threshold_Mpiw);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M2b_260MeV");
+    
+    threshold_Mpiw=0.20;
+    fit_out=fit_Mpi_fw_chiral_FVE_clover_treshold(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, threshold_Mpiw);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M2b_190MeV");
+    
+    printf("\n\n///////////////////////////////////////Pion of m_l GL NL0 am  w0 M2b  ///////////////////////\n");
+    fit_info.Npar=10;
+    fit_info.N=2;
+    fit_info.function=fit_Fpi_and_Mpi_GL_NL0_am;
+     
+    init_Z( jack_files, head, jack_tot, &gjack, "w0","M2b");
+
+    tmp3=(double*) malloc(sizeof(double)*jack_tot);   
+    fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
+
+     //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion","fit_Mpi_Fpi_GL_NLO_am_w0_M2b");
+ 
     
     printf("\n\n///////////////////////////////////////K of m_s GL   w0 M2b ///////////////////////\n");
 

@@ -529,7 +529,7 @@ int main(int argc, char **argv){
  
    cout << "Numbers of lines in the file : " << count << endl;
    confs=count/T;
-   int bin=1;
+   int bin=10;
    int Neff=confs/bin;
    int Njack=Neff+1;
    
@@ -561,7 +561,9 @@ int main(int argc, char **argv){
     printf("option[4]=%s\n",option[4]);
 
     double *mass,*Zfpi;
-    
+    for (int t =0; t< T ;t++){
+        printf("%d  %g \n",t,conf_jack[Njack-1][0][t][0]);   
+    }
        
     mass=compute_effective_mass(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,0,"M_{PS}^{ll}");
     Zfpi=compute_Zf_PS_ll(  option, kinematic_2pt, (char*) "P5P5", conf_jack, mass,  Njack ,plateaux_masses,outfile );
