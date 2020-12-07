@@ -348,7 +348,7 @@ double *fit_plateaux(char **option,struct kinematic kinematic_2pt , char* name,c
 
 
    //fprintf(outfile,"\n\n #%s fit in [%d,%d]\n  %.15g    %.15g\n\n\n",description,tmin,tmax,m[0],m[1]);
-   fprintf(outfile,"\n\n #%s fit in [%d,%d] chi2=%.5f\n  %.15g    %.15g\n\n\n",description,tmin,tmax,chi2[0],m[0],m[1]);
+   fprintf(outfile,"\n\n #%s fit in [%d,%d] chi2=%.5f\n  %.15g    %.15g    %d   %d\n\n\n",description,tmin,tmax,chi2[0],m[0],m[1],tmin,tmax);
    printf("#%s (mu_h=%.4f, mu_l=%.4f) fit in [%d,%d]:  %.15g    %.15g\n",description,kinematic_2pt.k2,kinematic_2pt.k1 ,tmin,tmax,m[0],m[1]);
 
    if ( strcmp(option[5],"pdf")==0 ){

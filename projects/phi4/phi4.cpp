@@ -18,6 +18,7 @@
 #include "linear_fit.hpp"
 #include "various_fits.hpp"
 #include "mutils.hpp"
+#include <string>
 
 #include<fstream>
 using namespace std;
@@ -475,10 +476,14 @@ int main(int argc, char **argv){
    FILE *plateaux_masses=NULL, *plateaux_masses_GEVP=NULL; 
    FILE *plateaux_f=NULL;   
 
-   error(argc!=7,1,"main ",
-         "usage:./quinck_mass  blind/see/read_plateaux file T  mu1 mu2 bin");
+   error(argc!=14,1,"main ",
+         "usage:./phi4  blind/see/read_plateaux path T L  msq0 msq1 l0 l1 mu g -bin $bin  jack/boot ");
    error(strcmp(argv[1],"blind")!=0 &&  strcmp(argv[1],"see")!=0 && strcmp(argv[1],"read_plateaux")!=0   ,1,"main ",
-         "usage:./quinck_mass  blind/see/read_plateaux file T  mu1 mu2 bin");
+         "argv[1] only options:  blind/see/read_plateaux ");
+   error(strcmp(argv[11],"-bin")!=0 ,1,"main", "argv[11] must be: -bin");
+   error(strcmp(argv[13],"jack")!=0 &&  strcmp(argv[13],"boot")!=0,1,"main",
+         "argv[13] only options: jack/boot");
+   
    
     char **option;
     option=(char **) malloc(sizeof(char*)*6);
@@ -491,14 +496,14 @@ int main(int argc, char **argv){
 
     mysprintf(option[1],NAMESIZE,argv[1]); // blind/see/read_plateaux
     mysprintf(option[2],NAMESIZE,"-p"); // -p
-    mysprintf(option[3],NAMESIZE,"./"); // path
-    mysprintf(option[4],NAMESIZE,"jack"); //resampling
+    mysprintf(option[3],NAMESIZE,argv[2]); // path
+    mysprintf(option[4],NAMESIZE,argv[13]); //resampling
     mysprintf(option[5],NAMESIZE,"no"); // pdf
-   printf("%s\n",option[4] );
-   int T=atoi(argv[3]);
+    printf("resampling %s\n",option[4] );
+    int T=atoi(argv[3]);
    
-   double mu1=atof(argv[4]);
-   double mu2=atof(argv[5]);
+   double mu1=atof(argv[5]);
+   double mu2=atof(argv[6]);
    printf("mu=%g  %g\n",mu1,mu2);
    char namefile[NAMESIZE];
    //mysprintf(argv[4],NAMESIZE,"jack");
@@ -521,22 +526,40 @@ int main(int argc, char **argv){
         file_head.mom[i][3]=0;
     }
    
-   FILE *outfile        =NULL; mysprintf(namefile,NAMESIZE,"%s_mass.txt",argv[2]);        outfile=fopen(namefile,"w+");       error(outfile==NULL,1,"main ", "Unable to open %s file",namefile);
+   mysprintf(namefile,NAMESIZE,"%s/out/G2t_T%d_L%d_msq0%.6f_msq1%.6f_l0%.6f_l1%.6f_mu%.6f_g%.6f_output",
+             argv[2], atoi(argv[3]), atoi(argv[4]), atof(argv[5]), atof(argv[6]),
+             atof(argv[7]), atof(argv[8]), atof(argv[9]), atof(argv[10]));
+   FILE *outfile=open_file(namefile,"w+");      
    
-   FILE *infile=open_file(argv[2],"r");
+   
+   
+   mysprintf(namefile,NAMESIZE,"%s/G2t_T%d_L%d_msq0%.6f_msq1%.6f_l0%.6f_l1%.6f_mu%.6f_g%.6f",
+             argv[2], atoi(argv[3]), atoi(argv[4]), atof(argv[5]), atof(argv[6]),
+             atof(argv[7]), atof(argv[8]), atof(argv[9]), atof(argv[10]));
+   printf("opening file: %s \n", namefile);
+   FILE *infile=open_file(namefile,"r");
+   
+   
    int count=0;
    string line;
-   ifstream file(argv[2]);
+   ifstream file( namefile);
    while (getline(file, line))
         count++;
  
    cout << "Numbers of lines in the file : " << count << endl;
    confs=count/T;
-   int bin=atoi(argv[6]);;
-   int Neff=confs/bin;
-   int Njack=Neff+1;
-   
    cout << "Numbers of configurations in the file : " << confs << endl;
+   int bin=atoi(argv[12]);
+   int Neff=confs/bin;
+   cout << "effective configurations after binning (" << bin  <<"):  "<<Neff << endl;
+
+   int Njack;
+   if( strcmp(argv[13],"jack")==0)
+                Njack=Neff+1;
+   else if( strcmp(argv[13],"boot")==0)
+                Njack=Nbootstrap+1;
+   else
+       error(1==1,1,"main","argv[13]= %s is not jack or boot",argv[13]);
    
    int var=2;
    data=calloc_corr(confs, var,  file_head.l0 );
@@ -561,22 +584,31 @@ int main(int argc, char **argv){
     symmetrise_corr(confs, 1, file_head.l0,data);
 
     data_bin=binning(confs, var, file_head.l0 ,data, bin);
+    free_corr(confs, var, file_head.l0 ,data);
+    
     conf_jack=create_resampling(option[4],Neff, var, file_head.l0, data_bin);
+    
     get_kinematic( 0,0,  1, 0,0,  0 );
     printf("option[4]=%s\n",option[4]);
 
     double *mass;
-  /*  fprintf(outfile,"#correlator\n");
-    for (int t =0; t< T ;t++){
-        double *mj=(double*) malloc(sizeof(double)*Njack); 
-        for (int j=0 ;j<Njack;j++)
-                  mj[j]=conf_jack[j][0][t][0];
-        double *m=mean_and_error(option[4],Njack,mj);
-        fprintf(outfile,"%d  %g  %g\n",t,m[0],m[1]);   
-        free(m);
+    fprintf(outfile,"#correlator\n");
+    for (int t =1; t< T/2 ;t++){
+        double *mj0=(double*) malloc(sizeof(double)*Njack); 
+        double *mj1=(double*) malloc(sizeof(double)*Njack); 
+        for (int j=0 ;j<Njack;j++){
+                  mj0[j]=conf_jack[j][0][t][0];
+                  mj1[j]=conf_jack[j][1][t][0];
+        }
+        double *m=mean_and_error(option[4],Njack,mj0);
+        fprintf(outfile,"%d  %g  %g\t",t,m[0],m[1]);   free(m);
+        m=mean_and_error(option[4],Njack,mj1);
+        fprintf(outfile,"%g  %g\n",m[0],m[1]);   free(m);
+        free(mj0);
+        free(mj1);
     }
-    fprintf(outfile,"\n\n");   
-    */
+    fprintf(outfile,"\n\n #%s fit in [%d,%d] chi2=%.5f\n  %.15g    %.15g    %d   %d\n\n\n","#need_for_gnuplot",0,0,0.0,0.0,0.0,0,0);
+    
   
     file_head.k[2]=mu1;
     file_head.k[3]=mu1;
