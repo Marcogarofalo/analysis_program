@@ -65,6 +65,7 @@ add_subdirectory(projects/realphoton  realphoton)
 add_subdirectory(projects/clover  clover)
 add_subdirectory(projects/virtualphoton  virtualphoton)
 add_subdirectory(tools tools)
+add_subdirectory(projects/phi4 phi4)
 
 
 

@@ -475,8 +475,8 @@ int main(int argc, char **argv){
    FILE *plateaux_masses=NULL, *plateaux_masses_GEVP=NULL; 
    FILE *plateaux_f=NULL;   
 
-   error(argc!=6,1,"main ",
-         "usage:./quinck_mass  blind/see/read_plateaux file T  mu1 mu2");
+   error(argc!=7,1,"main ",
+         "usage:./quinck_mass  blind/see/read_plateaux file T  mu1 mu2 bin");
     char **option;
     option=(char **) malloc(sizeof(char*)*6);
     option[0]=(char *) malloc(sizeof(char)*NAMESIZE);
@@ -529,7 +529,7 @@ int main(int argc, char **argv){
  
    cout << "Numbers of lines in the file : " << count << endl;
    confs=count/T;
-   int bin=10;
+   int bin=atoi(argv[6]);;
    int Neff=confs/bin;
    int Njack=Neff+1;
    
@@ -561,10 +561,16 @@ int main(int argc, char **argv){
     printf("option[4]=%s\n",option[4]);
 
     double *mass,*Zfpi;
+    fprintf(outfile,"#correlator\n");
     for (int t =0; t< T ;t++){
-        printf("%d  %g \n",t,conf_jack[Njack-1][0][t][0]);   
+        double *mj=(double*) malloc(sizeof(double)*Njack); 
+        for (int j=0 ;j<Njack;j++)
+                  mj[j]=conf_jack[j][0][t][0];
+        double *m=mean_and_error(option[4],Njack,mj);
+        fprintf(outfile,"%d  %g  %g\n",t,m[0],m[1]);   
+        free(m);
     }
-       
+    fprintf(outfile,"\n\n");   
     mass=compute_effective_mass(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,0,"M_{PS}^{ll}");
     Zfpi=compute_Zf_PS_ll(  option, kinematic_2pt, (char*) "P5P5", conf_jack, mass,  Njack ,plateaux_masses,outfile );
     

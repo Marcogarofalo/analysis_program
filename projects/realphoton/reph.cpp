@@ -1700,7 +1700,7 @@ printf("here\n");
             f_PS_jack_fit[i]=compute_f_PS_ll(  argv, kinematic_2pt,  (char*) "oAmuPo", conf_jack, mass_jack_fit[i], oPp_jack_fit[i] ,Njack ,plateaux_f,outfile_f );
        }
        
-       if (ikt==1 && iks==0  && imom0==0 && imomt==1 && imoms==0){
+       if (ikt==3 && iks==1  && imom0==0 && imomt==2 && imoms==0){
             FILE *aaa;
            aaa=open_file("prova_A.txt","w+");
            for (int t=0;t<file_head.l0;t++)
@@ -1708,7 +1708,7 @@ printf("here\n");
            fclose(aaa);
            aaa=open_file("prova_V.txt","w+");
            for (int t=0;t<file_head.l0;t++)
-               fprintf(aaa,"%d   %g    %g  %g    %g\n",t,conf_jack[Njack-1][3][t][0]*2*kinematic_2pt_G.E_gT,conf_jack[Njack-1][3][t][1]*2*kinematic_2pt_G.E_gT, conf_jack[Njack-1][5][t][0],conf_jack[Njack-1][5][t][1]);
+               fprintf(aaa,"%d   %g    %g   %g    %g\n",t,conf_jack[Njack-1][14][t][1]*2*kinematic_2pt_G.E_gT,conf_jack[Njack-1][15][t][1]*2*kinematic_2pt_G.E_gT, conf_jack[Njack-1][16][t][1]*2*kinematic_2pt_G.E_gT,conf_jack[Njack-1][17][t][1]*2*kinematic_2pt_G.E_gT);
            fclose(aaa);
            
            
