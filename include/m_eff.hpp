@@ -13,6 +13,8 @@ double *fit_plateaux_G(char **option,struct kinematic_G kinematic_2pt_G , char* 
 
 extern double *constant_fit_m_eff(int M, double in);
 extern double M_eff_t( int t,int L0, double ***in, int num_corr);
+double M_eff(  int t, double **in);
+double *fit_plateaux(char **option,struct kinematic kinematic_2pt , char* name,const char *description,double **mt,double **r, int Njack,FILE *plateaux_masses,FILE *outfile);
 
 
 extern double *create_jmeff_from_jcorr(int Njack,int L0, int tmin ,int tmax, double ****in, int num_corr );

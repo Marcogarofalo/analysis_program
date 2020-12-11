@@ -19,6 +19,7 @@
 #include "various_fits.hpp"
 #include "mutils.hpp"
 #include <string>
+#include "mass_phi4.hpp"
 
 #include<fstream>
 using namespace std;
@@ -476,12 +477,12 @@ int main(int argc, char **argv){
    FILE *plateaux_masses=NULL, *plateaux_masses_GEVP=NULL; 
    FILE *plateaux_f=NULL;   
 
-   error(argc!=14,1,"main ",
+   error(argc!=15,1,"main ",
          "usage:./phi4  blind/see/read_plateaux path T L  msq0 msq1 l0 l1 mu g -bin $bin  jack/boot ");
    error(strcmp(argv[1],"blind")!=0 &&  strcmp(argv[1],"see")!=0 && strcmp(argv[1],"read_plateaux")!=0   ,1,"main ",
          "argv[1] only options:  blind/see/read_plateaux ");
-   error(strcmp(argv[11],"-bin")!=0 ,1,"main", "argv[11] must be: -bin");
-   error(strcmp(argv[13],"jack")!=0 &&  strcmp(argv[13],"boot")!=0,1,"main",
+   error(strcmp(argv[12],"-bin")!=0 ,1,"main", "argv[12] must be: -bin");
+   error(strcmp(argv[14],"jack")!=0 &&  strcmp(argv[14],"boot")!=0,1,"main",
          "argv[13] only options: jack/boot");
    
    
@@ -497,7 +498,7 @@ int main(int argc, char **argv){
     mysprintf(option[1],NAMESIZE,argv[1]); // blind/see/read_plateaux
     mysprintf(option[2],NAMESIZE,"-p"); // -p
     mysprintf(option[3],NAMESIZE,argv[2]); // path
-    mysprintf(option[4],NAMESIZE,argv[13]); //resampling
+    mysprintf(option[4],NAMESIZE,argv[14]); //resampling
     mysprintf(option[5],NAMESIZE,"no"); // pdf
     printf("resampling %s\n",option[4] );
     int T=atoi(argv[3]);
@@ -526,16 +527,25 @@ int main(int argc, char **argv){
         file_head.mom[i][3]=0;
     }
    
-   mysprintf(namefile,NAMESIZE,"%s/out/G2t_T%d_L%d_msq0%.6f_msq1%.6f_l0%.6f_l1%.6f_mu%.6f_g%.6f_output",
+  
+   
+   
+   
+   mysprintf(namefile,NAMESIZE,"%s/out/G2t_T%d_L%d_msq0%.6f_msq1%.6f_l0%.6f_l1%.6f_mu%.6f_g%.6f_rep%d_output",
              argv[2], atoi(argv[3]), atoi(argv[4]), atof(argv[5]), atof(argv[6]),
-             atof(argv[7]), atof(argv[8]), atof(argv[9]), atof(argv[10]));
+             atof(argv[7]), atof(argv[8]), atof(argv[9]), atof(argv[10]),atoi(argv[11]) );
    FILE *outfile=open_file(namefile,"w+");      
    
-   
-   
-   mysprintf(namefile,NAMESIZE,"%s/G2t_T%d_L%d_msq0%.6f_msq1%.6f_l0%.6f_l1%.6f_mu%.6f_g%.6f",
+   mysprintf(namefile,NAMESIZE,"%s/out/G2t_T%d_L%d_msq0%.6f_msq1%.6f_l0%.6f_l1%.6f_mu%.6f_g%.6f_rep%d_gamma",
              argv[2], atoi(argv[3]), atoi(argv[4]), atof(argv[5]), atof(argv[6]),
-             atof(argv[7]), atof(argv[8]), atof(argv[9]), atof(argv[10]));
+             atof(argv[7]), atof(argv[8]), atof(argv[9]), atof(argv[10]),atoi(argv[11]) );
+   FILE *out_gamma=open_file(namefile,"w+");      
+   
+   // open infile and count the lines
+   //
+   mysprintf(namefile,NAMESIZE,"%s/G2t_T%d_L%d_msq0%.6f_msq1%.6f_l0%.6f_l1%.6f_mu%.6f_g%.6f_rep%d",
+             argv[2], atoi(argv[3]), atoi(argv[4]), atof(argv[5]), atof(argv[6]),
+             atof(argv[7]), atof(argv[8]), atof(argv[9]), atof(argv[10]),atoi(argv[11]));
    printf("opening file: %s \n", namefile);
    FILE *infile=open_file(namefile,"r");
    
@@ -549,23 +559,28 @@ int main(int argc, char **argv){
    cout << "Numbers of lines in the file : " << count << endl;
    confs=count/T;
    cout << "Numbers of configurations in the file : " << confs << endl;
-   int bin=atoi(argv[12]);
+   
+   // compute what will be the neff after the binning 
+   int bin=atoi(argv[13]);
    int Neff=confs/bin;
    cout << "effective configurations after binning (" << bin  <<"):  "<<Neff << endl;
 
    int Njack;
-   if( strcmp(argv[13],"jack")==0)
+   if( strcmp(argv[14],"jack")==0)
                 Njack=Neff+1;
-   else if( strcmp(argv[13],"boot")==0)
+   else if( strcmp(argv[14],"boot")==0)
                 Njack=Nbootstrap+1;
    else
-       error(1==1,1,"main","argv[13]= %s is not jack or boot",argv[13]);
+       error(1==1,1,"main","argv[14]= %s is not jack or boot",argv[14]);
    
    int var=2;
    data=calloc_corr(confs, var,  file_head.l0 );
    
    setup_file_jack(option,Njack);
-   
+    
+   get_kinematic( 0,0,  1, 0,0,  0 );
+   printf("option[4]=%s\n",option[4]);
+
    for (int iconf=0; iconf< confs ;iconf++){
        for (int t =0; t< T ;t++){
            int tt;
@@ -582,15 +597,13 @@ int main(int argc, char **argv){
 
     symmetrise_corr(confs, 0, file_head.l0,data);
     symmetrise_corr(confs, 1, file_head.l0,data);
-
+    //if you want to do the gamma analysis you need to do before freeing the raw data
+    effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,&plateaux_masses,out_gamma,0,"M_{PS}^{ll}");
     data_bin=binning(confs, var, file_head.l0 ,data, bin);
     free_corr(confs, var, file_head.l0 ,data);
     
     conf_jack=create_resampling(option[4],Neff, var, file_head.l0, data_bin);
-    
-    get_kinematic( 0,0,  1, 0,0,  0 );
-    printf("option[4]=%s\n",option[4]);
-
+   
     double *mass;
     fprintf(outfile,"#correlator\n");
     for (int t =1; t< T/2 ;t++){
@@ -628,6 +641,7 @@ int main(int argc, char **argv){
     free_corr(Neff, var, file_head.l0 ,data_bin);
     free_jack(Njack,var , file_head.l0, conf_jack);
  
+    fclose(out_gamma);
     return 0;   
 }
 

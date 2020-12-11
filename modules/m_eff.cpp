@@ -371,10 +371,10 @@ void replace_plateau_G(struct kinematic_G kinematic_2pt_G , char* name,int tmin,
         mysprintf(instruction,NAMESIZE,"sed -i \"%ds/.*/%d  %d  %d/\"  %s",line,tmin,tmax,sep,kinematic_2pt_G.plateau_RA);
         printf("replacing file %s",kinematic_2pt_G.plateau_RA);
     }
-   // else if(strcmp(name,"HmH0_HA_V")==0){
-   //     mysprintf(instruction,NAMESIZE,"sed -i \"%ds/.*/%d  %d  %d/\"  %s",line,tmin,tmax,sep,kinematic_2pt_G.plateau_H_H0_A);
-   //     printf("replacing file %s",kinematic_2pt_G.plateau_H_H0_A);
-  //  }
+    else if(strcmp(name,"HmH0_HA_V")==0){
+        mysprintf(instruction,NAMESIZE,"sed -i \"%ds/.*/%d  %d  %d/\"  %s",line,tmin,tmax,sep,kinematic_2pt_G.plateau_H_H0_A);
+        printf("replacing file %s",kinematic_2pt_G.plateau_H_H0_A);
+    }
     else {
         printf("\n!!!!!!!!  NO REPLACEMENT OF PLATEAU !!!!!!!!\n");
     }
