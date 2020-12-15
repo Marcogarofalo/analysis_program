@@ -79,6 +79,7 @@ struct  kinematic
       int ik1,ik2;
       double Mom1[4],Mom2[4];
       int r2,r1;
+      int line;
       char   plateau_m_ll[NAMESIZE];
       char   plateau_m_sl[NAMESIZE];
       char   plateau_f[NAMESIZE];

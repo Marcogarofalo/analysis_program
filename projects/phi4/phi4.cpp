@@ -20,6 +20,7 @@
 #include "mutils.hpp"
 #include <string>
 #include "mass_phi4.hpp"
+#include "correlators_analysis.hpp"
 
 #include<fstream>
 using namespace std;
@@ -47,6 +48,7 @@ void get_kinematic( int ik2,int r2, int ik1,int r1,int imom2, int imom1 ){
     kinematic_2pt.mom02=file_head.mom[imom2][0];
     kinematic_2pt.mom01=file_head.mom[imom1][0];
 
+    kinematic_2pt.line=1;
     printf("%g %g  %d  %d\n",kinematic_2pt.k1,kinematic_2pt.k2,ik1+file_head.nk,ik2+file_head.nk);
     
 }
@@ -573,7 +575,7 @@ int main(int argc, char **argv){
    else
        error(1==1,1,"main","argv[14]= %s is not jack or boot",argv[14]);
    
-   int var=2;
+   int var=4;
    data=calloc_corr(confs, var,  file_head.l0 );
    
    setup_file_jack(option,Njack);
@@ -588,6 +590,7 @@ int main(int argc, char **argv){
            //error(t!=tt, 1, "main: reading","time do not match  conf=%d   t=%d  read %d",iconf ,t,tt);
            double a ,b,c;
            fscanf(infile,"%d  %lf %lf",&tt,&data[iconf][0][t][0],&data[iconf][1][t][0]);
+           fscanf(infile,"%lf %lf\n",&data[iconf][2][t][0],&data[iconf][3][t][0]);
            error(t!=tt, 1, "main: reading","time do not match  conf=%d   t=%d  read %d",iconf ,t,tt);
            
            //fscanf(infile,"%lf",&data[iconf][0][t][0]);
@@ -622,20 +625,29 @@ int main(int argc, char **argv){
     }
     fprintf(outfile,"\n\n #%s fit in [%d,%d] chi2=%.5f\n  %.15g    %.15g    %d   %d\n\n\n","#need_for_gnuplot",0,0,0.0,0.0,0.0,0,0);
     
+   
+    
   
     file_head.k[2]=mu1;
     file_head.k[3]=mu1;
 
-    mass=compute_effective_mass(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,0,"M_{PS}^{ll}");
+    
+    mass=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,0,"E1", M_eff_T);
+    //mass=compute_effective_mass(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,0,"M_{PS}^{ll}");
     free(mass);
     
     file_head.k[2]=mu2;
     file_head.k[3]=mu2;
     
-    mass=compute_effective_mass(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,1,"M_{PS}^{ll}");
+    mass=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,1,"E1", M_eff_T);
+    //compute_effective_mass(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,1,"M_{PS}^{ll}");
 
     //Zfpi=compute_Zf_PS_ll(  option, kinematic_2pt, (char*) "P5P5", conf_jack, mass,  Njack ,plateaux_masses,outfile );
     
+     double *E2;
+    
+    E2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,3,"E2", M_eff_sinh_T);
+    free(E2);
     
     free(mass);
     free_corr(Neff, var, file_head.l0 ,data_bin);

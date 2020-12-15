@@ -9,7 +9,7 @@
 #include <complex.h>
 #include "mutils.hpp"
 
-#define MAXIT 1000000
+#define MAXIT 10000
 
 //#include "jacknife.h"
 //#include "bootstrap.h"
@@ -999,7 +999,8 @@ double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n
     xt[ivar]=x2;
     fmid=(*func)(n,Nvar,xt,Npar,P)-input;
 
-    error(f*fmid >= 0.0,1,"rtbis","Root must be bracketed for bisection in rtbis f(x1)=%f   f(x2)=%f",f,fmid);
+    //error(f*fmid >= 0.0,1,"rtbis","Root must be bracketed for bisection in rtbis f(x1)=%f   f(x2)=%f",f,fmid);
+    if (f*fmid >= 0.0) return NAN;
     rtb = f < 0.0 ? (dx=x2-x1,x1) : (dx=x1-x2,x2);// Orient the search so that f>0
     for (j=1;j<=MAXIT;j++) {// lies at x+dx.
         //printf(" x=%f \n",xt[ivar]   );
@@ -1013,8 +1014,9 @@ double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n
         }
     }
     free(xt);
-    error(1>0,1,"rtbis","Too many bisections in rtbis");
-    return 0.0;
+    //error(1>0,1,"rtbis","Too many bisections in rtbis");
+    //printf("Too many bisections in rtbis\n");
+    return NAN;
 }
 
 /*
