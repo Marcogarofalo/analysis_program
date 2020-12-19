@@ -600,8 +600,12 @@ int main(int argc, char **argv){
 
     symmetrise_corr(confs, 0, file_head.l0,data);
     symmetrise_corr(confs, 1, file_head.l0,data);
+    symmetrise_corr(confs, 2, file_head.l0,data);
+    symmetrise_corr(confs, 3, file_head.l0,data);
+    
     //if you want to do the gamma analysis you need to do before freeing the raw data
     effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,&plateaux_masses,out_gamma,0,"M_{PS}^{ll}");
+    //effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,&plateaux_masses,out_gamma,3,"M_{PS}^{ll}");
     data_bin=binning(confs, var, file_head.l0 ,data, bin);
     free_corr(confs, var, file_head.l0 ,data);
     
@@ -610,18 +614,17 @@ int main(int argc, char **argv){
     double *mass;
     fprintf(outfile,"#correlator\n");
     for (int t =1; t< T/2 ;t++){
-        double *mj0=(double*) malloc(sizeof(double)*Njack); 
-        double *mj1=(double*) malloc(sizeof(double)*Njack); 
-        for (int j=0 ;j<Njack;j++){
-                  mj0[j]=conf_jack[j][0][t][0];
-                  mj1[j]=conf_jack[j][1][t][0];
+        for (int v=0;v< var;v++){
+            double *mj0=(double*) malloc(sizeof(double)*Njack); 
+            for (int j=0 ;j<Njack;j++){
+                  mj0[j]=conf_jack[j][v][t][0]-conf_jack[j][v][t+1][0];
+            }
+            double *m=mean_and_error(option[4],Njack,mj0);
+            if (v==0){        fprintf(outfile,"%d  %g  %g\t",t,m[0],m[1]);   free(m);}
+            else {            fprintf(outfile,"%g  %g\t",m[0],m[1]);   free(m);}
+            free(mj0);
         }
-        double *m=mean_and_error(option[4],Njack,mj0);
-        fprintf(outfile,"%d  %g  %g\t",t,m[0],m[1]);   free(m);
-        m=mean_and_error(option[4],Njack,mj1);
-        fprintf(outfile,"%g  %g\n",m[0],m[1]);   free(m);
-        free(mj0);
-        free(mj1);
+        fprintf(outfile,"\n");
     }
     fprintf(outfile,"\n\n #%s fit in [%d,%d] chi2=%.5f\n  %.15g    %.15g    %d   %d\n\n\n","#need_for_gnuplot",0,0,0.0,0.0,0.0,0,0);
     
@@ -646,7 +649,9 @@ int main(int argc, char **argv){
     
      double *E2;
     
-    E2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,3,"E2", M_eff_sinh_T);
+    E2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,2,"E2", two_particle_energy);
+    free(E2);
+    E2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,3,"E2", two_particle_energy);
     free(E2);
     
     free(mass);

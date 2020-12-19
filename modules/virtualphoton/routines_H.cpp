@@ -46,7 +46,7 @@ double   *H_AV(char **option ,struct kinematic_G kinematic_2pt_G , char* name, d
            for (j=0;j<Njack;j++){            
               ii=sym[index];
               r[i][j]=(conf_jack[j][index][i][ii]);
-              r[i][j]/=exp(-i*mass_jack_fit_k2k1[j]-(file_head.l0/2-i)*kinematic_2pt_G.E_g );
+              r[i][j]/=exp(-i*mass_jack_fit_k2k1[j]-(kinematic_2pt_G.Twall-i)*kinematic_2pt_G.E_g );
               r[i][j]/=oPp[j];
               r[i][j]*=2*mass_jack_fit_k2k1[j];
            }
@@ -177,8 +177,19 @@ double   *H_over_H0_vir(char **option ,struct kinematic_G kinematic_2pt_G , char
    for(i=1;i<file_head.l0/2;i++){    
            for (j=0;j<Njack;j++){            
               ii=sym[index];
-              r[i][j]=conf_jack[j][index][i][ii]/conf_jack[j][index+2][i][ii];    // index+2 is the correlator at p =0
-              r[i][j]=r[i][j]/exp(-(file_head.l0/2-i)*kinematic_2pt_G.E_g );
+              //symmetrization
+              double    HA=conf_jack[j][index][i][ii]/exp(-((kinematic_2pt_G.Twall-i))*kinematic_2pt_G.E_g );
+              HA+=conf_jack[j][index][file_head.l0-i][ii]/exp(-((file_head.l0-i-file_head.l0+kinematic_2pt_G.Twall) )*kinematic_2pt_G.E_g );
+              HA/=2.;
+              
+              //r[i][j]=conf_jack[j][index][i][ii]/conf_jack[j][index+2][i][ii];    // index+2 is the correlator at p =0
+              //r[i][j]=r[i][j]/exp(-(kinematic_2pt_G.Twall-i)*kinematic_2pt_G.E_g );
+              
+              r[i][j]= HA  /conf_jack[j][index+2][i][ii];    // index+2 is the correlator at p =0
+              
+              
+    
+              
               //r[i][j]=r[i][j]*E_gT/E_gT0;
               //r[i][j]=log(conf_jack[j][index][i][ii]/conf_jack[j][index][i+1][ii]);
            }
@@ -249,12 +260,22 @@ double   *H_minus_H0_HA_vir(char **option ,struct kinematic_G kinematic_2pt_G , 
               
               ii=sym[index];
               ia=sym[index+1];
-              r[i][j]=conf_jack[j][index][i][ii];
-              tmp=conf_jack[j][index+2][i][ii]/(   exp(-(L[0]/2.-i)*E_g0 ));    // index+2 is the correlator at p =0
-              r[i][j]=r[i][j]/(   exp(-(L[0]/2.-i)*E_g ));
-              r[i][j]=r[i][j]-tmp;
-
+              /*r[i][j]=conf_jack[j][index][i][ii];
+              tmp=conf_jack[j][index+2][i][ii]/(   exp(-(kinematic_2pt_G.Twall-i)*E_g0 ));    // index+2 is the correlator at p =0
+              r[i][j]=r[i][j]/(   exp(-(kinematic_2pt_G.Twall-i)*E_g ));
+              r[i][j]=r[i][j]-tmp;*/
+               //anti-symmetrization
+              double    HV=conf_jack[j][index][i][ii]/exp(-((kinematic_2pt_G.Twall-i))*kinematic_2pt_G.E_g );
+              HV-=conf_jack[j][index][file_head.l0-i][ii]/exp(-((file_head.l0-i-file_head.l0+kinematic_2pt_G.Twall) )*kinematic_2pt_G.E_g );
+              HV/=2.;
+              
+              //subtract HV0
+              tmp=conf_jack[j][index+2][i][ii]/(   exp(-(kinematic_2pt_G.Twall-i)*E_g0 ));    // index+2 is the correlator at p =0
+              r[i][j]=HV;
+              //r[i][j]=HV-tmp;
+              // divide HA
               r[i][j]/=conf_jack[j][index+1][i][ia];
+              
               r[i][j]=r[i][j]*mass_rest[j]*Zf_PS_jack_fit[j];
               
               r[i][j]/=(kinematic_2pt_G.E_g*kinematic_2pt_G.eps2_curl_p[1]-mass_jack_fit_k2k1[j]*kinematic_2pt_G.eps2_curl_k[1]);

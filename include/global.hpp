@@ -95,6 +95,7 @@ struct  kinematic_G
     int rt,rs,i;
     double  E_g,E_gT;
     double kp;
+    int Twall;
     const double eps1[4]={0,-1./sqrt(2.),-1./sqrt(2.),0};
     const double eps2[4]={0,1./sqrt(2.),-1./sqrt(2.),0};
     double eps1_curl_p[4],eps2_curl_p[4];

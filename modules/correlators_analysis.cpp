@@ -48,7 +48,7 @@ double two_particle_energy(int t,int T , double **in){
     c[0]=in[t-1][0]-in[t][0];
     c[1]=in[t][0]-in[t+1][0];
     c[2]=in[t+1][0]-in[t+2][0];
-    return acosh((c[0]+c[2])/ (2.*c[1]));
+    return acosh(  (c[0]+c[2])/ (2.*c[1])  );
     //rp/r = sin(E2(t+1+(1-T/2)) /sin(E2(t+(1-T/2))
     
 }
@@ -60,7 +60,7 @@ double M_eff_T(  int t, int T, double **in){
     double ct[1],ctp[1],res,tmp_mass, u,d ;
     int i,L0;
     
-    L0=file_head.l0;
+    
     ct[0]=in[t][0];
     ctp[0]=in[t+1][0];
 
@@ -70,8 +70,8 @@ double M_eff_T(  int t, int T, double **in){
     res=1;
     i=t;
     while(res>1e-12){
-             u=1.+exp(-mass*(L0-2.*i-2.));
-             d=1.+exp(-mass*(L0-2.*i));
+             u=1.+exp(-mass*(T-2.*i-2.));
+             d=1.+exp(-mass*(T-2.*i));
              tmp_mass=log( (ct[0]/ctp[0]) * (u/d)) ;
              res=fabs(tmp_mass - mass);
              mass=tmp_mass;
@@ -98,8 +98,8 @@ double M_eff_sinh_T(  int t, int T, double **in){
     res=1;
     i=t;
     while(res>1e-12){
-             u=1.-exp(-mass*(L0-2.*i-2.));
-             d=1.-exp(-mass*(L0-2.*i));
+             u=-1.+exp(-mass*(L0-1-2.*i-2.));
+             d=-1.+exp(-mass*(L0-1-2.*i));
              tmp_mass=log( (ct[0]/ctp[0]) * (u/d)) ;
              res=fabs(tmp_mass - mass);
              mass=tmp_mass;

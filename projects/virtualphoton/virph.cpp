@@ -94,6 +94,13 @@ void get_kinematic_G( struct header_virph head ,int icomb ){
     kinematic_2pt_G.rt=1;
     kinematic_2pt_G.rs=-1;
     
+    if (head.phptype==0)
+        kinematic_2pt_G.Twall=head.z0;
+    else if (head.phptype==1)
+        kinematic_2pt_G.Twall=head.tmax/2;
+    
+    error(head.phptype !=1 && head.phptype !=0,1,"get_kinematic", "phptype=%d non supported not 0 nor 1",head.phptype );
+    
     kinematic_2pt_G.Mom0[0]=0;//file_head.mom[imom0][0];
     kinematic_2pt_G.Momt[0]=0;//file_head.mom[imomt][0];
     kinematic_2pt_G.Moms[0]=0;//file_head.mom[imoms][0];
@@ -1357,12 +1364,13 @@ int main(int argc, char **argv){
             read_twopt_gamma_jr(oAmuGPo, header.file_size, iconf ,data[iconf][9],  header, "oVmuGPo", icomb,smearing,5); sym[6]=1;
             read_twopt_gamma_jr(oAmuGPo, header.file_size, iconf ,data[iconf][10],  header, "oVmuGPo", icomb,smearing,6); sym[6]=1;
       }
+      
       symmetrise_corr(confs, 0, header.tmax,data);
       symmetrise_corr(confs, 6, header.tmax,data);
 
-      symmetrise_corr(confs, 2, header.tmax,data);
+      //symmetrise_corr(confs, 2, header.tmax,data);
       symmetrise_corr(confs, 4, header.tmax,data);
-      antisymmetrise_corr(confs, 3, header.tmax,data);
+      //antisymmetrise_corr(confs, 3, header.tmax,data);
       antisymmetrise_corr(confs, 5, header.tmax,data);
 
       data_bin=binning(confs, var, header.tmax ,data, bin);
@@ -1393,6 +1401,8 @@ int main(int argc, char **argv){
           oPp_s_jack_fit[i]=compute_oPp_s(  argv, kinematic_2pt,  (char*) "oPp_s", conf_jack, oPp_jack_fit[i],  Njack ,plateaux_masses,outfile_oPp_s ,6,0);
           for(int j=0 ; j<Njack; j++ ){
                 oPp_jack_fit[i][j]=oPp_s_jack_fit[i][j];
+                Zf_PS_jack_fit[i][j]= oPp_jack_fit[i][j]/ (mass_jack_fit[i][j]*sinh(mass_jack_fit[i][j])  );
+                Zf_PS_jack_fit[i][j]*= (kinematic_2pt.k2+kinematic_2pt.k1);
           }
       }
       double *tmp_mass;
