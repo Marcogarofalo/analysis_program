@@ -193,10 +193,13 @@ struct  jack_fit
 
 struct  fit_type
 {
-  double (*function)(int,int,double*,int,double*);
-  int N,Npar,Nvar;  
+  double (*function)(int,int,double*,int,double*);//N, Nvar, x ,Npar,P
+  int N,Npar,Nvar,Njack;  
   double (*f1)(int,int,double*,int,double*);
   double (*f2)(int,int,double*,int,double*);
+  int n_ext_P; //number of external parameter that will no be fitted
+  double **ext_P;  //parameter to not fit, they will be add to the Nvar,  Nvar=variables+(prameter to not fit)
+  
 };
 
 struct fit_result
@@ -207,6 +210,7 @@ struct fit_result
   double ***C;   
     
 };
+
 
 struct fit_all
 {

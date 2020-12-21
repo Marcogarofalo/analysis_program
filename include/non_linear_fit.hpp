@@ -9,7 +9,8 @@
 #include <string.h>
 #include <complex.h>
 
-
+struct fit_result malloc_fit( struct  fit_type  fit_info);
+void free_fit_result( struct  fit_type  fit_info,struct fit_result  out);
 
 // x[ensemble][variable number] ,   y[ensemble][0=mean,1=error], fun(Nvariables,variables[], Nparameters,parameters[])
 //*funk(Nvariables,variables[], Nparameters,parameters[]) must return a vector[Nparameters] that contain the derivatives of fun respect to the parameters

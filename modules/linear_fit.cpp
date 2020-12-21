@@ -324,7 +324,7 @@ double  **linear_fit(int N, double *x, double **y,  int M, double *fit_function(
         C[0][0]=1./alpha[0][0];
     }
     else
-    C=matrix_inverse(M, alpha  );
+        C=matrix_inverse(M, alpha  );
     
 
     for (j=0;j<M;j++){

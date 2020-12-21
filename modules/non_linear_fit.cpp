@@ -16,6 +16,7 @@
 #include "linear_fit.hpp"
 #include "non_linear_fit.hpp"
 #include "tower.hpp"
+#include "global.hpp"
  /*
 double *LU_decomposition_solver(int N, double **M, double *b){
  double **U,**L,*y,*x;
@@ -101,6 +102,38 @@ double **matrix_inverse(int N, double **M  ){
 }*/
 
 
+
+struct fit_result malloc_fit( struct  fit_type  fit_info){
+   struct fit_result fit_out;
+   fit_out.Njack=fit_info.Njack;
+   fit_out.P=(double**) malloc(sizeof(double*)*fit_info.Npar);
+   fit_out.chi2=(double*) malloc(sizeof(double*)*fit_info.Njack);
+   fit_out.C=(double***) malloc(sizeof(double**)*fit_info.Npar);
+   for(int i=0;i<fit_info.Npar;i++){
+       fit_out.P[i]=(double*) malloc(sizeof(double*)*fit_info.Njack);
+       
+       fit_out.C[i]=(double**) malloc(sizeof(double*)*fit_info.Npar);
+       for(int n=0;n<fit_info.Npar;n++){     
+           fit_out.C[i][n]=(double*) malloc(sizeof(double)*fit_info.Njack);
+           
+       }
+   }
+   return fit_out;
+}
+
+
+void free_fit_result( struct  fit_type  fit_info,struct fit_result  out){
+    for(int i=0; i<fit_info.Npar;i++){
+        free(out.P[i]);
+        for(int n=0;n<fit_info.Npar;n++)
+            free(out.C[i][n]);
+        free(out.C[i]);
+    }
+    free(out.P);free(out.C);free(out.chi2);
+    
+}
+ 
+ 
 //https://en.wikipedia.org/wiki/Finite_difference_coefficient#Central_finite_difference 
 //derivative 1 accuracy 4
 double *der_fun_h( int Nvar, double *x,int Npar,double  *P, double fun(int,double*,int,double*), double h){
@@ -615,7 +648,7 @@ double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **
        // printf("\n");
         P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess );
         chi2_tmp=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun)/(en_tot-Npar);
-        printf("chi2=%.10f \tchi2_tmp=%.10f\n",chi2,chi2_tmp);
+        //printf("chi2=%.10f \tchi2_tmp=%.10f\n",chi2,chi2_tmp);
         /*for(i=0;i<Npar;i++)
             printf("P[%d]=%g\t",i,P[i]);
         printf("\n");*/

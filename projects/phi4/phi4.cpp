@@ -35,6 +35,28 @@ int r_value(int r)
     else error(0==0,0,"r_value","r value is not 0 neither 1\n");
     return vr;
 }
+
+
+
+double C3(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double C3;
+    
+    double E3=P[0];
+    double A3=P[1];
+    double A12=P[2];
+    double t= x[0];
+    double M=x[1];
+    double E2=x[2];
+    //check if file_head.l0 arrives here
+    double T=(double)file_head.l0;
+    C3=A3*A3 *  exp(-E3*T/2.) * cosh( E3 *(t -T/2.));
+    C3+=A12*A12 *  exp(-(E3+M)*T/2.) * cosh( (E2-M) *(t -T/2.));
+    
+    return C3;
+    
+}
+
 void get_kinematic( int ik2,int r2, int ik1,int r1,int imom2, int imom1 ){
     kinematic_2pt.ik2=ik2;
     kinematic_2pt.ik1=ik1;
@@ -650,11 +672,26 @@ int main(int argc, char **argv){
      double *E2;
     
     E2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,2,"E2", two_particle_energy);
-    free(E2);
-    E2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,3,"E2", two_particle_energy);
-    free(E2);
     
-    free(mass);
+    //E2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,3,"E2", two_particle_energy);
+    //free(E2);
+    
+    struct fit_type fit_info;
+    struct fit_result  fit_out;
+    fit_info.Nvar=3;
+    fit_info.Npar=3;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.function=C3;
+    fit_info.n_ext_P=2;
+    fit_info.ext_P=(double**) malloc(sizeof(double*)*2);
+    fit_info.ext_P[0]=mass;
+    fit_info.ext_P[1]=E2;
+    
+    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,  3,0/*reim*/ , "E3",  fit_info, file_jack.M_PS );
+    
+    
+    free(mass);free(E2);
     free_corr(Neff, var, file_head.l0 ,data_bin);
     free_jack(Njack,var , file_head.l0, conf_jack);
  
