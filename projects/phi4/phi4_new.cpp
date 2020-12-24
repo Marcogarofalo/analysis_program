@@ -1,3 +1,4 @@
+
  
 #define CONTROL
 
@@ -145,6 +146,7 @@ void read_header(FILE *stream, cluster::IO_params &params ){
      fread(&params.data.L[1], sizeof(int), 1, stream); 
      fread(&params.data.L[2], sizeof(int), 1, stream); 
      fread(&params.data.L[3], sizeof(int), 1, stream); 
+     printf("%d %d %d %d\n",params.data.L[0],params.data.L[1],params.data.L[2],params.data.L[3]);
      char string[100];
      fread(string, sizeof(char)*100, 1, stream); 
      //params.data.formulation = std::to_string(string);
@@ -167,11 +169,40 @@ void read_header(FILE *stream, cluster::IO_params &params ){
      fread(&params.data.replica, sizeof(int), 1, stream); 
      
      
-     int ncorr=4;
-     fread(&ncorr, sizeof(size_t), 1, stream); 
+    
+     fread(&params.data.ncorr, sizeof(int), 1, stream); 
+     printf("correlators=%d\n",params.data.ncorr);
+    
+     fread(&params.data.size, sizeof(size_t), 1, stream); 
+     printf("size=%ld\n",params.data.size);
      
-     size_t size=sizeof(int)+ sizeof(double)*params.data.L[0]*4;
-     fread(&size, sizeof(size_t), 1, stream); 
+     params.data.header_size=ftell(stream);
+     printf("header size=%d\n",params.data.header_size);
+}
+
+
+int read_nconfs( FILE *stream, cluster::IO_params params){
+
+   long int tmp;
+   int& s=params.data.header_size;
+   
+
+  
+   fseek(stream, 0, SEEK_END);
+   tmp = ftell(stream);
+   tmp-= params.data.header_size ;
+   
+   s=params.data.size;
+   std::cout<< "size="<<s<<std::endl;
+
+   int c= (tmp)/ ( sizeof(int)+(s)*sizeof(double) );
+
+   
+   std::cout<< "confs="<<c<<std::endl;
+   fseek(stream, params.data.header_size, SEEK_SET);
+  
+   return c;
+
 }
 static void  write_file_head(FILE *stream)
 {
@@ -198,27 +229,7 @@ static void  write_file_head(FILE *stream)
     for(i=0;i<file_head.nmoms;i++)  
         fwrite(file_head.mom[i],sizeof(double),4,stream);
 }
-/*
-void read_nconfs(int *s, int *c, FILE *stream){
 
-   FILE *f1;
-   long int tmp;
-
-   fread(s,sizeof(int),1,stream);
-   f1=stream;
-   
-   fseek(stream, 0, SEEK_END);
-   tmp = ftell(stream);
-   tmp-= sizeof(double)* (file_head.nmoms*4 + file_head.nk*2+4 )+ sizeof(int)*9 ;
-   tmp-= sizeof(int)*2;
-   (*c)= tmp/ (sizeof(int)+ (*s)*sizeof(double) );
- 
-  rewind(stream);
-  read_file_head_bin(stream);
-  fread(s,sizeof(int),1,stream);
-
-}
-*/
 
 double *constant_fit(int M, double in){
     double *r;
@@ -240,204 +251,30 @@ double matrix_element_GEVP(int t, double **cor,double mass){
 
 
 
-int index_minus_r( int r)
-{
-    int mr;
-    if (r==0) mr= 1;
-    else if (r==1) mr= 0;
-    else error(0==0,0,"index_minus_r","r is not 0 or 1\n");
-    return mr;
-}
 
-static int index_twopt(int si,int ii,int ix0,int imom2,int imom1,int ik2,int r2,int ik1,int r1)
-{
-    int nk,nmoms;
-
-    nk=file_head.nk;
-    nmoms=file_head.nmoms;
-
-    return ii+si*(ix0+file_head.l0*(imom2+nmoms*(imom1+nmoms*(mass_index[ik2][r2][ik1][r1]))));
-}
-static int index_threept(int si,int ii,int ix0,int imom1,int imom2,int ik1,int ik2,int ik3)
-{
-    int nk,nmoms;
-
-    nk=file_head.nk;
-    nmoms=file_head.nmoms;
-
-    return ii+si*(ix0+file_head.l0*(imom1+nmoms*(imom2+nmoms*(ik1+nk*(ik2+nk*ik3)))));
-}
-int index_minus_kappa(int ik)
-{
-    int imk,i;
-    double mu;
-    
-    mu=-file_head.k[ file_head.nk+ik ];
-    imk=-1;
-    for (i=0;i<file_head.nk;i++){
-	if ( file_head.k[ file_head.nk+i ]==mu )
-            imk=i;
-    }
-
-   error(imk==-1,1,"inde_minus_kappa ",  "Unable to find mass=%g",mu);
-   return imk; 
-
-
-}
-
-static int index_minus_theta(int imom)
-{
-   int i,imth;
-   double m0,m1,m2,m3;
-
-   imth=-1;
-   m0= file_head.mom[imom][0];
-   m1= -file_head.mom[imom][1];
-   m2= -file_head.mom[imom][2];
-   m3= -file_head.mom[imom][3];
-   for(i=0;i<file_head.nmoms;++i)
-      if(m0==file_head.mom[i][0] && m1==file_head.mom[i][1] && 
-	 m2==file_head.mom[i][2] && m3==file_head.mom[i][3])
-	 imth=i;
-
-   error(imth==-1,1,"inde_minus_theta ",  "Unable to find theta=%g",m1);
-   return imth;
-}
-
-
-void read_twopt(FILE *stream,int size, int iconf , double **to_write,int si, int ii, int imom2, int imom1, int ik2, int r2, int ik1,int r1 ){
+void read_twopt(FILE *stream, int iconf , double ***to_write ,cluster::IO_params params, int index ){
    
-   long int tmp;
-   int iiconf,N,s;
-   double *obs;
-   int mik1, mik2;
-   int mimom1,mimom2,mr1,mr2;
-   int t,vol,index;
-   double re,im;
- 
-   tmp= sizeof(double)* (file_head.nmoms*4 + file_head.nk*2+4 )+ sizeof(int)*(12) ;
-   tmp+=sizeof(double)*iconf*size+sizeof(int)*iconf;
+   int tmp=params.data.header_size;// 
+   tmp+=sizeof(double)*iconf*params.data.size+sizeof(int)*(iconf+1);
+   
+   
+   double *obs=(double*) malloc(params.data.size*sizeof(double)); 
+   
    fseek(stream, tmp, SEEK_SET);
-
-   obs=(double*) malloc(size*sizeof(double)); 
-   fread(obs,sizeof(double),size,stream);   
+   fread(obs,sizeof(double),params.data.size,stream); 
    
-   mimom1=index_minus_theta(imom1);
-   mimom2=index_minus_theta(imom2);
-   mr1=index_minus_r(r1);
-   mr2=index_minus_r(r2);
-
-   for(t=0;t<file_head.l0;t++){
-	   re=0;vol=0;im=0;
-	   index=2*index_twopt(si,ii,t,imom2,imom1,ik2,r2,ik1,r1);
-	   re+= obs[index];
-       im+= obs[index+1];
-       vol++;
-       index=2*index_twopt(si,ii,t,imom2,imom1,ik2,mr2,ik1,mr1);
-	   re+= obs[index];
-       im+= obs[index+1];
-       vol++;
-	   to_write[t][0]=re/( (double) vol );
-	   to_write[t][1]=im/( (double) vol );
+   for(int t=0 ;t<params.data.L[0];t++){
+       size_t  id=index+ t*params.data.ncorr;
+       (*to_write)[t][0]=obs[id];
+        
    }
    free(obs);
+   
+   
 }
 
 
- 
-void extract_threept(double *to_read , double **to_write,int si, int ii, int imom1, int imom2, int ik1, int ik2 ,int ik3,int sym ){
 
-   int mik1, mik2,mik3;
-   int mimom1,mimom2;
-   int t,vol,index;
-   double re,im;
-
-   double symm=(double) sym;
-   mik1=index_minus_kappa(ik1);
-   mik2=index_minus_kappa(ik2);
-   mik3=index_minus_kappa(ik3);
-   mimom1=index_minus_theta(imom1);
-   mimom2=index_minus_theta(imom2);
-
-	for(t=0;t<file_head.l0;t++){
-	   re=0;vol=0;im=0;
-	   index=2*index_threept(si,ii,t,imom1,imom2,ik1,ik2,ik3);
-	   re+= to_read[index];
-	   im+= to_read[index+1];
-           vol++;
-	   index=2*index_threept(si,ii,t,imom1,imom2,mik1,mik2,mik3);
-	   re+= to_read[index];
-	   im+= to_read[index+1];
-           vol++;
-        /*   if (  ik1 ==ik2){
-		   index=2*index_threept(si,ii,t,imom1,imom2,mik1,ik1,mik3);
-		   re+= to_read[index];
-                   im+= to_read[index+1];
-                   vol++;
-		   index=2*index_threept(si,ii,t,imom1,imom2,ik3,mik3,ik1);
-		   re+= to_read[index];
-	           im+= to_read[index+1];
-		   vol++;
-           }*/
-  
-
-	   if (  mimom1>=0 &&  mimom2 >=0 )
-	   { 
-		   index=2*index_threept(si,ii,t,mimom1,mimom2,ik1,ik2,ik3);
-		   re+=symm* to_read[index];
-	           im+=symm* to_read[index+1];
-                   vol++;
-		   index=2*index_threept(si,ii,t,mimom1,mimom2,mik1,mik2,mik3);
-		   re+=symm* to_read[index];
-	           im+=symm* to_read[index+1];
-		   vol++;
-		/*   if (  ik1 ==ik2){
-			   index=2*index_threept(si,ii,t,mimom1,mimom2,mik3,ik3,mik1);
-			   re+=symm* to_read[index];
-	           	   im+= symm*to_read[index+1];
-	                   vol++;
-			   index=2*index_threept(si,ii,t,mimom1,mimom2,ik3,mik3,ik1);
-			   re+=symm* to_read[index];
-            		   im+=symm* to_read[index+1];
-		   	   vol++;
-		   }*/
-	   }
-	   to_write[t][0]=re/( (double) vol );
-	   to_write[t][1]=im/((double) vol);
-	}
-}
-
-/*
-double *jack_mass(int tmin, int tmax, int sep ,double **corr_ave, double **corr_J,int Njack ){
-    
-   double ***y,*x,**tmp,*fit; 
-   int i,j;  
-
-   y=(double***) malloc(sizeof(double**)*Njack);
-
-   for (j=0;j<Njack;j++){
-        y[j]=(double**) malloc(sizeof(double*)*(tmax-tmin+1));
-        for (i=tmin;i<=tmax;i++){
-            y[j][i-tmin]=(double*) malloc(sizeof(double)*2);
-        }
-   }
-   x=(double*) malloc(sizeof(double)*(tmax-tmin+1));
-   fit=(double*) malloc(sizeof(double)*Njack);
-
-   for (i=tmin;i<=tmax;i+=sep){
-        for (j=0;j<Njack;j++){
-            y[j][(i-tmin)/sep][0]=corr_J[i][j];
-            y[j][(i-tmin)/sep][1]=corr_ave[i][1];
-        }
-    }
-    for (j=0;j<Njack;j++){
-        tmp=linear_fit( (tmax-tmin)/sep +1, x, y[j],  1,constant_fit_to_try );
-        fit[j]=tmp[0][0];
-        free(tmp[0]);free(tmp);
-    }    
-    return fit;    
-}
-*/
 void setup_single_file_jack(char  *save_name,char **argv, const char  *name,int Njack){
      FILE *f;
      mysprintf(save_name,NAMESIZE,"/dev/null");
@@ -504,17 +341,27 @@ int main(int argc, char **argv){
    
    FILE *plateaux_masses=NULL, *plateaux_masses_GEVP=NULL; 
    FILE *plateaux_f=NULL;   
+   char namefile[NAMESIZE];
 
    
    
    
-   error(argc!=15,1,"main ",
-         "usage:./phi4  blind/see/read_plateaux path T L  msq0 msq1 l0 l1 mu g -bin $bin  jack/boot ");
+   error(argc!=8,1,"main ",
+         "usage:./phi4  blind/see/read_plateaux -p path file -bin $bin  jack/boot \n separate path and file please");
    error(strcmp(argv[1],"blind")!=0 &&  strcmp(argv[1],"see")!=0 && strcmp(argv[1],"read_plateaux")!=0   ,1,"main ",
          "argv[1] only options:  blind/see/read_plateaux ");
-   error(strcmp(argv[12],"-bin")!=0 ,1,"main", "argv[12] must be: -bin");
-   error(strcmp(argv[14],"jack")!=0 &&  strcmp(argv[14],"boot")!=0,1,"main",
-         "argv[13] only options: jack/boot");
+   
+   cluster::IO_params params;
+   mysprintf(namefile,NAMESIZE,"%s/%s",argv[3],argv[4]);
+   FILE *infile=open_file(namefile,"r+");
+   read_header(infile,params);
+   
+   
+   
+   
+   error(strcmp(argv[5],"-bin")!=0 ,1,"main", "argv[4] must be: -bin");
+   error(strcmp(argv[7],"jack")!=0 &&  strcmp(argv[7],"boot")!=0,1,"main",
+         "argv[6] only options: jack/boot");
    
    
     char **option;
@@ -529,19 +376,18 @@ int main(int argc, char **argv){
     mysprintf(option[1],NAMESIZE,argv[1]); // blind/see/read_plateaux
     mysprintf(option[2],NAMESIZE,"-p"); // -p
     mysprintf(option[3],NAMESIZE,argv[2]); // path
-    mysprintf(option[4],NAMESIZE,argv[14]); //resampling
+    mysprintf(option[4],NAMESIZE,argv[7]); //resampling
     mysprintf(option[5],NAMESIZE,"no"); // pdf
     printf("resampling %s\n",option[4] );
-    int T=atoi(argv[3]);
+    int T=params.data.L[0];
    
-   double mu1=atof(argv[5]);
-   double mu2=atof(argv[6]);
+   double mu1=params.data.msq0;
+   double mu2=params.data.msq0;
    printf("mu=%g  %g\n",mu1,mu2);
-   char namefile[NAMESIZE];
    //mysprintf(argv[4],NAMESIZE,"jack");
    
    file_head.l0=T;
-   file_head.l1=T/2;file_head.l2=T/2;file_head.l3=T/2;
+   file_head.l1=params.data.L[1];file_head.l2=params.data.L[2];file_head.l3=params.data.L[3];
    file_head.nk=2;
    file_head.k= (double*) malloc(sizeof(double )*file_head.nk*2);
    file_head.k[0]=0;file_head.k[1]=0;
@@ -563,46 +409,34 @@ int main(int argc, char **argv){
    
    
    mysprintf(namefile,NAMESIZE,"%s/out/G2t_T%d_L%d_msq0%.6f_msq1%.6f_l0%.6f_l1%.6f_mu%.6f_g%.6f_rep%d_output",
-             argv[2], atoi(argv[3]), atoi(argv[4]), atof(argv[5]), atof(argv[6]),
-             atof(argv[7]), atof(argv[8]), atof(argv[9]), atof(argv[10]),atoi(argv[11]) );
+             argv[3], T, params.data.L[1],params.data.msq0, params.data.msq0,
+             params.data.lambdaC0, params.data.lambdaC1, params.data.muC, params.data.gC,params.data.replica);
    FILE *outfile=open_file(namefile,"w+");      
    
    mysprintf(namefile,NAMESIZE,"%s/out/G2t_T%d_L%d_msq0%.6f_msq1%.6f_l0%.6f_l1%.6f_mu%.6f_g%.6f_rep%d_gamma",
-             argv[2], atoi(argv[3]), atoi(argv[4]), atof(argv[5]), atof(argv[6]),
-             atof(argv[7]), atof(argv[8]), atof(argv[9]), atof(argv[10]),atoi(argv[11]) );
+             argv[3], T, params.data.L[1],params.data.msq0, params.data.msq0,
+             params.data.lambdaC0, params.data.lambdaC1, params.data.muC, params.data.gC,params.data.replica);
    FILE *out_gamma=open_file(namefile,"w+");      
    
    // open infile and count the lines
    //
-   mysprintf(namefile,NAMESIZE,"%s/G2t_T%d_L%d_msq0%.6f_msq1%.6f_l0%.6f_l1%.6f_mu%.6f_g%.6f_rep%d",
-             argv[2], atoi(argv[3]), atoi(argv[4]), atof(argv[5]), atof(argv[6]),
-             atof(argv[7]), atof(argv[8]), atof(argv[9]), atof(argv[10]),atoi(argv[11]));
-   printf("opening file: %s \n", namefile);
-   FILE *infile=open_file(namefile,"r");
    
    
    int count=0;
-   string line;
-   ifstream file( namefile);
-   while (getline(file, line))
-        count++;
- 
-   cout << "Numbers of lines in the file : " << count << endl;
-   confs=count/T;
-   cout << "Numbers of configurations in the file : " << confs << endl;
+   confs=read_nconfs( infile,  params);
    
    // compute what will be the neff after the binning 
-   int bin=atoi(argv[13]);
+   int bin=atoi(argv[6]);
    int Neff=confs/bin;
    cout << "effective configurations after binning (" << bin  <<"):  "<<Neff << endl;
 
    int Njack;
-   if( strcmp(argv[14],"jack")==0)
+   if( strcmp(argv[7],"jack")==0)
                 Njack=Neff+1;
-   else if( strcmp(argv[14],"boot")==0)
+   else if( strcmp(argv[7],"boot")==0)
                 Njack=Nbootstrap+1;
    else
-       error(1==1,1,"main","argv[14]= %s is not jack or boot",argv[14]);
+       error(1==1,1,"main","argv[7]= %s is not jack or boot",argv[7]);
    
    int var=4;
    data=calloc_corr(confs, var,  file_head.l0 );
@@ -611,7 +445,7 @@ int main(int argc, char **argv){
     
    get_kinematic( 0,0,  1, 0,0,  0 );
    printf("option[4]=%s\n",option[4]);
-
+/*
    for (int iconf=0; iconf< confs ;iconf++){
        for (int t =0; t< T ;t++){
            int tt;
@@ -625,6 +459,12 @@ int main(int argc, char **argv){
            //fscanf(infile,"%lf",&data[iconf][0][t][0]);
            //data[iconf][0][t][0]*=-1;
        }
+    }*/
+    for (int iconf=0; iconf< confs ;iconf++){
+        read_twopt(infile, iconf, &data[iconf][0], params,0);
+        read_twopt(infile, iconf, &data[iconf][1], params,1);
+        read_twopt(infile, iconf, &data[iconf][2], params,2);
+        read_twopt(infile, iconf, &data[iconf][3], params,3);
     }
 
     symmetrise_corr(confs, 0, file_head.l0,data);

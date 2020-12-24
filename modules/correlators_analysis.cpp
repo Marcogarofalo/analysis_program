@@ -337,8 +337,12 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
    double **tif=swap_indices(fit_info.Npar,Njack, fit_out.P);
    double *tmp=(double*) malloc(sizeof(double)*Njack);
    double *x=(double*) malloc(sizeof(double)*fit_info.Nvar);
-   for(int i=1;i<file_head.l0/2;i++){    
+   for(int i=1;i<file_head.l0/2;i++){   
+           // variables and external parameters 
            x[0]=i;
+           for(int i=0 ; i< fit_info.n_ext_P; i++){
+                    x[i+1]=fit_info.ext_P[i][Njack-1];
+            }
            for (int j=0;j<Njack;j++){
               tmp[j]= fit_info.function(0 ,fit_info.Nvar,x,fit_info.Nvar, tif[j] );
            }
