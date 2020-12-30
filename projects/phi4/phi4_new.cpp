@@ -61,6 +61,49 @@ double C3(int n, int Nvar, double *x,int Npar,double  *P){
     
 }
 
+
+
+double four_pt(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double C4;
+    
+    double aN=P[0];
+        
+
+    double T=(double)file_head.l0;
+    double t= x[0]- T/8.;
+    double M=x[1];
+
+    C4 = 8. *pi_greco*(2.*M)*aN*t;
+    C4 -= 16*aN*aN * sqrt( 2.*pi_greco *(2.*M)* M*M*t );
+    C4 *= exp(-M*t) ;
+     
+    
+    
+    return C4;
+    
+}
+
+double lhs_four(double ***in,int t ){
+    
+    double r;
+    int T=file_head.l0;
+
+    r=in[4][t][0];
+    r-=in[1][(T/2-t+T)%T][0] *in[1][T/8][0] ;
+    r-=in[1][(T/2-T/8)][0] *in[1][t][0] ;
+    r-=in[1][(T/8-t+T)%T][0] *in[1][T/2][0] ;
+    r/=(in[1][T/2][0] * in[1][ (t-T/8+T)%T  ][0]  );
+    
+    // to_do:
+    // I think that there is a 4 M factor missing
+    
+    return r;
+    
+    
+}
+
+
 void get_kinematic( int ik2,int r2, int ik1,int r1,int imom2, int imom1 ){
     kinematic_2pt.ik2=ik2;
     kinematic_2pt.ik1=ik1;
@@ -438,7 +481,7 @@ int main(int argc, char **argv){
    else
        error(1==1,1,"main","argv[7]= %s is not jack or boot",argv[7]);
    
-   int var=4;
+   int var=5;
    data=calloc_corr(confs, var,  file_head.l0 );
    
    setup_file_jack(option,Njack);
@@ -465,6 +508,7 @@ int main(int argc, char **argv){
         read_twopt(infile, iconf, &data[iconf][1], params,1);
         read_twopt(infile, iconf, &data[iconf][2], params,2);
         read_twopt(infile, iconf, &data[iconf][3], params,3);
+        read_twopt(infile, iconf, &data[iconf][4], params,4);
     }
 
     symmetrise_corr(confs, 0, file_head.l0,data);
@@ -537,7 +581,18 @@ int main(int argc, char **argv){
     
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,  3,0/*reim*/ , "E3",  fit_info, file_jack.M_PS );
     
+    free_fit_result(fit_info,fit_out);
+    fit_info.Nvar=2;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.function=four_pt;
+    fit_info.n_ext_P=1;
+    fit_info.ext_P=(double**) malloc(sizeof(double*)*1);
+    fit_info.ext_P[0]=mass;
     
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four , "E4",  fit_info, file_jack.M_PS );
+
     free(mass);free(E2);
     free_corr(Neff, var, file_head.l0 ,data_bin);
     free_jack(Njack,var , file_head.l0, conf_jack);

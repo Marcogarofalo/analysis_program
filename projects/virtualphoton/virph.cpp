@@ -1270,7 +1270,7 @@ int main(int argc, char **argv){
        fseek(oPPo,header_2pt.file_size*sizeof(double),SEEK_CUR);
        std::cout << iconf <<"  ";
    }  
-   std::cout <<  std::endl;
+   std::cout <<  std::endl <<  std::endl;
    
    mysprintf(namefile,NAMESIZE,"%s/data/conf.virtualph.dat",argv[3]);
    oAmuGPo=open_file(namefile,"r");

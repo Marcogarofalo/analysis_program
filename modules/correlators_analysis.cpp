@@ -441,3 +441,64 @@ int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
     return fit_out;   
     
 } 
+
+
+
+struct fit_result fit_fun_to_fun_of_corr(char **option ,struct kinematic kinematic_2pt ,  char* name, double ****conf_jack ,FILE **plateaux_masses,FILE *outfile,  double fun_of_corr(double***,int ) , const char *description , struct fit_type fit_info,  char * namefile_jack ){
+
+int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
+   if ( strcmp(option[1],"read_plateaux")==0 )
+   	go_to_line(*plateaux_masses,line);
+   
+   int Njack=fit_info.Njack;
+   double **r,*m,**mt,*fit;
+   int i,j,yn;
+    
+   r=(double**) malloc(sizeof(double*)*file_head.l0);
+   for(i=0;i<file_head.l0;i++)
+       r[i]=(double*) malloc(sizeof(double)*Njack);
+   mt=(double**) malloc(sizeof(double*)*file_head.l0);
+
+   fprintf(outfile,"#m_eff(t) of %s  propagators:1) mu %.5f r %d theta %.5f 2) mu %.5f r %d theta %.5f\n",name,
+           kinematic_2pt.k2,kinematic_2pt.r2,kinematic_2pt.mom2,
+           kinematic_2pt.k1,kinematic_2pt.r1, kinematic_2pt.mom1 );
+   for(i=1;i<file_head.l0/2;i++){    
+           for (j=0;j<Njack;j++){
+              
+              //r[i][j]= conf_jack[j][index][i][re_im];
+              r[i][j]= fun_of_corr(conf_jack[j],i);
+             
+           }
+           
+           if( strcmp(option[4],"jack")==0)
+               mt[i]=mean_and_error_jack(Njack, r[i]);
+           if( strcmp(option[4],"boot")==0)
+               mt[i]=mean_and_error_boot(Njack, r[i]);
+           //fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
+
+   }
+   
+   struct fit_result fit_out=fit_fun_to_corr(option, kinematic_2pt ,  name, description, mt, r,  Njack, *plateaux_masses, outfile, fit_info);
+   //fit=fit_plateaux(option, kinematic_2pt ,  name,description/*"M_{PS}^{ll}"*/,mt,r,  Njack,*plateaux_masses,outfile);
+   
+   write_jack_bin(Njack,fit_out.P[0],namefile_jack);
+   
+   
+   
+   for(i=1;i<file_head.l0/2;i++)
+       free(mt[i]);
+   free(mt);
+   for(i=0;i<file_head.l0;i++)
+       free(r[i]);
+   free(r);
+   
+   fflush(outfile);
+   
+    if ( strcmp(option[1],"read_plateaux")==0 ){
+     fclose(*plateaux_masses);
+     *plateaux_masses=open_file(kinematic_2pt.plateau_m_ll,"r");
+
+    }
+    return fit_out;   
+    
+} 
