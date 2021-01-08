@@ -594,7 +594,7 @@ double *try_linear_fit(char **option,int tmin, int tmax, int sep ,double **corr_
     }
     for (j=0;j<Njack;j++){
         tmp=linear_fit( (tmax-tmin)/sep +1, x, y[j],  1,constant_fit_to_try );
-        chi2j[j]=compute_chisqr((tmax-tmin)/sep +1, x, y[j],  1, tmp, constant_fit_to_try )/((tmax-tmin)/sep +1);
+        chi2j[j]=compute_chisqr((tmax-tmin)/sep +1, x, y[j],  1, tmp, constant_fit_to_try )/((tmax-tmin)/sep +1-1);
         fit[j]=tmp[0][0];
         free(tmp[0]);free(tmp);
     }   

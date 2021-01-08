@@ -126,6 +126,15 @@
 #include "mutils.hpp"
 
 
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cstring>
+#include <sstream>
+#include <vector>
+#include <iterator>
+
+
 #define NAME_SIZE 1000
 
 #if ((DBL_MANT_DIG!=53)||(DBL_MIN_EXP!=-1021)||(DBL_MAX_EXP!=1024))
@@ -817,4 +826,27 @@ void mysprintf(char *str, size_t size, const char *format, ...){
     error(i>=size,0,"mysprintf","string size=%d larger then the size of char=%d ",i,size);
     snprintf(str,size,"%s",str_internal);
     free(str_internal);
+}
+
+
+template <typename Out>
+void split(const std::string &s, char delim, Out result) {
+    std::istringstream iss(s);
+    std::string item;
+    while (std::getline(iss, item, delim)) {
+        *result++ = item;
+    }
+}
+
+std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, std::back_inserter(elems));
+    std::vector<std::string>  r;
+    std::string empty=" ";
+    for (std::string s: elems)
+        if (s.empty()==0){
+            r.emplace_back(s);
+        }
+            
+    return r;
 }

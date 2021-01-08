@@ -2211,7 +2211,6 @@ int main(int argc, char **argv){
     double in;
     double **tif;
     double **C1;
-   double *tmp3=(double*) malloc(sizeof(double)*jack_tot);
 
     printf("\n\n///////////////////////////////////////Pion Mpi^2 and fpiMpi^4  GL  w0 M1a ///////////////////////\n");
     fit_info.Npar=8;
@@ -2300,7 +2299,6 @@ int main(int argc, char **argv){
     //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result,gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M2a");
     
-    
     threshold_Mpiw=0.24;
     fit_out=fit_Mpi_fw_chiral_FVE_clover_treshold(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, threshold_Mpiw);
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M2a_260MeV");
@@ -2314,9 +2312,8 @@ int main(int argc, char **argv){
     fit_info.N=2;
     fit_info.function=fit_Fpi_and_Mpi_GL;
         
-         init_Z( jack_files, head, jack_tot, &gjack, "w0","M2b");
+        init_Z( jack_files, head, jack_tot, &gjack, "w0","M2b");
 
-    tmp3=(double*) malloc(sizeof(double)*jack_tot);   
      fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
 
      //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
@@ -2332,16 +2329,33 @@ int main(int argc, char **argv){
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_Mpi_Fpi_GL_w0_M2b_190MeV");
     
     
-    printf("\n\n///////////////////////////////////////Pion of m_l GL NL0 am   w0 M2b  ///////////////////////\n");
+    printf("\n\n///////////////////////////////////////Pion of m_l GL NL0 am   w0 M1a M1b M2a M2b  ///////////////////////\n");
     fit_info.Npar=8;
     fit_info.N=2;
     fit_info.function=fit_Fpi_and_Mpi_GL_NL0_am;
+    
+    
      
-    init_Z( jack_files, head, jack_tot, &gjack, "w0","M2b");
-
-    tmp3=(double*) malloc(sizeof(double)*jack_tot);   
+    init_Z( jack_files, head, jack_tot, &gjack, "w0","M1a");
     fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
-
+     //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion","fit_Mpi_Fpi_GL_NLO_am_w0_M1a");
+ 
+    
+    init_Z( jack_files, head, jack_tot, &gjack, "w0","M1b");
+    fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
+     //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion","fit_Mpi_Fpi_GL_NLO_am_w0_M1b");
+ 
+     
+    init_Z( jack_files, head, jack_tot, &gjack, "w0","M2a");
+    fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
+     //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion","fit_Mpi_Fpi_GL_NLO_am_w0_M2a");
+ 
+    
+    init_Z( jack_files, head, jack_tot, &gjack, "w0","M2b");
+    fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
      //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion","fit_Mpi_Fpi_GL_NLO_am_w0_M2b");
  
@@ -2354,7 +2368,6 @@ int main(int argc, char **argv){
      
     init_Z( jack_files, head, jack_tot, &gjack, "w0","M2b");
 
-    tmp3=(double*) malloc(sizeof(double)*jack_tot);   
     fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
 
      //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);

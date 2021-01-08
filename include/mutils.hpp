@@ -124,6 +124,15 @@
 #include <math.h>
 #include <limits.h>
 #include <float.h>
+
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cstring>
+#include <sstream>
+#include <vector>
+#include <iterator>
+
 //#include <gmp.h>
 
 #define NAME_SIZE 1000
@@ -160,5 +169,10 @@ void move_line(FILE *stream,int line);
 FILE *open_file(const char * name, const char * option);
 void mysprintf(char *str, size_t size, const char *format, ...);
 void gdb_hook();
+
+
+template <typename Out>
+void split(const std::string &s, char delim, Out result);
+std::vector<std::string> split(const std::string &s, char delim) ;
 
 #endif

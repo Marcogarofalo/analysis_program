@@ -61,7 +61,11 @@ double   *effective_mass_phi4(char **option ,struct kinematic kinematic_2pt , ch
 
    }
 
+   char tmp_name[NAMESIZE];
+   mysprintf(tmp_name,NAMESIZE,option[1]);
+   mysprintf(option[1],NAMESIZE,"see");
    fit=fit_plateaux(option, kinematic_2pt ,  name,description/*"M_{PS}^{ll}"*/,mt,r,  Njack,*plateaux_masses,outfile);
+   mysprintf(option[1],NAMESIZE,tmp_name);
    write_jack_bin(Njack,fit,file_jack.M_PS);
      
    for(i=1;i<file_head.l0/2;i++)
@@ -86,9 +90,9 @@ double   *effective_mass_phi4(char **option ,struct kinematic kinematic_2pt , ch
 //double   *effective_mass_phi4_gamma(char **option ,struct kinematic kinematic_2pt , char* name, double ****data, int Confs ,FILE **plateaux_masses,FILE *outfile,  int index , const char *description ){
 void effective_mass_phi4_gamma(char **option ,struct kinematic kinematic_2pt , char* name, double ****data, int Confs ,FILE **plateaux_masses,FILE *outfile,  int index , const char *description ){
 
-    int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
-   if ( strcmp(option[1],"read_plateaux")==0 )
-   	go_to_line(*plateaux_masses,line);
+    //int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
+   //if ( strcmp(option[1],"read_plateaux")==0 )
+   //	go_to_line(*plateaux_masses,line);
    
    double **r,*m,**mt,*fit;
    int i,j,yn;
@@ -137,11 +141,11 @@ void effective_mass_phi4_gamma(char **option ,struct kinematic kinematic_2pt , c
 
    fflush(outfile);
    
-    if ( strcmp(option[1],"read_plateaux")==0 ){
+    /*if ( strcmp(option[1],"read_plateaux")==0 ){
      fclose(*plateaux_masses);
      *plateaux_masses=open_file(kinematic_2pt.plateau_m_ll,"r");
 
-    }
+    }*/
     
     //return fit;    
     
