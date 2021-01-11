@@ -634,7 +634,6 @@ int main(int argc, char **argv){
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.n_ext_P=2;
-    fit_info.ext_P=(double**) malloc(sizeof(double*)*2);
     fit_info.function=four_pt_BH;
     
     fit_info.ext_P[0]=mass[0];
@@ -661,6 +660,16 @@ int main(int argc, char **argv){
     free_jack(Njack,var , file_head.l0, conf_jack);
  
     fclose(out_gamma);
+    free(fit_info.ext_P);
+    free_tower(7,(void**)option);
+    
+    for(i=0;i<file_head.nmoms;i++) 
+    	free(file_head.mom[i]);
+    free(file_head.mom);
+    fclose(infile); fclose(outfile);
+   
+    free(file_head.k);
+    
     return 0;   
 }
 

@@ -364,7 +364,7 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
 
    }
    free(tmp);free(x);
-   free_2(fit_info.Npar,tif);
+   free_2(Njack,tif);
    
    m=mean_and_error(option[4],Njack, fit_out.chi2);
    fprintf(outfile,"\n\n #%s fit in [%d,%d] chi2=%.5f  %.5f\n",description,tmin,tmax,m[0],m[1]);

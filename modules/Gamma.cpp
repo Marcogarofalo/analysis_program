@@ -32,6 +32,8 @@ double **Gamma(int t, int var, int order, int rep,int nconf, double *a, double *
 for(i0=0;i0<alpha;i0++)
   for(i1=0;i1<alpha;i1++)
 	    r[i0][i1]/=((double)(rep*nconf-rep*t));
+  
+  
      
 return r;
 }
@@ -71,6 +73,8 @@ for(i=0;i<alpha;i++)
   free(tmp);free(tmp1);ah[i]+=h[i];
   //scale_pseries(order,0,1./(2.*h[i]),r[i]  );
 }
+
+
 
 free(h);free(ah);
 return r;
@@ -142,9 +146,11 @@ void mean_value(int var, int order,int rep, int nconf,int flow,double *a, double
     }
         
     //free_dpseries(rep-1,ab);
-    for(j=0;j<=order;j++){
-    free(ab[j]);
+    for(j=0;j<rep;j++){
+       free(ab[j]);
     }
+    free(ab);
+    free(Fb);free(Fbb);
 }
 
 double *Gammaf( int var, int order,double **ga,double **fa)
@@ -198,7 +204,7 @@ void windowing(int var,int order, int rep, int nconf, int flow,double *a, double
  
     for(i1=0;i1<alpha;i1++)
         free(tmp[i1]);
-
+    free(tmp);
     fprintf(file_tau,"%d   \t %d %g\n",flow,0,0.5);
     
     for(i=1;i<nconf;i++)
@@ -217,6 +223,7 @@ void windowing(int var,int order, int rep, int nconf, int flow,double *a, double
         //free_dpseries(alpha-1,tmp);
         for(i1=0;i1<alpha;i1++)
             free(tmp[i1]);
+        free(tmp);
         for(j=0;j<=order;j++)
         {
             
@@ -246,7 +253,7 @@ void windowing(int var,int order, int rep, int nconf, int flow,double *a, double
     //free_dpseries(alpha-1,fbba);
     for(i1=0;i1<alpha;i1++)
         free(fbba[i1]);
-
+    free(fbba);
     free(g);free(tau);
 
         for(j=0;j<=order;j++)

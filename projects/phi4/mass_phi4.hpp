@@ -100,7 +100,7 @@ void effective_mass_phi4_gamma(char **option ,struct kinematic kinematic_2pt , c
    r=(double**) malloc(sizeof(double*)*file_head.l0);
    for(i=0;i<file_head.l0;i++)
        r[i]=(double*) malloc(sizeof(double)*Confs);
-   mt=(double**) malloc(sizeof(double*)*file_head.l0);
+   //mt=(double**) malloc(sizeof(double*)*file_head.l0);
 
    
     

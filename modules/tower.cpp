@@ -6,10 +6,19 @@
 #include <time.h>
 #include <string.h>
 #include <complex.h>
+#include "tower.hpp"
 
 
+void free_tower(int size ,void  **p){
+    int i;
+    
+    for(i=0;i<size;i++)
+        free(p[i]);
+    free(p);
+}
 
-void free_2(int size ,double **p){
+
+void free_2(int size ,double  **p){
     int i;
     
     for(i=0;i<size;i++)

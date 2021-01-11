@@ -32,6 +32,7 @@ add_subdirectory(include  include)
 macro(add_target_with_lib TARGETNAME)
   # Make the executable
   add_executable(${TARGETNAME} ${ARGN})
+  
   target_link_libraries(${TARGETNAME} PUBLIC global)
   target_link_libraries(${TARGETNAME} PUBLIC rand)
   target_link_libraries(${TARGETNAME} PUBLIC linear_fit)
@@ -58,7 +59,8 @@ macro(add_target_with_lib TARGETNAME)
   target_link_libraries(${TARGETNAME} PUBLIC virtualphoton_routines)
   target_link_libraries(${TARGETNAME} PUBLIC gamma_analysis)
   target_link_libraries(${TARGETNAME} PUBLIC correlators_analysis)
-  
+  target_link_libraries(${TARGETNAME} PUBLIC tower)
+
 #target_link_libraries(${TARGETNAME} PUBLIC Kokkos::kokkos)
 endmacro()
 
