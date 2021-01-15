@@ -80,7 +80,7 @@ double four_pt_BH(int n, int Nvar, double *x,int Npar,double  *P){
     C4 = 8. *pi_greco*(M0+M1)*aN*t;
     C4 -= 16*aN*aN * sqrt( 2.*pi_greco *(M0+M1)* M0*M1*t );
     //C4 *= norm*exp(M1*t) ;
-    C4 *= norm ;
+    //C4 *= norm ;
     
     
     return C4;
@@ -630,7 +630,7 @@ int main(int argc, char **argv){
     
     
     fit_info.Nvar=3;
-    fit_info.Npar=2;
+    fit_info.Npar=1;
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.n_ext_P=2;

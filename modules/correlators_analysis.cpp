@@ -153,7 +153,7 @@ int   line_read_plateaux(char **option, const char *corr , int &tmin, int &tmax,
          if (x[0].compare(name)==0  &&  x[1].compare(correlator)==0){
              tmin=stoi(x[2]);
              tmax=stoi(x[3]);
-             sep=stoi(x[2]);
+             sep=stoi(x[4]);
              printf("correlator %s  plateaux %d  %d %d\n", correlator.c_str(),tmin,tmax,sep);
              match++;
              break;
@@ -344,22 +344,26 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
    double **tif=swap_indices(fit_info.Npar,Njack, fit_out.P);
    double *tmp=(double*) malloc(sizeof(double)*Njack);
    double *x=(double*) malloc(sizeof(double)*fit_info.Nvar);
-   for(int i=1;i<file_head.l0/2;i++){   
+   int xs=fit_info.Nvar-fit_info.n_ext_P;
+   for(int t=1;t<file_head.l0/2;t++){  
+           fprintf(outfile,"%d   %.15e    %.15e\t",t,mt[t][0],mt[t][1]);
            // variables and external parameters 
-           x[0]=i;
-           for(int i=0 ; i< fit_info.n_ext_P; i++){
-                    x[i+1]=fit_info.ext_P[i][Njack-1];
-            }
-           for (int j=0;j<Njack;j++){
-              tmp[j]= fit_info.function(0 ,fit_info.Nvar,x,fit_info.Nvar, tif[j] );
-           }
+           x[0]=t;
+           for(int i=0 ; i< fit_info.n_ext_P; i++)
+               x[i+xs]=fit_info.ext_P[i][Njack-1];
            
+           for (int j=0;j<Njack;j++)
+               tmp[j]= fit_info.function(0 ,fit_info.Nvar,x,fit_info.Nvar, tif[j] );
            double *f_val=mean_and_error(option[4],Njack,tmp );
-           fprintf(outfile,"%d   %.15e    %.15e\t",i,mt[i][0],mt[i][1]);
-           //if (  i>= tmin && i<= tmax)
-               fprintf(outfile,"   %.15e    %.15e\n",f_val[0],f_val[1]);
-           //else 
-           //    fprintf(outfile,"  \n");
+           
+           fprintf(outfile,"   %.15e    %.15e\t",f_val[0],f_val[1]);
+           free(f_val);
+           
+           x[0]=t+0.5;
+           for (int j=0;j<Njack;j++)
+               tmp[j]= fit_info.function(0 ,fit_info.Nvar,x,fit_info.Nvar, tif[j] );
+           f_val=mean_and_error(option[4],Njack,tmp );
+           fprintf(outfile,"%.15e   %.15e    %.15e\n",x[0],f_val[0],f_val[1]);
            free(f_val);
 
    }
