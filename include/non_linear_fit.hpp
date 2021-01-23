@@ -39,4 +39,5 @@ double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n
 double *der_fun_Nf_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(int,int,double*,int,double*), double h);
 double *derN_fun_Nf_var_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(int,int,double*,int,double*), double h,int N);
 
+struct fit_all   save_fit(struct fit_all fit_chi2_good,struct fit_type fit_info, struct fit_result fit_out);
 #endif

@@ -3205,72 +3205,8 @@ void compute_systematics(char **argv, double **phys_point, struct fit_all fit_ch
 }
 */
 
-struct  fit_result   copy_fit_result(struct fit_result fit_out, struct fit_type fit_info){
-    struct  fit_result fit_tmp;
-    int i,j,k;
-    fit_tmp.Njack=fit_out.Njack;
-    fit_tmp.P=(double**) malloc(sizeof(double*)*fit_info.Npar);
-    fit_tmp.C=(double***) malloc(sizeof(double**)*fit_info.Npar);
-    fit_tmp.chi2=(double*) malloc(sizeof(double)*fit_out.Njack);
-    
-    for(i=0;i<fit_info.Npar;i++){
-        fit_tmp.P[i]=(double*) malloc(sizeof(double)*fit_out.Njack);
-        fit_tmp.C[i]=(double**) malloc(sizeof(double*)*fit_info.Npar);
-        for(j=0;j<fit_out.Njack;j++){
-            fit_tmp.P[i][j]=fit_out.P[i][j];
-        }
-        for(k=0;k<fit_info.Npar;k++){
-                fit_tmp.C[i][k]=(double*) malloc(sizeof(double)*fit_out.Njack);
-                for(j=0;j<fit_out.Njack;j++)
-                    fit_tmp.C[i][k][j]=fit_out.C[i][k][j];
-            }
-
-    }
-    for(j=0;j<fit_out.Njack;j++){
-        fit_tmp.chi2[j]=fit_out.chi2[j];
-    }
-    return fit_tmp;
-}
-struct  fit_type   copy_fit_type(struct fit_result fit_out, struct fit_type fit_info){
-    struct  fit_type fit_tmp;
-    fit_tmp.N=fit_info.N;
-    fit_tmp.Npar=fit_info.Npar;
-    fit_tmp.Nvar=fit_info.Nvar;
-    fit_tmp.function=fit_info.function;
-
-    return fit_tmp;
-}
 
 
-struct fit_all   save_fit(struct fit_all fit_chi2_good,struct fit_type fit_info, struct fit_result fit_out){
-    
-    struct fit_all fit_tmp;
-    int i,j,k;
-    int N=fit_chi2_good.Nfits+1;
-    fit_tmp.Nfits=N;
-    fit_tmp.info=(struct fit_type  *) malloc(sizeof(struct fit_type)*N);
-    fit_tmp.out=(struct fit_result  *) malloc(sizeof(struct fit_result)*N);
-    for(i=0;i<N-1;i++){
-        fit_tmp.out[i]=copy_fit_result(fit_chi2_good.out[i],fit_chi2_good.info[i]);
-        fit_tmp.info[i]=copy_fit_type(fit_chi2_good.out[i],fit_chi2_good.info[i]);
-        for (j=0;j<fit_chi2_good.info[i].Npar;j++){
-            free(fit_chi2_good.out[i].P[j]);
-            for (k=0;k<fit_chi2_good.info[i].Npar;k++){
-                free(fit_chi2_good.out[i].C[j][k]);
-            }
-            free(fit_chi2_good.out[i].C[j]);
-        }
-        free(fit_chi2_good.out[i].chi2);
-        free(fit_chi2_good.out[i].P);
-        free(fit_chi2_good.out[i].C);
-
-    }     
-    fit_tmp.out[N-1]=copy_fit_result(fit_out,fit_info);
-    fit_tmp.info[N-1]=copy_fit_type(fit_out,fit_info);
-    
-    return fit_tmp;
-    
-}
 
 static void  read_file_head_jack(FILE *stream,struct header *head)
 {

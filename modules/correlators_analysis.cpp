@@ -382,7 +382,8 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
        free(m);
 
    }
-   fprintf(outfile,"%d   %d   \n\n\n",tmin,tmax);
+   fprintf(outfile," \n\n\n");
+   //fprintf(outfile,"%d   %d   \n\n\n",tmin,tmax);
 
    
    

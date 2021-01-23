@@ -6,6 +6,7 @@
 #include <time.h>
 #include <string.h>
 #include <complex.h>
+#include <memory>
 
 #include "global.hpp"
 
@@ -53,9 +54,9 @@ double ***init_omega_jacob(){
         /*r[8][0][0]=0.669; r[8][0][1]=0.003;  
         r[8][1][0]=0.698; r[8][1][1]=0.002;    
         r[8][2][0]=0.727; r[8][2][1]=0.002;  */
-        r[8][0][0]=0.6763; r[8][0][1]=0.0020;  
-        r[8][1][0]=0.7042; r[8][1][1]=0.0016;    
-        r[8][2][0]=0.7318; r[8][2][1]=0.0014;  
+        r[8][0][0]=0.6699; r[8][0][1]=0.0027;  
+        r[8][1][0]=0.6990; r[8][1][1]=0.0022;    
+        r[8][2][0]=0.7274; r[8][2][1]=0.0018;  
 
     }if(ensembles>7){
         //C60
@@ -63,18 +64,18 @@ double ***init_omega_jacob(){
         r[7][1][0]=0.586; r[7][1][1]=0.005;    
         r[7][2][0]=0.609; r[7][2][1]=0.005;  
         */
-        r[7][0][0]=0.5765; r[7][0][1]=0.0025;  
-        r[7][1][0]=0.5924; r[7][1][1]=0.0022;    
-        r[7][2][0]=0.6081; r[7][2][1]=0.0020;
+        r[7][0][0]=0.5765; r[7][0][1]=0.0013;  
+        r[7][1][0]=0.5925; r[7][1][1]=0.0012;    
+        r[7][2][0]=0.6085; r[7][2][1]=0.0011;
         
     }if(ensembles>6){
         //B072
         /*r[6][0][0]=0.682; r[6][0][1]=0.006;  
         r[6][1][0]=0.701; r[6][1][1]=0.005;  
         r[6][2][0]=0.719; r[6][2][1]=0.004;  */
-        r[6][0][0]=0.6835; r[6][0][1]=0.0018;  
-        r[6][1][0]=0.7031; r[6][1][1]=0.0016;  
-        r[6][2][0]=0.7224; r[6][2][1]=0.0014;
+        r[6][0][0]=0.6815; r[6][0][1]=0.0014;  
+        r[6][1][0]=0.7015; r[6][1][1]=0.0012;  
+        r[6][2][0]=0.7221; r[6][2][1]=0.0011;
 
 
     }if(ensembles>5){
@@ -90,18 +91,18 @@ double ***init_omega_jacob(){
         /*r[4][0][0]=0.667; r[4][0][1]=0.002;  
         r[4][1][0]=0.696; r[4][1][1]=0.002;  
         r[4][2][0]=0.725; r[4][2][1]=0.001;  */
-        r[4][0][0]=0.6652; r[4][0][1]=0.0042;  
-        r[4][1][0]=0.6933; r[4][1][1]=0.0032;  
-        r[4][2][0]=0.7218; r[4][2][1]=0.0027;  
+        r[4][0][0]=0.6699; r[4][0][1]=0.0027;  
+        r[4][1][0]=0.6990; r[4][1][1]=0.0022;  
+        r[4][2][0]=0.7274; r[4][2][1]=0.0018;  
 
     }if(ensembles>3){
         //A12
         /*r[3][0][0]=0.776; r[3][0][1]=0.005;  
         r[3][1][0]=0.811; r[3][1][1]=0.004;  
         r[3][2][0]=0.844; r[3][2][1]=0.004;  */
-        r[3][0][0]=0.7843; r[3][0][1]=0.0041;  
-        r[3][1][0]=0.8204; r[3][1][1]=0.0034;  
-        r[3][2][0]=0.8564; r[3][2][1]=0.0029; 
+        r[3][0][0]=0.7805; r[3][0][1]=0.0020;  
+        r[3][1][0]=0.8171; r[3][1][1]=0.0016;  
+        r[3][2][0]=0.8533; r[3][2][1]=0.0013; 
 
 
     }if(ensembles>2){
@@ -119,18 +120,18 @@ double ***init_omega_jacob(){
         /*r[1][0][0]=0.803; r[1][0][1]=0.003;  
         r[1][1][0]=0.840; r[1][1][1]=0.002;  
         r[1][2][0]=0.873; r[1][2][1]=0.002;*/
-        r[1][0][0]=0.8064; r[1][0][1]=0.0028;  
-        r[1][1][0]=0.8401; r[1][1][1]=0.0022;  
-        r[1][2][0]=0.8739; r[1][2][1]=0.0019; 
+        r[1][0][0]=0.8052; r[1][0][1]=0.0024;  
+        r[1][1][0]=0.8392; r[1][1][1]=0.0019;  
+        r[1][2][0]=0.8733; r[1][2][1]=0.0015; 
         
     }if(ensembles>0){
         //A53
         /*r[0][0][0]=0.811; r[0][0][1]=0.003;  
         r[0][1][0]=0.843; r[0][1][1]=0.002;  
         r[0][2][0]=0.878; r[0][2][1]=0.002;  */
-        r[0][0][0]=0.8132; r[0][0][1]=0.0019;  
-        r[0][1][0]=0.8464; r[0][1][1]=0.0015;  
-        r[0][2][0]=0.8799; r[0][2][1]=0.0013;
+        r[0][0][0]=0.8093; r[0][0][1]=0.0030;  
+        r[0][1][0]=0.8436; r[0][1][1]=0.0023;  
+        r[0][2][0]=0.8777; r[0][2][1]=0.0018;
 
     }
     return r;
@@ -2171,13 +2172,15 @@ int main(int argc, char **argv){
 
     struct fit_type fit_info;
     struct fit_result  fit_out;
+    struct fit_all fit_chi2_good;
     fit_info.Nvar=13;
     
     double    **phys_point=init_phys_point(jack_tot);  
     
+    printf("\n\n//////////////////////////////////////////////////////////////\n");
+    printf("              OMEGA MK                             \n");
+    printf("\n\n//////////////////////////////////////////////////////////////\n");
     
-    printf("\n\nOMEGA MK\n");
-
     Ci=(double**) malloc(sizeof(double*)*2);
     
     fit=fit_Omegaw0_from_M(jack_files, head , jack_tot, mass_index, gjack,  &result );
@@ -2333,7 +2336,7 @@ int main(int argc, char **argv){
     fit_info.Npar=8;
     fit_info.N=2;
     fit_info.function=fit_Fpi_and_Mpi_GL_NL0_am;
-    
+    double ***scale=double_malloc_3(4,3,jack_tot);
     
      
     init_Z( jack_files, head, jack_tot, &gjack, "w0","M1a");
@@ -2350,16 +2353,42 @@ int main(int argc, char **argv){
      
     init_Z( jack_files, head, jack_tot, &gjack, "w0","M2a");
     fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
-     //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+    //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion","fit_Mpi_Fpi_GL_NLO_am_w0_M2a");
- 
+    for (int j =0; j<jack_tot; j++){scale[2][0][j]=result.w0fm[j];}
+    
+    init_Z( jack_files, head, jack_tot, &gjack, "t0/w0","M2a");
+    fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
+    //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion","fit_Mpi_Fpi_GL_NLO_am_t0w0_M2a");
+    for (int j =0; j<jack_tot; j++){scale[2][1][j]=result.w0fm[j];}
+    
+    double  *tmp3=(double*)   malloc(sizeof(double)*(jack_tot));
+    for (int j =0; j<jack_tot; j++){
+        tmp3[j]=sqrt(scale[2][1][j]/scale[2][0][j]);//t/w0*2
+    }
+    double *tmp2=mean_and_error(argv[1],jack_tot,tmp3);
+    printf("sqrt(t0)/w0 [M2a]=%f \\pm %f\n",tmp2[0],tmp2[1]);
+    free(tmp3);free(tmp2);
     
     init_Z( jack_files, head, jack_tot, &gjack, "w0","M2b");
     fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
-     //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+    //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion","fit_Mpi_Fpi_GL_NLO_am_w0_M2b");
- 
+    for (int j =0; j<jack_tot; j++){scale[3][0][j]=result.w0fm[j];}
     
+    init_Z( jack_files, head, jack_tot, &gjack, "t0/w0","M2b");
+    fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
+    //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion","fit_Mpi_Fpi_GL_NLO_am_t0w0_M2b");
+    for (int j =0; j<jack_tot; j++){scale[3][1][j]=result.w0fm[j];}
+
+    tmp3=(double*)   malloc(sizeof(double)*(jack_tot));
+    for (int j =0; j<jack_tot; j++){
+        tmp3[j]=sqrt(scale[3][1][j]/scale[3][0][j]);//t/w0*2
+    }
+    tmp2=mean_and_error(argv[1],jack_tot,tmp3);
+    printf("\\sqrt{t_0}/w_0 [M2b]=%f \\pm %f\n",tmp2[0],tmp2[1]);
     
     printf("\n\n///////////////////////////////////////Pion of m_l GL NL0 am m2  w0 M2b  ///////////////////////\n");
     fit_info.Npar=10;

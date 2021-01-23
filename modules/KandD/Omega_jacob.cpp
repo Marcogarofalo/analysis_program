@@ -29,6 +29,9 @@ int ensemble_omega_jacob=8;
 
 
 
+
+
+
 static double one_parabola(int n, int Nvar, double *x,int Npar,double  *P){
     double r;
     

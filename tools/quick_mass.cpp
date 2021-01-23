@@ -546,7 +546,7 @@ int main(int argc, char **argv){
            //fscanf(infile,"%d  %lf",&tt,&data[iconf][0][t][0]);
            //error(t!=tt, 1, "main: reading","time do not match  conf=%d   t=%d  read %d",iconf ,t,tt);
            double a ,b,c;
-           fscanf(infile,"%d  %lf %lf",&tt,&data[iconf][0][t][0],&a);
+           fscanf(infile,"%d  %lf %lf %lf %lf",&tt,&data[iconf][0][t][0],&a,&b,&c);
            error(t!=tt, 1, "main: reading","time do not match  conf=%d   t=%d  read %d",iconf ,t,tt);
            
            //fscanf(infile,"%lf",&data[iconf][0][t][0]);
