@@ -372,6 +372,21 @@ double *mean_and_error(const char *option , int Np1, double *in){
     return r;
 }
 
+
+// give the error the jackknife series in[Np1=Njack]
+double error_jackboot(const char *option , int Np1, double *in){
+    double *r,r1;
+    if( strcmp(option,"jack")==0)
+              r=mean_and_error_jack_biased(Np1, in);
+    else if( strcmp(option,"boot")==0)
+              r=mean_and_error_boot(Np1, in);
+    else 
+        error(0==0,1,"mea_and_error call","mea_and_error called with %s while the only options supported are jack or boot",option);
+    r1=r[1];
+    free(r);
+    return r1;
+}
+
 const char *smean_and_error(const char *option , int Np1, double *in){
     double *r;
     char *s;
@@ -543,7 +558,8 @@ double **reduce_covariance_matrix(int N, double **cov){
 }
 */
 
-
+//given a covariance matrix  cov[N][N]
+//returns a double array of r[N][jacknife] of jacknife or bootstrap
 double **fake_sampling_covariance(const char *option,double *mean, int Njack,int N, double **cov,int seed){
     double **r;
     int Nboot=Nbootstrap;
@@ -641,6 +657,8 @@ double **covariance_boot(int Nobs, int Np1, double **in){
     
 }
 
+//conpute the covariance of in[variables=0,...,Nobs-1][jacknifes]
+//return Nobs x Nobs matrix
 double **covariance(const char *option , int Nobs, int Np1, double **in){
     double **r;
     

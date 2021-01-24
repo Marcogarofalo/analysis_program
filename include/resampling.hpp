@@ -41,6 +41,8 @@ double *fake_boot(double mean,double error, int Njack,int seed);
 
 /////////////////////
 double *mean_and_error( const char *option , int Np1, double *in);  
+double error_jackboot( const char *option , int Np1, double *in);  
+
 const char  *smean_and_error( const char *option , int Np1, double *in);  
 double ****create_resampling(const char *option, int  N, int var, int t, double ****in);
 double *fake_sampling(const char *option,double mean,double error, int Njack,int seed);
