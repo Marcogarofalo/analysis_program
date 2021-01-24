@@ -62,6 +62,26 @@ double C3(int n, int Nvar, double *x,int Npar,double  *P){
     
 }
 
+double C2_diff_masses(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double C2;
+    
+    double E2=P[0];
+    double A2=P[1];
+    double A12=P[2];
+    
+    double t= x[0];
+    double M0=x[1];
+    double M1=x[2];
+    //check if file_head.l0 arrives here
+    double T=(double)file_head.l0;
+    C2=A2*A2 * ( exp(-t*E2)+ exp(-(T-t)*E2) );
+    C2+=A12*A12 *( exp(-T*M0-t*M1 +t*M0)+ exp(-T*M1-t*M0 +t*M1) ) ;
+    
+    return C2;
+    
+}
+
 
 
 double four_pt_BH(int n, int Nvar, double *x,int Npar,double  *P){
@@ -80,12 +100,35 @@ double four_pt_BH(int n, int Nvar, double *x,int Npar,double  *P){
     C4 = 8. *pi_greco*(M0+M1)*aN*t;
     C4 -= 16*aN*aN * sqrt( 2.*pi_greco *(M0+M1)* M0*M1*t );
     //C4 *= norm*exp(M1*t) ;
-    //C4 *= norm ;
+    C4 /= 8*M0*M1 ;
     
     return C4;
     
 }
 
+
+double four_pt_BH_const(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double C4;
+    
+    double aN=P[0];
+    double c=P[1];
+        
+
+    double T=(double)file_head.l0;
+    double t= x[0]- T/8.;
+    double M0=x[1];
+    double M1=x[2];
+
+    C4 = 8. *pi_greco*(M0+M1)*aN*t;
+    C4 -= 16*aN*aN * sqrt( 2.*pi_greco *(M0+M1)* M0*M1*t );
+    //C4 *= norm*exp(M1*t) ;
+    C4 += c ;
+    C4 /= 8*M0*M1 ;
+    
+    return C4;
+    
+}
 
 double four_pt_BH_line(int n, int Nvar, double *x,int Npar,double  *P){
     
@@ -101,7 +144,7 @@ double four_pt_BH_line(int n, int Nvar, double *x,int Npar,double  *P){
     double M1=x[2];
 
     C4 = 8. *pi_greco*(M0+M1)*aN*t;
-    
+    C4 /= 8*M0*M1 ;
     return C4;
     
 }
@@ -123,7 +166,7 @@ double four_pt_BH_2par(int n, int Nvar, double *x,int Npar,double  *P){
     C4 += B * sqrt( 2.*pi_greco *(M0+M1)* M0*M1*t );
     //C4 *= norm*exp(M1*t) ;
     //C4 *= norm ;
-    
+    C4 /= 8*M0*M1 ;
     return C4;
     
 }
@@ -148,7 +191,7 @@ double four_pt_BH_3par(int n, int Nvar, double *x,int Npar,double  *P){
     C4+=C;
     //C4 *= norm*exp(M1*t) ;
     //C4 *= norm ;
-    
+    C4 /= 8*M0*M1 ;
     return C4;
     
 }
@@ -514,7 +557,7 @@ int main(int argc, char **argv){
     int T=params.data.L[0];
    
    double mu1=params.data.msq0;
-   double mu2=params.data.msq0;
+   double mu2=params.data.msq1;
    printf("mu=%g  %g\n",mu1,mu2);
    //mysprintf(argv[4],NAMESIZE,"jack");
    
@@ -570,7 +613,7 @@ int main(int argc, char **argv){
    else
        error(1==1,1,"main","argv[7]= %s is not jack or boot",argv[7]);
    
-   int var=11;
+   int var=params.data.ncorr;
    data=calloc_corr(confs, var,  file_head.l0 );
    
    setup_file_jack(option,Njack);
@@ -593,6 +636,8 @@ int main(int argc, char **argv){
         read_twopt(infile, iconf, &data[iconf][8], params,8);//C4t0
         read_twopt(infile, iconf, &data[iconf][9], params,9);//C4t1
         read_twopt(infile, iconf, &data[iconf][10], params,10);//C4t
+        
+        read_twopt(infile, iconf, &data[iconf][11], params,11);//C201
     }
 
     symmetrise_corr(confs, 0, file_head.l0,data);
@@ -605,6 +650,9 @@ int main(int argc, char **argv){
     symmetrise_corr(confs, 5, file_head.l0,data);
     symmetrise_corr(confs, 6, file_head.l0,data);
     symmetrise_corr(confs, 7, file_head.l0,data);
+    
+    symmetrise_corr(confs, 11, file_head.l0,data);
+
     
     //if you want to do the gamma analysis you need to do before freeing the raw data
     effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,&plateaux_masses,out_gamma,0,"M_{PS}^{ll}");
@@ -743,7 +791,23 @@ int main(int argc, char **argv){
     fit_info.ext_P[1]=mass[1];
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_2p",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
+    fit_info.Nvar=3;
+    fit_info.Npar=2;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=2;
+    fit_info.function=four_pt_BH_const;
 
+    file_head.k[2]=mu1;    file_head.k[3]=mu2;
+    fit_info.ext_P[0]=mass[0];
+    fit_info.ext_P[1]=mass[1];
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_const",  fit_info, file_jack.M_PS );
+    free_fit_result(fit_info,fit_out);
+
+    
+    
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
     fit_info.Nvar=3;
@@ -758,6 +822,25 @@ int main(int argc, char **argv){
     fit_info.ext_P[1]=mass[1];
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_3p",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
+    
+   
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
+    fit_info.Nvar=3;
+    fit_info.Npar=3;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=2;
+    fit_info.function=C2_diff_masses;
+
+    file_head.k[2]=mu1;    file_head.k[3]=mu2;
+    fit_info.ext_P[0]=mass[0];
+    fit_info.ext_P[1]=mass[1];
+    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,  11,0/*reim*/ , "E2_01",  fit_info, file_jack.M_PS );
+
+    free_fit_result(fit_info,fit_out);
+    
+    
     
     
     free_2(3,mass);free_2(3,E2);
