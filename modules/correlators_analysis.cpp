@@ -198,15 +198,9 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
    
    
    
-   y=(double***) malloc(sizeof(double**)*Njack);
    chi2j=(double*) malloc(sizeof(double)*Njack);
-   for (j=0;j<Njack;j++){
-        y[j]=(double**) malloc(sizeof(double*)*(tmax-tmin+1));
-        for (i=tmin;i<=tmax;i++){
-            y[j][i-tmin]=(double*) malloc(sizeof(double)*2);
-        }
-   }
    
+   y=double_malloc_3(Njack, tmax-tmin+1, 2);
    x=double_malloc_3(Njack,en_tot,Nvar);
    
    for (j=0;j<Njack;j++){
@@ -229,7 +223,7 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
    for (i=tmin;i<=tmax;i+=sep){
         for (j=0;j<Njack;j++){
             y[j][(i-tmin)/sep][0]=corr_J[i][j];
-            y[j][(i-tmin)/sep][1]=corr_ave[i][1];
+            y[j][(i-tmin)/sep][1]= error_jackboot(option[4], Njack, corr_J[i]);   ;//corr_ave[i][1];
         }
         
     }
@@ -266,15 +260,11 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
   
 
     free_2(Njack,fit);
-    for (j=0;j<Njack;j++){
-        for (i=tmin;i<=tmax;i++){
-            free(y[j][i-tmin]);   
-        }
-        free(y[j]);
-    }
+    
     free_3(Njack,en_tot,x);
+    free_3(Njack, tmax-tmin+1, y);
     free(chi2j);
-    free(y);
+    
     free(en);free(guess);
     return fit_out;    
 }
