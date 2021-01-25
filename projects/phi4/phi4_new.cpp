@@ -637,7 +637,9 @@ int main(int argc, char **argv){
         read_twopt(infile, iconf, &data[iconf][9], params,9);//C4t1
         read_twopt(infile, iconf, &data[iconf][10], params,10);//C4t
         
-        read_twopt(infile, iconf, &data[iconf][11], params,11);//C201
+        if (params.data.ncorr>11){
+           read_twopt(infile, iconf, &data[iconf][11], params,11);//C201
+        }
     }
 
     symmetrise_corr(confs, 0, file_head.l0,data);
@@ -651,8 +653,9 @@ int main(int argc, char **argv){
     symmetrise_corr(confs, 6, file_head.l0,data);
     symmetrise_corr(confs, 7, file_head.l0,data);
     
-    symmetrise_corr(confs, 11, file_head.l0,data);
-
+    if (params.data.ncorr>11){
+        symmetrise_corr(confs, 11, file_head.l0,data);
+    }
     
     //if you want to do the gamma analysis you need to do before freeing the raw data
     effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,&plateaux_masses,out_gamma,0,"M_{PS}^{ll}");

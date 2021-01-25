@@ -558,7 +558,7 @@ double **reduce_covariance_matrix(int N, double **cov){
 }
 */
 
-//given a covariance matrix  cov[N][N]
+//given a covariance matrix  cov[N][N] (in the diagonal there is the error^2)
 //returns a double array of r[N][jacknife] of jacknife or bootstrap
 double **fake_sampling_covariance(const char *option,double *mean, int Njack,int N, double **cov,int seed){
     double **r;

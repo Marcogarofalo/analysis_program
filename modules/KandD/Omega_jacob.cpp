@@ -27,10 +27,65 @@
 
 int ensemble_omega_jacob=8;
 
+/*
+double ***data_omega(char *option, struct data_jack *gJ ){
+    
+    double ***r=double_malloc_3(ensemble_omega_jacob, 3 ,Njack );
+    double **strange_jacob=double_malloc_2(ensemble_omega_jacob,3)
+    double mean[2],cov[2][2];
+    if (ensemble_omega_jacob>8){
+        //B25.32
+        mean[0]=0.555225978284128;
+        mean[1]=7.76055858378567;
+        cov={ {2.438932e-05, -0.0007886619},
+              {-7.886619e-04 , 0.0281728981 }};
+        fake_sampling_covariance(option,  double *mean, int Njack,int N, double **cov,int seed)
+            strange_jacob[8][0]=0.0148;   
+            strange_jacob[8][1]=0.0185;   
+            strange_jacob[8][2]=0.0222; 
+   }
+   if (ensemble_omega_jacob>7){
+            //C06
+            strange_jacob[7][0]=0.0128;
+            strange_jacob[7][1]=0.0161;   
+            strange_jacob[7][2]=0.0193;
+   }
+            //B072
+            strange_jacob[6][0]=0.017;   
+            strange_jacob[6][1]=0.0195;   
+            strange_jacob[6][2]=0.0220;   
+            //B14
+            strange_jacob[5][0]=0.0148;   
+            strange_jacob[5][1]=0.0185;   
+            strange_jacob[5][2]=0.0222;   
+            //B25
+            strange_jacob[4][0]=0.0148;   
+            strange_jacob[4][1]=0.0185;   
+            strange_jacob[4][2]=0.0222;   
+            //A12
+            strange_jacob[3][0]=0.0182;   
+            strange_jacob[3][1]=0.0227;   
+            strange_jacob[3][2]=0.0273;   
+            //A30
+            strange_jacob[2][0]=0.0182;   
+            strange_jacob[2][1]=0.0227;   
+            strange_jacob[2][2]=0.0273;   
+            //A40
+            strange_jacob[1][0]=0.0182;   
+            strange_jacob[1][1]=0.0227;   
+            strange_jacob[1][2]=0.0273;   
+            //A53
+            strange_jacob[0][0]=0.0182;   
+            strange_jacob[0][1]=0.0227;   
+            strange_jacob[0][2]=0.0273;  
+    
+    
+    
+    
+    
+}
 
-
-
-
+*/
 
 static double one_parabola(int n, int Nvar, double *x,int Npar,double  *P){
     double r;
