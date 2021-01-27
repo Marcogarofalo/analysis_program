@@ -29,15 +29,15 @@ for (i=0;i<n;i++) {
         for (k=i-1;k>=0;k--) sum -= L[i][k]*L[j][k];
         if (i == j) {
             if (sum <= 0.0){
-                printf("cholesky_decomposition failed: the matrix, with rounding errors, is not positive definite,\n ecco la matrice ,  attaccati al cazzo{");
+                printf("cholesky_decomposition failed: the matrix, with rounding errors, is not positive definite,\n here the matrix\n{");
                 printf("{");
                 for (int ii=0;ii<n;ii++) {
                       
                     for (int jj=0;jj<ii;jj++)
-                            printf("%.5f, ",a[jj][ii]);
+                            printf("%.5g, ",a[jj][ii]);
                     for (int jj=ii;jj<n-1;jj++)
-                            printf("%.5f ,",a[ii][jj]);
-                    printf("%.5f },\n",a[ii][n-1]);
+                            printf("%.5g ,",a[ii][jj]);
+                    printf("%.5g },\n",a[ii][n-1]);
                     
                 }
                 printf("}\n");

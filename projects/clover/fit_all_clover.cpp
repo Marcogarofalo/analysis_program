@@ -382,7 +382,7 @@ double fit_FpiMpi4_and_Mpi2_GL(int n, int Nvar, double *x,int Npar,double  *P){
         
     }
     if (n==3){
-        Mw2=1;  //KfMpi4   M(inf)=M(L)/Kf
+        Mw2=(1+Delta);  //KfMpi4   M(inf)=M(L)/Kf
         
     }
     
@@ -2088,7 +2088,12 @@ int main(int argc, char **argv){
             tmp1[j]= dataJ[i].M_PS_jack[0][j]*dataJ[i].M_PS_jack[0][j]/( dataJ[i].f_PS_jack[0][j]* dataJ[i].f_PS_jack[0][j]);
         tmp=mean_and_error(argv[1],jack_files[i].Njack,   tmp1 );
         printf("  M_PS^2/f_PS^2=%g  +-  %g  \n ",  tmp[0],tmp[1] );
+        
+        
+         
+        
         free(tmp);free(tmp1);
+        
         
     }
  
@@ -2123,6 +2128,23 @@ int main(int argc, char **argv){
     }
     printf("\n");
     }}
+    
+    for (e=0;e<ensembles;e++){
+     tmp1=(double*) malloc(sizeof(double)* jack_tot); 
+     //printf("L=%d\n",head[e].l1);
+     for(j=0;j<jack_tot;j++){
+         
+            double xi=gjack[e].M_PS_jack[0][j]/(4*pi_greco*gjack[e].f_PS_jack[0][j]);
+            xi=xi*xi;
+            double delta=FVE_GL_Mpi(head[e].l1 , xi,   gjack[e].f_PS_jack[0][j]     );
+            tmp1[j]= gjack[e].M_PS_jack[0][j]*(1+delta)/(gjack[e].f_PS_jack[0][j]* (1-0.25*delta));
+            tmp1[j]=tmp1[j]*tmp1[j];
+        }
+        tmp=mean_and_error(argv[1],jack_tot,   tmp1 );
+        printf("  M_PS^2/f_PS^2=%g  +-  %g  \n ",  tmp[0],tmp[1] );
+        free(tmp);free(tmp1);
+    }
+          
  /*   for(ik1=0;ik1<1;ik1++){     //for(ik1=0;ik1<=ik2;ik1++){
    for(ik2=4;ik2<7;ik2++){
     printf("ensambles after generalised jack ik2=%d  ik1=%d\n",ik2,ik1);

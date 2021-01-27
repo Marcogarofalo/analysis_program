@@ -671,3 +671,27 @@ double **covariance(const char *option , int Nobs, int Np1, double **in){
 
     return r;
 }
+
+
+void sum_jackboot(int Np1,  double *r, double *a, double *b){
+    for (int j=0;j<Np1;j++)
+        r[j]=a[j]+b[j];
+}
+void sub_jackboot(int Np1,  double *r, double *a, double *b){
+    for (int j=0;j<Np1;j++)
+        r[j]=a[j]-b[j];
+}
+void mult_jackboot(int Np1,  double *r, double *a, double *b){
+    for (int j=0;j<Np1;j++)
+        r[j]=a[j]*b[j];
+}
+void div_jackboot(int Np1,  double *r, double *a, double *b){
+    for (int j=0;j<Np1;j++)
+        r[j]=a[j]/b[j];
+}
+
+void scalar_times_jackboot(int Np1,  double *r, double *a, double s){
+    for (int j=0;j<Np1;j++)
+        r[j]=a[j]*s;
+}
+

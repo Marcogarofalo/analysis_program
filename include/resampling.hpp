@@ -55,5 +55,16 @@ double **covariance(const char *option , int Nobs, int Np1, double **in);
 
 double **fake_sampling_covariance(const char *option,double *mean, int Njack,int N, double **cov,int seed);
 
+
+///////////////////////////////////////////////////////
+
+void sum_jackboot(int Np1,  double *r, double *a, double *b);
+void sub_jackboot(int Np1,  double *r, double *a, double *b);
+void mult_jackboot(int Np1,  double *r, double *a, double *b);
+void div_jackboot(int Np1,  double *r, double *a, double *b);
+
+void scalar_times_jackboot(int Np1,  double *r, double *a, double s);
+
+
 #endif
  

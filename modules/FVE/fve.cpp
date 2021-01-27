@@ -233,3 +233,32 @@ double FVE_GL_fast(double Lsize_w /* L/w0 */,double  aml, double af, double aB){
         //fpi(L)=fpi(inf)[1+Delta]
         //fpi(inf)=f[1-2xi log xi +2 A xi] // A coefficente
 }
+
+
+double FVE_GL_Mpi(double Lsize_w /* L/w0 */,double  xi,double f_PS){
+
+        int j;
+        double pi=3.14159265358979;
+        
+        double lambda=sqrt(xi)*4*pi*f_PS*((double) Lsize_w);
+        double m[5];
+
+        //printf("L=%d   aml=%g    af=%g     aB=%g\n",Lsize,aml,af,aB);
+        m[0]=0.;
+        m[1]=6.;
+        m[2]=12.;
+        m[3]=8.;
+        m[4]=6.;
+    
+       
+        double Sum=0;
+        for (j=1;j<5;j++)
+             Sum=Sum+m[j]*exp(-lambda*sqrt(j))/pow(j,3./4.);
+        //Sum=Sum*4*sqrt(pi/2.)/pow(lambda,3./2.);
+        Sum=Sum*sqrt(pi/2.)*4./(pow(lambda,3./2.));
+        //Sum=2*Sum* (M[i]*M[i]/(pow(4.*pi*f0w0/w0a,2)  ))  ;
+        double Delta=-2*Sum* xi  ;
+        //printf("DElta=%g\n",Delta);
+        return Delta;
+        
+}
