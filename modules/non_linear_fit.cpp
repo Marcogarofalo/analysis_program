@@ -1104,7 +1104,16 @@ double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n
     fmid=(*func)(n,Nvar,xt,Npar,P)-input;
 
     //error(f*fmid >= 0.0,1,"rtbis","Root must be bracketed for bisection in rtbis f(x1)=%f   f(x2)=%f",f,fmid);
-    if (f*fmid >= 0.0) return NAN;
+    if (f*fmid >= 0.0){ 
+        printf("#f(x)  x\n");
+        for (int i=0;i<100; i++){
+            xt[ivar]=x1-  (x2-x1)  + (i/100.)* (-x1+  (x2-x1)  + x2+(x2-x1)) ;
+            f=(*func)(n,Nvar,xt,Npar,P)-input;
+            printf("%f   %f\n",f, xt[ivar] );
+        } 
+        return NAN;
+        
+    }
     rtb = f < 0.0 ? (dx=x2-x1,x1) : (dx=x1-x2,x2);// Orient the search so that f>0
     for (j=1;j<=MAXIT;j++) {// lies at x+dx.
         //printf(" x=%f \n",xt[ivar]   );

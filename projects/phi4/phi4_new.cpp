@@ -839,8 +839,16 @@ int main(int argc, char **argv){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
+    
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,  11,0/*reim*/ , "E2_01",  fit_info, file_jack.M_PS );
-
+    double *a=scattering_len_luscher(option[4],  Njack,  mass[0], mass[2], fit_out.P[0] ,params.data.L[1]);
+    double *tmpj=(double*) malloc(sizeof(double)*Njack);
+    sub_jackboot(Njack,  tmpj, fit_out.P[0], mass[0] );
+    sub_jackboot(Njack,  tmpj, tmpj, mass[1] );
+    fprintf(outfile,"#scattering length  a  err deltaE2 err\n %g  %g     %g  %g\n",
+           a[Njack-1], error_jackboot(option[4],Njack,a),   tmpj[Njack-1],  error_jackboot(option[4],Njack,tmpj));
+    free(tmpj);
+    
     free_fit_result(fit_info,fit_out);
     
     

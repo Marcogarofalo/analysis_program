@@ -329,7 +329,6 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
    }
    fit_out=try_fit(option, tmin,  tmax,sep , mt, r, Njack ,&chi2,fit_info);              
    //fit=give_jack_linear_fit( tmin,  tmax,sep , mt, r, Njack );    
-    
    //printing the correlator and the function   
    double **tif=swap_indices(fit_info.Npar,Njack, fit_out.P);
    double *tmp=(double*) malloc(sizeof(double)*Njack);
@@ -372,7 +371,7 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
        free(m);
 
    }
-   fprintf(outfile," \n\n\n");
+   fprintf(outfile,"\n");
    //fprintf(outfile,"%d   %d   \n\n\n",tmin,tmax);
 
    
@@ -397,7 +396,7 @@ double   *plateau_correlator_function(char **option ,struct kinematic kinematic_
    r=double_malloc_2(file_head.l0, Njack);
    mt=(double**) malloc(sizeof(double*)*file_head.l0);
 
-
+   fprintf(outfile," \n\n");
    fprintf(outfile,"#m_eff(t) of %s  propagators:1) mu %.5f r %d theta %.5f 2) mu %.5f r %d theta %.5f\n",name,
            kinematic_2pt.k2,kinematic_2pt.r2,kinematic_2pt.mom2,
            kinematic_2pt.k1,kinematic_2pt.r1, kinematic_2pt.mom1 );
@@ -464,7 +463,8 @@ int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    for(i=0;i<file_head.l0;i++)
        r[i]=(double*) malloc(sizeof(double)*Njack);
    mt=(double**) malloc(sizeof(double*)*file_head.l0);
-
+   
+   fprintf(outfile," \n\n");
    fprintf(outfile,"#m_eff(t) of %s  propagators:1) mu %.5f r %d theta %.5f 2) mu %.5f r %d theta %.5f\n",name,
            kinematic_2pt.k2,kinematic_2pt.r2,kinematic_2pt.mom2,
            kinematic_2pt.k1,kinematic_2pt.r1, kinematic_2pt.mom1 );
@@ -524,7 +524,7 @@ int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    for(i=0;i<file_head.l0;i++)
        r[i]=(double*) malloc(sizeof(double)*Njack);
    mt=(double**) malloc(sizeof(double*)*file_head.l0);
-
+   fprintf(outfile," \n\n");
    fprintf(outfile,"#m_eff(t) of %s  propagators:1) mu %.5f r %d theta %.5f 2) mu %.5f r %d theta %.5f\n",name,
            kinematic_2pt.k2,kinematic_2pt.r2,kinematic_2pt.mom2,
            kinematic_2pt.k1,kinematic_2pt.r1, kinematic_2pt.mom1 );

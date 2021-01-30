@@ -18,6 +18,40 @@
 #include "gamma_analysis.hpp"
 #include "tower.hpp"
 
+double quantization_condition_2particle(int n  , int Nvar , double* x,int Npar,double*P){
+    
+    double L=P[3];
+    double DE= P[2] -P[0]-P[1];
+    double mu01=  P[0]*P[1]/(P[0]+P[1]); 
+    double r=-(2.*pi_greco * x[0])  / (mu01*L*L*L);
+    r *=  1 - 2.837297  *(x[0]/L) + 6.375183 *(x[0]/L) *(x[0]/L);
+    
+    return r;
+    
+}
+
+
+double *scattering_len_luscher(const char* resampling, int Njack, double *mass0, double *mass1, double *E2 , int L){
+    double *a=(double* ) malloc(sizeof(double)*Njack);
+    for(int j=0;j<Njack;j++){
+        double deltaE2=E2[j]-mass0[j]-mass1[j];
+        double *P=(double*) malloc(sizeof(double)*4);
+        P[0]=mass0[j];
+        P[1]=mass1[j];
+        P[2]=E2[j];
+        P[3]=(double) L;
+        double x[1]={0};
+        
+        
+        a[j]= rtbis_func_eq_input(quantization_condition_2particle, 0 , 1, x ,3, P, 0 , deltaE2, -5, 5, 1e-6);
+        //a[j]=deltaE2;
+        free(P);
+    }
+   
+    return a;
+}
+
+
 double *mass_gamma(int var, int order,int flow ,double *ah){
     double *r=(double*) calloc((1),sizeof(double)); 
     
