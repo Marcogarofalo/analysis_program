@@ -36,8 +36,8 @@ double **w0_from_MDs(struct database_file_jack  *jack_files,  struct header *hea
 // K_chiral_fit.c
 double **fit_MK_double_chiral_B0_FVE(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ , struct result_jack *r1);
 
-double         **fit_Omegaw0_from_M(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ , struct result_jack *r1);
-
+double   **fit_Omegaw0_from_M(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ , struct result_jack *r1);
+double   **fit_Omegaw0_from_M_new(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ , struct result_jack *r1);
 
 //KandD_clover
 double ** fit_MK_fK_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info,  struct result_jack *r1, const char *prefix ,char **argv);

@@ -60,7 +60,7 @@ void real_generalysed_Eigenproblem(double ***A, double ***B, int N, double **eig
 
 }
  */
-void generalysed_Eigenproblem(double **A, double **B, int N, double **eigenvalues, double **eigenvectors )
+void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalues, double ***eigenvectors )
 {
   int i,j;
   Eigen::MatrixXcd a(N, N);
@@ -74,13 +74,13 @@ void generalysed_Eigenproblem(double **A, double **B, int N, double **eigenvalue
   }  
   Eigen::MatrixXcd c(N,N);
   c  = b.inverse()*a;
-  
-/*  std::cout<< "matrix c(t)\n" << a <<std::endl;
+ /* 
+  std::cout<< "matrix c(t)\n" << a <<std::endl;
   std::cout<< "matrix c(t0)\n" << b <<std::endl;
   std::cout<< "matrix c(t0)^-1\n" << b.inverse() <<std::endl;
   std::cout<< "matrix I\n" << b.inverse()*b <<std::endl;
   std::cout<< "matrix I\n" << b*b.inverse() <<std::endl;
-  std::cout<< "matrix c(t0)^-1*c(t)\n" << c <<std::endl;
+  std::cout<< "matrix c(t0)^{-1}*c(t)\n" << c <<std::endl;
 */
   Eigen::ComplexEigenSolver<Eigen::MatrixXcd> ces;
   ces.compute(c);
@@ -93,28 +93,28 @@ void generalysed_Eigenproblem(double **A, double **B, int N, double **eigenvalue
       //std::cout<< norm<<std::endl;
       norm=sqrt(norm);
     //  v=-v/norm;
-      eigenvalues[i][0]=real(ces.eigenvalues()(i));
-      eigenvalues[i][1]=imag(ces.eigenvalues()(i));
+      (*eigenvalues)[i][0]=real(ces.eigenvalues()(i));
+      (*eigenvalues)[i][1]=imag(ces.eigenvalues()(i));
       for(j=0;j<N;j++){
-        eigenvectors[j+i*N][0]=real(v(j));
-        eigenvectors[j+i*N][1]=imag(v(j));
+        (*eigenvectors)[j+i*N][0]=real(v(j));
+        (*eigenvectors)[j+i*N][1]=imag(v(j));
       }
       /* the eigenvalues are lambda_n ~ exp(-En(t))+exp(-En(T-t))
        * I am interesting in E0 which is smaller the the others E0 < En
        * then i want the beggest lambda lambda_0 > lambda_1 */
-      if (eigenvalues[0][0] < eigenvalues[i][0]){ 
-  	    eigenvalues[i][0]=eigenvalues[0][0];
-  	    eigenvalues[i][1]=eigenvalues[0][1];
+      if ((*eigenvalues)[0][0] < (*eigenvalues)[i][0]){ 
+  	    (*eigenvalues)[i][0]=(*eigenvalues)[0][0];
+  	    (*eigenvalues)[i][1]=(*eigenvalues)[0][1];
       	    for(j=0;j<N;j++){
-        	eigenvectors[j+i*N][0]=eigenvectors[j+0*N][0];
-	        eigenvectors[j+i*N][1]=eigenvectors[j+0*N][0];
+        	(*eigenvectors)[j+i*N][0]=(*eigenvectors)[j+0*N][0];
+	        (*eigenvectors)[j+i*N][1]=(*eigenvectors)[j+0*N][0];
             }
       	    
-	        eigenvalues[0][0]=real(ces.eigenvalues()(i));
-            eigenvalues[0][1]=imag(ces.eigenvalues()(i));
+	        (*eigenvalues)[0][0]=real(ces.eigenvalues()(i));
+            (*eigenvalues)[0][1]=imag(ces.eigenvalues()(i));
       	    for(j=0;j<N;j++){
-        	eigenvectors[j+0*N][0]=real(v(j));
-	        eigenvectors[j+0*N][1]=imag(v(j));
+        	(*eigenvectors)[j+0*N][0]=real(v(j));
+	        (*eigenvectors)[j+0*N][1]=imag(v(j));
             }
 
       }

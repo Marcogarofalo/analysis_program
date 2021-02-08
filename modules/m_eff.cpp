@@ -577,7 +577,7 @@ double   *compute_effective_mass_GEVP(char **option ,struct kinematic kinematic_
       
    for(t=1;t<=file_head.l0/2;t++){
            for (j=0;j<Njack;j++){
-  	        generalysed_Eigenproblem(M[t][j],M[t0][j],var,lambda[t][j],vec[t][j]);     
+  	        generalysed_Eigenproblem(M[t][j],M[t0][j],var,&lambda[t][j],&vec[t][j]);     
                 for (i=0;i<var;i++){
                      lambda0[j][i][t][0]=lambda[t][j][i][0];
                      lambda0[j][i][t][1]=lambda[t][j][i][1];
@@ -734,7 +734,7 @@ double   *compute_f_PS_GEVP(char **option ,struct kinematic kinematic_2pt , char
       
    for(t=1;t<file_head.l0/2;t++){
            for (j=0;j<Njack;j++){
-  	        generalysed_Eigenproblem(M[t][j],M[t0][j],var,lambda[t][j],vec[t][j]);     
+  	        generalysed_Eigenproblem(M[t][j],M[t0][j],var,&lambda[t][j],&vec[t][j]);     
             lambda0[j][0][t][0]=0;
             norm=0;
             for (i=0;i<var;i++){

@@ -5,41 +5,104 @@
 #include <math.h>
 #include <time.h>
 #include <string.h>
+#include <complex.h>
 
+#include "global.hpp"
 
 #include "resampling.hpp"
 #include "read.hpp"
+#include "m_eff.hpp"
+#include "gnuplot.hpp"
+#include "eigensystem.hpp"
 #include "linear_fit.hpp"
-#include "global.hpp"
+#include "various_fits.hpp"
 #include "mutils.hpp"
 
- 
 
+
+struct  kinematic kinematic_2pt;
+
+int r_value(int r)
+{
+    int vr;
+    if (r==0) vr= 1;
+    else if (r==1) vr= -1;
+    else error(0==0,0,"r_value","r value is not 0 neither 1\n");
+    return vr;
+}
+void get_kinematic( int ik2,int r2, int ik1,int r1,int imom2, int imom1 ){
+    kinematic_2pt.ik2=ik2;
+    kinematic_2pt.ik1=ik1;
+    kinematic_2pt.k2=file_head.k[ik2+file_head.nk];
+    kinematic_2pt.k1=file_head.k[ik1+file_head.nk];
+    kinematic_2pt.r2=-r_value(r2);
+    kinematic_2pt.r1=r_value(r1);
+    kinematic_2pt.mom2=-file_head.mom[imom2][1];
+    kinematic_2pt.mom1=file_head.mom[imom1][1];
+
+    kinematic_2pt.mom02=file_head.mom[imom2][0];
+    kinematic_2pt.mom01=file_head.mom[imom1][0];
+
+
+    
+}
+
+
+static int ****mass_index;
+
+void init_mass_index()
+{
+     int k1, k2,r1,r2,i;
+     int nk=file_head.nk;
+
+     mass_index=(int****) malloc(sizeof(int***)*nk);
+     for (k1=0;k1<nk;k1++){
+     	mass_index[k1]=(int***) malloc(sizeof(int**)*2);
+     		for (r1=0;r1<2;r1++){
+     			mass_index[k1][r1]=(int**) malloc(sizeof(int*)*(k1+1));
+     			for (k2=0;k2<=k1;k2++){
+	     			mass_index[k1][r1][k2]=(int*) malloc(sizeof(int)*2);		
+			}
+		}
+     }
+
+     i=0;
+     for (k1=0;k1<nk;k1++)
+     for (r1=0;r1<2;r1++)
+     for (k2=0;k2<=k1;k2++)
+     for (r2=0;r2<2;r2++){
+    	mass_index[k1][r1][k2][r2]=i;
+    	i++;
+    }
+
+
+}
 
 static void  print_file_head(FILE *stream)
 {
-    int i,dsize;
-    double *dstd;
+    int i;
     
-    fprintf(stream,"%d\n",file_head.twist);
-    fprintf(stream,"%d\n",file_head.nf);
-    fprintf(stream,"%d\n",file_head.nsrc);
-    fprintf(stream,"%d\n",file_head.l0);
-    fprintf(stream,"%d\n",file_head.l1);
-    fprintf(stream,"%d\n",file_head.l2);
-    fprintf(stream,"%d\n",file_head.l3);
-    fprintf(stream,"%d\n",file_head.nk);
-    fprintf(stream,"%d\n",file_head.nmoms);
+    fprintf(stream,"twist= %d\n",file_head.twist);
+    fprintf(stream,"nf=%d\n",file_head.nf);
+    fprintf(stream,"nsrc=%d\n",file_head.nsrc);
+    fprintf(stream,"L0=%d\n",file_head.l0);
+    fprintf(stream,"L1=%d\n",file_head.l1);
+    fprintf(stream,"L2=%d\n",file_head.l2);
+    fprintf(stream,"L3=%d\n",file_head.l3);
+    fprintf(stream,"mus=%d\n",file_head.nk);
+    fprintf(stream,"moms=%d\n",file_head.nmoms);
     
-    fprintf(stream,"%f\n",file_head.beta);
-    fprintf(stream,"%f\n",file_head.ksea);
-    fprintf(stream,"%f\n",file_head.musea);
-    fprintf(stream,"%f\n",file_head.csw);
+    fprintf(stream,"beta=%f\n",file_head.beta);
+    fprintf(stream,"ksea=%f\n",file_head.ksea);
+    fprintf(stream,"musea=%f\n",file_head.musea);
+    fprintf(stream,"csw=%f\n",file_head.csw);
    
-    for(i=0;i<4*file_head.nk;++i)
-            fprintf(stream,"%f\n",file_head.k[i]);
-
+    fprintf(stream,"masses=");
+    for(i=0;i<2*file_head.nk;++i)
+            fprintf(stream,"%f\t",file_head.k[i]);
+    fprintf(stream,"\n");
     
+    fprintf(stream,"momenta=");
     for(i=0;i<file_head.nmoms;++i)
            fprintf(stream,"%f  %f   %f   %f\n",file_head.mom[i][0],file_head.mom[i][1],file_head.mom[i][2],file_head.mom[i][3]);
 }
@@ -78,7 +141,6 @@ static void  read_file_head_bin(FILE *stream)
 
     }
 }
-
 static void  write_file_head(FILE *stream)
 {
     int i,dsize;
@@ -116,14 +178,13 @@ void read_nconfs(int *s, int *c, FILE *stream){
    fseek(stream, 0, SEEK_END);
    tmp = ftell(stream);
    tmp-= sizeof(double)* (file_head.nmoms*4 + file_head.nk*2+4 )+ sizeof(int)*9 ;
-   tmp-= 2*sizeof(int);
+   tmp-= sizeof(int)*2;
    (*c)= tmp/ (sizeof(int)+ (*s)*sizeof(double) );
  
   rewind(stream);
   read_file_head_bin(stream);
   fread(s,sizeof(int),1,stream);
 
-printf("size=%d  confs=%d\n",*s,*c);
 }
 
 
@@ -135,35 +196,35 @@ double *constant_fit(int M, double in){
     
     return r;
 }
-double M_eff( int t, double ***in){
-    double mass;
- 
-    mass=acosh( (in[0][t+1][0]+ in[0][t-1][0])/(2*in[0][t][0]) );
-    return mass;
+
+double matrix_element_GEVP(int t, double **cor,double mass){
+      double me;
+      
+      me=cor[t][0]/sqrt( exp(-mass*t)+exp(-(file_head.l0-t)*mass) );
+      me*=2*mass;
+
+      return  me;
 }
 
-double ratio( int t, double ***in){
-    double mass;
-    double a,b,c,d;    
-     
-    a=in[0][t][0];
-    b=in[1][t][0];
-    c=in[2][t][0];
-    d=in[3][t][0];
-    
-    mass=( a*b/(c*d) ) ;
-   // mass=in[0][t][0];
-    return mass;
+
+
+int index_minus_r( int r)
+{
+    int mr;
+    if (r==0) mr= 1;
+    else if (r==1) mr= 0;
+    else error(0==0,0,"index_minus_r","r is not 0 or 1\n");
+    return mr;
 }
 
-static int index_twopt(int si,int ii,int ix0,int imom1,int imom2,int ik1,int ik2)
+static int index_twopt(int si,int ii,int ix0,int imom2,int imom1,int ik2,int r2,int ik1,int r1)
 {
     int nk,nmoms;
 
     nk=file_head.nk;
     nmoms=file_head.nmoms;
 
-    return ii+si*(ix0+file_head.l0*(imom1+nmoms*(imom2+nmoms*(ik1+nk*ik2))));
+    return ii+si*(ix0+file_head.l0*(imom2+nmoms*(imom1+nmoms*(mass_index[ik2][r2][ik1][r1]))));
 }
 static int index_threept(int si,int ii,int ix0,int imom1,int imom2,int ik1,int ik2,int ik3)
 {
@@ -173,445 +234,451 @@ static int index_threept(int si,int ii,int ix0,int imom1,int imom2,int ik1,int i
     nmoms=file_head.nmoms;
 
     return ii+si*(ix0+file_head.l0*(imom1+nmoms*(imom2+nmoms*(ik1+nk*(ik2+nk*ik3)))));
-} 
-int main(){
+}
+int index_minus_kappa(int ik)
+{
+    int imk,i;
+    double mu;
+    
+    mu=-file_head.k[ file_head.nk+ik ];
+    imk=-1;
+    for (i=0;i<file_head.nk;i++){
+	if ( file_head.k[ file_head.nk+i ]==mu )
+            imk=i;
+    }
+
+   error(imk==-1,1,"inde_minus_kappa ",  "Unable to find mass=%g",mu);
+   return imk; 
+
+
+}
+
+static int index_minus_theta(int imom)
+{
+   int i,imth;
+   double m0,m1,m2,m3;
+
+   imth=-1;
+   m0= file_head.mom[imom][0];
+   m1= -file_head.mom[imom][1];
+   m2= -file_head.mom[imom][2];
+   m3= -file_head.mom[imom][3];
+   for(i=0;i<file_head.nmoms;++i)
+      if(m0==file_head.mom[i][0] && m1==file_head.mom[i][1] && 
+	 m2==file_head.mom[i][2] && m3==file_head.mom[i][3])
+	 imth=i;
+
+   error(imth==-1,1,"inde_minus_theta ",  "Unable to find theta=%g",m1);
+   return imth;
+}
+
+
+void read_twopt(FILE *stream,int size, int iconf , double **to_write,int si, int ii, int imom2, int imom1, int ik2, int r2, int ik1,int r1 ){
+   
+   long int tmp;
+   int iiconf,N,s;
+   double *obs;
+   int mik1, mik2;
+   int mimom1,mimom2,mr1,mr2;
+   int t,vol,index;
+   double re,im;
+ 
+   tmp= sizeof(double)* (file_head.nmoms*4 + file_head.nk*2+4 )+ sizeof(int)*(12) ;
+   tmp+=sizeof(double)*iconf*size+sizeof(int)*iconf;
+   fseek(stream, tmp, SEEK_SET);
+
+   obs=(double*) malloc(size*sizeof(double)); 
+   fread(obs,sizeof(double),size,stream);   
+   
+   mimom1=index_minus_theta(imom1);
+   mimom2=index_minus_theta(imom2);
+   mr1=index_minus_r(r1);
+   mr2=index_minus_r(r2);
+
+   for(t=0;t<file_head.l0;t++){
+	   re=0;vol=0;im=0;
+	   index=2*index_twopt(si,ii,t,imom2,imom1,ik2,r2,ik1,r1);
+	   re+= obs[index];
+       im+= obs[index+1];
+       vol++;
+       index=2*index_twopt(si,ii,t,imom2,imom1,ik2,mr2,ik1,mr1);
+	   re+= obs[index];
+       im+= obs[index+1];
+       vol++;
+	   to_write[t][0]=re/( (double) vol );
+	   to_write[t][1]=im/( (double) vol );
+   }
+   free(obs);
+}
+
+
+ 
+void extract_threept(double *to_read , double **to_write,int si, int ii, int imom1, int imom2, int ik1, int ik2 ,int ik3,int sym ){
+
+   int mik1, mik2,mik3;
+   int mimom1,mimom2;
+   int t,vol,index;
+   double re,im;
+
+   double symm=(double) sym;
+   mik1=index_minus_kappa(ik1);
+   mik2=index_minus_kappa(ik2);
+   mik3=index_minus_kappa(ik3);
+   mimom1=index_minus_theta(imom1);
+   mimom2=index_minus_theta(imom2);
+
+	for(t=0;t<file_head.l0;t++){
+	   re=0;vol=0;im=0;
+	   index=2*index_threept(si,ii,t,imom1,imom2,ik1,ik2,ik3);
+	   re+= to_read[index];
+	   im+= to_read[index+1];
+           vol++;
+	   index=2*index_threept(si,ii,t,imom1,imom2,mik1,mik2,mik3);
+	   re+= to_read[index];
+	   im+= to_read[index+1];
+           vol++;
+        /*   if (  ik1 ==ik2){
+		   index=2*index_threept(si,ii,t,imom1,imom2,mik1,ik1,mik3);
+		   re+= to_read[index];
+                   im+= to_read[index+1];
+                   vol++;
+		   index=2*index_threept(si,ii,t,imom1,imom2,ik3,mik3,ik1);
+		   re+= to_read[index];
+	           im+= to_read[index+1];
+		   vol++;
+           }*/
+  
+
+	   if (  mimom1>=0 &&  mimom2 >=0 )
+	   { 
+		   index=2*index_threept(si,ii,t,mimom1,mimom2,ik1,ik2,ik3);
+		   re+=symm* to_read[index];
+	           im+=symm* to_read[index+1];
+                   vol++;
+		   index=2*index_threept(si,ii,t,mimom1,mimom2,mik1,mik2,mik3);
+		   re+=symm* to_read[index];
+	           im+=symm* to_read[index+1];
+		   vol++;
+		/*   if (  ik1 ==ik2){
+			   index=2*index_threept(si,ii,t,mimom1,mimom2,mik3,ik3,mik1);
+			   re+=symm* to_read[index];
+	           	   im+= symm*to_read[index+1];
+	                   vol++;
+			   index=2*index_threept(si,ii,t,mimom1,mimom2,ik3,mik3,ik1);
+			   re+=symm* to_read[index];
+            		   im+=symm* to_read[index+1];
+		   	   vol++;
+		   }*/
+	   }
+	   to_write[t][0]=re/( (double) vol );
+	   to_write[t][1]=im/((double) vol);
+	}
+}
+
+/*
+double *jack_mass(int tmin, int tmax, int sep ,double **corr_ave, double **corr_J,int Njack ){
+    
+   double ***y,*x,**tmp,*fit; 
+   int i,j;  
+
+   y=(double***) malloc(sizeof(double**)*Njack);
+
+   for (j=0;j<Njack;j++){
+        y[j]=(double**) malloc(sizeof(double*)*(tmax-tmin+1));
+        for (i=tmin;i<=tmax;i++){
+            y[j][i-tmin]=(double*) malloc(sizeof(double)*2);
+        }
+   }
+   x=(double*) malloc(sizeof(double)*(tmax-tmin+1));
+   fit=(double*) malloc(sizeof(double)*Njack);
+
+   for (i=tmin;i<=tmax;i+=sep){
+        for (j=0;j<Njack;j++){
+            y[j][(i-tmin)/sep][0]=corr_J[i][j];
+            y[j][(i-tmin)/sep][1]=corr_ave[i][1];
+        }
+    }
+    for (j=0;j<Njack;j++){
+        tmp=linear_fit( (tmax-tmin)/sep +1, x, y[j],  1,constant_fit_to_try );
+        fit[j]=tmp[0][0];
+        free(tmp[0]);free(tmp);
+    }    
+    return fit;    
+}
+*/
+void setup_single_file_jack(char  *save_name,char **argv, const char  *name,int Njack){
+     FILE *f;
+     mysprintf(save_name,NAMESIZE,"%s/%s",argv[3],name);
+     f=fopen(save_name,"w+");
+     error(f==NULL,1,"setup_file_jack ",
+         "Unable to open output file %s/%s",argv[3],name);
+     write_file_head(f);
+     fwrite(&Njack,sizeof(int),1,f);
+     fclose(f);
+}
+
+void setup_single_file_jack_ASCI(char  *save_name, char **argv,const char  *name,int Njack){
+     FILE *f;
+     mysprintf(save_name,NAMESIZE,"%s/%s",argv[3],name);
+     f=fopen(save_name,"w+");
+     error(f==NULL,1,"setup_file_jack ",
+         "Unable to open output file %s/%s",argv[3],name);
+     fclose(f);
+}
+
+void setup_file_jack(char **argv,int Njack){
+    if( strcmp(argv[4],"jack")==0){
+     setup_single_file_jack(file_jack.M_PS,argv,"jackknife/M_{PS}_jack",Njack);
+     setup_single_file_jack(file_jack.f_PS,argv,"jackknife/f_{PS}_jack",Njack);
+     setup_single_file_jack(file_jack.Zf_PS,argv,"jackknife/Zf_{PS}_jack",Njack);
+    
+     setup_single_file_jack(file_jack.M_PS_GEVP,argv,"jackknife/M_{PS}^{GEVP}_jack",Njack);
+     setup_single_file_jack(file_jack.f_PS_ls_ss,argv,"jackknife/f_{PS}_ls_ss_jack",Njack);
+
+    }
+               
+    if( strcmp(argv[4],"boot")==0){
+               
+     setup_single_file_jack(file_jack.M_PS,argv,"jackknife/M_{PS}_boot",Njack);
+     setup_single_file_jack(file_jack.f_PS,argv,"jackknife/f_{PS}_boot",Njack);
+     setup_single_file_jack(file_jack.Zf_PS,argv,"jackknife/Zf_{PS}_boot",Njack);
+     
+     setup_single_file_jack(file_jack.M_PS_GEVP,argv,"jackknife/M_{PS}^{GEVP}_boot",Njack);
+     setup_single_file_jack(file_jack.f_PS_ls_ss,argv,"jackknife/f_{PS}_ls_ss_boot",Njack);
+    }
+}
+
+int main(int argc, char **argv){
    int size;
    int i,j,t;
-   FILE  *f=NULL;
+   
    int *iconf,confs;
-   double ****data, **out,**tmp; 
+   double ****data,****data_bin, **out,**tmp; 
    char c;
    clock_t t1,t2;
    double *in;
- 
+
+   double ****M,****vec,****projected_O;
+   double  ****lambda,****lambda0;
+   
    double *fit,***y,*x,*m,*me;
-   FILE *outfile=NULL;
+   
 
    double ****conf_jack,**r,**mt,**met;
    int Ncorr=1;
-   outfile=fopen("out_E0_temp","w+");
-   error(outfile==NULL,1,"main ",
-         "Unable to open output file");
+   int t0=2;
+   
+   FILE  *f_ll=NULL, *f_sl=NULL,*f_ls=NULL,*f_ss=NULL;
+   
+   FILE *plateaux_masses=NULL, *plateaux_masses_GEVP=NULL; 
+   FILE *plateaux_f=NULL;   
 
+   error(argc!=6,1,"main ",
+         "usage: ./form_factors blind/see/read_plateaux -p inpath   jack/boot pdf");
 
+   error(strcmp(argv[2],"-p")!=0,1,"main ",
+         "missing -p \n usage: ./form_factors blind/see/read_plateaux -p inpa.hpp");
+
+   error(strcmp(argv[4],"jack")!=0 && strcmp(argv[4],"boot")!=0 ,2,"main ",
+         "choose jack or boot \n usage: ./form_factors blind/see/read_plateaux -p inpath   jack/boot");
+ 
+   char namefile[NAMESIZE];
+   
+   
+   
+   FILE *outfile        =NULL; mysprintf(namefile,NAMESIZE,"%s/out/out_E0.txt",argv[3]);        outfile=fopen(namefile,"w+");       error(outfile==NULL,1,"main ", "Unable to open %s file",namefile);
+   FILE *m_pcac         =NULL; mysprintf(namefile,NAMESIZE,"%s/out/m_pcac.txt",argv[3]);        m_pcac=fopen(namefile,"w+");        error(m_pcac==NULL,1,"main ", "Unable to open %s file",namefile);
+   FILE *outfile_RM     =NULL; mysprintf(namefile,NAMESIZE,"%s/out/Ratio_masses.txt",argv[3]);  outfile_RM=fopen(namefile,"w+");    error(outfile_RM==NULL,1,"main ",  "Unable to open %s file",namefile);
+   FILE *outfile_GEVP   =NULL; mysprintf(namefile,NAMESIZE,"%s/out/out_E0_GEVP.txt",argv[3]);       outfile_GEVP=fopen(namefile,"w+");  error(outfile_GEVP==NULL,1,"main ",  "Unable to open %s file",namefile);
+   FILE *outfile_RM_GEVP=NULL; mysprintf(namefile,NAMESIZE,"%s/out/Ratio_masses_GEVP.txt",argv[3]);  outfile_RM_GEVP=fopen(namefile,"w+");    error(outfile_RM_GEVP==NULL,1,"main ",  "Unable to open %s file",namefile);
+   FILE *outfile_f      =NULL; mysprintf(namefile,NAMESIZE,"%s/out/f_PS.txt",argv[3]);          outfile_f=fopen(namefile,"w+");     error(outfile_f==NULL,1,"main ",  "Unable to open %s file",namefile);
+   FILE *outfile_f_ls_ss      =NULL; mysprintf(namefile,NAMESIZE,"%s/out/f_PS_ls_ss.txt",argv[3]);          outfile_f_ls_ss=fopen(namefile,"w+");     error(outfile_f_ls_ss==NULL,1,"main ",  "Unable to open %s file",namefile);
+   FILE *outfile_f_GEVP =NULL; mysprintf(namefile,NAMESIZE,"%s/out/f_PS_GEVP.txt",argv[3]);     outfile_f_GEVP=fopen(namefile,"w+");error(outfile_f_GEVP==NULL,1,"main ", "Unable to open %s file",namefile);
+   FILE *outfile_Rf     =NULL; mysprintf(namefile,NAMESIZE,"%s/out/Ratio_f_PS.txt",argv[3]);    outfile_Rf=fopen(namefile,"w+");    error(outfile_Rf==NULL,1,"main ",  "Unable to open %s file",namefile);
+   
+ 
+   
    double E_B,E_Pi, x_SCHET,q2,vec_pB,vec_pPi;
-   int Neff,Njack;
+   int Neff,Njack,bin=10;
+   
    t1=clock();
-
-   f=fopen("./meas_2pts.dat","r");
-   f=fopen("./to_read_bin.dat","r");
-   if (f==NULL) {printf("to_read file not found\n"); exit(0);}
-
-     
-   read_file_head_bin(f);
-   print_file_head(outfile);
-   fflush(outfile);
-
-   read_nconfs(&size,&confs,f);   
-   int aaa;
-   fread(&aaa,sizeof(int),1,f);
-   printf("size=%d  confs=%d   aaa=%d\n",size,confs,aaa);
-   
-   iconf=(int*) malloc(sizeof(int)*confs);
-   out=(double**) malloc(sizeof(double*)*confs);
-   
-   
-   printf("size=%d  confs=%d\n",size,confs);
-   printf("reading confs:\n");
-   for(i=0;i<confs;i++){
-       fread(&iconf[i],sizeof(int),1,f);
-       out[i]=(double*) malloc(sizeof(double)*size);
-       fread(out[i],sizeof(double),size,f);
-       printf("%d\t",iconf[i]);
-   }
-   printf("\n");
-   
-   fclose(f);
-////
-   int bin=10;
-   FILE *fbin=fopen("meas_2pts_bin10.dat","w+");
-   int conf_out=aaa/bin;
-   write_file_head(fbin);
-   fwrite(&size,sizeof(int),1,fbin);
-   fwrite(&conf_out,sizeof(int),1,fbin);
- 
-   
-   int rconf;
-   rconf=(confs/bin)*bin;
-   for (i=0;i<rconf;i+=bin){
-     for (t=1;t<bin;t++){
-        for (j=0;j<size;j++){
-     	   out[i][j]+=out[i+t][j];
-        }
-     }
-     for (j=0;j<size;j++){
-        out[i][j]/=(double) bin;
-     }
-       fwrite(&iconf[i],sizeof(int),1,fbin);
-       fwrite(out[i],sizeof(double),size,fbin);
-     
-   }
-
-   fclose(fbin);
-/////
-   //copyng the input
-   int var=1,si;
-    
-
-   data=(double****) malloc(sizeof(double***)*confs);
-   for (i=0;i<confs;i++){
-        data[i]=(double***) malloc(sizeof(double**)*var);
-        for (j=0;j<var;j++){
-            data[i][j]=(double**) malloc(sizeof(double*)*file_head.l0);
-            for(t=0;t<file_head.l0;t++)
-                data[i][j][t]=(double*) malloc(2*sizeof(double));
-        }
-   }
-   
-   int ii, imom1, imom2, ik1,ik2,ik3;
-   ii=0;
-   imom1=0;
-   imom2=0;
-   ik1=0;
-   ik2=0;
-   ik3=0;
-   int tmin=12, tmax=15;
-  
-   int index;
-   double **E0;
-   E0=(double**) malloc(sizeof(double*)*size);
-   for (i=0;i<size ;i++)
-	E0[i]=(double*) malloc(sizeof(double)*2); 
-
-   si=size/(4*(file_head.nk*(file_head.nk+1)/2)*file_head.nmoms*file_head.nmoms*file_head.l0*2);
-
-   for(ik2=0;ik2<file_head.nk;ik2++){
-   for(ik1=0;ik1<file_head.nk;ik1++){
-   for(imom2=0;imom2<file_head.nmoms;imom2++){
-   for(imom1=0;imom1<file_head.nmoms;imom1++){
-
-
-   for (i=0;i<confs;i++){
-   index=2*index_twopt(si,ii,0,imom1,imom2,ik1,ik2);
-//      index =(ii+si*(0 +file_head.l0 *(imom1+file_head.nmoms*(imom2+file_head.nmoms*(ik1+file_head.nk*(ik2))))))*2;   
-       for(t=0;t<file_head.l0;t++){
-           data[i][0][t][0]=out[i][index];
-           data[i][0][t][1]=out[i][index+1];
-	   index+=si*2;	
-       }
-   }
-   Neff=confs;
-   symmetrise_corr(Neff, 0, file_head.l0,data);
-   conf_jack=create_jack(Neff, 1, file_head.l0, data);
-  
-   Njack=Neff+1;
-
-////////////////////allocation
-   r=(double**) malloc(sizeof(double*)*file_head.l0);
-   for(i=0;i<file_head.l0;i++)
-        r[i]=(double*) malloc(sizeof(double)*Njack);
-    
-   mt=(double**) malloc(sizeof(double*)*file_head.l0);
-   fit=(double*) malloc(sizeof(double)*Njack);
-   y=(double***) malloc(sizeof(double**)*Njack);
-   for (j=0;j<Njack;j++){
-        y[j]=(double**) malloc(sizeof(double*)*(tmax-tmin));
-        for (i=tmin;i<tmax;i++){
-	       y[j][i-tmin]=(double*) malloc(sizeof(double)*2);
-        }
-    }
-    x=(double*) malloc(sizeof(double)*(tmax-tmin));
-////////////////end 
-
-/////////////////M_PS
-   fprintf(outfile,"#m_eff(t) from  propagators:1) mu %g theta %g 2) mu %g  theta %g\n",file_head.k[ik1+file_head.nk],file_head.mom[imom1][1],file_head.k[ik2+file_head.nk], file_head.mom[imom2][1] );
-   
-   for(i=1;i<file_head.l0/2;i++){    
-        for (j=0;j<Njack;j++){
-            r[i][j]=M_eff(i,conf_jack[j]);
-            if (i>=tmin && i<tmax){
-                y[j][i-tmin][0]=r[i][j];
-            }
-
-        }
-        mt[i]=mean_and_error_jack(Neff, r[i]);
+   if ( strcmp(argv[1],"read_plateaux")==0 ){
+      //mysprintf(namefile,NAMESIZE,"%s/plateaux_masses.txt",argv[3]);
+      mysprintf(kinematic_2pt.plateau_m_ll,NAMESIZE,"%s/plateaux_masses.txt",argv[3]);
+      plateaux_masses=     fopen(kinematic_2pt.plateau_m_ll,"r");          error(plateaux_masses==NULL,1,"main ", "Unable to open %s file",kinematic_2pt.plateau_m_ll);
+      
+      //mysprintf(namefile,NAMESIZE,"%s/plateaux_masses_GEVP.txt",argv[3]);      
+      mysprintf(kinematic_2pt.plateau_m_GEVP,NAMESIZE,"%s/plateaux_masses_GEVP.txt",argv[3]); 
+      plateaux_masses_GEVP=fopen(kinematic_2pt.plateau_m_GEVP,"r");          error(plateaux_masses_GEVP==NULL,1,"main ", "Unable to open %s file",kinematic_2pt.plateau_m_GEVP);
+      
+      //mysprintf(namefile,NAMESIZE,"%s/plateaux_f.txt",argv[3]);
+      mysprintf(kinematic_2pt.plateau_f,NAMESIZE,"%s/plateaux_f.txt",argv[3]);
+      plateaux_f=        fopen(kinematic_2pt.plateau_f,"r");    error(plateaux_f==NULL,1,"main ", "Unable to open %s file",kinematic_2pt.plateau_f); 
         
-        if (i>=tmin && i<tmax){
-            for (j=0;j<Njack;j++){
-                y[j][i-tmin][1]=mt[i][1];
-            }
-        }
-    fprintf(outfile,"%d   %.15g    %.15g\n",i,mt[i][0],mt[i][1]);
-    free(mt[i]);
-    }
-
-    for (j=0;j<Njack;j++){
-        tmp=linear_fit( tmax-tmin, x, y[j],  1,constant_fit );
-        fit[j]=tmp[0][0];
-        free(tmp[0]);free(tmp);
-    }
-    m=mean_and_error_jack(Njack, fit);
-    index=2*index_twopt(si,ii,0,imom1,imom2,ik1,ik2);
-    E0[index][0]=m[0];
-    E0[index][1]=m[1];	
-    fprintf(outfile,"\n\n #M_PS fit in [%d,%d]\n  %.15g    %.15g\n\n\n",tmin,tmax-1,m[0],m[1]);
-
-    fflush(outfile);
-/////////////////////free memory
-    for(i=0;i<file_head.l0;i++)
-   	  free(r[i]);
-    free(r); free(fit);
-    free(m);free(mt);
-    for (j=0;j<Njack;j++){
-        for (i=tmin;i<tmax;i++){
-	       free(y[j][i-tmin]);
-        }
-        free(y[j]);
-    }
-    free(y);
-    free(x);
-//////////////////////////end
-   }}}} // end loop imom1 imom2 ik1 ik2
-   fclose(outfile);
-   for (i=0;i<confs;i++){
-        for (j=0;j<var;j++){
-            for(t=0;t<file_head.l0;t++)
-               free(data[i][j][t]);
-            free(data[i][j]);
-        }
-        free(data[i]);
-   }
-   for (i=0;i<confs;i++)
-       free(out[i]);
-   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   //3pt
-   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//   tmin=12; tmax=16;
+  }
+   // f=fopen("./meas_2pts_bin10.dat","r");
+   mysprintf(namefile,NAMESIZE,"%s/data/to_read_ll_bin.dat",argv[3]);
+   f_ll=fopen(namefile,"r"); if (f_ll==NULL) {printf("2pt file not found\n"); exit(0);}
+   mysprintf(namefile,NAMESIZE,"%s/data/to_read_sl_bin.dat",argv[3]);
+   f_sl=fopen(namefile,"r"); if (f_sl==NULL) {printf("2pt file not found\n"); exit(0);}
+   mysprintf(namefile,NAMESIZE,"%s/data/to_read_ls_bin.dat",argv[3]);
+   f_ls=fopen(namefile,"r"); if (f_ls==NULL) {printf("2pt file not found\n"); exit(0);}
+   mysprintf(namefile,NAMESIZE,"%s/data/to_read_ss_bin.dat",argv[3]);
+   f_ss=fopen(namefile,"r"); if (f_ss==NULL) {printf("2pt file not found\n"); exit(0);}
    
-   printf("starting 3pt");
-   outfile=fopen("out_3pt","w+");
-   error(outfile==NULL,1,"main ",
-         "Unable to open output file");
+   
+   mysprintf(namefile,NAMESIZE,"%s/data/to_read_ll_bin%d.dat",argv[3],bin);
+   FILE *out_f_ll=fopen(namefile,"w+"); if (f_ll==NULL) {printf("2pt file not found\n"); exit(0);}
+   mysprintf(namefile,NAMESIZE,"%s/data/to_read_sl_bin%d.dat",argv[3],bin);
+   FILE *out_f_sl=fopen(namefile,"w+"); if (f_sl==NULL) {printf("2pt file not found\n"); exit(0);}
+   mysprintf(namefile,NAMESIZE,"%s/data/to_read_ls_bin%d.dat",argv[3],bin);
+   FILE *out_f_ls=fopen(namefile,"w+"); if (f_ls==NULL) {printf("2pt file not found\n"); exit(0);}
+   mysprintf(namefile,NAMESIZE,"%s/data/to_read_ss_bin%d.dat",argv[3],bin);
+   FILE *out_f_ss=fopen(namefile,"w+"); if (f_ss==NULL) {printf("2pt file not found\n"); exit(0);}
+   
+   read_file_head_bin(f_ll);
+   write_file_head(out_f_ll);
+   read_file_head_bin(f_ls);
+   write_file_head(out_f_ls);
+   read_file_head_bin(f_sl);
+   write_file_head(out_f_sl);
+   read_file_head_bin(f_ss);
+   write_file_head(out_f_ss);
 
-   f=fopen("./meas_3pt.dat","r");
-   if (f==NULL) {printf("to_read file not found\n"); exit(0);}
-
-   read_file_head_bin(f);
-   print_file_head(outfile);
+   
    fflush(outfile);
+   init_mass_index();
 
-   read_nconfs(&size,&confs,f);   
-   printf("reading confs:\n");
-   for(i=0;i<confs;i++){
-       fread(&iconf[i],sizeof(int),1,f);
-       out[i]=(double*) malloc(sizeof(double)*size);
-       fread(out[i],sizeof(double),size,f);
-       printf("%d\t",iconf[i]);
-       fflush(stdout);
-   }
-   printf("\n");
-   fclose(f);
-
-
-
-////
-   fbin=fopen("oPVmuPo-sss_bin10.dat","w");
-   write_file_head(fbin);
-   fwrite(&size,sizeof(int),1,fbin);
- 
-//   confs=168;
-   rconf=(confs/bin)*bin;
-   for (i=0;i<rconf;i+=bin){
-     for (t=1;t<bin;t++){
-        for (j=0;j<size;j++){
-     	   out[i][j]+=out[i+t][j];
-        }
-     }
-     for (j=0;j<size;j++){
-        out[i][j]/=(double) bin;
-     }
-       fwrite(&iconf[i],sizeof(int),1,fbin);
-       fwrite(out[i],sizeof(double),size,fbin);
-     
-   }
-
-   fclose(fbin);
-
-/////
-
-
-
-   si=size/(file_head.nk*file_head.nk*file_head.nk*file_head.nmoms*file_head.nmoms*file_head.l0*2);
-   if (si==0)
-       si=size/(file_head.nk*file_head.nk*file_head.nmoms*file_head.nmoms*file_head.l0*2);
-
-   var=4;
-
-   data=(double****) malloc(sizeof(double***)*confs);
-   for (i=0;i<confs;i++){
-        data[i]=(double***) malloc(sizeof(double**)*var);
-        for (j=0;j<var;j++){
-            data[i][j]=(double**) malloc(sizeof(double*)*file_head.l0);
-            for(t=0;t<file_head.l0;t++)
-                data[i][j][t]=(double*) malloc(2*sizeof(double));
-        }
-   }
-
-
-   for(ik3=file_head.nk-2;ik3<file_head.nk;++ik3){
-   for(ik2=0;ik2<file_head.nk;++ik2){
-   for(ik1=file_head.nk-2;ik1<file_head.nk;++ik1){
-   for(imom2=0;imom2<file_head.nmoms;imom2++){
-   for(imom1=0;imom1<file_head.nmoms;imom1++){
-
-
-   for (i=0;i<confs;i++){
-       index=2* index_threept(si,ii,0,imom1,imom2,ik1,ik2,ik3);
-       for(t=0;t<file_head.l0;t++){
-           data[i][0][t][0]=out[i][index];
-           data[i][0][t][1]=out[i][index+1];
-	   index+=si*2;	
-       }
-
-       index=2* index_threept(si,ii,0,imom2,imom1,ik2,ik1,ik3);
-       for(t=0;t<file_head.l0;t++){
-           data[i][1][t][0]=out[i][index];
-           data[i][1][t][1]=out[i][index+1];
-	   index+=si*2;	
-       }
-
-       index=2* index_threept(si,ii,0,imom2,imom2,ik2,ik2,ik3);
-       for(t=0;t<file_head.l0;t++){
-           data[i][2][t][0]=out[i][index];
-           data[i][2][t][1]=out[i][index+1];
-	   index+=si*2;	
-       }
+   printf("index mass=%d\n",mass_index[1][0][0][0]);
+   read_nconfs(&size,&confs,f_ll);  
+   fwrite(&size,sizeof(int),1,out_f_ll);
+   read_nconfs(&size,&confs,f_ls);  
+   fwrite(&size,sizeof(int),1,out_f_ls);
+   read_nconfs(&size,&confs,f_sl);
+   fwrite(&size,sizeof(int),1,out_f_sl);
+   read_nconfs(&size,&confs,f_ss);
+   fwrite(&size,sizeof(int),1,out_f_ss);
+   
+   int Nconfs;
+   
+   Neff=confs/bin;
+   fread(&Nconfs,sizeof(int),1,f_ll );
+   fwrite(&Neff,sizeof(int),1,out_f_ll);
+   fread(&Nconfs,sizeof(int),1,f_ls );
+   fwrite(&Neff,sizeof(int),1,out_f_ls);
+   fread(&Nconfs,sizeof(int),1,f_sl );
+   fwrite(&Neff,sizeof(int),1,out_f_sl);
+   fread(&Nconfs,sizeof(int),1,f_ss );
+   fwrite(&Neff,sizeof(int),1,out_f_ss);
+   
+   double *in_data=(double*) malloc(sizeof(double)*(size));
+   double *out_data=(double*) malloc(sizeof(double)*(size));
+   int iii;
+  
+   printf("local local  confs=%d\n",confs);
+   for (int j=0;j<size;j++)
+            out_data[j]=0;
+   for (int i=1;i<=confs;i++){  
        
-       index=2* index_threept(si,ii,0,imom1,imom1,ik1,ik1,ik3);
-       for(t=0;t<file_head.l0;t++){
-           data[i][3][t][0]=out[i][index];
-           data[i][3][t][1]=out[i][index+1];
-	   index+=si*2;	
+       fread(&iii,sizeof(int),1,f_ll);
+       printf("%d\t",iii);
+       fread(in_data,sizeof(double),size, f_ll); 
+       for (int j=0;j<size;j++){
+             out_data[j]+=in_data[j];
+             
        }
-
+       if ((i%(bin))==0){
+           printf("\n");
+             for (int j=0;j<size;j++)
+                out_data[j]/=(double) bin;
+             fwrite(&iii,sizeof(int),1,out_f_ll);
+             fwrite(out_data,sizeof(double),size,out_f_ll);
+             for (int j=0;j<size;j++){
+                out_data[j]=0;
+             }      
+        }
    }
+   fclose(out_f_ll);fclose(f_ll);
+   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   printf("local smeared\n");
+   for (int j=0;j<size;j++)
+            out_data[j]=0;
+   for (int i=1;i<=confs;i++){  
+       fread(&iii,sizeof(int),1,f_ls);
+               printf("%d\t",iii);
 
-   if (imom1 >0  && imom2>0){
-
-	   for (i=0;i<confs;i++){
-	       index=2* index_threept(si,ii,0,imom2,imom1,ik1,ik2,ik3);
-	       for(t=0;t<file_head.l0;t++){
-		   data[i][0][t][0]+=out[i][index];
-		   data[i][0][t][0]/=2;
-		   data[i][0][t][1]+=out[i][index+1];
-		   data[i][0][t][1]/=2;
-		   index+=si*2;	
-	       }
-
-	       index=2* index_threept(si,ii,0,imom1,imom2,ik2,ik1,ik3);
-	       for(t=0;t<file_head.l0;t++){
-		   data[i][1][t][0]+=out[i][index];
-		   data[i][0][t][0]/=2;
-		   data[i][1][t][1]+=out[i][index+1];
-		   data[i][0][t][1]/=2;
-		   index+=si*2;	
-	       }
-            }
-
+       fread(in_data,sizeof(double),size, f_ls); 
+       for (int j=0;j<size;j++){
+             out_data[j]+=in_data[j];
+             
+       }
+       if ((i%(bin))==0){
+           printf("\n");
+             for (int j=0;j<size;j++)
+                out_data[j]/=(double) bin;
+             fwrite(&iii,sizeof(int),1,out_f_ls);
+             fwrite(out_data,sizeof(double),size,out_f_ls);
+             for (int j=0;j<size;j++){
+                out_data[j]=0;
+             }      
+        }
    }
+   fclose(out_f_ls);fclose(f_ls);
+   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      printf("smeared local\n");
 
+   for (int j=0;j<size;j++)
+            out_data[j]=0;
+   for (int i=1;i<=confs;i++){  
+       
+       fread(&iii,sizeof(int),1,f_sl);
+               printf("%d\t",iii);
 
-   Neff=confs;
-   symmetrise_corr(Neff, 0, file_head.l0,data);
-   symmetrise_corr(Neff, 1, file_head.l0,data);
-   symmetrise_corr(Neff, 2, file_head.l0,data);
-   symmetrise_corr(Neff, 3, file_head.l0,data);
-   conf_jack=create_jack(Neff, var, file_head.l0, data);
-  
-   Njack=Neff+1;
-////////////////////allocation
-   r=(double**) malloc(sizeof(double*)*file_head.l0);
-   for(i=0;i<file_head.l0;i++)
-        r[i]=(double*) malloc(sizeof(double)*Njack);
-    
-   met=(double**) malloc(sizeof(double*)*file_head.l0);
-   fit=(double*) malloc(sizeof(double)*Njack);
-   y=(double***) malloc(sizeof(double**)*Njack);
-   for (j=0;j<Njack;j++){
-        y[j]=(double**) malloc(sizeof(double*)*(tmax-tmin));
-        for (i=tmin;i<tmax;i++){
-	       y[j][i-tmin]=(double*) malloc(sizeof(double)*2);
+       fread(in_data,sizeof(double),size, f_sl); 
+       for (int j=0;j<size;j++){
+             out_data[j]+=in_data[j];
+             
+       }
+       if ((i%(bin))==0){
+           printf("\n");
+             for (int j=0;j<size;j++)
+                out_data[j]/=(double) bin;
+             fwrite(&iii,sizeof(int),1,out_f_sl);
+             fwrite(out_data,sizeof(double),size,out_f_sl);
+             for (int j=0;j<size;j++){
+                out_data[j]=0;
+             }      
         }
-    }
-    x=(double*) malloc(sizeof(double)*(tmax-tmin));
-////////////////end 
+   }
+   fclose(out_f_sl);fclose(f_sl);
+   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      printf("smeared smeared\n");
 
-///////////////////////kynematic
+   for (int j=0;j<size;j++)
+            out_data[j]=0;
+   for (int i=1;i<=confs;i++){  
+       
+       fread(&iii,sizeof(int),1,f_ss);
+               printf("%d\t",iii);
+
+       fread(in_data,sizeof(double),size, f_ss); 
+       for (int j=0;j<size;j++){
+             out_data[j]+=in_data[j];
+             
+       }
+       if ((i%(bin))==0){
+           printf("\n");
+             for (int j=0;j<size;j++)
+                out_data[j]/=(double) bin;
+             fwrite(&iii,sizeof(int),1,out_f_ss);
+             fwrite(out_data,sizeof(double),size,out_f_ss);
+             for (int j=0;j<size;j++){
+                out_data[j]=0;
+             }      
+        }
+   }
+   fclose(out_f_ss);fclose(f_ss);
    
-   fprintf(outfile,"#matrix elements(t) from  propagators:1) mu %g theta %g 2) mu %g theta %g 3) mu %g theta 0\n",file_head.k[ik1+file_head.nk],file_head.mom[imom1][1],file_head.k[ik2+file_head.nk], file_head.mom[imom2][1], file_head.k[ik3+file_head.nk] );   
-   index=2*index_twopt(1,0,0,imom2,0,ik2,ik3);
-   E_B=E0[index][0];
-   fprintf(outfile,"E_B=%g ",E0[index][0]);
-   index=2*index_twopt(1,0,0,imom1,0,ik3,ik3);
-   E_Pi=E0[index][0];
-   fprintf(outfile,"E_Pi=%g\n",E0[index][0]);
-   vec_pB=sqrt(3)*2*3.14159265358979 *file_head.mom[imom2][1]/file_head.l1 ;
-   vec_pPi=sqrt(3)*2*3.14159265358979 *file_head.mom[imom1][1]/file_head.l1 ;
 
-   fprintf(outfile,"p_B=%g p_Pi=%g\n",vec_pB,vec_pPi);
-   x_SCHET=2*(   E_B*E_Pi- vec_pB*vec_pPi )/ ( (E_B*E_B- vec_pB*vec_pB) );
-   q2=(E_B-E_Pi)*(E_B-E_Pi)  -   (vec_pB-vec_pPi)*(vec_pB-vec_pPi);
-   fprintf(outfile,"x_SCHET=%g q^2=%g\n",x_SCHET,q2);
-   
-   
-/////////////////matrix element
-   for(i=1;i<file_head.l0/2;i++){    
-        for (j=0;j<Njack;j++){
-            r[i][j]=ratio(i,conf_jack[j]);
-////            r[i][j]=r[i][j]*4.*E_B*E_Pi;
-           // r[i][j]=sqrt(r[i][j]*4.*E_B*E_Pi);
- 
-            if (i>=tmin && i<tmax){
-                y[j][i-tmin][0]=r[i][j];
-            }
-
-        }
-        met[i]=mean_and_error_jack(Neff, r[i]);
-        
-        if (i>=tmin && i<tmax){
-            for (j=0;j<Njack;j++){
-                y[j][i-tmin][1]=met[i][1];
-            }
-        }
-    fprintf(outfile,"%d   %.15g    %.15g\n",i,met[i][0],met[i][1]);
-    free(met[i]);
-    }
-
-    for (j=0;j<Njack;j++){
-        tmp=linear_fit( tmax-tmin, x, y[j],  1,constant_fit );
-        fit[j]=tmp[0][0];
-        free(tmp[0]);free(tmp);
-    }
-    me=mean_and_error_jack(Njack, fit);
-    fprintf(outfile,"\n\n #matrix elemnt fit in [%d,%d]\n  %.15g    %.15g\n\n\n",tmin,tmax-1,me[0],me[1]);
-
-    fflush(outfile);
-/////////////////////free memory
-    for(i=0;i<file_head.l0;i++)
-   	  free(r[i]);
-    free(r); free(fit);
-    free(me);free(met);
-    for (j=0;j<Njack;j++){
-        for (i=tmin;i<tmax;i++){
-	       free(y[j][i-tmin]);
-        }
-        free(y[j]);
-    }
-    free(y);
-    free(x);
-//////////////////////////end
-
-
-   }}}}}///end loop imom1 imom2 ik1 ik2 ik3
-return 0;
+    return 0;   
 }

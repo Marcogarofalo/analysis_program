@@ -1,4 +1,4 @@
-#define CONTROL
+cd #define CONTROL
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -219,13 +219,14 @@ double fit_Fpi_and_Mpi_GL(int n, int Nvar, double *x,int Npar,double  *P){
     if (n==0){
         
         Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2;
-        Mw2*=2*Bw*mw*(1-0.25 *Delta)*(1-0.25 *Delta);
+        Mw2*=2*Bw*mw;
+        Mw2/=(1-0.25 *Delta)*(1-0.25 *Delta);
         
     }
     if (n==1){
         
         Mw2=fw*(1-2*xi*log(xi)+P3*xi)+(1./(w0*w0))*P4;
-        Mw2*=(1+Delta);
+        Mw2/=(1+Delta);
         
     }
     if (n==2){
@@ -269,13 +270,13 @@ double fit_Fpi_and_Mpi_GL_NL0_am_m2(int n, int Nvar, double *x,int Npar,double  
     if (n==0){
         
         Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2 +(1./(w0*w0))*mw*P[6] + mw*mw *P[8];
-        Mw2*=2*Bw*mw*(1-0.25 *Delta)*(1-0.25 *Delta);
-        
+        Mw2*=2*Bw*mw;
+        Mw2/=(1-0.25 *Delta)*(1-0.25 *Delta);
     }
     if (n==1){
         
         Mw2=fw*(1-2*xi*log(xi)+P3*xi)+(1./(w0*w0))*P4+(1./(w0*w0))*mw*P[7] + mw*mw *P[9];
-        Mw2*=(1+Delta);
+        Mw2/=(1+Delta);
         
     }
     if (n==2){
@@ -318,13 +319,13 @@ double fit_Fpi_and_Mpi_GL_NL0_am(int n, int Nvar, double *x,int Npar,double  *P)
     if (n==0){
         
         Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2 +(1./(w0*w0))*mw*P[6] ;
-        Mw2*=2*Bw*mw*(1-0.25 *Delta)*(1-0.25 *Delta);
-        
+        Mw2*=2*Bw*mw;
+        Mw2/=(1-0.25 *Delta)*(1-0.25 *Delta);
     }
     if (n==1){
         
         Mw2=fw*(1-2*xi*log(xi)+P3*xi)+(1./(w0*w0))*P4+(1./(w0*w0))*mw*P[7] ;
-        Mw2*=(1+Delta);
+        Mw2/=(1+Delta);
         
     }
     if (n==2){
@@ -366,7 +367,8 @@ double fit_FpiMpi4_and_Mpi2_GL(int n, int Nvar, double *x,int Npar,double  *P){
     if (n==0){
         
         Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2;
-        Mw2*=2*Bw*mw*(1-0.25 *Delta)*(1-0.25 *Delta);
+        Mw2*=2*Bw*mw;
+        Mw2/=(1-0.25 *Delta)*(1-0.25 *Delta);
         
     }
     if (n==1){// fit fot w0^5fpi Mpi^4
@@ -416,7 +418,8 @@ double fit_FpiMpi4_and_Mpi2_linear(int n, int Nvar, double *x,int Npar,double  *
     if (n==0){
         
         Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2;
-        Mw2*=2*Bw*mw*(1-0.25 *Delta)*(1-0.25 *Delta);
+        Mw2*=2*Bw*mw;
+        Mw2/=(1-0.25 *Delta)*(1-0.25 *Delta);
         
     }
     if (n==1){// fit fot w0^5fpi Mpi^4
@@ -871,40 +874,40 @@ void  files_declarations(char **argv,struct database_file_jack **jack_files,stru
     for (i=0;i<ensembles_reph;i++)
         (*head)[i].allocated=0;
     
-    setup_reading_jack( argv,&((*jack_files)[0]),&((*head)[0]),"/media/marco/Elements/work/PRACE/beta1.726/cA211ab.53.24/analysis/main/jackknife");  
+    setup_reading_jack( argv,&((*jack_files)[0]),&((*head)[0]),"/media/marco/data/PRACE/beta1.726/cA211ab.53.24/analysis/main/jackknife");  
     (*jack_files)[0].a=0.096;
     if (ensembles>1){
-        setup_reading_jack(argv, &((*jack_files)[1]),&((*head)[1]),"/media/marco/Elements/work/PRACE/beta1.726/cA211ab.40.24/analysis/main/jackknife");  
+        setup_reading_jack(argv, &((*jack_files)[1]),&((*head)[1]),"/media/marco/data/PRACE/beta1.726/cA211ab.40.24/analysis/main/jackknife");  
         (*jack_files)[1].a=0.096;
     }
     if (ensembles>2){
-        setup_reading_jack(argv, &((*jack_files)[2]),&((*head)[2]),"/media/marco/Elements/work/PRACE/beta1.726/cA211ab.30.32/analysis/main/jackknife");  
+        setup_reading_jack(argv, &((*jack_files)[2]),&((*head)[2]),"/media/marco/data/PRACE/beta1.726/cA211ab.30.32/analysis/main/jackknife");  
         (*jack_files)[2].a=0.096;
     }
     if (ensembles>3){
      //   setup_reading_jack(argv, &jack_files[3],&head[3],"../../beta1.726/cA211ab.12.48/analysis/main/jackknife");  
-        setup_reading_jack(argv, &((*jack_files)[3]),&((*head)[3]),"/media/marco/Elements/work/PRACE/beta1.726/cA211ab.12.48_no_rew/analysis/main/jackknife");  
+        setup_reading_jack(argv, &((*jack_files)[3]),&((*head)[3]),"/media/marco/data/PRACE/beta1.726/cA211ab.12.48_no_rew/analysis/main/jackknife");  
         (*jack_files)[3].a=0.096;
     }
     if (ensembles>4){
-        setup_reading_jack(argv, &((*jack_files)[4]),&((*head)[4]),"/media/marco/Elements/work/PRACE/beta1.778/cB211ab.25.48/analysis/main/jackknife");  
+        setup_reading_jack(argv, &((*jack_files)[4]),&((*head)[4]),"/media/marco/data/PRACE/beta1.778/cB211ab.25.48/analysis/main/jackknife");  
         (*jack_files)[4].a=0.081;
     }
     if (ensembles>5){
-        setup_reading_jack(argv,&((*jack_files)[5]),&((*head)[5]),"/media/marco/Elements/work/PRACE/beta1.778/cB211ab.14.64/analysis/main/jackknife");  
+        setup_reading_jack(argv,&((*jack_files)[5]),&((*head)[5]),"/media/marco/data/PRACE/beta1.778/cB211ab.14.64/analysis/main/jackknife");  
         (*jack_files)[5].a=0.070;
     }
     if (ensembles>6){
-        setup_reading_jack(argv,&((*jack_files)[6]),&((*head)[6]),"/media/marco/Elements/work/PRACE/beta1.778/cB211ab.072.64/analysis/main/jackknife");  
+        setup_reading_jack(argv,&((*jack_files)[6]),&((*head)[6]),"/media/marco/data/PRACE/beta1.778/cB211ab.072.64/analysis/main/jackknife");  
         (*jack_files)[6].a=0.081;
     }
     
     if (ensembles>7){
-        setup_reading_jack(argv, &((*jack_files)[7]),&((*head)[7]),"/media/marco/Elements/work/PRACE/beta1.836/cC211ab.06.80/analysis/main/jackknife");  
+        setup_reading_jack(argv, &((*jack_files)[7]),&((*head)[7]),"/media/marco/data/PRACE/beta1.836/cC211ab.06.80/analysis/main/jackknife");  
         (*jack_files)[7].a=0.070;
     }
     if (ensembles>8){
-        setup_reading_jack(argv, &((*jack_files)[8]),&((*head)[8]),"/media/marco/Elements/work/PRACE/beta1.778/cB211ab.25.32/analysis/main/jackknife");  
+        setup_reading_jack(argv, &((*jack_files)[8]),&((*head)[8]),"/media/marco/data/PRACE/beta1.778/cB211ab.25.32/analysis/main/jackknife");  
         (*jack_files)[8].a=0.081;
     }
     
@@ -1155,15 +1158,16 @@ void mud(double xi,int Npar,double *P, double *f, double *df){
 
 
 
-void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,double **w0C,double **ZpA,double **ZpB,double **ZpC,int jack_tot, const char *scaletype, const char *Mtype){
+void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,double **w0C,double **ZpA,double **ZpB,double **ZpC,int jack_tot, const char *scaletype, const char *Mtype, double ***w0){
     
-      if (strcmp(scaletype,"w0")==0){
+      if (strcmp(scaletype,"w0")==0 || strcmp(scaletype,"w0xensemble")==0 ){
           //(*w0A)=fake_sampling(jackboot,1.8381,  0.0037,jack_tot,123);  // petros-from jacob 31/07/20 fit   in M_PS^2/f_PS^2
           //(*w0B)=fake_sampling(jackboot,2.1316 ,0.0024 ,jack_tot,1234);// petros-from jacob 31/07/20 fit  M_PS^2/f_PS^2
           //(*w0C)=fake_sampling(jackboot,2.5039, 0.0017,jack_tot,12345);//  petros-from jacob 31/07/20 fit  M_PS^2/f_PS^2
           (*w0A)=fake_sampling(jackboot,1.8353,  0.0035,jack_tot,123);  // petros-from jacob 31/07/20 fit   in M_PS^2/f_PS^2
           (*w0B)=fake_sampling(jackboot,2.1300 ,0.0017 ,jack_tot,1234);// petros-from jacob 31/07/20 fit  M_PS^2/f_PS^2
           (*w0C)=fake_sampling(jackboot,2.5039, 0.0017,jack_tot,12345);//  petros-from jacob 31/07/20 fit  M_PS^2/f_PS^2
+          
           
       }
       else if(strcmp(scaletype,"t0/w0")==0){
@@ -1186,14 +1190,21 @@ void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,do
          
      }
      if(strcmp(Mtype,"M1a")==0){
-         (*ZpA)=fake_sampling(jackboot,0.4748,0.0024,jack_tot,321);//M2 2Gev  petros report Oct/2020  
-         (*ZpB)=fake_sampling(jackboot,0.4784,0.0034,jack_tot,3214);//M2 2Gev petros report Oct/2020
-         (*ZpC)=fake_sampling(jackboot,0.4871,0.0026,jack_tot,32145);//M2 2Gev  petros report Oct/2020
+         //(*ZpA)=fake_sampling(jackboot,0.4748,0.0024,jack_tot,321);//M2 2Gev  petros report Oct/2020  
+         //(*ZpB)=fake_sampling(jackboot,0.4784,0.0034,jack_tot,3214);//M2 2Gev petros report Oct/2020
+         //(*ZpC)=fake_sampling(jackboot,0.4871,0.0026,jack_tot,32145);//M2 2Gev  petros report Oct/2020
+         (*ZpA)=fake_sampling(jackboot,0.477,0.002,jack_tot,321);//M2 2Gev  mattero report Feb/2021  
+         (*ZpB)=fake_sampling(jackboot,0.4781,0.003,jack_tot,3214);//M2 2Gev mattero report Feb/2021 
+         (*ZpC)=fake_sampling(jackboot,0.490,0.002,jack_tot,32145);//M2 2Gev  mattero report Feb/2021 
+         
      }
      if(strcmp(Mtype,"M1b")==0){
-         (*ZpA)=fake_sampling(jackboot,0.4748,0.0026,jack_tot,321);//M2 2Gev  petros report Oct/2020  
-         (*ZpB)=fake_sampling(jackboot,0.4775,0.0027,jack_tot,3214);//M2 2Gev petros report Oct/2020
-         (*ZpC)=fake_sampling(jackboot,0.4873,0.0027,jack_tot,32145);//M2 2Gev  petros report Oct/2020
+         //(*ZpA)=fake_sampling(jackboot,0.4748,0.0026,jack_tot,321);//M2 2Gev  petros report Oct/2020  
+         //(*ZpB)=fake_sampling(jackboot,0.4775,0.0027,jack_tot,3214);//M2 2Gev petros report Oct/2020
+         //(*ZpC)=fake_sampling(jackboot,0.4873,0.0027,jack_tot,32145);//M2 2Gev  petros report Oct/2020
+         (*ZpA)=fake_sampling(jackboot,0.492,0.002,jack_tot,321);//M2 2Gev  mattero report Feb/2021  
+         (*ZpB)=fake_sampling(jackboot,0.494,0.002,jack_tot,3214);//M2 2Gev mattero report Feb/2021
+         (*ZpC)=fake_sampling(jackboot,0.505,0.002,jack_tot,32145);//M2 2Gev   mattero report Feb/2021
      }
      else if(strcmp(Mtype,"M2a")==0){ //(9)??
          double cp=1.03496; 
@@ -1206,9 +1217,13 @@ void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,do
          //(*ZpA)=fake_sampling(jackboot,0.496,0.002,jack_tot,321);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
          //(*ZpB)=fake_sampling(jackboot,0.495,0.002,jack_tot,3214);//M2 2Gev Enrico-Matteo  28/05/2020  constant
          //(*ZpC)=fake_sampling(jackboot,0.499,0.002,jack_tot,32145);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
-         (*ZpA)=fake_sampling(jackboot,0.5050,0.0024,jack_tot,321);//M2 2Gev  petros report Oct/2020  
-         (*ZpB)=fake_sampling(jackboot,0.5013,0.0026,jack_tot,3214);//M2 2Gev petros report Oct/2020
-         (*ZpC)=fake_sampling(jackboot,0.5024,0.0023,jack_tot,32145);//M2 2Gev  petros report Oct/2020
+         //(*ZpA)=fake_sampling(jackboot,0.5050,0.0024,jack_tot,321);//M2 2Gev  petros report Oct/2020  
+         //(*ZpB)=fake_sampling(jackboot,0.5013,0.0026,jack_tot,3214);//M2 2Gev petros report Oct/2020
+         //(*ZpC)=fake_sampling(jackboot,0.5024,0.0023,jack_tot,32145);//M2 2Gev  petros report Oct/2020
+         (*ZpA)=fake_sampling(jackboot,0.507,0.002,jack_tot,321);//M2 2Gev   mattero report Feb/2021
+         (*ZpB)=fake_sampling(jackboot,0.504,0.002,jack_tot,3214);//M2 2Gev  mattero report Feb/2021
+         (*ZpC)=fake_sampling(jackboot,0.505,0.002,jack_tot,32145);//M2 2Gev  mattero report Feb/2021
+         
      }
      else if(strcmp(Mtype,"M2b")==0){//(9)??
          double cp= 0.972164;
@@ -1224,9 +1239,12 @@ void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,do
          //(*ZpA)=fake_sampling(jackboot,0.502,0.001,jack_tot,321);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
          //(*ZpB)=fake_sampling(jackboot,0.499,0.002,jack_tot,3214);//M2 2Gev Enrico-Matteo  28/05/2020  constant
          //(*ZpC)=fake_sampling(jackboot,0.501,0.002,jack_tot,32145);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
-         (*ZpA)=fake_sampling(jackboot,0.5119,0.0024,jack_tot,321);//M2 2Gev  petros report Oct/2020  
-         (*ZpB)=fake_sampling(jackboot,0.5075,0.0023,jack_tot,3214);//M2 2Gev petros report Oct/2020
-         (*ZpC)=fake_sampling(jackboot,0.5060,0.0024,jack_tot,32145);//M2 2Gev  petros report Oct/2020
+         //(*ZpA)=fake_sampling(jackboot,0.5119,0.0024,jack_tot,321);//M2 2Gev  petros report Oct/2020  
+         //(*ZpB)=fake_sampling(jackboot,0.5075,0.0023,jack_tot,3214);//M2 2Gev petros report Oct/2020
+         //(*ZpC)=fake_sampling(jackboot,0.5060,0.0024,jack_tot,32145);//M2 2Gev  petros report Oct/2020
+         (*ZpA)=fake_sampling(jackboot,0.530,0.002,jack_tot,321);//M2 2Gev  petros report Oct/2020  
+         (*ZpB)=fake_sampling(jackboot,0.526,0.002,jack_tot,3214);//M2 2Gev petros report Oct/2020
+         (*ZpC)=fake_sampling(jackboot,0.524,0.002,jack_tot,32145);//M2 2Gev  petros report Oct/2020
      }
       //w0A=fake_sampling(jackboot,1.8346689, 0.005178046,*jack_tot);
       //w0A=fake_sampling(jackboot,1.83005,3.48173757101e-3,*jack_tot,rand());// MG fit in M_PS^2
@@ -1289,6 +1307,19 @@ void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,do
       result.fw=(double*) malloc(sizeof(double)*jack_tot);
       //result.w0fm= (double*) malloc(sizeof(double)*jack_tot);
       //result.w0MeV= (double*) malloc(sizeof(double)*jack_tot);
+      (*w0)=(double**) malloc(sizeof(double*)*ensembles);
+      if(ensembles>0) (*w0)[0]=fake_sampling(jackboot,1.75971827958,  0.0043117955,jack_tot,31+0);
+      if(ensembles>1) (*w0)[1]=fake_sampling(jackboot,1.7766037849,  0.00326168171497332,jack_tot,31+1);
+      if(ensembles>2) (*w0)[2]=fake_sampling(jackboot,1.7928047479464,  0.00166108579455367,jack_tot,31+2);
+      if(ensembles>3) (*w0)[3]=fake_sampling(jackboot,1.82491342151081,  0.0032611047018913,jack_tot,31+3);
+      if(ensembles>4) (*w0)[4]=fake_sampling(jackboot,2.0981815470160,  0.001880560896,jack_tot,31+4);
+      if(ensembles>5) (*w0)[5]=fake_sampling(jackboot,2.1176064583,  0.0013130969466,jack_tot,31+5);
+      if(ensembles>6) (*w0)[6]=fake_sampling(jackboot,2.1271529070228,  0.001943835318,jack_tot,31+6);
+      if(ensembles>7) (*w0)[7]=fake_sampling(jackboot,2.50451148219,  0.0017199806,jack_tot,31+7);
+     
+      if(ensembles>8) (*w0)[8]=fake_sampling(jackboot,2.098181547016053,  0.0018805608969,jack_tot,31+8);
+      
+
 
     
 }
@@ -1297,11 +1328,12 @@ void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,do
 
 void init_Z( struct database_file_jack *jack_files, struct header *head,int jack_tot, struct data_jack **gJ, const char *scaletype, const char *Mtype){
       int j;
-      double *w0A,*w0B,*w0C, *ZpA,*ZpB,*ZpC;
-      create_fake_distribution(jack_files[0].sampling, &w0A, &w0B, &w0C, &ZpA, &ZpB, &ZpC,jack_tot,scaletype,Mtype);
+      double *w0A,*w0B,*w0C, *ZpA,*ZpB,*ZpC, **w0;
+      create_fake_distribution(jack_files[0].sampling, &w0A, &w0B, &w0C, &ZpA, &ZpB, &ZpC,jack_tot,scaletype,Mtype, &w0);
+      printf("ensembles=%d\n",ensembles);
       for(j=0;j<jack_tot;j++){
       if (ensembles>0){
-        (*gJ)[0].w0[j]=w0A[j];
+        (*gJ)[0].w0[j]=w0A[j]; 
         (*gJ)[0].Zp[j]=ZpA[j];
       }
       if (ensembles>1){
@@ -1337,9 +1369,14 @@ void init_Z( struct database_file_jack *jack_files, struct header *head,int jack
         (*gJ)[8].w0[j]=w0B[j];
         (*gJ)[8].Zp[j]=ZpB[j];
       } 
-          
+      
+      if (strcmp(scaletype,"w0xensemble")==0){
+          for(int e=0;e<ensembles;e++)
+             (*gJ)[e].w0[j]=w0[e][j];
+      }
     }
     free(w0A);free(w0B);free(w0C); free(ZpA);free(ZpB);free(ZpC);
+    free_2(ensembles,w0);
     
 }
 
@@ -1952,7 +1989,7 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
     free(xi);
     ////////////////////////print fit
     
-   print_chiral_continuum_fit(argv, jack_tot,  fit_out,   fit_info,  phys_point,  AV, namefile,  head , grephJ);
+    print_chiral_continuum_fit(argv, jack_tot,  fit_out,   fit_info,  phys_point,  AV, namefile,  head , grephJ);
  
   /*  int order=2;
     double **taylor=taylor_expand_fit_fun( argv, jack_tot,   fit_out,   fit_info,  phys_point,   AV, order,0);
@@ -2202,7 +2239,8 @@ int main(int argc, char **argv){
     printf("\n\n//////////////////////////////////////////////////////////////\n");
     printf("              OMEGA MK                             \n");
     printf("\n\n//////////////////////////////////////////////////////////////\n");
-    
+    //init_Z( jack_files, head, jack_tot, &gjack, "w0xensemble","M1");
+
     Ci=(double**) malloc(sizeof(double*)*2);
     
     fit=fit_Omegaw0_from_M(jack_files, head , jack_tot, mass_index, gjack,  &result );
@@ -2217,6 +2255,50 @@ int main(int argc, char **argv){
     printf("   w_0=(%g\\pm%.2g) fm \\nn \n\\end{gather} \n",Ci[0][0],Ci[0][1]);
      
     
+    for (i=0;i<1;i++)
+    {    free(Ci[i]);   free(fit[i]);}
+    free(Ci);free(fit);    
+    free(tmp1);
+    
+    
+    printf("\n\n//////////////////////////////////////////////////////////////\n");
+    printf("              OMEGA MK   new                            \n");
+    printf("\n\n//////////////////////////////////////////////////////////////\n");
+    //init_Z( jack_files, head, jack_tot, &gjack, "w0xensemble","M1");
+
+    Ci=(double**) malloc(sizeof(double*)*2);
+    
+    fit=fit_Omegaw0_from_M_new(jack_files, head , jack_tot, mass_index, gjack,  &result );
+    
+    tmp1=(double*) malloc(sizeof(double)*jack_tot);
+    for (j=0;j<jack_tot;j++){
+        tmp1[j]=fit[0][j]*197.326963;
+    }
+
+    Ci[0]=mean_and_error(argv[1],jack_tot,tmp1);
+    printf("Imposing $M_\\K =%.2f \\pm %.2g$ , $M_\\pi=%.4f\\pm %2g$ fm  and M_\\Omega=%g \\pm %g\n",v_MKMeV,err_MKMeV,v_MpiMeV,err_MpiMeV,v_MOmegaMeV,err_MOmegaMeV);
+    printf("   w_0=(%g\\pm%.2g) fm \\nn \n\\end{gather} \n",Ci[0][0],Ci[0][1]);
+     
+    free(Ci[0]);
+    for (j=0;j<jack_tot;j++){
+        tmp1[j]=fit[0][j]*197.326963 /gjack[0].w0[j];
+    }
+    Ci[0]=mean_and_error(argv[1],jack_tot,tmp1);
+    printf("   a(A)=(%g\\pm%.2g) fm  \n",Ci[0][0],Ci[0][1]);
+    free(Ci[0]);
+    for (j=0;j<jack_tot;j++){
+        tmp1[j]=fit[0][j]*197.326963 /gjack[4].w0[j];
+    }
+    Ci[0]=mean_and_error(argv[1],jack_tot,tmp1);
+    printf("   a(B)=(%g\\pm%.2g) fm  \n",Ci[0][0],Ci[0][1]);
+    free(Ci[0]);
+    for (j=0;j<jack_tot;j++){
+        tmp1[j]=fit[0][j]*197.326963 /gjack[7].w0[j];
+    }
+    Ci[0]=mean_and_error(argv[1],jack_tot,tmp1);
+    printf("   a(C)=(%g\\pm%.2g) fm  \n",Ci[0][0],Ci[0][1]);
+    
+
     for (i=0;i<1;i++)
     {    free(Ci[i]);   free(fit[i]);}
     free(Ci);free(fit);    
