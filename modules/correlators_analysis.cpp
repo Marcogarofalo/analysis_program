@@ -123,8 +123,26 @@ double M_eff_sinh_T(  int t, int T, double **in){
 }
 
 
+double M_eff_log(  int t, int T, double **in){
+    double mass;
+ 
+    double ct[1],ctp[1],res,tmp_mass, u,d ;
+    int i,L0;
+        
+    ct[0]=in[t][0];
+    ctp[0]=in[t+1][0];
+
+    mass=log(ct[0]/ctp[0]);
+   
+    return mass;
+
+}
 
 
+double identity(int t, int T, double ** in){ 
+    return in[t][0];
+
+}
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -167,8 +185,17 @@ int   line_read_plateaux(char **option, const char *corr , int &tmin, int &tmax,
       error(0==0,1,"correlators_analysis.cpp line_read_plateaux",
             "unable to open %s",namefile);
    }
-   error(match==0,1,"correlators_analysis.cpp line_read_plateaux",
-         "no match for plateau %s   %s \n in the file %s ",option[6], corr,namefile);
+   //error(match==0,1,"correlators_analysis.cpp line_read_plateaux",
+   //      "no match for plateau %s   %s \n in the file %s ",option[6], corr,namefile);
+   if (match==0){
+      printf("no plateau found for %s in plateau file %s\n", corr,namefile);
+      fprintf(stderr,"Please enter the plateau interval and separation:\n"); 
+      myscanf(3, (char*) "%d %d %d",&tmin,&tmax,&sep);
+      while (tmin>tmax && tmax>= file_head.l0/2 &&  tmin <0){
+            fprintf(stderr,"please enter a valid number for tmin and tmax\n");
+            myscanf(3,(char*)"%d %d %d",&tmin,&tmax,&sep);
+    }
+   }
    
    return line;
     
