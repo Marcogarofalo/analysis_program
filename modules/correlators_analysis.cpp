@@ -144,6 +144,28 @@ double identity(int t, int T, double ** in){
 
 }
 
+
+double shift_corr(int t, int T, double ** in){ 
+    return in[t][0]-in[t+1][0];
+
+}
+
+
+double M_eff_log_shift(  int t, int T, double **in){
+    double mass;
+ 
+    double ct[1],ctp[1],res,tmp_mass, u,d ;
+    int i,L0;
+        
+    ct[0]=in[t][0]-in[t+1][0];
+    ctp[0]=in[t+1][0]-in[t+2][0];
+
+    mass=log(ct[0]/ctp[0]);
+   
+    return mass;
+
+}
+
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 

@@ -654,6 +654,16 @@ int main(int argc, char **argv){
              params.data.lambdaC0, params.data.lambdaC1, params.data.muC, params.data.gC,params.data.replica);
    FILE *outfile_raw_corr=open_file(namefile,"w+"); 
    
+   mysprintf(namefile,NAMESIZE,"%s/out/G2t_T%d_L%d_msq0%.6f_msq1%.6f_l0%.6f_l1%.6f_mu%.6f_g%.6f_rep%d_shifted_correlators",
+             argv[3], T, params.data.L[1],params.data.msq0, params.data.msq1,
+             params.data.lambdaC0, params.data.lambdaC1, params.data.muC, params.data.gC,params.data.replica);
+   FILE *outfile_shifted_corr=open_file(namefile,"w+"); 
+   
+   mysprintf(namefile,NAMESIZE,"%s/out/G2t_T%d_L%d_msq0%.6f_msq1%.6f_l0%.6f_l1%.6f_mu%.6f_g%.6f_rep%d_log_meff_shifted",
+             argv[3], T, params.data.L[1],params.data.msq0, params.data.msq1,
+             params.data.lambdaC0, params.data.lambdaC1, params.data.muC, params.data.gC,params.data.replica);
+   FILE *outfile_log_meff_shifted=open_file(namefile,"w+"); 
+  
    mysprintf(namefile,NAMESIZE,"%s/out/G2t_T%d_L%d_msq0%.6f_msq1%.6f_l0%.6f_l1%.6f_mu%.6f_g%.6f_rep%d_gamma",
              argv[3], T, params.data.L[1],params.data.msq0, params.data.msq1,
              params.data.lambdaC0, params.data.lambdaC1, params.data.muC, params.data.gC,params.data.replica);
@@ -759,10 +769,21 @@ int main(int argc, char **argv){
     sprintf(save_option,"%s",option[1]);
     sprintf(option[1],"blind");
     for(int icorr=0; icorr<params.data.ncorr; icorr++ ){
+     //log effective mass
      double *tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile_meff_corr,icorr,"meff_corr", M_eff_log);
      free(tmp_meff_corr);
+     //raw correlator
      tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile_raw_corr,icorr,"raw_corr", identity);
      free(tmp_meff_corr);
+     // shifted correlator
+     tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile_shifted_corr,icorr,"shifted_corr", shift_corr);
+     free(tmp_meff_corr);
+     // log_meff shifted correlator
+     tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile_log_meff_shifted,icorr,"log_meff_shifted", M_eff_log_shift);
+     free(tmp_meff_corr);
+     
+     
+     
     }
     sprintf(option[1],"%s",save_option);// restore option
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -874,10 +895,11 @@ int main(int argc, char **argv){
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_1 , "E4_1",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
     
-    //c++ 13 || r 14
+    
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
+    //c++ 13 || r 14
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_plat1",  fit_info, file_jack.M_PS );
@@ -900,6 +922,7 @@ int main(int argc, char **argv){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
+    //c++ 17 || r 18
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_2p",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
