@@ -1,4 +1,4 @@
-cd #define CONTROL
+#define CONTROL
 
 #include <stdlib.h>
 #include <stdio.h>

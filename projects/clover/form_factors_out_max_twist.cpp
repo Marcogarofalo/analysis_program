@@ -498,7 +498,7 @@ int main(int argc, char **argv){
  
    
    double E_B,E_Pi, x_SCHET,q2,vec_pB,vec_pPi;
-   int Neff,Njack,bin=10;
+   int Neff,Njack,bin=1;
    
    t1=clock();
    if ( strcmp(argv[1],"read_plateaux")==0 ){
@@ -516,13 +516,13 @@ int main(int argc, char **argv){
         
   }
    // f=fopen("./meas_2pts_bin10.dat","r");
-   mysprintf(namefile,NAMESIZE,"%s/data/to_read_ll_bin.dat",argv[3]);
+   mysprintf(namefile,NAMESIZE,"%s/data/to_read_ll_bin10.dat",argv[3]);
    f_ll=fopen(namefile,"r"); if (f_ll==NULL) {printf("2pt file not found\n"); exit(0);}
-   mysprintf(namefile,NAMESIZE,"%s/data/to_read_sl_bin.dat",argv[3]);
+   mysprintf(namefile,NAMESIZE,"%s/data/to_read_sl_bin10.dat",argv[3]);
    f_sl=fopen(namefile,"r"); if (f_sl==NULL) {printf("2pt file not found\n"); exit(0);}
-   mysprintf(namefile,NAMESIZE,"%s/data/to_read_ls_bin.dat",argv[3]);
+   mysprintf(namefile,NAMESIZE,"%s/data/to_read_ls_bin10.dat",argv[3]);
    f_ls=fopen(namefile,"r"); if (f_ls==NULL) {printf("2pt file not found\n"); exit(0);}
-   mysprintf(namefile,NAMESIZE,"%s/data/to_read_ss_bin.dat",argv[3]);
+   mysprintf(namefile,NAMESIZE,"%s/data/to_read_ss_bin10.dat",argv[3]);
    f_ss=fopen(namefile,"r"); if (f_ss==NULL) {printf("2pt file not found\n"); exit(0);}
    
    read_file_head_bin(f_ll);

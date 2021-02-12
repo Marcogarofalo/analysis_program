@@ -1021,10 +1021,10 @@ for (e=0;e<ensemble_omega_jacob;e++){
         //printf("%g    %g    %g\n",x[ms][0],y[Njack-1][ms][0],y[Njack-1][ms][1]);
         free(x[ms]);  free(fit[ms]);
    }
-   /*for(i=0;i<Npar;i++)
+   for(i=0;i<Npar;i++)
        printf("P%d=%g;  \t ",i,r[i][e][Njack-1]);
    printf("\n");
-   */
+   
    
    
     chi2m=mean_and_error(jack_files[0].sampling,Njack, chi2);

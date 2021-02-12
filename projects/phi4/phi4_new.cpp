@@ -237,13 +237,15 @@ double lhs_four_BH(double ***in,int t ){
     int T=file_head.l0;
 
     r=in[10][t][0];
-    r-=  in[1][ (t-T/8+T)%T  ][0]  *in[0][T/2][0] ;
     r/=( in[1][ (t-T/8+T)%T  ][0]  *in[0][T/2][0]  );
+    r-=1.;
+    //r-=  in[1][ (t-T/8+T)%T  ][0]  *in[0][T/2][0] ;
+    
     
     return r;
 }
 
-double GEVP_matrix(double ***in,int t){
+double GEVP_shift_matrix(double ***in,int t){
     double ct,ctp;
     int N=2;
     int T=file_head.l0;
@@ -258,33 +260,49 @@ double GEVP_matrix(double ***in,int t){
     //array of lenght t+2 to storre the eigenvalues like a correlator
     double **lambda_t=double_malloc_2(t+2,2);
     
+    double s[4],s0[4];
+    
+    s[0]=in[3][t][0]-in[3][t+1][0]; // two0_to_two0
+    s[1]=in[12][t][0]-in[12][t+1][0]; // two0_to_two1
+    s[3]=in[4][t][0]-in[4][t+1][0]; // two1_to_two1
+    
     //t
-    M[0][0]=in[3][t][0];
-    M[1][0]=in[12][t][0];
-    M[3][0]=in[4][t][0];
+    M[0][0]=s[0];
+    M[1][0]=s[1];
+    M[3][0]=s[3];
     M[2][0]=M[1][0];
     
-    Mt0[0][0]=in[3][t0][0];
-    Mt0[1][0]=in[12][t0][0];
-    Mt0[3][0]=in[4][t0][0];
-    Mt0[2][0]=Mt0[1][0];
+    s0[0]=in[3][t0][0]-in[3][t0+1][0]; // two0_to_two0
+    s0[1]=in[12][t0][0]-in[12][t0+1][0]; // two0_to_two1
+    s0[3]=in[4][t0][0]-in[4][t0+1][0]; // two1_to_two1
     
+    Mt0[0][0]=s0[0];
+    Mt0[1][0]=s0[1];
+    Mt0[3][0]=s0[3];
+    Mt0[2][0]=Mt0[1][0];
+     
     generalysed_Eigenproblem(M,Mt0,N,&lambda,&vec); 
     
     lambda_t[abs(t-t0)][0]=lambda[0][0] ;
     
-   
-     //t +1
-    M[0][0]=in[3][t+1][0];
-    M[1][0]=in[12][t+1][0];
-    M[3][0]=in[4][t+1][0];
-    M[2][0]=M[1][0];
+    //t+1
+    s[0]=in[3][t+1][0]-in[3][t+2][0]; // two0_to_two0
+    s[1]=in[12][t+1][0]-in[12][t+2][0]; // two0_to_two1
+    s[3]=in[4][t+1][0]-in[4][t+2][0]; // two1_to_two1
     
+    //t
+    M[0][0]=s[0];
+    M[1][0]=s[1];
+    M[3][0]=s[3];
+    M[2][0]=M[1][0];
+ 
+   
     generalysed_Eigenproblem(M,Mt0,2,&lambda,&vec); 
     
     lambda_t[abs(t-t0+1)][0]=lambda[0][0] ;
     
     
+    //r=M_eff_sinh_T(t-t0, T, lambda_t);
     r=M_eff_T(t-t0, T, lambda_t);
    
     
@@ -737,8 +755,7 @@ int main(int argc, char **argv){
     if (params.data.ncorr>11){
         symmetrise_corr(confs, 11, file_head.l0,data);
     }
-    
-    
+   
     //if you want to do the gamma analysis you need to do before freeing the raw data
     effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,&plateaux_masses,out_gamma,0,"M_{PS}^{ll}");
     //effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,&plateaux_masses,out_gamma,3,"M_{PS}^{ll}");
@@ -857,21 +874,21 @@ int main(int argc, char **argv){
     fit_info.n_ext_P=2;
     fit_info.ext_P=(double**) malloc(sizeof(double*)*2);
     
-    //c++ 8 || r 9
+    //c++ 7 || r 8
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=E2[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,  5,0/*reim*/ , "E3_0",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
     
-    //c++ 9 || r 10
+    //c++ 8 || r 9
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=E2[1];
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,  6,0/*reim*/ , "E3_1",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
     
-    //c++ 10 || r 11
+    //c++ 9 || r 10
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[2];
     fit_info.ext_P[1]=E2[2];
@@ -886,14 +903,14 @@ int main(int argc, char **argv){
     fit_info.Njack=Njack;
     fit_info.n_ext_P=2;
     fit_info.function=four_pt_BH;
-    //c++ 11 || r 12
+    //c++ 10 || r 11
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_0 , "E4_0",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
     
-    //c++ 12 || r 12
+    //c++ 11 || r 12
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
@@ -904,13 +921,16 @@ int main(int argc, char **argv){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    //c++ 13 || r 14
+    //c++ 12 || r 13
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
+    //c++ 13 || r 14
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_plat1",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
+    //c++ 14 || r 15
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_plat2",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
+    //c++ 15 || r 16
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_line",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
     
@@ -927,7 +947,7 @@ int main(int argc, char **argv){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    //c++ 17 || r 18
+    //c++ 16 || r 17
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_2p",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -942,6 +962,7 @@ int main(int argc, char **argv){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
+    //c++ 17 || r 18
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_const",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
 
@@ -959,6 +980,7 @@ int main(int argc, char **argv){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
+        //c++ 18 || r 19
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_3p",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
     
@@ -975,7 +997,7 @@ int main(int argc, char **argv){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    
+        //c++ 19 || r 20
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,  11,0/*reim*/ , "E2_01",  fit_info, file_jack.M_PS );
     double *a=scattering_len_luscher(option[4],  Njack,  mass[0], mass[2], fit_out.P[0] ,params.data.L[1]);
     tmpj=(double*) malloc(sizeof(double)*Njack);
@@ -1002,7 +1024,8 @@ int main(int argc, char **argv){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, GEVP_matrix , "GEVP_E2_01",  fit_info, file_jack.M_PS );
+        //c++ 20 || r 21
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, GEVP_shift_matrix , "GEVP_E2_01",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
        
  /////////////////////////////   

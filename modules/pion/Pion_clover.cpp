@@ -191,6 +191,7 @@ struct fit_result fit_Mpi_fw_chiral_FVE_clover(struct database_file_jack  *jack_
                 for (j=0;j<jack_tot;j++){
                     y[j][e+count][0]=rm[j];
                     y[j][e+count][1]=fit[e+count][1];
+                    //if (e==3)  y[j][e+count][1]*=100;
                 }
                 //x[e+count]=(double*) malloc(sizeof(double)*Nvar);
             
@@ -230,7 +231,7 @@ struct fit_result fit_Mpi_fw_chiral_FVE_clover(struct database_file_jack  *jack_
               for (j=0;j<Njack;j++)
                     rm[j]=x[j][e+count][v];
               tmp=mean_and_error(jack_files[0].sampling,Njack, rm);
-              if (fabs(tmp[1])<1e-6) {printf("e=%d    v=%d   %g +- %g\n", e,v,tmp[0],tmp[1] ); tmp[1]=tmp[0]/1.0e+8; }
+             // if (fabs(tmp[1])<1e-6) {printf("e=%d    v=%d   %g +- %g\n", e,v,tmp[0],tmp[1] ); tmp[1]=tmp[0]/1.0e+8; }
               sigmax[e+count][v]=tmp[1];
               free(tmp);
           }
@@ -335,7 +336,7 @@ struct fit_result fit_Mpi_fw_chiral_FVE_clover(struct database_file_jack  *jack_
                         K=KM*KM;
                     else if (n==1)
                         K=Kf;
-                    printf("%.5f     %.5f      %.5f   %.5f     %.5f \t\t %.5f  %.5f\n",x[j][e+count][1],x[j][e+count][0],fit[e+count][0]/K,fit[e+count][1]/K,K, tmp2[0] ,tmp2[1]);
+                    printf("%.5f     %.5f      %.5f   %.5f     %.5f \t\t %.5f  %.5f\n",x[j][e+count][1],x[j][e+count][0],y[j][e+count][0]/K,y[j][e+count][1]/K,K, tmp2[0] ,tmp2[1]);
                     free(tmp2);free(tmp1);
                 }
                 count+=en[n];
@@ -389,7 +390,9 @@ struct fit_result fit_Mpi_fw_chiral_FVE_clover(struct database_file_jack  *jack_
 */
    chi2m=mean_and_error(jack_files[0].sampling,Njack, chi2);
    printf("$\\chi^2/dof=%f+-%f$  \n",chi2m[0],chi2m[1]);
-   
+  
+   printf("$\\chi^2=%f+-%f$  \n",chi2m[0]* (en_tot-Npar),chi2m[1]* (en_tot-Npar));
+
   
   
    struct fit_result fit_out=close_fit(N,  head , Njack, gJ,Npar,&en,&en_tot, &x,&sigmax, &chi2m, &rm,&r, &fit, &y,&chi2,&C);
