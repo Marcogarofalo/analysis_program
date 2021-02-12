@@ -199,16 +199,16 @@ double four_pt_BH_3par(int n, int Nvar, double *x,int Npar,double  *P){
 
 
 
-double lhs_four_BH_0(double ***in,int t ){
+double lhs_four_BH_0(int j, double ****in,int t ,struct fit_type fit_info){
     
     double r;
     int T=file_head.l0;
 
-    r=in[8][t][0];
-    r-=in[0][(T/2-t+T)%T][0] *in[0][T/8][0] ;
-    r-=in[0][(T/2-T/8)][0] *in[0][t][0] ;
-    r-=in[0][(T/8-t+T)%T][0] *in[0][T/2][0] ;
-    r/=(in[0][T/2][0] * in[0][ (t-T/8+T)%T  ][0]  );
+    r=in[j][8][t][0];
+    r-=in[j][0][(T/2-t+T)%T][0] *in[j][0][T/8][0] ;
+    r-=in[j][0][(T/2-T/8)][0] *in[j][0][t][0] ;
+    r-=in[j][0][(T/8-t+T)%T][0] *in[j][0][T/2][0] ;
+    r/=(in[j][0][T/2][0] * in[j][0][ (t-T/8+T)%T  ][0]  );
     
     // to_do:
     // I think that there is a 4 M factor missing
@@ -217,35 +217,40 @@ double lhs_four_BH_0(double ***in,int t ){
     
 }
 
-double lhs_four_BH_1(double ***in,int t ){
+double lhs_four_BH_1(int j,double ****in,int t ,struct fit_type fit_info){
     
     double r;
     int T=file_head.l0;
 
-    r=in[9][t][0];
-    r-=in[1][(T/2-t+T)%T][0] *in[1][T/8][0] ;
-    r-=in[1][(T/2-T/8)][0] *in[1][t][0] ;
-    r-=in[1][(T/8-t+T)%T][0] *in[1][T/2][0] ;
-    r/=(in[1][T/2][0] * in[1][ (t-T/8+T)%T  ][0]  );
+    r=in[j][9][t][0];
+    r-=in[j][1][(T/2-t+T)%T][0] *in[j][1][T/8][0] ;
+    r-=in[j][1][(T/2-T/8)][0] *in[j][1][t][0] ;
+    r-=in[j][1][(T/8-t+T)%T][0] *in[j][1][T/2][0] ;
+    r/=(in[j][1][T/2][0] * in[j][1][ (t-T/8+T)%T  ][0]  );
     
     return r;
 }
 
-double lhs_four_BH(double ***in,int t ){
+double lhs_four_BH(int j, double ****in,int t ,struct fit_type fit_info){
     
     double r;
     int T=file_head.l0;
+    double disc;
 
-    r=in[10][t][0];
-    r/=( in[1][ (t-T/8+T)%T  ][0]  *in[0][T/2][0]  );
-    r-=1.;
-    //r-=  in[1][ (t-T/8+T)%T  ][0]  *in[0][T/2][0] ;
+    r=in[j][10][t][0];
+    r/=( in[j][1][ (t-T/8+T)%T  ][0]  *in[j][0][T/2][0]  );
+    
+    //disc=4.*fit_info.ext_P[0][j]*fit_info.ext_P[1][j];
+    //disc=in[j][10][T/8][0];
+    //disc/=( in[j][1][ 0  ][0]  *in[j][0][T/2][0]  );
+    disc=1;
+    r-=disc;
     
     
     return r;
 }
 
-double GEVP_shift_matrix(double ***in,int t){
+double GEVP_shift_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     double ct,ctp;
     int N=2;
     int T=file_head.l0;
@@ -262,9 +267,9 @@ double GEVP_shift_matrix(double ***in,int t){
     
     double s[4],s0[4];
     
-    s[0]=in[3][t][0]-in[3][t+1][0]; // two0_to_two0
-    s[1]=in[12][t][0]-in[12][t+1][0]; // two0_to_two1
-    s[3]=in[4][t][0]-in[4][t+1][0]; // two1_to_two1
+    s[0]=in[j][3][t][0]-in[j][3][t+1][0]; // two0_to_two0
+    s[1]=in[j][12][t][0]-in[j][12][t+1][0]; // two0_to_two1
+    s[3]=in[j][4][t][0]-in[j][4][t+1][0]; // two1_to_two1
     
     //t
     M[0][0]=s[0];
@@ -272,9 +277,9 @@ double GEVP_shift_matrix(double ***in,int t){
     M[3][0]=s[3];
     M[2][0]=M[1][0];
     
-    s0[0]=in[3][t0][0]-in[3][t0+1][0]; // two0_to_two0
-    s0[1]=in[12][t0][0]-in[12][t0+1][0]; // two0_to_two1
-    s0[3]=in[4][t0][0]-in[4][t0+1][0]; // two1_to_two1
+    s0[0]=in[j][3][t0][0]-in[j][3][t0+1][0]; // two0_to_two0
+    s0[1]=in[j][12][t0][0]-in[j][12][t0+1][0]; // two0_to_two1
+    s0[3]=in[j][4][t0][0]-in[j][4][t0+1][0]; // two1_to_two1
     
     Mt0[0][0]=s0[0];
     Mt0[1][0]=s0[1];
@@ -286,9 +291,9 @@ double GEVP_shift_matrix(double ***in,int t){
     lambda_t[abs(t-t0)][0]=lambda[0][0] ;
     
     //t+1
-    s[0]=in[3][t+1][0]-in[3][t+2][0]; // two0_to_two0
-    s[1]=in[12][t+1][0]-in[12][t+2][0]; // two0_to_two1
-    s[3]=in[4][t+1][0]-in[4][t+2][0]; // two1_to_two1
+    s[0]=in[j][3][t+1][0]-in[j][3][t+2][0]; // two0_to_two0
+    s[1]=in[j][12][t+1][0]-in[j][12][t+2][0]; // two0_to_two1
+    s[3]=in[j][4][t+1][0]-in[j][4][t+2][0]; // two1_to_two1
     
     //t
     M[0][0]=s[0];

@@ -720,7 +720,7 @@ double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **
        // printf("\n");
         P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess );
         chi2_tmp=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun)/(en_tot-Npar);
-        //printf("chi2=%.10f \tchi2_tmp=%.10f\n",chi2,chi2_tmp);
+        //printf("chi2=%.10f \tchi2_tmp=%.10f   dof=%f\n",chi2,chi2_tmp,en_tot-Npar);
         /*for(i=0;i<Npar;i++)
             printf("P[%d]=%g\t",i,P[i]);
         printf("\n");*/

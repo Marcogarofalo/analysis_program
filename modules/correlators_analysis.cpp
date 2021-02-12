@@ -560,7 +560,10 @@ int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
 
 
 
-struct fit_result fit_fun_to_fun_of_corr(char **option ,struct kinematic kinematic_2pt ,  char* name, double ****conf_jack ,FILE **plateaux_masses,FILE *outfile,  double fun_of_corr(double***,int ) , const char *description , struct fit_type fit_info,  char * namefile_jack ){
+
+//fit the function of fit info.function() to a combination of correlator  y= fun_of_corr( jack_index, data[jack][corr][time][reim], time, fit_info)
+//  
+struct fit_result fit_fun_to_fun_of_corr(char **option ,struct kinematic kinematic_2pt ,  char* name, double ****conf_jack ,FILE **plateaux_masses,FILE *outfile,  double fun_of_corr(int, double****,int, struct fit_type ) , const char *description , struct fit_type fit_info,  char * namefile_jack ){
 /*
 int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    if ( strcmp(option[1],"read_plateaux")==0 )
@@ -582,7 +585,7 @@ int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
            for (j=0;j<Njack;j++){
               
               //r[i][j]= conf_jack[j][index][i][re_im];
-              r[i][j]= fun_of_corr(conf_jack[j],i);
+              r[i][j]= fun_of_corr(j,conf_jack,i,fit_info);
              
            }
            

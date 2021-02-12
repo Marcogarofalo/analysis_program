@@ -280,7 +280,7 @@ struct fit_result fit_Mpi_fw_chiral_FVE_clover(struct database_file_jack  *jack_
    }  
    double **cov1=symmetric_matrix_inverse(en_tot, cov  );
    
-   guess=guess_for_non_linear_fit_Nf(N, en,x[0], y[0] , Nvar,  Npar, fit_info.function,guess );
+   guess=guess_for_non_linear_fit_Nf(N, en,x[Njack-1], y[Njack-1] , Nvar,  Npar, fit_info.function,guess );
   
    
  /*  double *guess1=(double*)  malloc(sizeof(double)*(Npar+Nvar*en[0]));
