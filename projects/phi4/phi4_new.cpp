@@ -243,8 +243,23 @@ double lhs_four_BH(int j, double ****in,int t ,struct fit_type fit_info){
     //disc=4.*fit_info.ext_P[0][j]*fit_info.ext_P[1][j];
     //disc=in[j][10][T/8][0];
     //disc/=( in[j][1][ 0  ][0]  *in[j][0][T/2][0]  );
-    disc=1;
+    disc=1.;
+    
     r-=disc;
+    
+    
+    return r;
+}
+
+
+double lhs_four_BH_no_sub(int j, double ****in,int t ,struct fit_type fit_info){
+    
+    double r;
+    int T=file_head.l0;
+    double disc;
+
+    r=in[j][10][t][0];
+    r/=( in[j][1][ (t-T/8+T)%T  ][0]  *in[j][0][T/2][0]  );
     
     
     return r;
@@ -968,7 +983,7 @@ int main(int argc, char **argv){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
     //c++ 17 || r 18
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_const",  fit_info, file_jack.M_PS );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_no_sub , "E4_const",  fit_info, file_jack.M_PS );
     free_fit_result(fit_info,fit_out);
 
     
@@ -1006,10 +1021,23 @@ int main(int argc, char **argv){
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,  11,0/*reim*/ , "E2_01",  fit_info, file_jack.M_PS );
     double *a=scattering_len_luscher(option[4],  Njack,  mass[0], mass[2], fit_out.P[0] ,params.data.L[1]);
     tmpj=(double*) malloc(sizeof(double)*Njack);
+    double *tmp_muj=(double*) malloc(sizeof(double)*Njack);
     sub_jackboot(Njack,  tmpj, fit_out.P[0], mass[0] );
     sub_jackboot(Njack,  tmpj, tmpj, mass[1] );
-    fprintf(outfile,"#scattering length  a  err deltaE2 err\n %g  %g     %g  %g\n",
+    fprintf(outfile,"#scattering length  a  err deltaE2 err    mu01 err    deltaE2*mu01  err  \n %g  %g     %g  %g\t",
            a[Njack-1], error_jackboot(option[4],Njack,a),   tmpj[Njack-1],  error_jackboot(option[4],Njack,tmpj));
+    
+    //reduced mass
+    for (j=0; j<Njack;j++)
+        tmp_muj[j]=mass[0][j]* mass[1][j]/(mass[0][j]+ mass[1][j]);
+    fprintf(outfile,"%g   %g\t", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj) );
+    
+    //reduced mass time DeltaE2
+    for (j=0; j<Njack;j++)
+        tmp_muj[j]=tmp_muj[j]*tmpj[j];
+     fprintf(outfile,"%g   %g\t", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj)  );
+    
+    
     free(tmpj);
     
     free_fit_result(fit_info,fit_out);

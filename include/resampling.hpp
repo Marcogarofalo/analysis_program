@@ -62,6 +62,7 @@ void sum_jackboot(int Np1,  double *r, double *a, double *b);
 void sub_jackboot(int Np1,  double *r, double *a, double *b);
 void mult_jackboot(int Np1,  double *r, double *a, double *b);
 void div_jackboot(int Np1,  double *r, double *a, double *b);
+void invert_jackboot(int Np1,  double *r, double *a);
 
 void scalar_times_jackboot(int Np1,  double *r, double *a, double s);
 

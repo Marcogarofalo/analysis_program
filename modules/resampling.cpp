@@ -689,6 +689,10 @@ void div_jackboot(int Np1,  double *r, double *a, double *b){
     for (int j=0;j<Np1;j++)
         r[j]=a[j]/b[j];
 }
+void invert_jackboot(int Np1,  double *r, double *a){
+    for (int j=0;j<Np1;j++)
+        r[j]=1./a[j];
+}
 
 void scalar_times_jackboot(int Np1,  double *r, double *a, double s){
     for (int j=0;j<Np1;j++)
