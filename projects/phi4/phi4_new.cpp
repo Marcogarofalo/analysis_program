@@ -235,6 +235,7 @@ double lhs_four_BH(int j, double ****in,int t ,struct fit_type fit_info){
     
     double r;
     int T=file_head.l0;
+    double L3=(double)file_head.l1*file_head.l2*file_head.l3;
     double disc;
 
     r=in[j][10][t][0];
@@ -246,7 +247,7 @@ double lhs_four_BH(int j, double ****in,int t ,struct fit_type fit_info){
     disc=1.;
     
     r-=disc;
-    
+    r*=L3;
     
     return r;
 }
@@ -256,12 +257,13 @@ double lhs_four_BH_no_sub(int j, double ****in,int t ,struct fit_type fit_info){
     
     double r;
     int T=file_head.l0;
-    double disc;
+    double L3=(double)file_head.l1*file_head.l2*file_head.l3;
 
     r=in[j][10][t][0];
     r/=( in[j][1][ (t-T/8+T)%T  ][0]  *in[j][0][T/2][0]  );
     
-    
+    r*=L3;
+
     return r;
 }
 

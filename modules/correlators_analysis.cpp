@@ -398,7 +398,13 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
            fprintf(outfile,"   %.15e    %.15e\t",f_val[0],f_val[1]);
            free(f_val);
            
-           x[0]=t+0.5;
+           x[0]=t+0.33;
+           for (int j=0;j<Njack;j++)
+               tmp[j]= fit_info.function(0 ,fit_info.Nvar,x,fit_info.Nvar, tif[j] );
+           f_val=mean_and_error(option[4],Njack,tmp );
+           fprintf(outfile,"%.15e   %.15e    %.15e\t",x[0],f_val[0],f_val[1]);
+           free(f_val);
+           x[0]=t+0.66;
            for (int j=0;j<Njack;j++)
                tmp[j]= fit_info.function(0 ,fit_info.Nvar,x,fit_info.Nvar, tif[j] );
            f_val=mean_and_error(option[4],Njack,tmp );

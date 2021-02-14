@@ -220,13 +220,13 @@ double fit_Fpi_and_Mpi_GL(int n, int Nvar, double *x,int Npar,double  *P){
         
         Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2;
         Mw2*=2*Bw*mw;
-        Mw2/=(1-0.25 *Delta)*(1-0.25 *Delta);
+        Mw2*=(1-0.25 *Delta)*(1-0.25 *Delta);
         
     }
     if (n==1){
         
         Mw2=fw*(1-2*xi*log(xi)+P3*xi)+(1./(w0*w0))*P4;
-        Mw2/=(1+Delta);
+        Mw2*=(1+Delta);
         
     }
     if (n==2){
@@ -271,12 +271,12 @@ double fit_Fpi_and_Mpi_GL_NL0_am_m2(int n, int Nvar, double *x,int Npar,double  
         
         Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2 +(1./(w0*w0))*mw*P[6] + mw*mw *P[8];
         Mw2*=2*Bw*mw;
-        Mw2/=(1-0.25 *Delta)*(1-0.25 *Delta);
+        Mw2*=(1-0.25 *Delta)*(1-0.25 *Delta);
     }
     if (n==1){
         
         Mw2=fw*(1-2*xi*log(xi)+P3*xi)+(1./(w0*w0))*P4+(1./(w0*w0))*mw*P[7] + mw*mw *P[9];
-        Mw2/=(1+Delta);
+        Mw2*=(1+Delta);
         
     }
     if (n==2){
@@ -320,12 +320,12 @@ double fit_Fpi_and_Mpi_GL_NL0_am(int n, int Nvar, double *x,int Npar,double  *P)
         
         Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2 +(1./(w0*w0))*mw*P[6] ;
         Mw2*=2*Bw*mw;
-        Mw2/=(1-0.25 *Delta)*(1-0.25 *Delta);
+        Mw2*=(1-0.25 *Delta)*(1-0.25 *Delta);
     }
     if (n==1){
         
         Mw2=fw*(1-2*xi*log(xi)+P3*xi)+(1./(w0*w0))*P4+(1./(w0*w0))*mw*P[7] ;
-        Mw2/=(1+Delta);
+        Mw2*=(1+Delta);
         
     }
     if (n==2){
@@ -1190,21 +1190,21 @@ void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,do
          
      }
      if(strcmp(Mtype,"M1a")==0){
-         //(*ZpA)=fake_sampling(jackboot,0.4748,0.0024,jack_tot,321);//M2 2Gev  petros report Oct/2020  
-         //(*ZpB)=fake_sampling(jackboot,0.4784,0.0034,jack_tot,3214);//M2 2Gev petros report Oct/2020
-         //(*ZpC)=fake_sampling(jackboot,0.4871,0.0026,jack_tot,32145);//M2 2Gev  petros report Oct/2020
-         (*ZpA)=fake_sampling(jackboot,0.477,0.002,jack_tot,321);//M2 2Gev  mattero report Feb/2021  
-         (*ZpB)=fake_sampling(jackboot,0.4781,0.003,jack_tot,3214);//M2 2Gev mattero report Feb/2021 
-         (*ZpC)=fake_sampling(jackboot,0.490,0.002,jack_tot,32145);//M2 2Gev  mattero report Feb/2021 
+         (*ZpA)=fake_sampling(jackboot,0.4748,0.0024,jack_tot,321);//M2 2Gev  petros report Oct/2020  
+         (*ZpB)=fake_sampling(jackboot,0.4784,0.0034,jack_tot,3214);//M2 2Gev petros report Oct/2020
+         (*ZpC)=fake_sampling(jackboot,0.4871,0.0026,jack_tot,32145);//M2 2Gev  petros report Oct/2020
+         //(*ZpA)=fake_sampling(jackboot,0.477,0.002,jack_tot,321);//M2 2Gev  mattero report Feb/2021  
+         //(*ZpB)=fake_sampling(jackboot,0.4781,0.003,jack_tot,3214);//M2 2Gev mattero report Feb/2021 
+         //(*ZpC)=fake_sampling(jackboot,0.490,0.002,jack_tot,32145);//M2 2Gev  mattero report Feb/2021 
          
      }
      if(strcmp(Mtype,"M1b")==0){
-         //(*ZpA)=fake_sampling(jackboot,0.4748,0.0026,jack_tot,321);//M2 2Gev  petros report Oct/2020  
-         //(*ZpB)=fake_sampling(jackboot,0.4775,0.0027,jack_tot,3214);//M2 2Gev petros report Oct/2020
-         //(*ZpC)=fake_sampling(jackboot,0.4873,0.0027,jack_tot,32145);//M2 2Gev  petros report Oct/2020
-         (*ZpA)=fake_sampling(jackboot,0.492,0.002,jack_tot,321);//M2 2Gev  mattero report Feb/2021  
-         (*ZpB)=fake_sampling(jackboot,0.494,0.002,jack_tot,3214);//M2 2Gev mattero report Feb/2021
-         (*ZpC)=fake_sampling(jackboot,0.505,0.002,jack_tot,32145);//M2 2Gev   mattero report Feb/2021
+         (*ZpA)=fake_sampling(jackboot,0.4748,0.0026,jack_tot,321);//M2 2Gev  petros report Oct/2020  
+         (*ZpB)=fake_sampling(jackboot,0.4775,0.0027,jack_tot,3214);//M2 2Gev petros report Oct/2020
+         (*ZpC)=fake_sampling(jackboot,0.4873,0.0027,jack_tot,32145);//M2 2Gev  petros report Oct/2020
+         //(*ZpA)=fake_sampling(jackboot,0.492,0.002,jack_tot,321);//M2 2Gev  mattero report Feb/2021  
+         //(*ZpB)=fake_sampling(jackboot,0.494,0.002,jack_tot,3214);//M2 2Gev mattero report Feb/2021
+         //(*ZpC)=fake_sampling(jackboot,0.505,0.002,jack_tot,32145);//M2 2Gev   mattero report Feb/2021
      }
      else if(strcmp(Mtype,"M2a")==0){ //(9)??
          double cp=1.03496; 
@@ -1217,12 +1217,12 @@ void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,do
          //(*ZpA)=fake_sampling(jackboot,0.496,0.002,jack_tot,321);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
          //(*ZpB)=fake_sampling(jackboot,0.495,0.002,jack_tot,3214);//M2 2Gev Enrico-Matteo  28/05/2020  constant
          //(*ZpC)=fake_sampling(jackboot,0.499,0.002,jack_tot,32145);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
-         //(*ZpA)=fake_sampling(jackboot,0.5050,0.0024,jack_tot,321);//M2 2Gev  petros report Oct/2020  
-         //(*ZpB)=fake_sampling(jackboot,0.5013,0.0026,jack_tot,3214);//M2 2Gev petros report Oct/2020
-         //(*ZpC)=fake_sampling(jackboot,0.5024,0.0023,jack_tot,32145);//M2 2Gev  petros report Oct/2020
-         (*ZpA)=fake_sampling(jackboot,0.507,0.002,jack_tot,321);//M2 2Gev   mattero report Feb/2021
-         (*ZpB)=fake_sampling(jackboot,0.504,0.002,jack_tot,3214);//M2 2Gev  mattero report Feb/2021
-         (*ZpC)=fake_sampling(jackboot,0.505,0.002,jack_tot,32145);//M2 2Gev  mattero report Feb/2021
+         (*ZpA)=fake_sampling(jackboot,0.5050,0.0024,jack_tot,321);//M2 2Gev  petros report Oct/2020  
+         (*ZpB)=fake_sampling(jackboot,0.5013,0.0026,jack_tot,3214);//M2 2Gev petros report Oct/2020
+         (*ZpC)=fake_sampling(jackboot,0.5024,0.0023,jack_tot,32145);//M2 2Gev  petros report Oct/2020
+         //(*ZpA)=fake_sampling(jackboot,0.507,0.002,jack_tot,321);//M2 2Gev   mattero report Feb/2021
+         //(*ZpB)=fake_sampling(jackboot,0.504,0.002,jack_tot,3214);//M2 2Gev  mattero report Feb/2021
+         //(*ZpC)=fake_sampling(jackboot,0.505,0.002,jack_tot,32145);//M2 2Gev  mattero report Feb/2021
          
      }
      else if(strcmp(Mtype,"M2b")==0){//(9)??
@@ -1239,12 +1239,12 @@ void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,do
          //(*ZpA)=fake_sampling(jackboot,0.502,0.001,jack_tot,321);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
          //(*ZpB)=fake_sampling(jackboot,0.499,0.002,jack_tot,3214);//M2 2Gev Enrico-Matteo  28/05/2020  constant
          //(*ZpC)=fake_sampling(jackboot,0.501,0.002,jack_tot,32145);//M2 2Gev  Enrico-Matteo  28/05/2020  constant
-         //(*ZpA)=fake_sampling(jackboot,0.5119,0.0024,jack_tot,321);//M2 2Gev  petros report Oct/2020  
-         //(*ZpB)=fake_sampling(jackboot,0.5075,0.0023,jack_tot,3214);//M2 2Gev petros report Oct/2020
-         //(*ZpC)=fake_sampling(jackboot,0.5060,0.0024,jack_tot,32145);//M2 2Gev  petros report Oct/2020
-         (*ZpA)=fake_sampling(jackboot,0.530,0.002,jack_tot,321);//M2 2Gev  petros report Oct/2020  
-         (*ZpB)=fake_sampling(jackboot,0.526,0.002,jack_tot,3214);//M2 2Gev petros report Oct/2020
-         (*ZpC)=fake_sampling(jackboot,0.524,0.002,jack_tot,32145);//M2 2Gev  petros report Oct/2020
+         (*ZpA)=fake_sampling(jackboot,0.5119,0.0024,jack_tot,321);//M2 2Gev  petros report Oct/2020  
+         (*ZpB)=fake_sampling(jackboot,0.5075,0.0023,jack_tot,3214);//M2 2Gev petros report Oct/2020
+         (*ZpC)=fake_sampling(jackboot,0.5060,0.0024,jack_tot,32145);//M2 2Gev  petros report Oct/2020
+         //(*ZpA)=fake_sampling(jackboot,0.530,0.002,jack_tot,321);//M2 2Gev  RIMOM  
+         //(*ZpB)=fake_sampling(jackboot,0.526,0.002,jack_tot,3214);//M2 2Gev RIMOM
+         //(*ZpC)=fake_sampling(jackboot,0.524,0.002,jack_tot,32145);//M2 2Gev  RIMOM
      }
       //w0A=fake_sampling(jackboot,1.8346689, 0.005178046,*jack_tot);
       //w0A=fake_sampling(jackboot,1.83005,3.48173757101e-3,*jack_tot,rand());// MG fit in M_PS^2

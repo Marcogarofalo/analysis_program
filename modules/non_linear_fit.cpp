@@ -769,7 +769,7 @@ double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **
     }
         
     }
-    
+    printf("final chi2=%f\n",chi2);
     free(guess);
     return P;
 }

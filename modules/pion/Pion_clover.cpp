@@ -308,6 +308,7 @@ struct fit_result fit_Mpi_fw_chiral_FVE_clover(struct database_file_jack  *jack_
        
         
         chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+        //printf("chi2[%d]=%f",j,chi2[j]);
         //for (i=Npar;i<Npar+en[0]*Nvar;i++)
          //   printf("%.10f   ",fabs(tmp[i]-x[j][(i-Npar)/Nvar ][(i-Npar)%Nvar ] ) );
                 //printf("\n");
