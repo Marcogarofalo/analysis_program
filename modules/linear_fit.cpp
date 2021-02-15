@@ -599,9 +599,9 @@ double *try_linear_fit(char **option,int tmin, int tmax, int sep ,double **corr_
         free(tmp[0]);free(tmp);
     }   
     if( strcmp(option[4],"jack")==0){
-        //r=mean_and_error_jack_biased(Njack, fit);
+        r=mean_and_error_jack_biased(Njack, fit);
         (*chi2)=mean_and_error_jack_biased(Njack, chi2j);
-        r=mean_and_error_jack(Njack, fit);
+        //r=mean_and_error_jack(Njack, fit);
         //(*chi2)=mean_and_error_jack(Njack, chi2j);
     }
     if( strcmp(option[4],"boot")==0){
