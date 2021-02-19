@@ -61,6 +61,7 @@ double two_particle_energy(int t,int T , double **in){
     c[0]=in[t-1][0]-in[t][0];
     c[1]=in[t][0]-in[t+1][0];
     c[2]=in[t+1][0]-in[t+2][0];
+    
     return acosh(  (c[0]+c[2])/ (2.*c[1])  );
     //rp/r = sin(E2(t+1+(1-T/2)) /sin(E2(t+(1-T/2))
     
@@ -94,8 +95,35 @@ double M_eff_T(  int t, int T, double **in){
 
 }
 
-
 double M_eff_sinh_T(  int t, int T, double **in){
+    double mass;
+ 
+    double ct[1],ctp[1],res,tmp_mass, u,d ;
+    int i,L0;
+    
+    L0=file_head.l0;
+    ct[0]=in[t][0];
+    ctp[0]=in[t+1][0];
+
+
+    mass=log(ct[0]/ctp[0]);
+
+    res=1;
+    i=t;
+    while(res>1e-12){
+             u=-1.+exp(-mass*(L0-1-2.*i-2.));
+             d=-1.+exp(-mass*(L0-1-2.*i));
+             tmp_mass=log( (ct[0]/ctp[0]) * (u/d)) ;
+             res=fabs(tmp_mass - mass);
+             mass=tmp_mass;
+    }
+  
+    return mass;
+
+}
+
+
+double shift_and_M_eff_sinh_T(  int t, int T, double **in){
     double mass;
  
     double ct[1],ctp[1],res,tmp_mass, u,d ;
@@ -441,7 +469,7 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
 
 
 
-double   *plateau_correlator_function(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, int Njack ,FILE **plateaux_masses,FILE *outfile,  int index , const char *description , double (*fun)(int ,int  , double ** )){
+double   *plateau_correlator_function(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, int Njack ,FILE **plateaux_masses,FILE *outfile,  int index , const char *description , double (*fun)(int ,int  , double ** ),  FILE * file_jack){
    /*int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    if ( strcmp(option[1],"read_plateaux")==0 )
    	go_to_line(*plateaux_masses,line);
@@ -485,10 +513,11 @@ double   *plateau_correlator_function(char **option ,struct kinematic kinematic_
    for (j=0;j<Njack;j++)
        fit[j]=fit_out.P[0][j];
    
+
+   fwrite(fit_out.P[0],sizeof(double),Njack, file_jack );
+   
    free_fit_result(fit_info,fit_out);  
 
-   write_jack_bin(Njack, fit ,file_jack.M_PS);
-   
    for(i=1;i<file_head.l0/2;i++)
        free(mt[i]);
    free(mt);
@@ -505,7 +534,7 @@ double   *plateau_correlator_function(char **option ,struct kinematic kinematic_
     
 }
 
-struct fit_result fit_function_to_corr(char **option ,struct kinematic kinematic_2pt ,  char* name, double ****conf_jack ,FILE **plateaux_masses,FILE *outfile,  int index, int re_im , const char *description , struct fit_type fit_info,  char * namefile_jack ){
+struct fit_result fit_function_to_corr(char **option ,struct kinematic kinematic_2pt ,  char* name, double ****conf_jack ,FILE **plateaux_masses,FILE *outfile,  int index, int re_im , const char *description , struct fit_type fit_info,  FILE * file_jack ){
 
 int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    /*if ( strcmp(option[1],"read_plateaux")==0 )
@@ -542,7 +571,7 @@ int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    struct fit_result fit_out=fit_fun_to_corr(option, kinematic_2pt ,  name, description, mt, r,  Njack, *plateaux_masses, outfile, fit_info);
    //fit=fit_plateaux(option, kinematic_2pt ,  name,description/*"M_{PS}^{ll}"*/,mt,r,  Njack,*plateaux_masses,outfile);
    
-   write_jack_bin(Njack,fit_out.P[0],namefile_jack);
+   fwrite(fit_out.P[0],sizeof(double),Njack, file_jack );
    
    
    
@@ -569,7 +598,7 @@ int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
 
 //fit the function of fit info.function() to a combination of correlator  y= fun_of_corr( jack_index, data[jack][corr][time][reim], time, fit_info)
 //  
-struct fit_result fit_fun_to_fun_of_corr(char **option ,struct kinematic kinematic_2pt ,  char* name, double ****conf_jack ,FILE **plateaux_masses,FILE *outfile,  double fun_of_corr(int, double****,int, struct fit_type ) , const char *description , struct fit_type fit_info,  char * namefile_jack ){
+struct fit_result fit_fun_to_fun_of_corr(char **option ,struct kinematic kinematic_2pt ,  char* name, double ****conf_jack ,FILE **plateaux_masses,FILE *outfile,  double fun_of_corr(int, double****,int, struct fit_type ) , const char *description , struct fit_type fit_info,  FILE *file_jack ){
 /*
 int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    if ( strcmp(option[1],"read_plateaux")==0 )
@@ -606,8 +635,7 @@ int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    struct fit_result fit_out=fit_fun_to_corr(option, kinematic_2pt ,  name, description, mt, r,  Njack, *plateaux_masses, outfile, fit_info);
    //fit=fit_plateaux(option, kinematic_2pt ,  name,description/*"M_{PS}^{ll}"*/,mt,r,  Njack,*plateaux_masses,outfile);
    
-   write_jack_bin(Njack,fit_out.P[0],namefile_jack);
-   
+   fwrite(fit_out.P[0],sizeof(double),Njack, file_jack );
    
    
    for(i=1;i<file_head.l0/2;i++)

@@ -32,7 +32,7 @@ double quantization_condition_2particle(int n  , int Nvar , double* x,int Npar,d
 }
 
 
-double *scattering_len_luscher(const char* resampling, int Njack, double *mass0, double *mass1, double *E2 , int L){
+double *scattering_len_luscher( int Njack, double *mass0, double *mass1, double *E2 , int L){
     double *a=(double* ) malloc(sizeof(double)*Njack);
     for(int j=0;j<Njack;j++){
         double deltaE2=E2[j]-mass0[j]-mass1[j];
@@ -43,8 +43,10 @@ double *scattering_len_luscher(const char* resampling, int Njack, double *mass0,
         P[3]=(double) L;
         double x[1]={0};
         
-        
-        a[j]= rtbis_func_eq_input(quantization_condition_2particle, 0 , 1, x ,3, P, 0 , deltaE2, -5, 5, 1e-6);
+        double raw_a=L*L*L *(mass0[j]*mass1[j]/(mass0[j]+mass1[j]) ) *(deltaE2)/(2*pi_greco);
+        double xmin=-raw_a-0.2;
+        double xmax=-raw_a+0.2;
+        a[j]= rtbis_func_eq_input(quantization_condition_2particle, 313 , 1, x ,4, P, 0 , deltaE2, xmin, xmax, 1e-7);
         //a[j]=deltaE2;
         free(P);
     }

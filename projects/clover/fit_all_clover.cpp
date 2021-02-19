@@ -2448,6 +2448,108 @@ int main(int argc, char **argv){
      //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion","fit_Mpi_Fpi_GL_NLO_am_w0_M1a");
  
+    printf("\n\n///////////////////////////////////////K of m_s GL   w0 M1a ///////////////////////\n");
+
+    fit_info.Npar=7;
+    fit_info.N=2;
+    fit_info.Nvar=10;
+    fit_info.function=fit_FK_and_MK_GL;
+    char namefit[NAMESIZE],nametex[NAMESIZE];
+    mysprintf(namefit,NAMESIZE,"FK_and_MK_GL_M1a");
+    mysprintf(nametex,NAMESIZE,"%s/%s.tex",argv[2],namefit);
+    FILE *f_fit=open_file(nametex,"w+");
+     Ci=(double**) malloc(sizeof(double*)*2);
+    result.fkw=(double*) malloc(sizeof(double)*jack_tot);
+    result.msw=(double*) malloc(sizeof(double)*jack_tot);
+    
+    result.fk_fpi=(double*) malloc(sizeof(double)*jack_tot);
+    result.ms_mud=(double*) malloc(sizeof(double)*jack_tot);
+    
+    fit=fit_MK_fK_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv);
+    //fit_MK_double_chiral_FVE_P40(jack_files, head , jack_tot, mass_index, gjack,  &result );
+    for (j=0;j<jack_tot;j++){
+        result.msw[j]=fit[0][j];
+        result.fkw[j]=fit[1][j];
+        
+        result.ms_mud[j]=result.msw[j]/result.mlw[j];
+       // printf("%f\n",result.ms_mud[j]);
+        result.fk_fpi[j]=result.fkw[j]/result.fpiw[j];
+        fit[0][j]=fit[0][j]/result.w0MeV[j];
+        fit[1][j]=fit[1][j]/result.w0MeV[j];
+    }
+    Ci[0]=mean_and_error(argv[1],jack_tot,fit[0]);
+    Ci[1]=mean_and_error(argv[1],jack_tot,fit[1]);
+
+    
+    
+    fprintf(f_fit,"Imposing $M_K =%.2f \\pm %.2g$ and $w_0=%.4f$ fm (%f MeV)\n",v_MKMeV,err_MKMeV,result.w0fm[jack_tot-1],result.w0MeV[jack_tot-1]);
+    fprintf(f_fit,"\\begin{gather}\n   m_{s}=(%g\\pm%.2g) MeV   \\\\ \n",Ci[0][0],Ci[0][1]);
+    fprintf(f_fit,"   f_{K}=(%g\\pm%.2g) MeV  \n\\end{gather} \n",Ci[1][0],Ci[1][1]);
+    
+     for (i=0;i<2;i++)
+        free(Ci[i]);
+     
+    Ci[0]=mean_and_error(argv[1],jack_tot,result.ms_mud);
+    Ci[1]=mean_and_error(argv[1],jack_tot,result.fk_fpi);
+    
+    fprintf(f_fit,"\\begin{gather}\n m_{s}/m_{ub}=(%g\\pm%.2g),\\quad \t  f_{K}/f_{\\pi}=(%g\\pm%.2g)   \n\\end{gather} \n",Ci[0][0],Ci[0][1],Ci[1][0],Ci[1][1]);
+    
+    
+    fclose(f_fit);
+    
+    for (i=0;i<2;i++)
+    {    free(Ci[i]);   free(fit[i]);}
+    free(Ci);free(fit);
+    
+    
+     printf("\n\n///////////////////////////////////////MKoverMpi fKoverfpi   w0 M1a ///////////////////////\n");
+
+    fit_info.Npar=8;
+    fit_info.N=2;
+    fit_info.function=fit_MK_Mpi_FK_Fpi_GL;
+    mysprintf(namefit,NAMESIZE,"MK_Mpi_fK_fpi_GL_M1a");
+    mysprintf(nametex,NAMESIZE,"%s/%s.tex",argv[2],namefit);
+    f_fit=open_file(nametex,"w+");
+   
+     Ci=(double**) malloc(sizeof(double*)*2);
+       
+    fit=fit_MK_Mpi_fK_fpi_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv);
+    //fit_MK_double_chiral_FVE_P40(jack_files, head , jack_tot, mass_index, gjack,  &result );
+    for (j=0;j<jack_tot;j++){
+        result.msw[j]=fit[0][j];        
+        result.ms_mud[j]=result.msw[j]/result.mlw[j];
+        result.fk_fpi[j]=fit[1][j];
+        
+        fit[0][j]=fit[0][j]/result.w0MeV[j];
+        fit[1][j]=fit[1][j]/result.w0MeV[j];
+    }
+    Ci[0]=mean_and_error(argv[1],jack_tot,fit[0]);
+
+    
+    
+    fprintf(f_fit,"Imposing $M_K =%.2f \\pm %.2g$ and $w_0=%.4f$ fm (%f MeV)\n",v_MKMeV,err_MKMeV,result.w0fm[jack_tot-1],result.w0MeV[jack_tot-1]);
+    fprintf(f_fit,"\\begin{gather}\n   m_{s}=(%g\\pm%.2g) MeV   \\\\ \n",Ci[0][0],Ci[0][1]);
+    //printf("\\end{gather} \n");
+    
+     for (i=0;i<2;i++)
+        free(Ci[i]);
+     
+    Ci[0]=mean_and_error(argv[1],jack_tot,result.ms_mud);
+    Ci[1]=mean_and_error(argv[1],jack_tot,result.fk_fpi);
+    
+    fprintf(f_fit," m_{s}/m_{ub}=(%g\\pm%.2g),\\\\ \n  f_{K}/f_{\\pi}=(%g\\pm%.2g)   \n\\end{gather} \n",Ci[0][0],Ci[0][1],Ci[1][0],Ci[1][1]);
+    
+    
+    
+    for (i=0;i<2;i++)
+    {    free(Ci[i]);   free(fit[i]);}
+    free(Ci);free(fit);
+    
+////////////////////////////////////////////////////////////////// 
+    printf("\n\n///////////////////////////////////////Pion of m_l GL NL0 am   w0  M1b   ///////////////////////\n");
+    fit_info.Npar=8;
+    fit_info.N=2;
+    fit_info.function=fit_Fpi_and_Mpi_GL_NL0_am;
     
     init_Z( jack_files, head, jack_tot, &gjack, "w0","M1b");
     fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
@@ -2514,6 +2616,9 @@ int main(int argc, char **argv){
     fit_info.Nvar=10;
     fit_info.function=fit_FK_and_MK_GL;
     
+    mysprintf(namefit,NAMESIZE,"FK_and_MK_GL_M2b");
+    mysprintf(nametex,NAMESIZE,"%s/%s.tex",argv[2],namefit);
+    f_fit=open_file(nametex,"w+");
      Ci=(double**) malloc(sizeof(double*)*2);
     result.fkw=(double*) malloc(sizeof(double)*jack_tot);
     result.msw=(double*) malloc(sizeof(double)*jack_tot);
@@ -2521,7 +2626,7 @@ int main(int argc, char **argv){
     result.fk_fpi=(double*) malloc(sizeof(double)*jack_tot);
     result.ms_mud=(double*) malloc(sizeof(double)*jack_tot);
     
-    fit=fit_MK_fK_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, "FK_and_MK_GL_M2b" ,argv);
+    fit=fit_MK_fK_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv);
     //fit_MK_double_chiral_FVE_P40(jack_files, head , jack_tot, mass_index, gjack,  &result );
     for (j=0;j<jack_tot;j++){
         result.msw[j]=fit[0][j];
@@ -2538,9 +2643,9 @@ int main(int argc, char **argv){
 
     
     
-    printf("Imposing $M_K =%.2f \\pm %.2g$ and $w_0=%.4f$ fm\n",v_MKMeV,err_MKMeV,result.w0fm[jack_tot-1]);
-    printf("\\begin{gather}\n   m_{s}=(%g\\pm%.2g) MeV   \\\\ \n",Ci[0][0],Ci[0][1]);
-    printf("   f_{K}=(%g\\pm%.2g) MeV  \n\\end{gather} \n",Ci[1][0],Ci[1][1]);
+    fprintf(f_fit,"Imposing $M_K =%.2f \\pm %.2g$ and $w_0=%.4f$ fm (%f MeV)\n",v_MKMeV,err_MKMeV,result.w0fm[jack_tot-1],result.w0MeV[jack_tot-1]);
+    fprintf(f_fit,"\\begin{gather}\n   m_{s}=(%g\\pm%.2g) MeV   \\\\ \n",Ci[0][0],Ci[0][1]);
+    fprintf(f_fit,"   f_{K}=(%g\\pm%.2g) MeV  \n\\end{gather} \n",Ci[1][0],Ci[1][1]);
     
      for (i=0;i<2;i++)
         free(Ci[i]);
@@ -2548,10 +2653,10 @@ int main(int argc, char **argv){
     Ci[0]=mean_and_error(argv[1],jack_tot,result.ms_mud);
     Ci[1]=mean_and_error(argv[1],jack_tot,result.fk_fpi);
     
-    printf("\\begin{gather}\n m_{s}/m_{ub}=(%g\\pm%.2g),\\quad \t  f_{K}/f_{\\pi}=(%g\\pm%.2g)   \n\\end{gather} \n",Ci[0][0],Ci[0][1],Ci[1][0],Ci[1][1]);
+    fprintf(f_fit,"\\begin{gather}\n m_{s}/m_{ub}=(%g\\pm%.2g),\\quad \t  f_{K}/f_{\\pi}=(%g\\pm%.2g)   \n\\end{gather} \n",Ci[0][0],Ci[0][1],Ci[1][0],Ci[1][1]);
     
     
-    
+    fclose(f_fit);
     
     for (i=0;i<2;i++)
     {    free(Ci[i]);   free(fit[i]);}
@@ -2587,10 +2692,13 @@ int main(int argc, char **argv){
     fit_info.Npar=8;
     fit_info.N=2;
     fit_info.function=fit_MK_Mpi_FK_Fpi_GL;
-    
+    mysprintf(namefit,NAMESIZE,"MK_Mpi_fK_fpi_GL_M2b");
+    mysprintf(nametex,NAMESIZE,"%s/%s.tex",argv[2],namefit);
+    f_fit=open_file(nametex,"w+");
+   
      Ci=(double**) malloc(sizeof(double*)*2);
        
-    fit=fit_MK_Mpi_fK_fpi_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, "MK_Mpi_fK_fpi_GL_M2b" ,argv);
+    fit=fit_MK_Mpi_fK_fpi_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv);
     //fit_MK_double_chiral_FVE_P40(jack_files, head , jack_tot, mass_index, gjack,  &result );
     for (j=0;j<jack_tot;j++){
         result.msw[j]=fit[0][j];        
@@ -2604,8 +2712,8 @@ int main(int argc, char **argv){
 
     
     
-    printf("Imposing $M_K =%.2f \\pm %.2g$ and $w_0=%.4f$ fm\n",v_MKMeV,err_MKMeV,result.w0fm[jack_tot-1]);
-    printf("\\begin{gather}\n   m_{s}=(%g\\pm%.2g) MeV   \\\\ \n",Ci[0][0],Ci[0][1]);
+    fprintf(f_fit,"Imposing $M_K =%.2f \\pm %.2g$ and $w_0=%.4f$ fm (%f MeV)\n",v_MKMeV,err_MKMeV,result.w0fm[jack_tot-1],result.w0MeV[jack_tot-1]);
+    fprintf(f_fit,"\\begin{gather}\n   m_{s}=(%g\\pm%.2g) MeV   \\\\ \n",Ci[0][0],Ci[0][1]);
     //printf("\\end{gather} \n");
     
      for (i=0;i<2;i++)
@@ -2614,7 +2722,7 @@ int main(int argc, char **argv){
     Ci[0]=mean_and_error(argv[1],jack_tot,result.ms_mud);
     Ci[1]=mean_and_error(argv[1],jack_tot,result.fk_fpi);
     
-    printf(" m_{s}/m_{ub}=(%g\\pm%.2g),\\\\ \n  f_{K}/f_{\\pi}=(%g\\pm%.2g)   \n\\end{gather} \n",Ci[0][0],Ci[0][1],Ci[1][0],Ci[1][1]);
+    fprintf(f_fit," m_{s}/m_{ub}=(%g\\pm%.2g),\\\\ \n  f_{K}/f_{\\pi}=(%g\\pm%.2g)   \n\\end{gather} \n",Ci[0][0],Ci[0][1],Ci[1][0],Ci[1][1]);
     
     
     

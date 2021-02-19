@@ -202,4 +202,82 @@ public:
 
 } // end of namespace
 
+
+void read_header(FILE *stream, cluster::IO_params &params ){
+   
+     fread(&params.data.L[0], sizeof(int), 1, stream); 
+     fread(&params.data.L[1], sizeof(int), 1, stream); 
+     fread(&params.data.L[2], sizeof(int), 1, stream); 
+     fread(&params.data.L[3], sizeof(int), 1, stream); 
+     printf("%d %d %d %d\n",params.data.L[0],params.data.L[1],params.data.L[2],params.data.L[3]);
+     char string[100];
+     fread(string, sizeof(char)*100, 1, stream); 
+     std::string tmp(string);
+     params.data.formulation=tmp;
+     
+     fread(&params.data.msq0, sizeof(double), 1, stream); 
+     fread(&params.data.msq1, sizeof(double), 1, stream); 
+     fread(&params.data.lambdaC0, sizeof(double), 1, stream); 
+     fread(&params.data.lambdaC1, sizeof(double), 1, stream); 
+     fread(&params.data.muC, sizeof(double), 1, stream); 
+     fread(&params.data.gC, sizeof(double), 1, stream); 
+
+     fread(&params.data.metropolis_local_hits, sizeof(int), 1, stream); 
+     fread(&params.data.metropolis_global_hits, sizeof(int), 1, stream); 
+     fread(&params.data.metropolis_delta, sizeof(double), 1, stream); 
+     
+     fread(&params.data.cluster_hits, sizeof(int), 1, stream); 
+     fread(&params.data.cluster_min_size, sizeof(double), 1, stream); 
+
+     fread(&params.data.seed, sizeof(int), 1, stream); 
+     fread(&params.data.replica, sizeof(int), 1, stream); 
+     
+    
+     fread(&params.data.ncorr, sizeof(int), 1, stream); 
+     printf("correlators=%d\n",params.data.ncorr);
+    
+     fread(&params.data.size, sizeof(size_t), 1, stream); 
+     printf("size=%ld\n",params.data.size);
+     
+     params.data.header_size=ftell(stream);
+     printf("header size=%d\n",params.data.header_size);
+}
+
+
+void write_header(FILE *stream, cluster::IO_params params ){
+   
+     fwrite(&params.data.L[0], sizeof(int), 1, stream); 
+     fwrite(&params.data.L[1], sizeof(int), 1, stream); 
+     fwrite(&params.data.L[2], sizeof(int), 1, stream); 
+     fwrite(&params.data.L[3], sizeof(int), 1, stream); 
+     char string[100];
+     mysprintf(string,100,"%s",params.data.formulation.c_str());
+     fwrite(string, sizeof(char)*100, 1, stream); 
+     //params.data.formulation = std::to_string(string);
+     
+     fwrite(&params.data.msq0, sizeof(double), 1, stream); 
+     fwrite(&params.data.msq1, sizeof(double), 1, stream); 
+     fwrite(&params.data.lambdaC0, sizeof(double), 1, stream); 
+     fwrite(&params.data.lambdaC1, sizeof(double), 1, stream); 
+     fwrite(&params.data.muC, sizeof(double), 1, stream); 
+     fwrite(&params.data.gC, sizeof(double), 1, stream); 
+
+     fwrite(&params.data.metropolis_local_hits, sizeof(int), 1, stream); 
+     fwrite(&params.data.metropolis_global_hits, sizeof(int), 1, stream); 
+     fwrite(&params.data.metropolis_delta, sizeof(double), 1, stream); 
+     
+     fwrite(&params.data.cluster_hits, sizeof(int), 1, stream); 
+     fwrite(&params.data.cluster_min_size, sizeof(double), 1, stream); 
+
+     fwrite(&params.data.seed, sizeof(int), 1, stream); 
+     fwrite(&params.data.replica, sizeof(int), 1, stream); 
+     
+    
+     fwrite(&params.data.ncorr, sizeof(int), 1, stream); 
+    
+     fwrite(&params.data.size, sizeof(size_t), 1, stream); 
+    
+}
+
+
 #endif

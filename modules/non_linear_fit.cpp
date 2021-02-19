@@ -1136,7 +1136,7 @@ double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n
     xt[ivar]=x2;
     fmid=(*func)(n,Nvar,xt,Npar,P)-input;
 
-    //error(f*fmid >= 0.0,1,"rtbis","Root must be bracketed for bisection in rtbis f(x1)=%f   f(x2)=%f",f,fmid);
+    error(f*fmid >= 0.0,1,"rtbis","Root must be bracketed for bisection in rtbis f(x1)=%f   f(x2)=%f",f,fmid);
     if (f*fmid >= 0.0){ 
         printf("#f(x)  x\n");
         for (int i=0;i<100; i++){
