@@ -774,6 +774,10 @@ int main(int argc, char **argv){
         }
         fprintf(outfile,"\n");
     }
+    /////!!!!!!!!!!!!!!!!! write 0 in the first jackknife!!!!!!!!!!!!!
+    double *mj0=(double*) calloc(Njack,sizeof(double)); 
+    fwrite(mj0,sizeof(double),Njack,jack_file);
+    free(mj0);
     fprintf(outfile,"\n\n #%s fit in [%d,%d] chi2=%.5f\n  %.15g    %.15g    %d   %d\n\n\n","#need_for_gnuplot",0,0,0.0,0.0,0.0,0,0);
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     //print all the effective masses correlators

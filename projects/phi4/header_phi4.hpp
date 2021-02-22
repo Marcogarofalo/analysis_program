@@ -12,6 +12,15 @@
 #include <vector>
 
 
+struct data_phi{
+    int Njack;
+    int Nobs;
+    double **jack;
+    
+};
+
+
+
 namespace cluster {
 
 struct LatticeDataContainer { // Just the thing that holds all variables
@@ -234,13 +243,13 @@ void read_header(FILE *stream, cluster::IO_params &params ){
      
     
      fread(&params.data.ncorr, sizeof(int), 1, stream); 
-     printf("correlators=%d\n",params.data.ncorr);
+     //printf("correlators=%d\n",params.data.ncorr);
     
      fread(&params.data.size, sizeof(size_t), 1, stream); 
-     printf("size=%ld\n",params.data.size);
+     //printf("size=%ld\n",params.data.size);
      
      params.data.header_size=ftell(stream);
-     printf("header size=%d\n",params.data.header_size);
+     //printf("header size=%d\n",params.data.header_size);
 }
 
 

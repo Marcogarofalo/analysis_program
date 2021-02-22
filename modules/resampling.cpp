@@ -650,7 +650,7 @@ double **covariance_boot(int Nobs, int Np1, double **in){
             //r[l][k]/=sqrt(r[k][k]*r[l][l]);
             r[k][l]=r[l][k];
         }
-        r[k][k]=1;
+        //r[k][k]=1;
     }
     free(ave);
     return r;

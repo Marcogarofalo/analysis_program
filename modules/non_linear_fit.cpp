@@ -647,17 +647,19 @@ double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nva
            // free(C);
             //error(lambda>1e+15,1,"non_linear_fit_Nf","lambda of the Levenberg-Marquardt chi2 minimization: exeeds 1e+15 lambda=%g",lambda);
             if(lambda>1e+15){
-                printf("lambda of the Levenberg-Marquardt chi2 minimization: exeeds 1e+15 lambda=%g\n RESET lambda=0.001\n",lambda); 
+                //printf("lambda of the Levenberg-Marquardt chi2 minimization: exeeds 1e+15 lambda=%g\n RESET lambda=0.001\n",lambda); 
                 /*free(P_tmp);
                 free(alpha);free(beta);
                 return P;*/
                 lambda=0.001;
                 nerror++;
                 if (nerror>20){
-                    printf("\n !!!!!!!!!!!!!!!! error:  Impossible to minimise the chi2 with Levenberg-Marquardt for this starting point   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
+                    printf("\n !!!!!!!!!!!!!!!! error:  Impossible to minimise the chi2 with Levenberg-Marquardt for this starting point   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
                     for (j=0;j<Npar;j++){
+                        printf("  guess[%d]=%g\t",j,guess[j]);
                         free(alpha[j]);
                     }
+                    printf("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
                     free(P_tmp);
                     free(alpha);free(beta);
                     return P;
