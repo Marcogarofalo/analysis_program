@@ -15,6 +15,7 @@ pipelines:
             script:
                - apt-get update
                - apt-get install libeigen3-dev
+               - apt-get install libfftw3-dev
                - apt-get install -y cmake
                - mkdir build
                - cd build 
