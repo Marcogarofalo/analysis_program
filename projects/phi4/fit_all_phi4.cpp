@@ -213,7 +213,7 @@ int main(int argc, char **argv){
      //////////////////////////////////////////////////////////////////////////////////////////////////
      struct fit_type fit_info;
      struct fit_result  fit_m1, fit_m0;
-     fit_info.Nvar=1;
+     fit_info.Nvar=5;
      fit_info.Npar=2;
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
@@ -229,20 +229,49 @@ int main(int argc, char **argv){
      
      printf("\n/////////////////////////////////     E2_0//////////////////\n");
      ///////////////////////////////////////////////////////////////////////////////////////////////////
-     // start fitting
+     // E20
      //////////////////////////////////////////////////////////////////////////////////////////////////
      
-     fit_info.Nvar=3;
+     fit_info.Nvar=5;
      fit_info.Npar=1;
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
      fit_info.n_ext_P=2;
      fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
-     fit_info.function=a_luscher;
+     fit_info.function=muDE_rhs;
      
      fit_info.ext_P[0]=fit_m0.P[0];
      fit_info.ext_P[1]=fit_m0.P[0];
-     struct fit_result fit_a_00=fit_data(argv,  paramsj ,gjack, DE_00_lhs ,fit_info, "a_00_lusher" );
+     struct fit_result fit_a_00_infm=fit_data(argv,  paramsj ,gjack, muDE_00_infm_lhs ,fit_info, "a_00_lusher_infm" );
+     
+     
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // start fitting
+     
+     fit_info.Nvar=5;
+     fit_info.Npar=1;
+     fit_info.N=1;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=muDE_rhs;
+     
+     struct fit_result fit_a_00=fit_data(argv,  paramsj ,gjack, muDE_00_lhs ,fit_info, "a_00_lusher" );
+     
+     printf("\n/////////////////////////////////     E2_01//////////////////\n");
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // start fitting
+     
+     fit_info.Nvar=5;
+     fit_info.Npar=1;
+     fit_info.N=1;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=muDE_rhs;
+     
+     struct fit_result fit_a_01=fit_data(argv,  paramsj ,gjack, muDE_01_lhs ,fit_info, "a_01_lusher" );
+   
      
      return 0;
 }

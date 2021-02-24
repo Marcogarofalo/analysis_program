@@ -327,6 +327,7 @@ double GEVP_shift_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     
     
     r=M_eff_sinh_T( abs(t-t0), T, lambda_t);
+    //r=two_particle_energy( abs(t-t0), T, lambda_t);
     
     //r=M_eff_T( (t-t0+T)%T , T, lambda_t);
    
@@ -834,7 +835,7 @@ int main(int argc, char **argv){
     //c++ 4 || r 5
     double **E2=(double**) malloc(sizeof(double*)*3);
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    E2[0]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,2,"E2_0", two_particle_energy,jack_file);
+    E2[0]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,2,"E2_0", shift_and_M_eff_sinh_T,jack_file);
     double *a_0=scattering_len_luscher(  Njack,  mass[0], mass[0], E2[0] ,params.data.L[3]);
     double *tmpj=(double*) malloc(sizeof(double)*Njack);
     sub_jackboot(Njack,  tmpj, E2[0], mass[0] );
@@ -867,7 +868,7 @@ int main(int argc, char **argv){
     
     //c++ 5 || r 6
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
-    E2[1]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,3,"E2_1", two_particle_energy, jack_file);
+    E2[1]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,3,"E2_1", shift_and_M_eff_sinh_T, jack_file);
     double *a_1=scattering_len_luscher(  Njack,  mass[1], mass[1], E2[1] ,params.data.L[1]);
     tmpj=(double*) malloc(sizeof(double)*Njack);
     sub_jackboot(Njack,  tmpj, E2[1], mass[1] );
@@ -878,7 +879,7 @@ int main(int argc, char **argv){
     
     //c++ 6 || r 7
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
-    E2[2]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,4,"E2", two_particle_energy,jack_file);
+    E2[2]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,4,"E2", shift_and_M_eff_sinh_T,jack_file);
 
     
     struct fit_type fit_info;

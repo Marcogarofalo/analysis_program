@@ -42,7 +42,7 @@ double  sinh_mass(int n, int Nvar, double *x,int Npar,double  *P){
 }
 
 //in [varialbe] [t] [re_im]
-double two_particle_energy(int t,int T , double **in){
+double shift_and_M_eff_acosh(int t,int T , double **in){
     double c[3];
     double P[2]; 
     double x[1];
