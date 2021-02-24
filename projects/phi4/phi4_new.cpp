@@ -274,14 +274,13 @@ double GEVP_shift_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     double **M=double_calloc_2(N*N,2);// [NxN] [reim ]
     double **Mt0=double_calloc_2(N*N,2);
     
-    double **lambda=double_malloc_2(N,2);// [N] [reim]
+    double **lambdat=double_malloc_2(N,2);// [N] [reim]
+    double **lambdatp1=double_malloc_2(N,2);// [N] [reim]
     double **vec=double_malloc_2(N*N,2);
     int t0=3;
     double r;
     
-    //array of lenght t+2 to storre the eigenvalues like a correlator
-    double **lambda_t=double_malloc_2(abs(t-t0)+2,2);
-    
+     
     double s[4],s0[4];
     
     int i00=2, i11=3, i01=12;
@@ -305,10 +304,9 @@ double GEVP_shift_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     Mt0[3][0]=s0[3];
     Mt0[2][0]=Mt0[1][0];
      
-    generalysed_Eigenproblem(M,Mt0,N,&lambda,&vec); 
+    generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec); 
     
-    lambda_t[abs(t-t0)][0]=lambda[0][0] ;
-    
+     
     //t+1
     s[0]=in[j][i00][t+1][0]-in[j][i00][t+2][0]; // two0_to_two0
     s[1]=in[j][i01][t+1][0]-in[j][i01][t+2][0]; // two0_to_two1
@@ -321,22 +319,20 @@ double GEVP_shift_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     M[2][0]=M[1][0];
  
    
-    generalysed_Eigenproblem(M,Mt0,2,&lambda,&vec); 
+    generalysed_Eigenproblem(M,Mt0,2,&lambdatp1,&vec); 
     
-    lambda_t[abs(t-t0)+1][0]=lambda[0][0] ;
+    if((t-t0)>=0)
+        r=M_eff_sinh_T_ct_ctp(t-t0,T, lambdat[0][0], lambdatp1[0][0]);
+    else 
+        r=M_eff_sinh_T_ct_ctp( t-t0, T,  lambdat[1][0], lambdatp1[1][0]);
     
-    
-    r=M_eff_sinh_T( abs(t-t0), T, lambda_t);
-    //r=two_particle_energy( abs(t-t0), T, lambda_t);
-    
-    //r=M_eff_T( (t-t0+T)%T , T, lambda_t);
    
-    
     free_2(N*N,M);
     free_2(N*N,Mt0);
-    free_2(N,lambda);
+    free_2(N,lambdat);
+    free_2(N,lambdatp1);
     free_2(N*N,vec);
-    //cout<< t << "  "<<lambda_t[t][0]  << t+1 << "  " << lambda_t[t+1][0]<< endl;
+   
     return r;
 }
 
@@ -1043,7 +1039,7 @@ int main(int argc, char **argv){
     
     for (j=0; j<Njack;j++)
         tmp_muj[j]=(a[j]*(mass[0][j]+mass[1][j]))/a0m0[j];
-    fprintf(outfile,"%g   %g\t", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj)  );
+    fprintf(outfile,"%g   %g\n", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj)  );
 
     
     free(tmpj); free(tmp_muj);

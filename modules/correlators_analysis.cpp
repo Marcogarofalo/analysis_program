@@ -101,7 +101,7 @@ double M_eff_sinh_T(  int t, int T, double **in){
     double ct[1],ctp[1],res,tmp_mass, u,d ;
     int i,L0;
     
-    L0=file_head.l0;
+    L0=T;
     ct[0]=in[t][0];
     ctp[0]=in[t+1][0];
 
@@ -122,6 +122,54 @@ double M_eff_sinh_T(  int t, int T, double **in){
 
 }
 
+double M_eff_sinh_T_ct_ctp(  int t, int T, double ct,double ctp){
+    double mass;
+ 
+    double res,tmp_mass, u,d ;
+    
+
+    mass=log(ct/ctp);
+    res=1;
+    while(res>1e-12){
+             u=-1.+exp(-mass*(T-1-2.*t-2.));
+             d=-1.+exp(-mass*(T-1-2.*t));
+             tmp_mass=log( (ct/ctp) * (u/d)) ;
+             res=fabs(tmp_mass - mass);
+             mass=tmp_mass;
+
+    }
+    return mass;
+
+}
+
+
+double M_eff_t0_sinh_T(  int t,int t0, int T, double **in){
+    double mass;
+ 
+    double ct[1],ctp[1],res,tmp_mass, u,d ;
+    int i,L0;
+    
+    L0=T;
+    ct[0]=in[t][0];
+    ctp[0]=in[t+1][0];
+
+
+    mass=log(ct[0]/ctp[0]);
+
+    res=1;
+    i=t-t0;
+    while(res>1e-12){
+             u=-1.+exp(-mass*(L0-1-2.*i-2.));
+             d=-1.+exp(-mass*(L0-1-2.*i));
+             tmp_mass=log( (ct[0]/ctp[0]) * (u/d)) ;
+             res=fabs(tmp_mass - mass);
+             mass=tmp_mass;
+    }
+  
+    return mass;
+
+}
+
 
 double shift_and_M_eff_sinh_T(  int t, int T, double **in){
     double mass;
@@ -129,7 +177,7 @@ double shift_and_M_eff_sinh_T(  int t, int T, double **in){
     double ct[1],ctp[1],res,tmp_mass, u,d ;
     int i,L0;
     
-    L0=file_head.l0;
+    L0=T;
     ct[0]=in[t][0]-in[t+1][0];
     ctp[0]=in[t+1][0]-in[t+2][0];
 
