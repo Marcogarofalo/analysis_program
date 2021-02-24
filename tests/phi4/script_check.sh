@@ -12,7 +12,7 @@ cd ..
 cd out
 for f in `ls | grep -v reference`
 do 
-   diff -q $f "$f"_reference_jack > /dev/null || bad+=( "$f" )
+   diff  $f "$f"_reference_jack  || bad+=( "$f" )
 done
 cd ..
 
