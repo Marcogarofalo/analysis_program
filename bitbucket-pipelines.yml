@@ -1,0 +1,24 @@
+# Template C++ Application
+
+# This template allows you to validate your C++ application.
+# The workflow allows running tests and code linting on the default branch.
+
+
+image: gcc:10.2
+
+
+pipelines:
+  default:
+    - parallel:
+        - step:
+            name: Build and Run
+            script:
+               - apt-get update
+               - apt-get install libeigen3-dev
+               - apt-get install  libfftw3-bin libfftw3-long3 libfftw3-quad3 libfftw3-single3 libfftw3-dev  libfftw3-doc
+               - apt-get install -y cmake
+               - mkdir build
+               - cd build 
+               - cmake ..
+               - make
+              
