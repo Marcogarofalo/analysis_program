@@ -14,6 +14,7 @@ pipelines:
             name: Build and Run
             script:
                - apt-get update
+               - apt-get libeigen3-dev
                - apt-get install -y cmake
                - mkdir build
                - cd build 
