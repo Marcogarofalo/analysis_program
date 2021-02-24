@@ -10,6 +10,8 @@ pipelines:
       - step:
           name: 'Build and Test'
           script:
+            - apt-get update
+            - apt-get install -y cmake
             - mkdir build
             - cd build 
             - cmake ..
