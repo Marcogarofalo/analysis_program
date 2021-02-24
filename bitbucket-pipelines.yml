@@ -23,6 +23,6 @@ pipelines:
                - make
                - cd phi4
                - ./phi4_new read_plateaux -p ../../tests/phi4  G2t_T32_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000 -bin 1 jack
-               - cd ../../tests/phi4 
-               - bash script_check.sh
+               - ./test
+               
               
