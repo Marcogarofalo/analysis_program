@@ -260,7 +260,7 @@ void write_header(FILE *stream, cluster::IO_params params ){
      fwrite(&params.data.L[2], sizeof(int), 1, stream); 
      fwrite(&params.data.L[3], sizeof(int), 1, stream); 
      char string[100];
-     mysprintf(string,100,"%s",params.data.formulation.c_str());
+     mysprintf(string,100,"%s0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",params.data.formulation.c_str());
      fwrite(string, sizeof(char)*100, 1, stream); 
      //params.data.formulation = std::to_string(string);
      
