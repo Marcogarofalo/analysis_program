@@ -272,6 +272,37 @@ int main(int argc, char **argv){
      
      struct fit_result fit_a_01=fit_data(argv,  paramsj ,gjack, muDE_01_lhs ,fit_info, "a_01_lusher" );
    
+     printf("\n/////////////////////////////////     a_00_BH//////////////////\n");
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // start fitting
+     
+     fit_info.Nvar=5;
+     fit_info.Npar=1;
+     fit_info.N=1;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=constant_fit;
+     
+     struct fit_result fit_a_00_BH=fit_data(argv,  paramsj ,gjack, a_00_BH_lhs ,fit_info, "a_00_BH" );
+   
+     
+     printf("\n/////////////////////////////////     a_01_BH//////////////////\n");
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // start fitting
+     
+     fit_info.Nvar=5;
+     fit_info.Npar=1;
+     fit_info.N=1;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=constant_fit;
+     
+     struct fit_result fit_a_01_BH=fit_data(argv,  paramsj ,gjack, a_01_BH_lhs ,fit_info, "a_01_BH" );
+   
+     
+     
      
      return 0;
 }

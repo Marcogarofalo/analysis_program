@@ -54,6 +54,16 @@ double muDE_01_lhs(int n, int e , int j , vector<cluster::IO_params> params,vect
     return DE*mu;
 }
 
+
+double a_01_BH_lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    return gjack[e].jack[12][j];
+}
+double a_00_BH_lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    return gjack[e].jack[10][j];
+}
+double a_11_BH_lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    return gjack[e].jack[11][j];
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// functions rhs
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
