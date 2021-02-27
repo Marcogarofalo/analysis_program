@@ -94,12 +94,16 @@ int main(int argc, char **argv){
      emplace_back_par_data(namefile,paramsj,dataj); 
      mysprintf(namefile,NAMESIZE,"../../tests/phi4/jackknife/jack_G2t_T32_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0");
      emplace_back_par_data(namefile,paramsj,dataj); 
+     int nerrors=0;
      for(int i=0;i< dataj[0].Nobs;i++){
         for(int j=0;j< dataj[0].Njack;j++){
             double c=fabs(dataj[0].jack[i][j]- dataj[1].jack[i][j])/dataj[0].jack[i][j];
-            if(c>1e-6) exit(1);    
+            if(c>1e-6) { printf("error at   obs=%d  jack=%d \n",i,j);  nerrors++; }
         }
      }
+     if (nerrors>0){
+         exit(1);
+    }
      
 }
 
