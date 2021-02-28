@@ -85,7 +85,7 @@ double C2_diff_masses(int n, int Nvar, double *x,int Npar,double  *P){
 
 
 
-double four_pt_BH(int n, int Nvar, double *x,int Npar,double  *P){
+double four_pt_BH_t_T_8(int n, int Nvar, double *x,int Npar,double  *P){
     
     double C4;
     
@@ -106,30 +106,69 @@ double four_pt_BH(int n, int Nvar, double *x,int Npar,double  *P){
     return C4;
     
 }
-
-
-double four_pt_BH_const(int n, int Nvar, double *x,int Npar,double  *P){
-    
+double four_pt_BH_t_t3(int n, int Nvar, double *x,int Npar,double  *P){
     double C4;
-    
     double aN=P[0];
-    double c=P[1];
-        
-
     double T=(double)file_head.l0;
-    double t= x[0]- T/8.;
+    double t= x[0]- 3.;
     double M0=x[1];
     double M1=x[2];
 
     C4 = 8. *pi_greco*(M0+M1)*aN*t;
     C4 -= 16*aN*aN * sqrt( 2.*pi_greco *(M0+M1)* M0*M1*t );
-    //C4 *= norm*exp(M1*t) ;
-    C4 += c ;
     C4 /= 8*M0*M1 ;
     
     return C4;
-    
 }
+double four_pt_BH_t_t4(int n, int Nvar, double *x,int Npar,double  *P){
+    double C4;
+    double aN=P[0];
+    double T=(double)file_head.l0;
+    double t= x[0]- 4.;
+    double M0=x[1];
+    double M1=x[2];
+
+    C4 = 8. *pi_greco*(M0+M1)*aN*t;
+    C4 -= 16*aN*aN * sqrt( 2.*pi_greco *(M0+M1)* M0*M1*t );
+    C4 /= 8*M0*M1 ;
+    
+    return C4;
+}
+double four_pt_BH_t_t5(int n, int Nvar, double *x,int Npar,double  *P){
+    double C4;
+    double aN=P[0];
+    double T=(double)file_head.l0;
+    double t= x[0]- 5.;
+    double M0=x[1];
+    double M1=x[2];
+
+    C4 = 8. *pi_greco*(M0+M1)*aN*t;
+    C4 -= 16*aN*aN * sqrt( 2.*pi_greco *(M0+M1)* M0*M1*t );
+    C4 /= 8*M0*M1 ;
+    
+    return C4;
+}
+
+
+double four_pt_BH_t_T_8_const(int n, int Nvar, double *x,int Npar,double  *P){
+    double r=four_pt_BH_t_T_8( n,  Nvar, x, Npar, P);
+    return r+P[1]; 
+}
+
+double four_pt_BH_t_t3_const(int n, int Nvar, double *x,int Npar,double  *P){
+    double r=four_pt_BH_t_t3( n,  Nvar, x, Npar, P);
+    return r+P[1]; 
+}
+double four_pt_BH_t_t4_const(int n, int Nvar, double *x,int Npar,double  *P){
+    double r=four_pt_BH_t_t4( n,  Nvar, x, Npar, P);
+    return r+P[1]; 
+}
+double four_pt_BH_t_t5_const(int n, int Nvar, double *x,int Npar,double  *P){
+    double r=four_pt_BH_t_t5( n,  Nvar, x, Npar, P);
+    return r+P[1]; 
+}
+
+
 
 double four_pt_BH_line(int n, int Nvar, double *x,int Npar,double  *P){
     
@@ -307,13 +346,11 @@ double lhs_four_BH_s(int j, double ****in,int t ,struct fit_type fit_info ,int t
     double r;
     int T=file_head.l0;
     double L3=(double)file_head.l1*file_head.l2*file_head.l3;
-    int t25=((T*2)/5);
-    
 
     r=in[j][id][t][0];
-    r/=(in[j][0][(t4-t1+T)%T][0] * in[j][0][ (t-t2+T)%T  ][0]  );
+    r/=(in[j][0][(t4-t1+T)%T][0] * in[j][1][ (t-t2+T)%T  ][0]  );
     r-=1.;
-    r*=L3/2;
+    r*=((double) L3)/2.;
 
     return r;
     
@@ -1047,7 +1084,7 @@ int main(int argc, char **argv){
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.n_ext_P=2;
-    fit_info.function=four_pt_BH;
+    fit_info.function=four_pt_BH_t_T_8;
     //c++ 10 || r 11
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
@@ -1102,7 +1139,7 @@ int main(int argc, char **argv){
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.n_ext_P=2;
-    fit_info.function=four_pt_BH_const;
+    fit_info.function=four_pt_BH_t_T_8_const;
 
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
@@ -1207,7 +1244,7 @@ if(params.data.ncorr>15){
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.n_ext_P=2;
-    fit_info.function=four_pt_BH;
+    fit_info.function=four_pt_BH_t_t3;
     //c++ 21 || r 22
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
@@ -1235,7 +1272,7 @@ if(params.data.ncorr>15){
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.n_ext_P=2;
-    fit_info.function=four_pt_BH_const;
+    fit_info.function=four_pt_BH_t_t3_const;
     
     //c++ 24 || r 25
     fit_info.ext_P[0]=mass[0];
@@ -1268,7 +1305,7 @@ if(params.data.ncorr>15){
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.n_ext_P=2;
-    fit_info.function=four_pt_BH;
+    fit_info.function=four_pt_BH_t_t4;
     //c++ 27 || r 22
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
@@ -1295,7 +1332,7 @@ if(params.data.ncorr>15){
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.n_ext_P=2;
-    fit_info.function=four_pt_BH_const;
+    fit_info.function=four_pt_BH_t_t4_const;
     
     //c++ 30 || r 25
     fit_info.ext_P[0]=mass[0];
@@ -1326,7 +1363,7 @@ if(params.data.ncorr>15){
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.n_ext_P=2;
-    fit_info.function=four_pt_BH;
+    fit_info.function=four_pt_BH_t_t3;
     //c++ 33 || r 22
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
@@ -1353,7 +1390,7 @@ if(params.data.ncorr>15){
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.n_ext_P=2;
-    fit_info.function=four_pt_BH_const;
+    fit_info.function=four_pt_BH_t_t3_const;
     
     //c++ 36 || r 25
     fit_info.ext_P[0]=mass[0];
@@ -1384,7 +1421,7 @@ if(params.data.ncorr>15){
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.n_ext_P=2;
-    fit_info.function=four_pt_BH;
+    fit_info.function=four_pt_BH_t_t4;
     //c++ 39 || r 22
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
@@ -1411,7 +1448,7 @@ if(params.data.ncorr>15){
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.n_ext_P=2;
-    fit_info.function=four_pt_BH_const;
+    fit_info.function=four_pt_BH_t_t4_const;
     
     //c++ 42 || r 25
     fit_info.ext_P[0]=mass[0];
@@ -1443,7 +1480,7 @@ if(params.data.ncorr>15){
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.n_ext_P=2;
-    fit_info.function=four_pt_BH;
+    fit_info.function=four_pt_BH_t_t5;
     //c++ 45 || r 22
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
@@ -1470,7 +1507,7 @@ if(params.data.ncorr>15){
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.n_ext_P=2;
-    fit_info.function=four_pt_BH_const;
+    fit_info.function=four_pt_BH_t_t5_const;
     
     //c++ 48 || r 25
     fit_info.ext_P[0]=mass[0];
