@@ -1836,15 +1836,19 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
     for (i=0;i<fit_info.Npar;i++){
         /* if (strcmp(namefile,"fit_Mpi_Fpi")==0 ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1")==0  ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M2a")==0 ||  strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M2b")==0 ||strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1a")==0 || strcmp(namefile,"fit_Mpi_Fpi_GL_w0_M1b")==0  ||
            strcmp(namefile,"fit_FpiMpi4_GL_w0_M1a")==0        ){*/
-             if(i==0)     fprintf(ftex,"& Bw_{0}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
-             else if(i==1)     fprintf(ftex,"& fw_{0}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
-             else if(i==2)     fprintf(ftex,"& \\bar{\\ell_3}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
-             else if(i==3)     fprintf(ftex,"& P_2= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
-             else if(i==4)     fprintf(ftex,"& \\bar{\\ell_4}= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
-             else if(i==5)     fprintf(ftex,"& P_4= %+.5f \\pm \t%.2g   \\\\ \n",Ci[i][0],Ci[i][1]);
+             if(i==0)     fprintf(ftex,"& Bw_{0}= %+.5f \\pm \t%.2g  ",Ci[i][0],Ci[i][1]);
+             else if(i==1)     fprintf(ftex,"& fw_{0}= %+.5f \\pm \t%.2g  ",Ci[i][0],Ci[i][1]);
+             else if(i==2)     fprintf(ftex,"& \\bar{\\ell_3}= %+.5f \\pm \t%.2g   ",Ci[i][0],Ci[i][1]);
+             else if(i==3)     fprintf(ftex,"& P_2= %+.5f \\pm \t%.2g   ",Ci[i][0],Ci[i][1]);
+             else if(i==4)     fprintf(ftex,"& \\bar{\\ell_4}= %+.5f \\pm \t%.2g   ",Ci[i][0],Ci[i][1]);
+             else if(i==5)     fprintf(ftex,"& P_4= %+.5f \\pm \t%.2g   ",Ci[i][0],Ci[i][1]);
              else
-                 fprintf(ftex,"& P_{%d}= %+.5f \\pm \t%.2g   \\\\ \n",i,Ci[i][0],Ci[i][1]);
-
+                fprintf(ftex,"& P_{%d}= %+.5f \\pm \t%.2g   ",i,Ci[i][0],Ci[i][1]);
+             
+             if (i== fit_info.Npar-1)
+                 fprintf(ftex," \n");
+             else
+                 fprintf(ftex,"\\\\ \n");
        /* }
         else
                 fprintf(ftex,"& P_{%d}= %+.5f \\pm \t%.2g   \\\\ \n",i,Ci[i][0],Ci[i][1]);
@@ -1976,6 +1980,16 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
     C1[1]=mean_and_error(argv[1],jack_tot,w0_estimate);
     fprintf(ftex,"w_0=(%g\\pm%.2g) fm (\\mbox{from }\\, f_\\pi)   \\\\ \n",C1[1][0],C1[1][1]);
     printf("w_0=(%g\\pm%.2g) fm (\\mbox{from }\\, f_\\pi)   \\\\ \n",C1[1][0],C1[1][1]);
+   
+   /////// lattice spacing /// 
+   
+   div_jackboot(jack_tot , tmp,w0_estimate, grephJ[0].w0 );
+   fprintf(ftex,"a=(%g\\pm%.2g)  \\\\ \n ",tmp[jack_tot-1],error_jackboot(argv[1], jack_tot,tmp ));
+   div_jackboot(jack_tot , tmp,w0_estimate, grephJ[6].w0 );
+   fprintf(ftex,"(%g\\pm%.2g) \\\\ \n",tmp[jack_tot-1],error_jackboot(argv[1], jack_tot,tmp ));
+   div_jackboot(jack_tot , tmp,w0_estimate, grephJ[7].w0 );
+   fprintf(ftex,"(%g\\pm%.2g) fm \\\\\n ",tmp[jack_tot-1],error_jackboot(argv[1], jack_tot,tmp ));
+   free(tmp);
     
     free(C1[1]);
     C1[1]=mean_and_error(argv[1],jack_tot,tmp3);
@@ -2029,7 +2043,7 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
     free_2(jack_tot,x);
     free_2(jack_tot,tif);
     //free_tif(fit_info.Npar,fit);
-    fclose(ftex);fclose(fgp);free(chi2m);free(tmp); free(Ci);
+    fclose(ftex);fclose(fgp);free(chi2m); free(Ci);
     
 }
 

@@ -114,7 +114,7 @@ double a_luscher(int n, int Nvar, double *x,int Npar,double  *P){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_info, const char* label, struct fit_result fit_out, int *en, double ***x, double ***y){
+void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_info, const char* label, struct fit_result fit_out, int *en, double ***x, double ***y,  vector<cluster::IO_params> params){
     int Npar=fit_info.Npar;
     int Nvar=fit_info.Nvar;
     int Njack=gjack[0].Njack;
@@ -128,7 +128,7 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     int count=0;
     for (int n=0;n<N;n++){
         for (int e=0;e<en[n];e++){
-            fprintf(f," %g   %g   %g\n ",x[Njack-1][e+count][0], y[Njack-1][e+count][0], y[Njack-1][e+count][1] );
+            fprintf(f," %g   %g   %g   %d\n ",x[Njack-1][e+count][0], y[Njack-1][e+count][0], y[Njack-1][e+count][1] , params[e].data.L[0]);
         }
         count+=en[n];
         fprintf(f,"\n\n");
@@ -293,7 +293,7 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
     
      
     /////////////////////////////////////////////////////////////////////writing the result
-    print_fit_output(argv,   gjack , fit_info,  label,  fit_out , en,x,y);
+    print_fit_output(argv,   gjack , fit_info,  label,  fit_out , en,x,y, params);
 
     ////// free
     free(en);
