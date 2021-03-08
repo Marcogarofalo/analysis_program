@@ -101,7 +101,7 @@ double four_pt_BH_t_T_8(int n, int Nvar, double *x,int Npar,double  *P){
     C4 = 8. *pi_greco*(M0+M1)*aN*t;
     C4 -= 16*aN*aN * sqrt( 2.*pi_greco *(M0+M1)* M0*M1*t );
     //C4 *= norm*exp(M1*t) ;
-    C4 /= 8*M0*M1 ;
+    C4 /= 8*M0*M1*t ;
     
     return C4;
     
@@ -116,7 +116,7 @@ double four_pt_BH_t_t3(int n, int Nvar, double *x,int Npar,double  *P){
 
     C4 = 8. *pi_greco*(M0+M1)*aN*t;
     C4 -= 16*aN*aN * sqrt( 2.*pi_greco *(M0+M1)* M0*M1*t );
-    C4 /= 8*M0*M1 ;
+    C4 /= 8*M0*M1*t ;
     
     return C4;
 }
@@ -130,7 +130,7 @@ double four_pt_BH_t_t4(int n, int Nvar, double *x,int Npar,double  *P){
 
     C4 = 8. *pi_greco*(M0+M1)*aN*t;
     C4 -= 16*aN*aN * sqrt( 2.*pi_greco *(M0+M1)* M0*M1*t );
-    C4 /= 8*M0*M1 ;
+    C4 /= 8*M0*M1 *t;
     
     return C4;
 }
@@ -144,7 +144,7 @@ double four_pt_BH_t_t5(int n, int Nvar, double *x,int Npar,double  *P){
 
     C4 = 8. *pi_greco*(M0+M1)*aN*t;
     C4 -= 16*aN*aN * sqrt( 2.*pi_greco *(M0+M1)* M0*M1*t );
-    C4 /= 8*M0*M1 ;
+    C4 /= 8*M0*M1*t ;
     
     return C4;
 }
@@ -184,7 +184,7 @@ double four_pt_BH_line(int n, int Nvar, double *x,int Npar,double  *P){
     double M1=x[2];
 
     C4 = 8. *pi_greco*(M0+M1)*aN*t;
-    C4 /= 8*M0*M1 ;
+    C4 /= 8*M0*M1*t ;
     return C4;
     
 }
@@ -206,7 +206,7 @@ double four_pt_BH_2par(int n, int Nvar, double *x,int Npar,double  *P){
     C4 += B * sqrt( 2.*pi_greco *(M0+M1)* M0*M1*t );
     //C4 *= norm*exp(M1*t) ;
     //C4 *= norm ;
-    C4 /= 8*M0*M1 ;
+    C4 /= 8*M0*M1*t ;
     return C4;
     
 }
@@ -231,7 +231,7 @@ double four_pt_BH_3par(int n, int Nvar, double *x,int Npar,double  *P){
     C4+=C;
     //C4 *= norm*exp(M1*t) ;
     //C4 *= norm ;
-    C4 /= 8*M0*M1 ;
+    C4 /= 8*M0*M1*t ;
     return C4;
     
 }
@@ -254,6 +254,8 @@ double lhs_four_BH_0(int j, double ****in,int t ,struct fit_type fit_info){
     // to_do:
     // I think that there is a 4 M factor missing
     r*=L3;
+    r/=(t-T/8);
+    
     
     return r;
     
@@ -272,6 +274,8 @@ double lhs_four_BH_1(int j,double ****in,int t ,struct fit_type fit_info){
     
     r/=(in[j][1][T/2][0] * in[j][1][ (t-T/8+T)%T  ][0]  );
     r*=L3;
+    r/=(t-T/8);
+    
     return r;
 }
 
@@ -289,6 +293,7 @@ double lhs_four_BH(int j, double ****in,int t ,struct fit_type fit_info){
     
     r-=disc;
     r*=L3;
+    r/=(t-T/8);
     
     return r;
 }
@@ -312,7 +317,8 @@ double lhs_four_BH_0_s(int j, double ****in,int t ,struct fit_type fit_info ,int
     r/=(in[j][0][(t4-t1+T)%T][0] * in[j][0][ (t-t2+T)%T  ][0]  );
     
     r*=L3/2;
-
+    r/=(t-t2);
+    
     return r;
     
 }
@@ -334,6 +340,7 @@ double lhs_four_BH_1_s(int j, double ****in,int t ,struct fit_type fit_info ,int
     r/=(in[j][1][(t4-t1+T)%T][0] * in[j][1][ (t-t2+T)%T  ][0]  );
     
     r*=L3/2;
+    r/=(t-t2);
 
     return r;
     
@@ -350,12 +357,30 @@ double lhs_four_BH_s(int j, double ****in,int t ,struct fit_type fit_info ,int t
     r=in[j][id][t][0];
     r/=(in[j][0][(t4-t1+T)%T][0] * in[j][1][ (t-t2+T)%T  ][0]  );
     r-=1.;
-    r*=((double) L3)/2.;
+    r*=((double) L3/2.);
 
+    r/=(t-t2);
+    
     return r;
     
 }
 
+
+double lhs_four_BH_10_s(int j, double ****in,int t ,struct fit_type fit_info ,int t1, int t2,int t4, int id){
+    
+    double r;
+    int T=file_head.l0;
+    double L3=(double)file_head.l1*file_head.l2*file_head.l3;
+    
+    r=in[j][id][t][0];
+    r/=(in[j][1][(t4-t1+T)%T][0] * in[j][0][ (t-t2+T)%T  ][0]  );
+    r-=1.;
+    r*=((double) L3/2.);
+    r/=(t-t2);
+    
+    return r;
+    
+}
 
 
 
@@ -415,7 +440,9 @@ double lhs_four_BH_05t20(int j, double ****in,int t ,struct fit_type fit_info){
 }
 
 
-
+double lhs_four_BH_10_03t16(int j, double ****in,int t ,struct fit_type fit_info){
+    return lhs_four_BH_10_s(j, in, t, fit_info, 0 ,3, 16, 30);
+}
 
 
 
@@ -915,10 +942,11 @@ int main(int argc, char **argv){
         symmetrise_corr(confs, 11, file_head.l0,data);
     }
    
-    //if you want to do the gamma analysis you need to do before freeing the raw data
-    effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,&plateaux_masses,out_gamma,0,"M_{PS}^{ll}");
-    //effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,&plateaux_masses,out_gamma,3,"M_{PS}^{ll}");
     data_bin=binning(confs, var, file_head.l0 ,data, bin);
+    //if you want to do the gamma analysis you need to do before freeing the raw data
+    effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data_bin,  Neff ,&plateaux_masses,out_gamma,0,"M_{PS}^{ll}");
+    //effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,&plateaux_masses,out_gamma,3,"M_{PS}^{ll}");
+    
     free_corr(confs, var, file_head.l0 ,data);
     
     conf_jack=create_resampling(option[4],Neff, var, file_head.l0, data_bin);
@@ -1530,6 +1558,43 @@ if(params.data.ncorr>15){
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_05t20 , "E4_05t20_const",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
+    
+if(params.data.ncorr>30){    
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// C4_BH_10_03t16
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    fit_info.Nvar=3;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=2;
+    fit_info.function=four_pt_BH_t_t3;
+     
+    //c++ 23 || r 24
+    file_head.k[2]=mu1;    file_head.k[3]=mu2;
+    fit_info.ext_P[0]=mass[1];
+    fit_info.ext_P[1]=mass[0];
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_10_03t16 , "E4_10_03t16",  fit_info, jack_file );
+    free_fit_result(fit_info,fit_out);
+    ///// const fit
+    
+    fit_info.Nvar=3;
+    fit_info.Npar=2;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=2;
+    fit_info.function=four_pt_BH_t_t3_const;
+    
+     
+    //c++ 26 || r 27
+    file_head.k[2]=mu1;    file_head.k[3]=mu2;
+    fit_info.ext_P[0]=mass[1];
+    fit_info.ext_P[1]=mass[0];
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_10_03t16 , "E4_10_03t16_const",  fit_info, jack_file );
+    free_fit_result(fit_info,fit_out);
+    
+    
+} //if ncorr>30  
 }//if ncorr>15
 
     
