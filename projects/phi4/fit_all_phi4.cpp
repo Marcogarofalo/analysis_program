@@ -195,9 +195,20 @@ int main(int argc, char **argv){
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L26_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
 
-    
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L32_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
+     
+     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T48_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+     emplace_back_par_data(namefile,paramsj,dataj);
+     
+     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T64_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+     emplace_back_par_data(namefile,paramsj,dataj);
+     
+     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T96_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+     emplace_back_par_data(namefile,paramsj,dataj);
+     
+     
+     
      
      printf("E1_0 =%f   %f\n", dataj[0].jack[1][dataj[0].Njack-1], error_jackboot(argv[1],dataj[0].Njack, dataj[0].jack[1]  ) );
     

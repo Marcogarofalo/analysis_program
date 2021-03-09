@@ -358,6 +358,7 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
     for (j=Njack-1;j>=0;j--){    
         //tmp=linear_fit( (tmax-tmin)/sep +1, x, y[j],  1,constant_fit_to_try );
         if (j==Njack-1) guess=guess_for_non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+
         fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
         chi2j[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
         

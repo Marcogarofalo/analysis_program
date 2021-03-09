@@ -355,7 +355,8 @@ double *mean_and_error_boot(int Np1, double *in){
     r[1]/=((double) (N));
     r[1]=sqrt(r[1]);
     
-    r[0]=2*in[N]-r[0];
+    //r[0]=2*in[N]-r[0];
+    r[0]=in[N];
     
     return r;
 }
