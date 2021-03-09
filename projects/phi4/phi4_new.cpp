@@ -152,20 +152,20 @@ double four_pt_BH_t_t5(int n, int Nvar, double *x,int Npar,double  *P){
 
 double four_pt_BH_t_T_8_const(int n, int Nvar, double *x,int Npar,double  *P){
     double r=four_pt_BH_t_T_8( n,  Nvar, x, Npar, P);
-    return r+P[1]; 
+    return r+P[1]/(x[0]- file_head.l0/8.); 
 }
 
 double four_pt_BH_t_t3_const(int n, int Nvar, double *x,int Npar,double  *P){
     double r=four_pt_BH_t_t3( n,  Nvar, x, Npar, P);
-    return r+P[1]; 
+    return r+P[1]/(x[0]- 3.); 
 }
 double four_pt_BH_t_t4_const(int n, int Nvar, double *x,int Npar,double  *P){
     double r=four_pt_BH_t_t4( n,  Nvar, x, Npar, P);
-    return r+P[1]; 
+    return r+P[1]/(x[0]- 4.); 
 }
 double four_pt_BH_t_t5_const(int n, int Nvar, double *x,int Npar,double  *P){
     double r=four_pt_BH_t_t5( n,  Nvar, x, Npar, P);
-    return r+P[1]; 
+    return r+P[1]/(x[0]- 5.); 
 }
 
 
@@ -1185,7 +1185,7 @@ int main(int argc, char **argv){
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.n_ext_P=2;
-    fit_info.function=four_pt_BH_2par;
+    fit_info.function=four_pt_BH_3par;
 
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
