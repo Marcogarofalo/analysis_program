@@ -56,10 +56,12 @@ double muDE_01_lhs(int n, int e , int j , vector<cluster::IO_params> params,vect
 
 
 double a_01_BH_lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
-    return gjack[e].jack[12][j];
+    //return gjack[e].jack[12][j];// 0t_8tT_2
+    return gjack[e].jack[23][j];//   03t16
 }
 double a_00_BH_lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
-    return gjack[e].jack[10][j];
+    //return gjack[e].jack[10][j];
+    return gjack[e].jack[21][j];//   03t16
 }
 double a_11_BH_lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
     return gjack[e].jack[11][j];
@@ -228,7 +230,7 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
                 x[j][count][2]=gjack[e].jack[2][j];//m1
                 x[j][count][3]=gjack[e].jack[4][j];//E20
                 x[j][count][4]=gjack[e].jack[5][j];//E21
-               
+                x[j][count][5]=(double) params[e].data.L[0];//T
                 for(int i=fit_info.Nvar ; i< fit_info.n_ext_P; i++){
                     x[j][count][i]=fit_info.ext_P[i-fit_info.Nvar][j];
                 }

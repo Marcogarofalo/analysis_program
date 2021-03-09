@@ -1214,7 +1214,7 @@ int main(int argc, char **argv){
     tmp_muj=(double*) malloc(sizeof(double)*Njack);
     sub_jackboot(Njack,  tmpj, fit_out.P[0], mass[0] );
     sub_jackboot(Njack,  tmpj, tmpj, mass[1] );
-    fprintf(outfile,"#scattering length  a  err deltaE2 err    mu01 err    deltaE2*mu01  err   a_01*(m0+m1)=-mu/2pi  err      a_01*(m0+m1)/(a0m0)=4/3 \n %g  %g     %g  %g\t",
+    fprintf(outfile,"#scattering length  a  err deltaE2 err    mu01 err    deltaE2*mu01  err   a_01*(m0+m1)=-mu/2pi  err      a_01*(m0+m1)/(a0m0)=4/3 a_01*pi/mu   err    \n %g  %g     %g  %g\t",
            a[Njack-1], error_jackboot(option[4],Njack,a),   tmpj[Njack-1],  error_jackboot(option[4],Njack,tmpj));
     
     //reduced mass
@@ -1234,8 +1234,13 @@ int main(int argc, char **argv){
     
     for (j=0; j<Njack;j++)
         tmp_muj[j]=(a[j]*(mass[0][j]+mass[1][j]))/a0m0[j];
-    fprintf(outfile,"%g   %g\n", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj)  );
+    fprintf(outfile,"%g   %g\t", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj)  );
 
+    // a_01*pi/mu
+    for (j=0; j<Njack;j++)
+        tmp_muj[j]=a[j]*pi_greco*(mass[0][j]+mass[1][j])/(mass[0][j]*mass[1][j]) ;
+    fprintf(outfile,"%g   %g\n", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj)  );
+    
     
     free(tmpj); free(tmp_muj);
     

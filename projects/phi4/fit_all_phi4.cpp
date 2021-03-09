@@ -208,8 +208,6 @@ int main(int argc, char **argv){
      emplace_back_par_data(namefile,paramsj,dataj);
      
      
-     
-     
      printf("E1_0 =%f   %f\n", dataj[0].jack[1][dataj[0].Njack-1], error_jackboot(argv[1],dataj[0].Njack, dataj[0].jack[1]  ) );
     
      
@@ -225,7 +223,7 @@ int main(int argc, char **argv){
      int Njack=gjack[0].Njack;
      struct fit_type fit_info;
      struct fit_result  fit_m1, fit_m0;
-     fit_info.Nvar=5;
+     fit_info.Nvar=6;
      fit_info.Npar=2;
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
@@ -244,7 +242,7 @@ int main(int argc, char **argv){
      // E20
      //////////////////////////////////////////////////////////////////////////////////////////////////
      
-     fit_info.Nvar=5;
+     fit_info.Nvar=6;
      fit_info.Npar=1;
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
@@ -260,7 +258,7 @@ int main(int argc, char **argv){
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      // start fitting
      
-     fit_info.Nvar=5;
+     fit_info.Nvar=6;
      fit_info.Npar=1;
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
@@ -274,7 +272,7 @@ int main(int argc, char **argv){
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      // start fitting
      
-     fit_info.Nvar=5;
+     fit_info.Nvar=6;
      fit_info.Npar=1;
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
@@ -284,11 +282,29 @@ int main(int argc, char **argv){
      
      struct fit_result fit_a_01=fit_data(argv,  paramsj ,gjack, muDE_01_lhs ,fit_info, "a_01_lusher" );
    
+     
+     /////////////reload the data
+     vector<data_phi>().swap(dataj);
+     vector<data_phi>().swap(gjack);
+     dataj.resize(0);
+     //gjack.resize(0);
+     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T48_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+     emplace_back_par_data(namefile,paramsj,dataj);
+     
+     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T64_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+     emplace_back_par_data(namefile,paramsj,dataj);
+     
+     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T96_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+     emplace_back_par_data(namefile,paramsj,dataj);
+     gjack= create_generalised_resampling( dataj );
+     
+     
+     
      printf("\n/////////////////////////////////     a_00_BH//////////////////\n");
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      // start fitting
      
-     fit_info.Nvar=5;
+     fit_info.Nvar=6;
      fit_info.Npar=1;
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
@@ -303,7 +319,7 @@ int main(int argc, char **argv){
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      // start fitting
      
-     fit_info.Nvar=5;
+     fit_info.Nvar=6;
      fit_info.Npar=1;
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
