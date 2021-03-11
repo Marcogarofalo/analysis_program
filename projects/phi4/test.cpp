@@ -90,9 +90,9 @@ int main(int argc, char **argv){
      
      char namefile[NAMESIZE];
      
-     mysprintf(namefile,NAMESIZE,"../../tests/phi4/jackknife/jack_G2t_T32_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_reference");
+     mysprintf(namefile,NAMESIZE,"../../tests/phi4/jackknife/jack_G2t_T48_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_reference");
      emplace_back_par_data(namefile,paramsj,dataj); 
-     mysprintf(namefile,NAMESIZE,"../../tests/phi4/jackknife/jack_G2t_T32_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0");
+     mysprintf(namefile,NAMESIZE,"../../tests/phi4/jackknife/jack_G2t_T48_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0");
      emplace_back_par_data(namefile,paramsj,dataj); 
      printf("observables reference: %d\n",dataj[0].Nobs);
      printf("observables test:      %d\n",dataj[1].Nobs);

@@ -816,6 +816,19 @@ double FA_FV_Dphys_pole_simply_Mx(int n, int Nvar, double *x,int Npar,double  *P
     return FA;
 }
 
+
+
+double FA_FV_Dphys_pole_simply_Mx_const(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double mw=x[0], w0=x[1], xG=x[2], Mpiw0=x[3], msw=x[4],    MKw0=x[5],  mcw0=x[6], MDw0=x[7] ,  p2=x[9]*x[9], k2=x[10]*x[10], fpiw0=x[11];
+    
+    double FA,FV;
+    
+    double xi=Mpiw0*Mpiw0/(16*M_PI*M_PI*fpiw0*fpiw0);
+    FA=(  (P[0]+P[1]*xi)/(1+(P[2]+P[3]*xi)*xG)    )+   P[4]/(w0*w0)+P[5];
+    return FA;
+}
+
 double FA_FV_Dphys_pole_simply_ax(int n, int Nvar, double *x,int Npar,double  *P){
     
     double mw=x[0], w0=x[1], xG=x[2], Mpiw0=x[3], msw=x[4],    MKw0=x[5],  mcw0=x[6], MDw0=x[7] ,  p2=x[9]*x[9], k2=x[10]*x[10], fpiw0=x[11];
@@ -7277,6 +7290,18 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
         fit_FA_FV_pole=save_fit(fit_FA_FV_pole,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{A^H}","FA_H_Dsphys_pole_simply_ax_Mx");
+        
+        printf("\n\n FA for Ds meson pole  simply Mx const\n");
+        fit_info.Npar=6;
+        fit_info.N=1;
+        fit_info.function=FA_FV_Dphys_pole_simply_Mx_const ;
+        
+        fit_out=fit_FAV_Dsphys_treshold(jack_files,  head ,jack_tot, grephJ,3 ,fit_info,r0A-10.1,r0A+10.1);
+        fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        //fit_FA_FV_pole=save_fit(fit_FA_FV_pole,fit_info,fit_out);
+        print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{A^H}","FA_H_Dsphys_pole_simply_Mx_const");
+        
+        
 
         free_data( &jack_files, &head,&jack_tot, &grephJ);
     }
@@ -7523,6 +7548,8 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         fit_FA_FV=save_fit(fit_FA_FV,fit_info,fit_out);
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{V^HA}","FV_HA_Dsphys_poly_simply_ax_Mx");
         
+        
+        
 
         free_data( &jack_files, &head,&jack_tot, &grephJ);
     }
@@ -7567,6 +7594,17 @@ printf("\n\n////////////////////////////////////////////////////////////////////
         print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{V^HA}","FV_HA_Dsphys_pole_simply_ax_Mx");
         
 
+        printf("\n\n FV for Ds meson pole  simply Mx const \n");
+        fit_info.Npar=6;
+        fit_info.N=1;
+        fit_info.function=FA_FV_Dphys_pole_simply_Mx_const;
+        
+        fit_out=fit_FAV_Dsphys_treshold(jack_files,  head ,jack_tot, grephJ,5 ,fit_info,r0A-10.1,r0A+10.1);
+        fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+        //fit_FA_FV_pole=save_fit(fit_FA_FV_pole,fit_info,fit_out);
+        print_fit_info( argvNs,jack_tot,  fit_out,  fit_info, phys_point, grephJ, head, "{V^HA}","FV_HA_Dsphys_pole_simply_Mx_const");
+        
+        
         free_data( &jack_files, &head,&jack_tot, &grephJ);
     }
     
