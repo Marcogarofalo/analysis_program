@@ -810,7 +810,7 @@ int main(int argc, char **argv){
    FILE *plateaux_masses=NULL, *plateaux_masses_GEVP=NULL; 
    FILE *plateaux_f=NULL;   
    char namefile[NAMESIZE];
-
+   srand(1);
    
    
    
