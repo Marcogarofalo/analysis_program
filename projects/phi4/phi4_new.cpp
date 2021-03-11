@@ -1859,6 +1859,44 @@ if(params.data.ncorr>30){
     fit_info.ext_P[1]=mass[0];
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_10_03t16 , "E4_10_03t16_const",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
+ 
+if(params.data.ncorr>32){
+        
+    //02t10
+    fit_info.Nvar=3;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=2;
+    fit_info.function=four_pt_BH_t_tx_shifted<2,1>;
+    
+    //c++ 57 || r 58
+    fit_info.ext_P[0]=mass[0];
+    fit_info.ext_P[1]=mass[0];
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, 
+                                   lhs_four_BH_01_tx_tf_shifetd<1, 2,10,0,0, 31> , "E4_02t10_shifted",  fit_info, jack_file );
+    free_fit_result(fit_info,fit_out);
+    
+    
+    //02t12
+    fit_info.Nvar=3;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=2;
+    fit_info.function=four_pt_BH_t_tx_shifted<2,1>;
+    
+    //c++ 57 || r 58
+    fit_info.ext_P[0]=mass[0];
+    fit_info.ext_P[1]=mass[0];
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, 
+                                   lhs_four_BH_01_tx_tf_shifetd<1, 2,12,0,0, 32> , "E4_02t12_shifted",  fit_info, jack_file );
+    free_fit_result(fit_info,fit_out);
+    
+        
+} //if ncorr>32
     
 } //if ncorr>30  
 }//if ncorr>15
