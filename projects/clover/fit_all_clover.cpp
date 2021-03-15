@@ -351,6 +351,236 @@ double fit_Fpi_and_Mpi_GL_NL0_am(int n, int Nvar, double *x,int Npar,double  *P)
 }
 
 
+
+double fit_Fpi_and_Mpi_GL_NL0_am_fonly(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Mw2=0,xi;
+    double pi=3.141592653589793;
+    double Bw, fw, l3b, P2, l4b, P4,ZP;
+    Bw=P[0], fw=P[1], l3b=P[2], P2=P[3], l4b=P[4], P4=P[5];
+    
+    double mw=x[0], w0=x[1], dmpi2=x[2], dfpi=x[3];
+    int Lsize=(int(x[4]));
+    double L_w=(x[4]) /w0;
+    double KM,Kf;
+    
+    double P1=-l3b-2*log( v_Mpiw0 /(4*pi*fw));
+    double P3=2*l4b+4*log(   v_Mpiw0/(4*pi*fw) );
+    
+    
+    double Delta=FVE_GL_fast( L_w, mw, fw, Bw);
+    
+    
+    
+    xi=2*Bw*mw/(16.*pi*pi*fw*fw);
+    
+    if (n==0){
+        
+        Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2  ;
+        Mw2*=2*Bw*mw;
+        Mw2*=(1-0.25 *Delta)*(1-0.25 *Delta);
+    }
+    if (n==1){
+        
+        Mw2=fw*(1-2*xi*log(xi)+P3*xi)+(1./(w0*w0))*P4+(1./(w0*w0))*mw*P[6] ;
+        Mw2*=(1+Delta);
+        
+    }
+    if (n==2){
+        Mw2=(1-0.25 *Delta);  //KM   M(inf)=M(L)/KM
+        
+    }
+    if (n==3){
+        Mw2=(1+Delta);  //Kf   M(inf)=M(L)/Kf
+        
+    }
+    
+    return Mw2;
+    
+}
+
+
+
+double fit_FpiMpi4_and_Mpi2_noGL(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Mw2=0,xi;
+    double pi=3.141592653589793;
+    double Bw, fw, l3b, P2, l4b, P4,ZP;
+    Bw=P[0], fw=P[1], l3b=P[2], P2=P[3], l4b=P[4], P4=P[5] ;
+    
+    double mw=x[0], w0=x[1], dmpi2=x[2], dfpi=x[3];
+    int Lsize=(int(x[4]));
+    double L_w=(x[4]) /w0;
+    double KM,Kf;
+    
+    double P1=-l3b-2*log( v_Mpiw0 /(4*pi*fw));
+    double P3=2*l4b+4*log(   v_Mpiw0/(4*pi*fw) );
+    
+    
+    double Delta=FVE_GL_fast( L_w, mw, fw, Bw);
+    
+    
+    
+    xi=2*Bw*mw/(16.*pi*pi*fw*fw);
+    
+    
+    if (n==0){
+        
+        Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2;
+        Mw2*=2*Bw*mw;
+        Mw2*=(1-0.25 *Delta)*(1-0.25 *Delta);
+        
+    }
+    if (n==1){// fit fot w0^5fpi Mpi^4
+        double ML=sqrt(2*Bw*mw)*L_w;
+        Mw2= (4.*pi)* (4.*pi)* (4.*pi)* (4.*pi);
+        Mw2*= fw * fw *fw * fw * fw *xi*xi;
+        Mw2*= (1.+ 2.*(l4b-l3b) *xi + xi*xi *P[6] +(1./(w0*w0))*P4 );
+        //Mw2*=(1.+ P[7]*xi*xi *exp(-ML)/ pow(ML,3./2.));
+        
+    }
+    if (n==2){
+        Mw2=(1-0.25 *Delta);  //KM   M(inf)=M(L)/KM
+        
+    }
+    if (n==3){
+        Mw2=(1+Delta);  //KfMpi4   M(inf)=M(L)/Kf
+        
+    }
+    
+    return Mw2;
+    
+}
+
+
+double fit_FpiMpi4_and_Mpi2_noGL_noA2(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Mw2=0,xi;
+    double pi=3.141592653589793;
+    double Bw, fw, l3b, P2, l4b, P4,ZP;
+    Bw=P[0], fw=P[1], l3b=P[2], P2=P[3], l4b=P[4], P4=P[5] ;
+    
+    double mw=x[0], w0=x[1], dmpi2=x[2], dfpi=x[3];
+    int Lsize=(int(x[4]));
+    double L_w=(x[4]) /w0;
+    double KM,Kf;
+    
+    double P1=-l3b-2*log( v_Mpiw0 /(4*pi*fw));
+    double P3=2*l4b+4*log(   v_Mpiw0/(4*pi*fw) );
+    
+    
+    double Delta=FVE_GL_fast( L_w, mw, fw, Bw);
+    
+    
+    
+    xi=2*Bw*mw/(16.*pi*pi*fw*fw);
+    
+    
+    if (n==0){
+        
+        Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2;
+        Mw2*=2*Bw*mw;
+        Mw2*=(1-0.25 *Delta)*(1-0.25 *Delta);
+        
+    }
+    if (n==1){// fit fot w0^5fpi Mpi^4
+        double ML=sqrt(2*Bw*mw)*L_w;
+        Mw2= (4.*pi)* (4.*pi)* (4.*pi)* (4.*pi);
+        Mw2*= fw * fw *fw * fw * fw *xi*xi;
+        Mw2*= (1.+ 2.*(l4b-l3b) *xi  +(1./(w0*w0))*P4 );
+        //Mw2*=(1.+ P[7]*xi*xi *exp(-ML)/ pow(ML,3./2.));
+        
+    }
+    if (n==2){
+        Mw2=(1-0.25 *Delta);  //KM   M(inf)=M(L)/KM
+        
+    }
+    if (n==3){
+        Mw2=(1+Delta);  //KfMpi4   M(inf)=M(L)/Kf
+        
+    }
+    
+    return Mw2;
+    
+}
+
+double FpiMpi4_fromM(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Mw2=0,xi;
+    double pi=3.141592653589793;
+    double Bw, fw, l3b, P2, l4b, P4,ZP;
+    Bw=P[0], fw=P[1], l3b=P[2], P2=P[3], l4b=P[4], P4=P[5] ;
+    
+    double mw=x[0], w0=x[1], dmpi2=x[2], dfpi=x[3];
+    int Lsize=(int(x[4]));
+    double L_w=(x[4]) /w0;
+    double KM,Kf;
+    
+    double P1=-l3b-2*log( v_Mpiw0 /(4*pi*fw));
+    double P3=2*l4b+4*log(   v_Mpiw0/(4*pi*fw) );
+    
+    double Delta=FVE_GL_fast( L_w, mw, fw, Bw);
+    
+    xi=dmpi2*w0*w0/(16.*pi*pi*fw*fw);
+    
+    Mw2= (4.*pi)* (4.*pi)* (4.*pi)* (4.*pi);
+    Mw2*= fw * fw *fw * fw * fw *xi*xi;
+    Mw2*= (1.-2.*xi*log(xi)+ 2.*(l4b-l3b) *xi   );
+    Mw2/=(w0*w0*w0*w0*w0);
+    
+    return Mw2;
+}
+
+
+double fit_FpiMpi4_fromM_and_Mpi2_noGL_noA2(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Mw2=0,xi;
+    double pi=3.141592653589793;
+    double Bw, fw, l3b, P2, l4b, P4,ZP;
+    Bw=P[0], fw=P[1], l3b=P[2], P2=P[3], l4b=P[4], P4=P[5] ;
+    
+    double mw=x[0], w0=x[1], dmpi2=x[2], dfpi=x[3];
+    int Lsize=(int(x[4]));
+    double L_w=(x[4]) /w0;
+    double KM,Kf;
+    
+    double P1=-l3b-2*log( v_Mpiw0 /(4*pi*fw));
+    double P3=2*l4b+4*log(   v_Mpiw0/(4*pi*fw) );
+    
+    
+    double Delta=FVE_GL_fast( L_w, mw, fw, Bw);
+    
+    
+    if (n==0){
+        xi=2*Bw*mw/(16.*pi*pi*fw*fw);
+        
+        Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2;
+        Mw2*=2*Bw*mw;
+        Mw2*=(1-0.25 *Delta)*(1-0.25 *Delta);
+        
+    }
+    if (n==1){// fit fot w0^5fpi Mpi^4
+        double ML=sqrt(2*Bw*mw)*L_w;
+        xi=dmpi2*w0*w0/(16.*pi*pi*fw*fw);
+        xi/=(1-0.25 *Delta)*(1-0.25 *Delta);
+        Mw2= (4.*pi)* (4.*pi)* (4.*pi)* (4.*pi);
+        Mw2*= fw * fw *fw * fw * fw *xi*xi;
+        Mw2*= (1.-2.*xi*log(xi)+ 2.*(l4b-l3b) *xi  +(1./(w0*w0))*P4 );
+        //Mw2*=(1.+ P[7]*xi*xi *exp(-ML)/ pow(ML,3./2.));
+        
+    }
+    if (n==2){
+        Mw2=(1-0.25 *Delta);  //KM   M(inf)=M(L)/KM
+        
+    }
+    if (n==3){
+        Mw2=(1+Delta);  //KfMpi4   M(inf)=M(L)/Kf
+        
+    }
+    
+    return Mw2;
+    
+}
 double fit_FpiMpi4_and_Mpi2_GL(int n, int Nvar, double *x,int Npar,double  *P){
     
     double Mw2=0,xi;
@@ -373,11 +603,12 @@ double fit_FpiMpi4_and_Mpi2_GL(int n, int Nvar, double *x,int Npar,double  *P){
     
     xi=2*Bw*mw/(16.*pi*pi*fw*fw);
     
+    
     if (n==0){
         
         Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2;
         Mw2*=2*Bw*mw;
-        Mw2/=(1-0.25 *Delta)*(1-0.25 *Delta);
+        Mw2*=(1-0.25 *Delta)*(1-0.25 *Delta);
         
     }
     if (n==1){// fit fot w0^5fpi Mpi^4
@@ -400,6 +631,58 @@ double fit_FpiMpi4_and_Mpi2_GL(int n, int Nvar, double *x,int Npar,double  *P){
      return Mw2;
     
 }
+
+
+double fit_FpiMpi4_and_Mpi2_GL_am(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Mw2=0,xi;
+    double pi=3.141592653589793;
+    double Bw, fw, l3b, P2, l4b, P4,ZP;
+    Bw=P[0], fw=P[1], l3b=P[2], P2=P[3], l4b=P[4], P4=P[5] ;
+    
+    double mw=x[0], w0=x[1], dmpi2=x[2], dfpi=x[3];
+    int Lsize=(int(x[4]));
+    double L_w=(x[4]) /w0;
+    double KM,Kf;
+    
+    double P1=-l3b-2*log( v_Mpiw0 /(4*pi*fw));
+    double P3=2*l4b+4*log(   v_Mpiw0/(4*pi*fw) );
+    
+    
+    double Delta=FVE_GL_fast( L_w, mw, fw, Bw);
+
+    
+    xi=2*Bw*mw/(16.*pi*pi*fw*fw);
+    
+    if (n==0){
+        
+        Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2 +(1./(w0*w0))*mw*P[8];
+        Mw2*=2*Bw*mw;
+        Mw2*=(1-0.25 *Delta)*(1-0.25 *Delta);
+        
+    }
+    if (n==1){// fit fot w0^5fpi Mpi^4
+        double ML=sqrt(2*Bw*mw)*L_w;
+        Mw2= (4.*pi)* (4.*pi)* (4.*pi)* (4.*pi);
+        Mw2*= fw * fw *fw * fw * fw *xi*xi;
+        Mw2*= (1.+ 2.*(l4b-l3b) *xi + xi*xi *P[6] +(1./(w0*w0))*P4+(1./(w0*w0))*mw*P[9] );
+        Mw2*=(1.+ P[7]*xi*xi *exp(-ML)/ pow(ML,3./2.));
+        
+    }
+    if (n==2){
+        Mw2=(1-0.25 *Delta);  //KM   M(inf)=M(L)/KM
+        
+    }
+    if (n==3){
+        double ML=sqrt(2*Bw*mw)*L_w;
+        Mw2=(1.+ P[7]*xi*xi *exp(-ML)/ pow(ML,3./2.));  //KfMpi4   M(inf)=M(L)/Kf
+        
+    }
+    
+    return Mw2;
+    
+}
+
 
 
 double fit_FpiMpi4_and_Mpi2_linear(int n, int Nvar, double *x,int Npar,double  *P){
@@ -1928,26 +2211,26 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
         //mw=x[0], w0=x[1], dmpi2=x[2], dfpi=x[3];
         x[j][0]=0;//mlw
         x[j][1]=1e+6;//r0
-        x[j][2]=phys_point[j][2];//Mpi2
-        x[j][3]=phys_point[j][3];//fpi
+        x[j][2]=r1.MpiMeV[j]*r1.MpiMeV[j];//Mpi2
+        x[j][3]=r1.fpiMeV_exp[j];//fpi
         x[j][4]=1e+10;//L such that L/w=1e+4
         
     }
     
     for (j=0;j<jack_tot;j++){
-        
+        if(strcmp(AV,"pion")==0){
        
        in=r1.MpiMeV[j]*r1.MpiMeV[j]/(r1.fpiMeV_exp[j]*r1.fpiMeV_exp[j]);
        xi[j]=rtbis(Mw2_over_fw2_chiral_FVE_a0_minus,in,fit_info.Npar,tif[j], 0.0001, 0.01, 1e-10);//gives mw
        phys_point[j][0]=xi[j];
        r1.fpiw[j]=fPSw_chiral_FVE(  xi[j],fit_info.Npar,tif[j]);
        w0_estimate[j]=r1.fpiw[j]/(v_fpiMeV_exp/197.326963);
-       if(strcmp(namefile,"fit_FpiMpi4_GL_w0_M1a")==0 ){
-         /*  xi[j]=rtbis_func_eq_input(fit_info.function ,
-                                     0,//double n
-                                     fit_info.Nvar, x,fit_info.Npar, tif[j], 
-                                     0,//ivar
-                                     in, 0.0001, 0.01, 1e-10);//gives mw  */
+      /* if(strcmp(namefile,"fit_FpiMpi4_GL_w0_M1a")==0 ){
+         //  xi[j]=rtbis_func_eq_input(fit_info.function ,
+           //                          0,//double n
+            //                         fit_info.Nvar, x,fit_info.Npar, tif[j], 
+             //                        0,//ivar
+              //                       in, 0.0001, 0.01, 1e-10);//gives mw  
            
            x[j][0]=xi[j];
            r1.fpiw[j]=fit_info.function(1,fit_info.Nvar,x[j],fit_info.Npar,tif[j])  / pow(fit_info.function(0,fit_info.Nvar,x[j],fit_info.Npar,tif[j]),2);
@@ -1974,7 +2257,7 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
                 //printf("guess w0=%f   res=%f\n" ,w0_estimate[j],res);
            }
        }
-       
+       */
        r1.w0fm[j]= w0_estimate[j] ;
        r1.w0MeV[j]= w0_estimate[j]/197.326963 ;
        r1.mlw[j]=xi[j];
@@ -1986,7 +2269,25 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
        tmp3[j]=r1.fpiMeV_exp[j]/(r1.fw[j] /r1.w0MeV[j]);
        
        
+        }
+       else if(strcmp(AV,"pionM")==0){
+           
+           in=r1.MpiMeV[j]*r1.MpiMeV[j]*r1.MpiMeV[j]*r1.MpiMeV[j]*r1.fpiMeV_exp[j];
+           w0_estimate[j]=rtbis_func_eq_input(FpiMpi4_fromM, 0 , fit_info.Nvar, x[j] ,fit_info.Npar, tif[j], 1 , in, 0, 1, 1e-7);//gives w0MeV
+           in=r1.MpiMeV[j]*r1.MpiMeV[j]/(r1.fpiMeV_exp[j]*r1.fpiMeV_exp[j]);
+           xi[j]=rtbis(Mw2_over_fw2_chiral_FVE_a0_minus,in,fit_info.Npar,tif[j], 0.0001, 0.01, 1e-10);//gives mw
+           xi[j]=xi[j]/(w0_estimate[j]);
+           
+           w0_estimate[j]*=197.326963; //convert w0 in fm
+           
+           
+       }
+       
     }
+    
+    
+    
+    
     double **C1=(double**) malloc(sizeof(double*)*2);
     
     fprintf(ftex,"Imposing $M_\\pi =%.2f \\pm %.2g$ and $f_\\pi=%.4f\\pm %.2g$ MeV\n",v_MpiMeV,err_MpiMeV,v_fpiMeV_exp,err_fpiMeV_exp);
@@ -2023,18 +2324,17 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
     
     ////////////////////////print fit
     //using w0 from silvano
-    
-    for (j=0;j<jack_tot;j++){
-        in=r1.MpiMeV[j]*r1.MpiMeV[j]/(r1.fpiMeV_exp[j]*r1.fpiMeV_exp[j]);
-        xi[j]=rtbis(Mw2_over_fw2_chiral_FVE_a0_minus,in,fit_info.Npar,tif[j], 0.0001, 0.01, 1e-10);//gives mw
-        xi[j]=xi[j]/(gjack[0].scalefm[j]/197.326963);
+    if (strcmp(AV,"pion")==0){
+        for (j=0;j<jack_tot;j++){
+            in=r1.MpiMeV[j]*r1.MpiMeV[j]/(r1.fpiMeV_exp[j]*r1.fpiMeV_exp[j]);
+            xi[j]=rtbis(Mw2_over_fw2_chiral_FVE_a0_minus,in,fit_info.Npar,tif[j], 0.0001, 0.01, 1e-10);//gives mw
+            xi[j]=xi[j]/(gjack[0].scalefm[j]/197.326963);
+        }
+        fprintf(ftex,"Using scale $ =%g \\pm %g$ fm\n",gjack[0].scalefm[jack_tot-1],error_jackboot(argv[1],jack_tot,gjack[0].scalefm));
+        printf("Using $scale  =%g \\pm %g$ fm\n",gjack[0].scalefm[jack_tot-1],error_jackboot(argv[1],jack_tot,gjack[0].scalefm));
+        
+        fprintf(ftex,"\\begin{gather}\n   m_{ud}=(%g\\pm%.2g) MeV   \n \\end{gather}\n",xi[jack_tot-1],error_jackboot(argv[1], jack_tot, xi));
     }
-    fprintf(ftex,"Using scale $ =%g \\pm %g$ fm\n",gjack[0].scalefm[jack_tot-1],error_jackboot(argv[1],jack_tot,gjack[0].scalefm));
-    printf("Using $scale  =%g \\pm %g$ fm\n",gjack[0].scalefm[jack_tot-1],error_jackboot(argv[1],jack_tot,gjack[0].scalefm));
-    
-    
-    fprintf(ftex,"\\begin{gather}\n   m_{ud}=(%g\\pm%.2g) MeV   \n \\end{gather}\n",xi[jack_tot-1],error_jackboot(argv[1], jack_tot, xi));
-    
     if(strcmp(save,"yes")==0){
         result_fit  tmpm;
         tmpm.M=M;
@@ -2423,7 +2723,7 @@ int main(int argc, char **argv){
     double **tif;
     double **C1;
     std::vector<result_fit>  notused;
-    printf("\n\n///////////////////////////////////////Pion Mpi^2 and fpiMpi^4  GL  w0 M1a ///////////////////////\n");
+   /* printf("\n\n///////////////////////////////////////Pion Mpi^2 and fpiMpi^4  GL  w0 M1a ///////////////////////\n");
     fit_info.Npar=8;
     fit_info.N=2;
     fit_info.function=fit_FpiMpi4_and_Mpi2_GL;
@@ -2437,6 +2737,20 @@ int main(int argc, char **argv){
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_FpiMpi4_GL_w0_M1a", "no","M1a", "w0", notused );
  
     
+    printf("\n\n///////////////////////////////////////Pion Mpi^2 and fpiMpi^4  GL  w0 M1a ///////////////////////\n");
+    fit_info.Npar=10;
+    fit_info.N=2;
+    fit_info.function=fit_FpiMpi4_and_Mpi2_GL_am;
+    
+    init_Z( jack_files, head, jack_tot, &gjack, "w0","M1a");
+    
+    
+    fit_out=fit_Mpi_fwMpi4_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
+    
+    //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+    print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_FpiMpi4_GL_w0_M1a_am", "no","M1a", "w0", notused );
+    
+    
     printf("\n\n///////////////////////////////////////Pion Mpi^2 and fpiMpi^4  linear  w0 M1a ///////////////////////\n");
     fit_info.Npar=6;
     fit_info.N=2;
@@ -2449,7 +2763,7 @@ int main(int argc, char **argv){
  
     //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
     print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion","fit_FpiMpi4_GL_w0_M1a_threshold","no","M1a", "w0", notused);
- 
+ */
    
    
    /*
@@ -2492,12 +2806,75 @@ int main(int argc, char **argv){
         for (auto GF : GF_scale){
             init_Z( jack_files, head, jack_tot, &gjack, GF.c_str(), M.c_str());
             printf("\n\n%s    %s\n", M.c_str(),GF.c_str());
+            char nameout[NAMESIZE];
+            
+            printf("\n\n///////////////////////////////////////Pion Mpi^2 and fpiMpi^4  GL  w0 M1a ///////////////////////\n");
+            fit_info.Npar=8;
+            fit_info.N=2;
+            fit_info.function=fit_FpiMpi4_and_Mpi2_GL;
+            mysprintf(nameout,NAMESIZE,"fit_FpiMpi4_GL_%s_%s",GF.c_str(),M.c_str() );
+            
+        
+            fit_out=fit_Mpi_fwMpi4_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, argv,nameout );
+            
+            //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+            print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion",nameout, "no", M.c_str(), GF.c_str(), notused );
+            
+            printf("\n\n///////////////////////////////////////Pion Mpi^2 and fpiMpi^4  noGL    ///////////////////////\n");
+            fit_info.Npar=7;
+            fit_info.N=2;
+            fit_info.function=fit_FpiMpi4_and_Mpi2_noGL;
+            mysprintf(nameout,NAMESIZE,"fit_FpiMpi4_noGL_%s_%s",GF.c_str(),M.c_str() );
+            
+            
+            fit_out=fit_Mpi_fwMpi4_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, argv,nameout );
+            //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+            print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion",nameout, "no", M.c_str(), GF.c_str(), notused );
+            
+            printf("\n\n///////////////////////////////////////Pion Mpi^2 and fpiMpi^4  noGL noA2    ///////////////////////\n");
+            fit_info.Npar=6;
+            fit_info.N=2;
+            fit_info.function=fit_FpiMpi4_and_Mpi2_noGL_noA2;
+            mysprintf(nameout,NAMESIZE,"fit_FpiMpi4_noGL_noA2_%s_%s",GF.c_str(),M.c_str() );
+            
+            
+            fit_out=fit_Mpi_fwMpi4_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, argv,nameout );
+            //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+            print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion",nameout, "no", M.c_str(), GF.c_str(), notused );
+            
+            printf("\n\n///////////////////////////////////////Pion Mpi^2 and fpiMpi^4 from M  noGL noA2    ///////////////////////\n");
+            fit_info.Npar=6;
+            fit_info.N=2;
+            fit_info.function=fit_FpiMpi4_fromM_and_Mpi2_noGL_noA2;
+            mysprintf(nameout,NAMESIZE,"fit_FpiMpi4_fromM_noGL_noA2_%s_%s",GF.c_str(),M.c_str() );
+            
+            
+            fit_out=fit_Mpi_fwMpi4_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, argv,nameout );
+            //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+            print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pionM",nameout, "no", M.c_str(), GF.c_str(), notused );
+            
+            
+            
+            printf("\n\n///////////////////////////////////////Pion Mpi^2 and fpiMpi^4 am  GL    ///////////////////////\n");
+            fit_info.Npar=10;
+            fit_info.N=2;
+            fit_info.function=fit_FpiMpi4_and_Mpi2_GL_am;
+            
+            mysprintf(nameout,NAMESIZE,"fit_FpiMpi4_GL_am_%s_%s",GF.c_str(),M.c_str() );
+            
+            
+            fit_out=fit_Mpi_fwMpi4_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info,argv,nameout);
+            
+            //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+            print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion",nameout, "no", M.c_str(), GF.c_str(), notused );
+            
+            
+            
             
             fit_info.Npar=6;
             fit_info.N=2;
             fit_info.function=fit_Fpi_and_Mpi_GL;
             
-            char nameout[NAMESIZE];
             mysprintf(nameout,NAMESIZE,"fit_Mpi_Fpi_GL_%s_%s",GF.c_str(),M.c_str() );
             printf("\n%s\n",nameout);
             fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
@@ -2505,7 +2882,7 @@ int main(int argc, char **argv){
             //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
             print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion",nameout , "no",M,GF, mud);
             
-            threshold_Mpiw=0.24;
+            double threshold_Mpiw=0.24;
             mysprintf(nameout,NAMESIZE,"fit_Mpi_Fpi_GL_%s_%s_260MeV",GF.c_str(),M.c_str() );
             printf("\n%s\n",nameout);
             fit_out=fit_Mpi_fw_chiral_FVE_clover_treshold(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info, threshold_Mpiw);
@@ -2529,6 +2906,19 @@ int main(int argc, char **argv){
             fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
             //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
             print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion",nameout, "yes",M,GF, mud);
+            
+            
+            
+            fit_info.Npar=7;
+            fit_info.N=2;
+            fit_info.function=fit_Fpi_and_Mpi_GL_NL0_am_fonly;
+            //double ***scale=double_malloc_3(4,3,jack_tot);
+            
+            mysprintf(nameout,NAMESIZE,"fit_Mpi_Fpi_GL_NLO_am_fonly_%s_%s",GF.c_str(),M.c_str() );
+            printf("\n%s\n",nameout);
+            fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info);
+            //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+            print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion",nameout, "no",M,GF, mud);
             
             
             fit_info.Npar=10;

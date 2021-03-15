@@ -23,7 +23,7 @@
 #include "indices.hpp"
 #include "global_reph.hpp"
 #include "tower.hpp"
-
+#include <mutils.hpp>
 
 #include <unistd.h>
 
@@ -409,7 +409,7 @@ struct fit_result fit_Mpi_fw_chiral_FVE_clover(struct database_file_jack  *jack_
 
 
 
-struct fit_result fit_Mpi_fwMpi4_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info){
+struct fit_result fit_Mpi_fwMpi4_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info, char **argv  ,const char *nameout){
    double ***y,***x,**sigmax,**r,*chi2,*tmp,*rm,*chi2m,**fit,***C;
    int i,j,e,im;  
    int Npar=fit_info.Npar;
@@ -420,6 +420,9 @@ struct fit_result fit_Mpi_fwMpi4_chiral_FVE_clover(struct database_file_jack  *j
   
    int en_tot=0;
   
+   char fname[NAMESIZE];
+   mysprintf(fname,NAMESIZE,"%s/%s",argv[2],nameout);
+   FILE *fdat=open_file(fname,"w+");
    
    double *guess=(double*) malloc(sizeof(double)*Npar);
    for (i=0;i<Npar;i++)
@@ -572,10 +575,15 @@ struct fit_result fit_Mpi_fwMpi4_chiral_FVE_clover(struct database_file_jack  *j
         }         
         if (j==Njack-1){
             printf("w0/a[fm]     mu*w0/aZp[]      (M_Pi w0/KM)^2 or fw/Kf   err    KM2/Kf           (Mpi^2/fpi^2)* (Kf^2/KM^2)\n"); 
+            fprintf(fdat,"w0/a[fm]     mu*w0/aZp[]      (M_Pi w0/KM)^2 or fw/Kf   err    KM2/Kf           (Mpi^2/fpi^2)* (Kf^2/KM^2)\n"); 
+            
             count=0;
+            double newline_if_w0=x[j][0][1];
+            std::vector<int>  myen={0,1,2,3,   8,4,5,6,   7};
+            
             for (n=0;n<N;n++){
                 printf("#function %d\n",n);
-                for (e=0;e<en[n];e++){
+                for (auto e :myen){
                     KM=fit_info.function(2,Nvar,x[j][e+count],Npar,tmp);
                     Kf=fit_info.function(3,Nvar,x[j][e+count],Npar,tmp);
                     double *tmp1=(double*) malloc(sizeof(double)*Njack);
@@ -589,7 +597,17 @@ struct fit_result fit_Mpi_fwMpi4_chiral_FVE_clover(struct database_file_jack  *j
                         K=KM*KM;
                     else if (n==1)
                         K=Kf;
+                    
+                    if (newline_if_w0!=x[j][e+count][1]){
+                        fprintf(fdat,"\n\n");
+                        newline_if_w0=x[j][e+count][1] ;
+                    }
                     printf("%.5f     %.5f      %.5f   %.5f     %.5f \t\t %.5f  %.5f\n",x[j][e+count][1],x[j][e+count][0],fit[e+count][0]/K,fit[e+count][1]/K,K, tmp2[0] ,tmp2[1]);
+                    fprintf(fdat,"%.5g     %.5g      %.5g   %.5g     %.5g \t\t %.5g  %.5g\n",x[j][e+count][1],x[j][e+count][0],fit[e+count][0]/K,fit[e+count][1]/K,K, tmp2[0] ,tmp2[1]);
+                    
+                    
+                    
+                    
                     free(tmp2);free(tmp1);
                 }
                 count+=en[n];
@@ -611,7 +629,7 @@ struct fit_result fit_Mpi_fwMpi4_chiral_FVE_clover(struct database_file_jack  *j
   
   
    struct fit_result fit_out=close_fit(N,  head , Njack, gJ,Npar,&en,&en_tot, &x,&sigmax, &chi2m, &rm,&r, &fit, &y,&chi2,&C);
-
+   fclose(fdat);
    return fit_out;
     
 } 
