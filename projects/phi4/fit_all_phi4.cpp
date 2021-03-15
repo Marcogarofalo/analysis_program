@@ -54,7 +54,7 @@ void read_Njack_Nobs( FILE *stream, cluster::IO_params params, int &Njack, int &
    Nobs= (tmp)/ ((s)*sizeof(double) );
 
    fseek(stream, params.data.header_size+sizeof(int), SEEK_SET);
-   ;
+   
   
 
 }
@@ -81,7 +81,7 @@ void emplace_back_par_data( char *namefile , vector<cluster::IO_params> &paramsj
     paramsj.emplace_back(params);
     dataj.emplace_back(data);
     //printf("E1=%g    %g\n",dataj[0].jack[1][   dataj[0].Njack-1 ],    data.jack[1][data.Njack-1]);
-    
+    printf("ending the function: emplace_back_par_data\n");
 }
 
 vector<data_phi> create_generalised_resampling(  vector<data_phi> &dataj ){
@@ -263,7 +263,7 @@ int main(int argc, char **argv){
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
      fit_info.n_ext_P=0;
-     fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=muDE_rhs;
      
      struct fit_result fit_a_00=fit_data(argv,  paramsj ,gjack, muDE_00_lhs ,fit_info, "a_00_lusher" );
@@ -277,17 +277,21 @@ int main(int argc, char **argv){
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
      fit_info.n_ext_P=0;
-     fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=muDE_rhs;
      
      struct fit_result fit_a_01=fit_data(argv,  paramsj ,gjack, muDE_01_lhs ,fit_info, "a_01_lusher" );
    
      
      /////////////reload the data
+     cout << endl <<"reload the data" << endl;
      vector<data_phi>().swap(dataj);
      vector<data_phi>().swap(gjack);
+     vector<cluster::IO_params>().swap(paramsj);
      dataj.resize(0);
-     //gjack.resize(0);
+     gjack.resize(0);
+     paramsj.resize(0);
+     
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T48_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      
@@ -309,7 +313,7 @@ int main(int argc, char **argv){
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
      fit_info.n_ext_P=0;
-     fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=constant_fit;
      
      struct fit_result fit_a_00_BH=fit_data(argv,  paramsj ,gjack, a_00_BH_lhs ,fit_info, "a_00_BH" );
@@ -324,7 +328,7 @@ int main(int argc, char **argv){
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
      fit_info.n_ext_P=0;
-     fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=constant_fit;
      
      struct fit_result fit_a_01_BH=fit_data(argv,  paramsj ,gjack, a_01_BH_lhs ,fit_info, "a_01_BH" );

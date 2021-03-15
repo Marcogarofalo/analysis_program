@@ -57,7 +57,8 @@ double muDE_01_lhs(int n, int e , int j , vector<cluster::IO_params> params,vect
 
 double a_01_BH_lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
     //return gjack[e].jack[12][j];// 0t_8tT_2
-    return gjack[e].jack[23][j];//   03t16
+    //return gjack[e].jack[23][j];//   03t16
+    return gjack[e].jack[53][j];//   03t16_shifted1
 }
 double a_00_BH_lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
     //return gjack[e].jack[10][j];
@@ -167,9 +168,9 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     fprintf(f,"\\end{pmatrix}\n\\end{gather}}\n");
     free_2(Npar,cov);
     fclose(f);
-    /////////fit band
+    /////////fit band L
     
-    mysprintf(namefile,NAMESIZE,"%s/%s_fit_out.txt",argv[3], label);
+    mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_L.txt",argv[3], label);
     f=open_file(namefile,"w+");
     
     double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
@@ -179,10 +180,12 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
                 
         for (int j=0;j<Njack;j++){
             tmpx[0]=10+i*0.5;
-            //tmpx[1]=gjack[e].jack[1][j];//m0
-            //tmpx[2]=gjack[e].jack[2][j];//m1
-            //tmpx[3]=gjack[e].jack[4][j];//E20
-            //tmpx[4]=gjack[e].jack[5][j];//E21
+            tmpx[1]=gjack[0].jack[1][j];//m0
+            tmpx[2]=gjack[0].jack[2][j];//m1
+            tmpx[3]=gjack[0].jack[4][j];//E20
+            tmpx[4]=gjack[0].jack[5][j];//E21
+            tmpx[5]=(double) params[0].data.L[0];//T
+            
             for(int i=fit_info.Nvar ; i< fit_info.n_ext_P; i++)
                 tmpx[i]=fit_info.ext_P[fit_info.Nvar][j];
             
@@ -192,7 +195,36 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
         free(tmpy);free(tmpx);
     }
     free_2(Njack,tif);
+    fclose(f); 
+    /////////fit band L
+    
+    mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_T.txt",argv[3], label);
+    f=open_file(namefile,"w+");
+    
+    tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
+    for (int i=0 ; i<100; i++){
+        double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
+        double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+        
+        for (int j=0;j<Njack;j++){
+            tmpx[0]=(double) params[0].data.L[1];//L
+            tmpx[1]=gjack[0].jack[1][j];//m0
+            tmpx[2]=gjack[0].jack[2][j];//m1
+            tmpx[3]=gjack[0].jack[4][j];//E20
+            tmpx[4]=gjack[0].jack[5][j];//E21
+            tmpx[5]=10+i*1;//T
+            
+            for(int i=fit_info.Nvar ; i< fit_info.n_ext_P; i++)
+                tmpx[i]=fit_info.ext_P[fit_info.Nvar][j];
+            
+            tmpy[j]=fit_info.function(N,Nvar,tmpx,Npar,tif[j]);//N, Nvar, x ,Npar,P
+        }
+        fprintf(f,"%g  \t %g  %g\n",tmpx[5],tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
+        free(tmpy);free(tmpx);
+    }
+    free_2(Njack,tif);
     fclose(f);  
+    ////////// end fit band T
        
     
 }
