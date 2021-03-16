@@ -319,7 +319,7 @@ int main(int argc, char **argv){
      struct fit_result fit_a_00_BH=fit_data(argv,  paramsj ,gjack, a_00_BH_lhs ,fit_info, "a_00_BH" );
    
      
-     printf("\n/////////////////////////////////     a_01_BH//////////////////\n");
+     printf("\n/////////////////////////////////     a_01_BH_03t16//////////////////\n");
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      // start fitting
      
@@ -331,7 +331,23 @@ int main(int argc, char **argv){
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=constant_fit;
      
-     struct fit_result fit_a_01_BH=fit_data(argv,  paramsj ,gjack, a_01_BH_lhs ,fit_info, "a_01_BH" );
+     //lhs<53>  E4_03t16_shifted
+     struct fit_result fit_a_01_BH_03t16=fit_data(argv,  paramsj ,gjack, lhs<53> ,fit_info, "a_01_BH_03t16_shifted" );
+     
+     
+     printf("\n/////////////////////////////////     a_01_BH_04t16//////////////////\n");
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // start fitting
+     
+     fit_info.Nvar=6;
+     fit_info.Npar=1;
+     fit_info.N=1;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=constant_fit;
+     //lhs<53>  E4_04t16_shifted
+     struct fit_result fit_a_01_BH_04t16=fit_data(argv,  paramsj ,gjack, lhs<56> ,fit_info, "a_01_BH_04t16_shifted" );
      
      mysprintf(namefile,NAMESIZE,"%s/%s.tex",argv[3], "PT_test_BH");
      FILE *f=open_file(namefile,"w+");
@@ -342,10 +358,10 @@ int main(int argc, char **argv){
          tmp[j]=fit_a_00_BH.P[0][j]*fit_m0.P[0][j];
      fprintf(f,"a_{00}  m_0=%f  \\pm %f \\\\ \n", tmp[Njack-1],error_jackboot(argv[1],Njack,tmp )  );
      for (int j=0;j<gjack[0].Njack; j++)
-         tmp[j]=fit_a_01_BH.P[0][j]*(fit_m0.P[0][j]+fit_m1.P[0][j]);
+         tmp[j]=fit_a_01_BH_03t16.P[0][j]*(fit_m0.P[0][j]+fit_m1.P[0][j]);
      fprintf(f,"a_{01}  (m_0+m_1)=%f  \\pm %f\\\\ \n", tmp[Njack-1],error_jackboot(argv[1],Njack,tmp )  );
      for (int j=0;j<gjack[0].Njack; j++)
-         tmp[j]=fit_a_01_BH.P[0][j]*(fit_m0.P[0][j]+fit_m1.P[0][j])   /(  fit_a_00_BH.P[0][j]*fit_m0.P[0][j]   );
+         tmp[j]=fit_a_01_BH_03t16.P[0][j]*(fit_m0.P[0][j]+fit_m1.P[0][j])   /(  fit_a_00_BH.P[0][j]*fit_m0.P[0][j]   );
      fprintf(f,"\\frac{a_{01}  (m_0+m_1)}{a_{00}  m_0}=%f  \\pm %f \n", tmp[Njack-1],error_jackboot(argv[1],Njack,tmp )  );
      fprintf(f,"\\end{gather}\n");
 
