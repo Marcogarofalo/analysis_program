@@ -234,6 +234,34 @@ struct observable
     
 };
 
+
+struct store_fit_clover{
+    std::string M;
+    std::string GF;
+    double *jack_m;
+    double *jack_f;
+    double *jack_B;
+    double *chi2;
+    
+    double *ms;
+    double *ms_mud;
+    double *fk;
+    double *fk_fpi;
+    
+    double *mc;
+    double *mc_ms;
+    double *fD;
+    double *fD_fk;
+    
+    double *fDs;
+    double *fDs_fD;
+    
+    double *w0;
+    
+    int Njack;
+    std::string name;
+};
+
 EXTERN struct header file_head;
 EXTERN struct database_file_jack file_jack;//used to save the jack
 EXTERN struct data_jack *dataJ,*gjack;

@@ -43,12 +43,14 @@ double   **fit_Omegaw0_from_M_new(struct database_file_jack  *jack_files,  struc
 double ** fit_MK_fK_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info,  struct result_jack *r1, const char *prefix ,char **argv);
 double **fit_fKoverfpi_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info , struct result_jack *r1, const char *prefix,char **argv);
 
-double **fit_MK_Mpi_fK_fpi_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info , struct result_jack *r1, const char *prefix,char **argv);
+double **fit_MK_Mpi_fK_fpi_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info , struct result_jack *r1, const char *prefix,char **argv,store_fit_clover mud);
 
 double **fit_MK_fK_chiral_spline_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info , struct result_jack *r1, const char *prefix,char **argv);
 
 double **fit_MK_Mpi_fK_fpi_chiral_spline_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info , struct result_jack *r1, const char *prefix,char **argv);
 
 
+double** fit_MD_fD_chiral_FVE_clover( database_file_jack* jack_files, header* head, int Njack, int*** mass_index, data_jack* gJ, fit_type fit_info, result_jack* r1, const char* prefix, char** argv, store_fit_clover mud );
+double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info , struct result_jack *r1, const char *prefix,char **argv, store_fit_clover mud, store_fit_clover result_ms);
 
 #endif
