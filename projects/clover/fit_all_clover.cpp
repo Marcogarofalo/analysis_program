@@ -26,6 +26,7 @@
 #include "mutils.hpp"
 
 #include "fve.hpp"
+#include <vector>
 
 
 
@@ -2964,36 +2965,40 @@ void compute_systematic( char **argv, std::vector<store_fit_clover>  mud){
     double ave=0,ave_B=0,ave_f=0, ave_chi2=0;
     double sigma=0, sigma_B=0,sigma_f=0;
     std::vector<double>  error_i;
+    std::vector<int> Ngood;
     for (int i=0; i<  mud.size(); i++){
-        ave+=mud[i].jack_m[Njack-1];
-        ave_B+=mud[i].jack_B[Njack-1];
-        ave_f+=mud[i].jack_f[Njack-1];
-        ave_chi2+=mud[i].chi2[Njack-1];
         error_i.emplace_back(error_jackboot(argv[1],Njack,mud[i].jack_m));
-        sigma+=error_i[i]*error_i[i];
-        
-        sigma_B+=error_jackboot(argv[1],Njack,mud[i].jack_B)*error_jackboot(argv[1],Njack,mud[i].jack_B);
-        sigma_f+=error_jackboot(argv[1],Njack,mud[i].jack_f)*error_jackboot(argv[1],Njack,mud[i].jack_f);
-        
+        if (mud[i].chi2[Njack-1]<2){
+            ave+=mud[i].jack_m[Njack-1];
+            ave_B+=mud[i].jack_B[Njack-1];
+            ave_f+=mud[i].jack_f[Njack-1];
+            ave_chi2+=mud[i].chi2[Njack-1];
+            
+            sigma+=error_i[i]*error_i[i];
+            
+            sigma_B+=error_jackboot(argv[1],Njack,mud[i].jack_B)*error_jackboot(argv[1],Njack,mud[i].jack_B);
+            sigma_f+=error_jackboot(argv[1],Njack,mud[i].jack_f)*error_jackboot(argv[1],Njack,mud[i].jack_f);
+            Ngood.emplace_back(i);
+        }
         
         
     }
-    ave=ave/mud.size();
-    ave_B=ave_B/mud.size();
-    ave_f=ave_f/mud.size();
-    ave_chi2=ave_chi2/mud.size();
-    for (int i=0; i<  mud.size(); i++){
+    ave=ave/Ngood.size();
+    ave_B=ave_B/Ngood.size();
+    ave_f=ave_f/Ngood.size();
+    ave_chi2=ave_chi2/Ngood.size();
+    for (int i:Ngood){
         sigma+=  (ave-mud[i].jack_m[Njack-1] )* (ave-mud[i].jack_m[Njack-1] ) ;
         sigma_B+=  (ave_B-mud[i].jack_B[Njack-1] )* (ave_B-mud[i].jack_B[Njack-1] ) ;
         sigma_f+=  (ave_f-mud[i].jack_f[Njack-1] )* (ave_f-mud[i].jack_f[Njack-1] ) ;
     }
-    sigma=sigma/mud.size();
+    sigma=sigma/Ngood.size();
     sigma=sqrt(sigma);
     
-    sigma_B=sigma_B/mud.size();
+    sigma_B=sigma_B/Ngood.size();
     sigma_B=sqrt(sigma_B);
     
-    sigma_f=sigma_f/mud.size();
+    sigma_f=sigma_f/Ngood.size();
     sigma_f=sqrt(sigma_f);
     
     fprintf(ftex,"\\begin{tabular}{|c|c|c|c|c|}  \n\\hline\n");
@@ -3001,7 +3006,7 @@ void compute_systematic( char **argv, std::vector<store_fit_clover>  mud){
     for (int i=0; i<  mud.size(); i++){
         fprintf(ftex," %s  & %s & %s & %g &  %g    \\\\ \n\\hline \n", mud[i].M.c_str(), mud[i].GF.c_str(), mud[i].name.c_str(), mud[i].jack_m[Njack-1],  error_i[i]);
         
-        fprintf(fdata,"%s  %s  %s %g  %g  %g  %g\t", mud[i].M.c_str(), mud[i].GF.c_str(), mud[i].name.c_str(), mud[i].jack_m[Njack-1],  error_i[i], ave, sigma );
+        fprintf(fdata,"%s \t  %s \t %s  %g   %g  %g   %g\t", mud[i].M.c_str(), mud[i].GF.c_str(), mud[i].name.c_str(), mud[i].jack_m[Njack-1],  error_i[i], ave, sigma );
         
         fprintf(fdata,"%g  %g %g  %g   \t", mud[i].jack_B[Njack-1], error_jackboot(argv[1],Njack,mud[i].jack_B),ave_B,sigma_B);
         fprintf(fdata,"%g  %g %g  %g   \t", mud[i].jack_f[Njack-1], error_jackboot(argv[1],Njack,mud[i].jack_f),ave_f,sigma_f);
@@ -3434,7 +3439,7 @@ int main(int argc, char **argv){
             
             
             
-            */
+            
             fit_info.Npar=6;
             fit_info.N=2;
             fit_info.function=fit_Fpi_and_Mpi_GL;
@@ -3447,7 +3452,7 @@ int main(int argc, char **argv){
             print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion",nameout , "no",M,GF, mud);
             
             
-            /*
+            
             double threshold_Mpiw=0.24;
             mysprintf(nameout,NAMESIZE,"fit_Mpi_Fpi_GL_%s_%s_260MeV",GF.c_str(),M.c_str() );
             printf("\n%s\n",nameout);
@@ -3461,7 +3466,7 @@ int main(int argc, char **argv){
             //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
             print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result , gjack, head, "pion",nameout, "no",M,GF, mud);
             
-            */
+            
             fit_info.Npar=8;
             fit_info.N=2;
             fit_info.function=fit_Fpi_and_Mpi_GL_NL0_am;
@@ -3472,19 +3477,81 @@ int main(int argc, char **argv){
             fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info,argv,nameout);
             //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
             print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion",nameout, "no",M,GF, mud);
-            
+            */
             
            
             fit_info.Npar=7;
             fit_info.N=2;
             fit_info.function=fit_Fpi_and_Mpi_GL_NL0_am_fonly;
             //double ***scale=double_malloc_3(4,3,jack_tot);
-            
+            std::vector<int> myen={0,1,2,3,   8,4,5,6,   7};
             mysprintf(nameout,NAMESIZE,"fit_Mpi_Fpi_GL_NLO_am_fonly_%s_%s",GF.c_str(),M.c_str() );
             printf("\n%s\n",nameout);
-            fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info,argv,nameout);
+            fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info,argv,nameout,myen);
             //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
             print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion",nameout, "yes",M,GF, mud);
+            
+            
+            fit_info.Npar=7;
+            fit_info.N=2;
+            fit_info.function=fit_Fpi_and_Mpi_GL_NL0_am_fonly;
+            //double ***scale=double_malloc_3(4,3,jack_tot);
+            myen={0,1,2,   8,4,5,6,   7};
+            mysprintf(nameout,NAMESIZE,"fit_Mpi_Fpi_GL_NLO_am_fonly_noA12_%s_%s",GF.c_str(),M.c_str() );
+            printf("\n%s\n",nameout);
+            fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info,argv,nameout,myen);
+            //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+            print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion",nameout, "yes",M,GF, mud);
+            
+            
+            fit_info.Npar=7;
+            fit_info.N=2;
+            fit_info.function=fit_Fpi_and_Mpi_GL_NL0_am_fonly;
+            //double ***scale=double_malloc_3(4,3,jack_tot);
+            myen={0,1,   8,4,5,6,   7};
+            mysprintf(nameout,NAMESIZE,"fit_Mpi_Fpi_GL_NLO_am_fonly_noA12A30_%s_%s",GF.c_str(),M.c_str() );
+            printf("\n%s\n",nameout);
+            fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info,argv,nameout,myen);
+            //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+            print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion",nameout, "yes",M,GF, mud);
+            
+            
+            /*
+            fit_info.Npar=7;
+            fit_info.N=2;
+            fit_info.function=fit_Fpi_and_Mpi_GL_NL0_am_fonly;
+            //double ***scale=double_malloc_3(4,3,jack_tot);
+            myen={0,1,2,3,   8,4,5,6 };
+            mysprintf(nameout,NAMESIZE,"fit_Mpi_Fpi_GL_NLO_am_fonly_AB_%s_%s",GF.c_str(),M.c_str() );
+            printf("\n%s\n",nameout);
+            fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info,argv,nameout,myen);
+            //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+            print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion",nameout, "yes",M,GF, mud);
+            */
+            
+            fit_info.Npar=6;
+            fit_info.N=2;
+            fit_info.function=fit_Fpi_and_Mpi_GL;
+            //double ***scale=double_malloc_3(4,3,jack_tot);
+            myen={   8,4,5,6,   7};
+            mysprintf(nameout,NAMESIZE,"fit_Mpi_Fpi_GL_BC_%s_%s",GF.c_str(),M.c_str() );
+            printf("\n%s\n",nameout);
+            fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info,argv,nameout,myen);
+            //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+            print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion",nameout, "yes",M,GF, mud);
+            
+            fit_info.Npar=6;
+            fit_info.N=2;
+            fit_info.function=fit_Fpi_and_Mpi_GL;
+            //double ***scale=double_malloc_3(4,3,jack_tot);
+            myen={3,   5,6,   7};
+            mysprintf(nameout,NAMESIZE,"fit_Mpi_Fpi_GL_190MeV_%s_%s",GF.c_str(),M.c_str() );
+            printf("\n%s\n",nameout);
+            fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info,argv,nameout,myen);
+            //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+            print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion",nameout, "yes",M,GF, mud);
+            
+            
             
        /*     
             fit_info.Npar=10;

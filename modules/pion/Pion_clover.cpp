@@ -28,7 +28,7 @@
 #include <unistd.h>
 
 #include <omp.h> 
-static void init_fit( int N, struct header *head ,int Njack, struct data_jack *gJ,int Nvar,int Npar, int **en,int *en_tot, double ****x, double ***sigmax, double **chi2m, double **rm, double ***r, double ***fit, double ****y,double **chi2,double ****C)
+static void init_fit( int N, struct header *head ,int Njack, struct data_jack *gJ,int Nvar,int Npar, int **en,int *en_tot, double ****x, double ***sigmax, double **chi2m, double **rm, double ***r, double ***fit, double ****y,double **chi2,double ****C , int ensembles_here )
 {
     int imoms,imomt,imom0,iG,i,n,e,j;
     int count;
@@ -36,7 +36,7 @@ static void init_fit( int N, struct header *head ,int Njack, struct data_jack *g
    
    *en=(int*) calloc(N,sizeof(int));
    
-   for (e=0;e<ensembles;e++){
+   for (e=0;e<ensembles_here;e++){
                 for (n=0;n<N;n++){
                    
                     (*en)[n]+=1;  
@@ -145,9 +145,11 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
 }
  
 
- struct fit_result fit_Mpi_fw_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info,char **argv  ,const char *nameout){
+ struct fit_result fit_Mpi_fw_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info,char **argv  ,const char *nameout,   std::vector<int> myen ){
+     
+   int ensembles_here=myen.size();  
    double ***y,***x,**sigmax,**r,*chi2,*tmp,*rm,*chi2m,**fit,***C;
-   int i,j,e,im;  
+   int i,j,im;  
    int Npar=fit_info.Npar;
    int Nvar=5;//fit_info.Nvar;//m_l, w0,M_PS^2,f_PS
    int ik1=0,ik2=0;
@@ -171,41 +173,41 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
     guess[4]=4.61247;
     guess[5]=-0.272884;
    */
-   init_fit(N,  head , Njack, gJ,Nvar,Npar,&en,&en_tot, &x, &sigmax, &chi2m, &rm, &r, &fit, &y,&chi2,&C);
+   init_fit(N,  head , Njack, gJ,Nvar,Npar,&en,&en_tot, &x, &sigmax, &chi2m, &rm, &r, &fit, &y,&chi2,&C, ensembles_here);
 
    count=0;
    for (n=0;n<N;n++){
-        for (e=0;e<en[n];e++){
+        for (auto e:myen){
                 im=mass_index[e][ik2][ik1];
                 if(n==0){
                     for (j=0;j<Njack;j++){
                         rm[j]=gJ[e].M_PS_jack[im][j]   *  gJ[e].w0[j];
                         rm[j]*=rm[j];
                     }
-                    fit[e+count]=mean_and_error(jack_files[0].sampling,Njack, rm);
+                    fit[count]=mean_and_error(jack_files[0].sampling,Njack, rm);
                 }
                 if(n==1){
                     for (j=0;j<Njack;j++){
                         rm[j]=gJ[e].f_PS_jack[im][j]   *  gJ[e].w0[j];
                     }
-                    fit[e+count]=mean_and_error(jack_files[0].sampling,Njack, rm);
+                    fit[count]=mean_and_error(jack_files[0].sampling,Njack, rm);
                 }
                 
                 for (j=0;j<jack_tot;j++){
-                    y[j][e+count][0]=rm[j];
-                    y[j][e+count][1]=fit[e+count][1];
+                    y[j][count][0]=rm[j];
+                    y[j][count][1]=fit[count][1];
                     //if (e==0 || e== 1 || e==2  || e==3) y[j][e+count][1]*=100;
                     //if (e==2 ||e==3) y[j][e+count][1]*=100;
                     
                     //if (e==3)  y[j][e+count][1]*=100;
                 }
                 //x[e+count]=(double*) malloc(sizeof(double)*Nvar);
-            
+                count++;
                                 
                 
              //   printf("%g     %g      %g   %g\n",x[e+count][1],x[e+count][0],fit[e+count][0],fit[e+count][1]);
         }
-        count+=en[n];
+        
    }
 
      double KM,Kf,K;
@@ -218,31 +220,33 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
         count=0;
         //x=(double**) malloc(sizeof(double*)*(en_tot));
         for (n=0;n<N;n++){
-            for (e=0;e<en[n];e++){
+            for (auto e:myen){
                 im=mass_index[e][ik2][ik1];
-                x[j][e+count][0]=head[e].k[head[e].nk+ik2]*gJ[e].w0[j]/gJ[e].Zp[j];//ml*w0
-                x[j][e+count][1]=gJ[e].w0[j];//w0
-                x[j][e+count][2]=gJ[e].M_PS_jack[im][j]*gJ[e].M_PS_jack[im][j];//MPS^2
-                x[j][e+count][3]=gJ[e].f_PS_jack[im][j];//f_PS
-                x[j][e+count][4]=double(head[e].l1);//f_PS
+                x[j][count][0]=head[e].k[head[e].nk+ik2]*gJ[e].w0[j]/gJ[e].Zp[j];//ml*w0
+                x[j][count][1]=gJ[e].w0[j];//w0
+                x[j][count][2]=gJ[e].M_PS_jack[im][j]*gJ[e].M_PS_jack[im][j];//MPS^2
+                x[j][count][3]=gJ[e].f_PS_jack[im][j];//f_PS
+                x[j][count][4]=double(head[e].l1);//f_PS
+                count++;
             }
-            count+=en[n];
+            //count+=en[n];
         }
    }
    
    count=0;
    for (n=0;n<1;n++){
-      for (e=0;e<en[n];e++){
+      for (auto e:myen){
           for(int v=0 ;v<Nvar;v++){
               for (j=0;j<Njack;j++)
-                    rm[j]=x[j][e+count][v];
+                    rm[j]=x[j][count][v];
               tmp=mean_and_error(jack_files[0].sampling,Njack, rm);
              // if (fabs(tmp[1])<1e-6) {printf("e=%d    v=%d   %g +- %g\n", e,v,tmp[0],tmp[1] ); tmp[1]=tmp[0]/1.0e+8; }
-              sigmax[e+count][v]=tmp[1];
+              sigmax[count][v]=tmp[1];
               free(tmp);
           }
+          count++;
       }
-      count+=en[n];
+      
    }           
          
    double **yy=double_malloc_2(en_tot,Njack);
@@ -303,7 +307,7 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
    free(guess);
    guess=guess1;
    */
-   #pragma omp parallel for  private(tmp,i,count,n,e,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2,C,x,cov,cov_yx1,cov1)
+   #pragma omp parallel for  private(tmp,i,count,n,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2,C,x,cov,cov_yx1,cov1)
    for (j=0;j<Njack;j++){
         //if (j==0){     }
         tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
@@ -329,13 +333,13 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
             fprintf(fdat,"w0/a[fm]     mu*w0/aZp[]      (M_Pi w0/KM)^2 or fw/Kf   err    KM2/Kf           (Mpi^2/fpi^2)* (Kf^2/KM^2)\n"); 
             count=0;
             double newline_if_w0=x[j][0][1];
-            std::vector<int>  myen={0,1,2,3,   8,4,5,6,   7};
+            //std::vector<int>  myen={0,1,2,3,   8,4,5,6,   7};
             
             for (n=0;n<N;n++){
                 printf("#function %d\n",n);
                 for (auto e :myen){
-                    KM=fit_info.function(2,Nvar,x[j][e+count],Npar,tmp);
-                    Kf=fit_info.function(3,Nvar,x[j][e+count],Npar,tmp);
+                    KM=fit_info.function(2,Nvar,x[j][count],Npar,tmp);
+                    Kf=fit_info.function(3,Nvar,x[j][count],Npar,tmp);
                     double *tmp1=(double*) malloc(sizeof(double)*Njack);
                     for (int jj=0;jj<Njack;jj++){
                         tmp1[jj]=gJ[e].M_PS_jack[0][jj]/gJ[e].f_PS_jack[0][jj];
@@ -348,16 +352,17 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
                     else if (n==1)
                         K=Kf;
                     
-                    if (newline_if_w0!=x[j][e+count][1]){
+                    if (newline_if_w0!=x[j][count][1]){
                         fprintf(fdat,"\n\n");
-                        newline_if_w0=x[j][e+count][1] ;
+                        newline_if_w0=x[j][count][1] ;
                     }
-                    fprintf(fdat,"%.5f     %.5f      %.5f   %.5f     %.5f \t\t %.5f  %.5f\n",x[j][e+count][1],x[j][e+count][0],fit[e+count][0]/K,fit[e+count][1]/K,K, tmp2[0] ,tmp2[1]);
+                    fprintf(fdat,"%.5f     %.5f      %.5f   %.5f     %.5f \t\t %.5f  %.5f\n",x[j][count][1],x[j][count][0],fit[count][0]/K,fit[count][1]/K,K, tmp2[0] ,tmp2[1]);
                     
-                    printf("%.5f     %.5f      %.5f   %.5f     %.5f \t\t %.5f  %.5f\n",x[j][e+count][1],x[j][e+count][0],y[j][e+count][0]/K,y[j][e+count][1]/K,K, tmp2[0] ,tmp2[1]);
+                    printf("%.5f     %.5f      %.5f   %.5f     %.5f \t\t %.5f  %.5f\n",x[j][count][1],x[j][count][0],y[j][count][0]/K,y[j][count][1]/K,K, tmp2[0] ,tmp2[1]);
                     free(tmp2);free(tmp1);
+                    count++;
                 }
-                count+=en[n];
+                
             }
             
         }
@@ -445,7 +450,7 @@ struct fit_result fit_Mpi_fwMpi4_chiral_FVE_clover(struct database_file_jack  *j
    double *guess=(double*) malloc(sizeof(double)*Npar);
    for (i=0;i<Npar;i++)
         guess[i]=rand();
-   init_fit(N,  head , Njack, gJ,Nvar,Npar,&en,&en_tot, &x, &sigmax, &chi2m, &rm, &r, &fit, &y,&chi2,&C);
+   init_fit(N,  head , Njack, gJ,Nvar,Npar,&en,&en_tot, &x, &sigmax, &chi2m, &rm, &r, &fit, &y,&chi2,&C, ensembles);
 
    count=0;
    for (n=0;n<N;n++){
