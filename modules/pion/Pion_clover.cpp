@@ -194,6 +194,9 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
                 for (j=0;j<jack_tot;j++){
                     y[j][e+count][0]=rm[j];
                     y[j][e+count][1]=fit[e+count][1];
+                    //if (e==0 || e== 1 || e==2  || e==3) y[j][e+count][1]*=100;
+                    //if (e==2 ||e==3) y[j][e+count][1]*=100;
+                    
                     //if (e==3)  y[j][e+count][1]*=100;
                 }
                 //x[e+count]=(double*) malloc(sizeof(double)*Nvar);

@@ -361,509 +361,6 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
 }
  
 
-double **fit_MK_fK_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info , struct result_jack *r1, const char *prefix,char **argv){
-double ***y,***x,**sigmax,***r,**MK,*chi2,*tmp,*rm,*chi2m,**fit; 
-   double **out;
-   int i,j,e,im;  
-   int Npar=4;
-   int Nvar=1;//m_l, w0,M_PS^2,f_PS
-   int ik1=0,ik2=1;
-   int ik2_min=1, ik2_max=3;
-   int nk=(ik2_max-ik2_min+1);
-   int ms;
-
-   double *mref;//[Nms]={0.52,0.68,0.81};
-   mref=(double*) malloc(sizeof(double)*nk);
-   mref[0]=0.064;
-   mref[1]=0.080;
-   mref[2]=0.095;
-   int n,count,N=2;
-   int *en=(int*) malloc(sizeof(int)*N);
-   en[0]=nk;
-   en[1]=nk;
-
-   int en_tot=0;
-   
-   for (n=0;n<N;n++)
-       en_tot+=en[n];
-   
-   double *guess=(double*) malloc(sizeof(double)*Npar);
-   for(i=0;i<Npar;i++)
-       guess[i]=1.;
-    guess[0]=2.05478;
-    guess[1]=0.113021;
-    
-    
-   //x=(double**) malloc(sizeof(double*)*(en_tot));
-
-   chi2m=(double*) malloc(sizeof(double)*(Npar));
-   rm=(double*) malloc(sizeof(double)*(Njack));
-   fit=(double**) malloc(sizeof(double*)*(en_tot));
-
-   r=(double***) malloc(sizeof(double**)*(Npar));
-   for(i=0;i<Npar;i++){
-       r[i]=(double**) malloc(sizeof(double*)*ensembles);
-       for(j=0;j<ensembles;j++){
-           r[i][j]=(double*) malloc(sizeof(double)*Njack);
-       }
-   }
-   
-   chi2=(double*) malloc(sizeof(double)*Njack);
-   y=(double***) malloc(sizeof(double**)*Njack);
-
-
-   for (j=0;j<Njack;j++){
-        y[j]=(double**) malloc(sizeof(double*)*(en_tot));
-        for (n=0;n<N;n++){
-            for (ms=0;ms<nk;ms++){
-                    y[j][ms+n*nk]=(double*) malloc(sizeof(double)*2);
-                
-            }
-        }
-   }
-   
-for (e=0;e<ensembles;e++){     
-   for (n=0;n<N;n++){
-            for (ms=0;ms<nk;ms++){
-                im=mass_index[e][ms+ik2_min][ik1];
-               
-                if (n==0){
-                    for (j=0;j<Njack;j++){
-                            rm[j]=gJ[e].M_PS_jack[im][j]   *  gJ[e].w0[j];
-                            rm[j]*=rm[j];
-                    }
-                    fit[ms]=mean_and_error(jack_files[0].sampling,Njack, rm);
-                }
-                if (n==1){
-                    for (j=0;j<Njack;j++){
-                            rm[j]=gJ[e].f_PS_jack[im][j]   *  gJ[e].w0[j];
-                    }
-                    fit[ms+n*nk]=mean_and_error(jack_files[0].sampling,Njack, rm);
-                }
-
-                for (j=0;j<jack_tot;j++){
-                    y[j][ms+n*nk][0]=rm[j];
-                    y[j][ms+n*nk][1]=fit[ms+n*nk][1];
-                }
-                                          
-                //x[ms+n*nk]=(double*) malloc(sizeof(double)*Nvar);
-                
-                
-            }
-       
-   } 
-
-
-   x=double_malloc_3(Njack,en_tot,Nvar);
-   sigmax=double_malloc_2(en_tot,Nvar);
-   for (j=0;j<Njack;j++){
-       for (n=0;n<N;n++){
-            for (ms=0;ms<nk;ms++){
-                im=mass_index[e][ms+ik2_min][ik1];
-                x[j][ms+n*nk][0]=head[e].k[head[e].nk+ik2_min+ms]*gJ[e].w0[j]/gJ[e].Zp[j];//ml*w0
-
-            }
-       }
-   }
-   
-    for (n=0;n<N;n++){
-            for (ms=0;ms<nk;ms++){
-               for(int v=0 ;v<Nvar;v++){
-                 for (j=0;j<Njack;j++)
-                    rm[j]=x[j][ms+n*nk][v];
-                 tmp=mean_and_error(jack_files[0].sampling,Njack, rm);
-                 //if (fabs(tmp[1])<1e-6) {printf("e=%d    v=%d   %g +- %g\n", e,v,tmp[0],tmp[1] ); tmp[1]=tmp[0]/1.0e+8; }
-                 sigmax[ms+n*nk][v]=tmp[1];
-                 free(tmp);
-                 }
-               }
-    }
-    
-
-  
-    for (j=0;j<Njack;j++){
-        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
-        //tmp=non_linear_fit_Nf_sigmax(N, en,x[j],sigmax, y[j] , Nvar,  Npar, two_lines,guess );
-        //tmp=non_linear_fit_Nf_sigmax_iterative(N, en,x[j],sigmax, y[j] , Nvar,  Npar, two_lines,guess );
-        chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, two_lines  );
-  
-        for(i=0;i<Npar;i++){
-            r[i][e][j]=tmp[i];
-        }                
-        free(tmp);
-
-   }     
-   
-        
-   for (ms=0;ms<en[0];ms++){
-        printf("%g    %g    %g  %g    %g  \n",x[Njack-1][ms][0],y[Njack-1][ms][0],y[Njack-1][ms][1],y[Njack-1][ms+nk][0],y[Njack-1][ms+nk][1]);
-        free(fit[ms]);
-   }
-   //for(i=0;i<Npar;i++)
-   //    printf("P%d=%g;  \t ",i,r[i][e][Njack-1]);
-   //printf("\n");
-   
-   
-    chi2m=mean_and_error(jack_files[0].sampling,Njack, chi2);
-    printf("$\\chi^2/dof=%f+-%f$\n",chi2m[0]/(en_tot-Npar),chi2m[1]/(en_tot-Npar));
-    free(chi2m);
-   
-   
-} 
-   free_3(Njack,en_tot,x);
-   free_2(en_tot,sigmax);
-   
-   free(fit);    
-   for (j=0;j<Njack;j++){
-        for (e=0;e<nk*N;e++){
-             free(y[j][e]);
-         }
-         free(y[j]);
-   }
-   free(y); free(guess);
-   im=mass_index[0][1][0];
-   //printf("A53: Mk(ms1)=%f   ms1=%f\n",gJ[0].M_PS_jack[im][Njack-1],head[0].k[head[0].nk+ik2_min+0]*gJ[0].w0[Njack-1] );
-   //printf("ms0  MK0w^2    fkw0   ms1  MK1W^2   fkw1    ms2    MK0w^2     fkw2  \n"); 
-   for (e=0;e<ensembles;e++)
-   {
-       for (ms=0;ms<nk;ms++){
-           im=mass_index[e][1+ms][0];
-           //printf("%g  %g   %g\n",  head[e].k[head[e].nk+ik2_min+ms]*gJ[e].w0[Njack-1]/gJ[e].Zp[Njack-1],pow(gJ[e].M_PS_jack[im][Njack-1]* gJ[e].w0[Njack-1],2),
-           //      gJ[e].f_PS_jack[im][Njack-1]   *  gJ[e].w0[Njack-1] );  
-        }
-           printf("\n");
-  // printf("%d   MKw2(ms=%f)=%f    MKw2=%f      fk=%f     \n",e   ,  head[e].k[head[e].nk+ik2_min+0]*gJ[e].w0[Njack-1]/gJ[e].Zp[Njack-1]   ,pow(gJ[e].M_PS_jack[im][Njack-1]* gJ[e].w0[Njack-1],2) ,r[0][e][Njack-1]+mref[0]*r[1][e][Njack-1],r[2][e][Njack-1]+mref[0]*r[3][e][Njack-1] );
-   
-   }
-    free(chi2);
-///////////////////////////////////////////////////////////compute MK at physical point
-   free(en);
-   Nvar=fit_info.Nvar;
-   Npar=fit_info.Npar;
-   guess=(double*) malloc(sizeof(double*)*Npar);
-   for(i=0;i<Npar;i++)
-       guess[i]=1.;
-   
-
-   
-   
-   double *rm1=(double*) malloc(sizeof(double)*(Njack));
-   double **y1=(double**) malloc(sizeof(double*)*(Njack));
-  // fit=(double**) malloc(sizeof(double*)*(en_tot));
- 
-   MK=(double**) malloc(sizeof(double*)*(nk*N));
-   for(i=0;i<nk*N;i++){
-         MK[i]=(double*) malloc(sizeof(double)*Njack);
-   }
-
-   double **xphys=double_malloc_2(Njack,Nvar);
-   
-  
-    double KM,Kf;
-for (ms=0;ms<nk;ms++){
-  /*  if(ms==0)   guess[0]=2.111834 ;guess[1]=0.331624 ;  guess[2]=0.275526;  guess[3]=0.125696;  guess[4]=-1.610862; 
-    if(ms==1)   guess[0]=2.111834 ;guess[1]=0.802615 ;  guess[2]=0.256295;  guess[3]=0.128061;  guess[4]=-1.639810; 
-    if(ms==2)   guess[0]=2.111834 ;guess[1]=1.109423 ;  guess[2]=0.244229;  guess[3]=0.130214;  guess[4]=-1.664364; 
-*/
-   /* double **tmp1=double_malloc_2(Npar,Njack);
-    chi2m=(double*) malloc(sizeof(double)*(Npar)); 
-    chi2=(double*) malloc(sizeof(double)*Njack);
-    rm=(double*) malloc(sizeof(double)*(Njack));
-    x=(double**) malloc(sizeof(double*)*(en_tot));
-    y=(double***) malloc(sizeof(double**)*Njack);
-    for (j=0;j<Njack;j++){
-        y[j]=(double**) malloc(sizeof(double*)*(en_tot));
-        count=0;
-        for (n=0;n<N;n++){
-            for (i=0;i<en[n];i++){
-                y[j][i+count]=(double*) malloc(sizeof(double)*2);
-            }
-            count+=en[n];
-        }
-    }*/
-    double ***C,**tmp1;
-    init_fit(  N, head , Njack, gJ,Nvar, Npar, &en, &en_tot, &x, &sigmax, &chi2m, &rm,&tmp1, &fit, &y,&chi2,&C);
-    
-    count=0;
-    for (n=0;n<N;n++){
-        for (e=0;e<en[n];e++){
-                im=mass_index[e][ik2][ik1];
-                if(n==0){
-                    for (j=0;j<Njack;j++){
-                        //FVE_K( r1->Bw[j], r1->fw[j], double(head[e].l1)/gJ[e].w0[j],  head[e].k[head[e].nk+ik1]*gJ[e].w0[j]/gJ[e].Zp[j],  mref[ms] ,gJ[e].M_PS_jack[0][j]*gJ[e].M_PS_jack[0][j],  gJ[e].f_PS_jack[0][j],r[0][e][j]+mref[ms]*r[1][e][j], r[2][e][j]+mref[ms]*r[3][e][j],&KM, &Kf);
-                        //rm[j]=(r[0][e][j]+mref[ms]*r[1][e][j])  -  KM*KM*r1->Bw[j]*( head[e].k[head[e].nk+ik1]*gJ[e].w0[j]/gJ[e].Zp[j]+mref[ms]);//-P0_w*( mlw+msw)
-                        rm[j]=(r[0][e][j]+mref[ms]*r[1][e][j]);//(KM*KM);
-                        rm1[j]=(r[0][e][j]+mref[ms]*r[1][e][j]);//(KM*KM);
-                    }
-                }
-                if(n==1){
-                    for (j=0;j<Njack;j++){
-                        rm[j]=r[2][e][j]+mref[ms]*r[3][e][j];
-                        //rm1[j]=rm[j]/Kf;
-                    }
-                    
-                }
-                fit[e+count]=mean_and_error(jack_files[0].sampling,Njack, rm);
-                y1[e+count]=mean_and_error(jack_files[0].sampling,Njack, rm1);
-                
-                for (j=0;j<jack_tot;j++){
-                    y[j][e+count][0]=rm[j];
-                    y[j][e+count][1]=fit[e+count][1];
-                    //if (e==3) {y[j][e+count][1]*=100.; }
-                }
-                
-                                
-               // x[e+count]=(double*) malloc(sizeof(double)*Nvar);
-                
-                
-                
-                
-        }
-        count+=en[n];
-    }   
-    int ii;
-    //#pragma omp parallel for  private(tmp,e,i,xphys,n,count)  shared(N, en,x, y , Nvar,  Npar,guess,Njack,r,chi2)
-    for (j=0;j<Njack;j++){
-        count=0;
-        for (n=0;n<N;n++){
-            for (e=0;e<en[n];e++){
-               
-                
-                im=mass_index[e][ik2][ik1];
-                x[j][e+count][0]=head[e].k[head[e].nk+ik1]*gJ[e].w0[j]/gJ[e].Zp[j];//ml*w0
-                x[j][e+count][1]=gJ[e].w0[j];//w0
-                x[j][e+count][2]=gJ[e].M_PS_jack[im][j]*gJ[e].M_PS_jack[im][j];//MPS^2
-                x[j][e+count][3]=gJ[e].f_PS_jack[im][j];//f_PS
-                x[j][e+count][4]=double(head[e].l1);//f_PS
-                x[j][e+count][5]=mref[ms];//ms*w0
-                x[j][e+count][6]=r[0][e][j]+mref[ms]*r[1][e][j];//MKw2
-                x[j][e+count][7]=r[2][e][j]+mref[ms]*r[3][e][j];//fkw
-                x[j][e+count][8]=r1->Bw[j];
-                x[j][e+count][9]=r1->fw[j];
-               
-            
-            
-                /*for (ii=0;ii<Nvar;ii++)
-                    xphys[ii]=x[e+count][ii];*/
-            }
-            count+=en[n];
-        }
-    }
-    count=0;
-    for (n=0;n<1;n++){
-       for (e=0;e<en[n];e++){
-           for(int v=0 ;v<Nvar;v++){
-               for (j=0;j<Njack;j++)
-                     rm[j]=x[j][e+count][v];
-               tmp=mean_and_error(jack_files[0].sampling,Njack, rm);
-               //if (fabs(tmp[1])<1e-6) {printf("e=%d    v=%d   %g +- %g\n", e,v,tmp[0],tmp[1] ); tmp[1]=fabs(tmp[0])/1.0e+8; }
-               sigmax[e+count][v]=tmp[1];
-               free(tmp);
-           }
-       }
-       count+=en[n];
-    }
-    
-    guess=guess_for_non_linear_fit_Nf(N, en,x[0], y[0] , Nvar,  Npar, fit_info.function,guess ); 
-    for (j=0;j<Njack;j++){
-       // tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, MK_chiral_FVE ,guess );
-       // chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, MK_chiral_FVE  );
-    
-        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
-        //tmp=non_linear_fit_Nf_sigmax(N, en,x[j],sigmax, y[j] , Nvar,  Npar, fit_info.function,guess );
-        //tmp=non_linear_fit_Nf_sigmax_iterative(N, en,x[j],sigmax, y[j] , Nvar,  Npar, fit_info.function,guess );
-        chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
-        C[j]=covariance_non_linear_fit_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function );  
-         
-         if(j==Njack-1){
-            printf("#P0_w=%f ;P1_w=%f ;  P3ww=%f;  Pf1w=%f;  Pf2w=%f; Pf4www=%f;  msw=%f;\n",tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5],mref[ms]  );
-            printf("#chi2=%f\n",chi2[j]/(en_tot-Npar));
-            
-              printf("# w0    mlw    MKw2/KM2  errr     fkw0/Kf    err  KM  Kf\n");
-              for (e=0;e<ensembles;e++){
-                  im=mass_index[e][ik2][ik1];
-                  KM=fit_info.function(2,Nvar,x[j][e],Npar,tmp);
-                  Kf=fit_info.function(3,Nvar,x[j][e],Npar,tmp);
-                  
-                 // FVE_K( r1->Bw[j], r1->fw[j], double(head[e].l1)/gJ[e].w0[j],  head[e].k[head[e].nk+ik1]*gJ[e].w0[j]/gJ[e].Zp[j],  mref[ms] ,gJ[e].M_PS_jack[0][j]*gJ[e].M_PS_jack[0][j],  gJ[e].f_PS_jack[0][j],r[0][e][j]+mref[ms]*r[1][e][j], r[2][e][j]+mref[ms]*r[3][e][j],&KM, &Kf);
-
-                  printf("%f   %f    %f   %f     %f       %f       %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),y[j][e+en[0]][0]/(Kf),y[j][e+en[0]][1]/(Kf),KM,Kf);
-              }
-         }
-
-       // printf("guess[0]=%f;  guess[1]=%f;  guess[2]=%f;  guess[3]=%f;   guess[4]=%f;   guess[5]=%f;\n",tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5]);
-       // chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, line  );
-         
-
-         xphys[j][0]=r1->mlw[j];
-         xphys[j][1]=1e+6;  //w0
-         xphys[j][2]=r1->MpiMeV[j]*r1->MpiMeV[j]*r1->w0MeV[j]*r1->w0MeV[j];
-         xphys[j][3]=r1->fpiw[j];
-         xphys[j][4]=1e+10;  // L such that L/w0=1e+6
-         xphys[j][5]=mref[ms];
-         xphys[j][6]=r1->MKMeV[j]*r1->w0MeV[j]*r1->MKMeV[j]*r1->w0MeV[j];//MKw2
-         xphys[j][7]=0;//fkw
-         xphys[j][8]=r1->Bw[j];
-         xphys[j][9]=r1->fw[j];
-         /*if(j==Njack-1){
-           for (i=0;i<10;i++)
-              printf("xphis[%d]=%g\n",i,xphys[j][i]);
-              printf("delta=%g  %g\n",fit_info.function(2,  Nvar, xphys[j],Npar,tmp),fit_info.function(3,  Nvar, xphys[j],Npar,tmp));       
-         }*/
-         //add w0 -inft
-         MK[ms][j]=fit_info.function(0,  Nvar, xphys[j],Npar,tmp);//MK2
-       //     printf("MKw02=%f\n",MK[ms][j]);
-         MK[ms+1*nk][j]=fit_info.function(1,  Nvar, xphys[j],Npar,tmp);//fK
-         for (i=0;i<Npar;i++){
-              tmp1[i][j]=tmp[i];
-          }
-       
-         
-         free(tmp);
-    } 
-    struct fit_result  fit_out=close_fit(N,  head , Njack, gJ,Npar,&en,&en_tot, &x,&sigmax, &chi2m, &rm,&tmp1, &fit, &y,&chi2,&C);
-    
-    
-    char namefile[NAMESIZE];
-    mysprintf(namefile,NAMESIZE,"%s_ms%d",prefix,ms );
-    print_fit_info(argv, Njack, fit_out,  fit_info, xphys, gJ, head , "K",namefile);
-
-   
-   for (e=0;e<en_tot;e++){
-        /*free(x[e]);  free(fit[e]);*/   //moved to close fit;
-        free(y1[e]);
-   }
-}
-free(y1);free(rm1);
-
-   printf("MKw2(ms1)=%f    MKw2(ms2)=%f     MKw2(ms3)=%f\n", MK[0][Njack-1],MK[1][Njack-1],MK[2][Njack-1]);
-   printf("fKw(ms1)=%f     fKw(ms2)=%f      fKw(ms3)=%f\n", MK[0+nk][Njack-1],MK[1+nk][Njack-1],MK[2+nk][Njack-1]);
-
- /*free(fit);     free(x);
-   for (j=0;j<Njack;j++){
-        for (e=0;e<en_tot;e++){
-             free(y[j][e]);
-         }
-         free(y[j]);
-   }
-   free(y); */free(guess);
-
- ////////////////////////////////////////////////last interpolation  
-   en=(int*) malloc(sizeof(int)*N);
-   
-   en_tot=0;
-   for (n=0;n<N;n++){
-       en[n]=nk;
-       en_tot+=en[n];
-   }
-   
-   Npar=4;
-   Nvar=1;//m_l, w0,M_PS^2,f_PS
-   chi2=(double*) malloc(sizeof(double)*Njack);
-
-   guess=(double*) malloc(sizeof(double*)*Npar);
-   for(i=0;i<Npar;i++)
-       guess[i]=1.;
-   guess[0]=1;guess[1]=1;
-   //x=(double**) malloc(sizeof(double*)*(en_tot));
-   rm=(double*) malloc(sizeof(double)*Njack);
-
-   fit=(double**) malloc(sizeof(double*)*(en_tot));
- 
-   y=(double***) malloc(sizeof(double**)*Njack);
-    for (j=0;j<Njack;j++){
-        y[j]=(double**) malloc(sizeof(double*)*(en_tot));
-        for (n=0;n<N;n++){
-            for (ms=0;ms<nk;ms++){
-                    y[j][ms+n*nk]=(double*) malloc(sizeof(double)*2);
-                
-            }
-        }
-   }
-   
-   x=double_malloc_3(Njack,en_tot,Nvar);
-   
-   out=(double**) malloc(sizeof(double*)*2);
-   out[0]=(double*) malloc(sizeof(double)*Njack);
-   out[1]=(double*) malloc(sizeof(double)*Njack);
-
-   for (n=0;n<N;n++){
-            for (ms=0;ms<nk;ms++){
-               
-                if (n==0){
-                    for (j=0;j<Njack;j++){
-                            rm[j]= MK[ms][j];
-                          //  rm[j]*=rm[j];
-                    }
-                    fit[ms]=mean_and_error(jack_files[0].sampling,Njack, rm);
-                }
-                if (n==1){
-                    for (j=0;j<Njack;j++){
-                            rm[j]= MK[ms+1*nk][j];
-                    }
-                    fit[ms+n*nk]=mean_and_error(jack_files[0].sampling,Njack, rm);
-                }
-
-                for (j=0;j<jack_tot;j++){
-                    y[j][ms+n*nk][0]=rm[j];
-                    y[j][ms+n*nk][1]=fit[ms][1];
-                }
-                                          
-                //x[ms+n*nk]=(double*) malloc(sizeof(double)*Nvar);
-                //x[ms+n*nk][0]=mref[ms];//ml*w0
-            }
-       
-   } 
-   for (j=0;j<Njack;j++){
-       for (n=0;n<N;n++){
-            for (ms=0;ms<nk;ms++){
-                x[j][ms+n*nk][0]=mref[ms];//ml*w0
-
-            }
-       }
-   }
-   
-  
-   
-
-   double in;
-   for (j=0;j<Njack;j++){
-        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
-       
-        chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, two_lines  );
-        if (j==Njack-1)
-            printf("chi2=%g\n",chi2[Njack-1]);
-        in=r1->MKMeV[j]*r1->w0MeV[j]*r1->MKMeV[j]*r1->w0MeV[j];
-        out[0][j]=(in-tmp[0])/tmp[1];
-        out[1][j]=tmp[2]+tmp[3]*out[0][j];
-                 
-        free(tmp);
-
-   }     
-   for (ms=0;ms<en_tot;ms++){
-         free(fit[ms]);
-   }
-   
-   free_3(Njack,en_tot,x);
-
-  
-   free(fit);     
-   for (j=0;j<Njack;j++){
-        for (e=0;e<nk*N;e++){
-             free(y[j][e]);
-         }
-         free(y[j]);
-   }
-   free(y); free(guess);
-   
-
-   free(chi2);
-   
-   free(rm);   
-   return out;
-   
-} 
-
 
 
 
@@ -1351,6 +848,505 @@ free(y1);free(rm1);
 } 
 
 
+
+double **fit_MK_fK_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info , struct result_jack *r1, const char *prefix,char **argv, store_fit_clover mud){
+    double ***y,***x,**sigmax,***r,**MK,*chi2,*tmp,*rm,*chi2m,**fit;   double **out;
+    int i,j,e,im;  
+    int Npar;
+    int Nvar=1;//m_l, w0,M_PS^2,f_PS
+    int ik1=0,ik2=1;
+    int ik2_min=1, ik2_max=3;
+    int nk=(ik2_max-ik2_min+1);
+    int ms;
+    
+    double *mref;//[Nms]={0.52,0.68,0.81};
+    mref=(double*) malloc(sizeof(double)*nk);
+    mref[0]=0.064;
+    mref[1]=0.080;
+    mref[2]=0.095;
+    int n,count,N=fit_info.N;
+    int *en=(int*) malloc(sizeof(int)*N);
+    
+    for (i=0;i<N;i++)
+        en[i]=nk;
+    
+    if (N==1)
+        Npar=2;
+    else if (N==2)
+        Npar=4;
+    
+    
+    
+    int en_tot=0;
+    
+    for (n=0;n<N;n++)
+        en_tot+=en[n];
+    
+    double *guess=(double*) malloc(sizeof(double)*Npar);
+    for(i=0;i<Npar;i++)
+        guess[i]=1.;
+    
+    
+    //x=(double**) malloc(sizeof(double*)*(en_tot));
+    
+    chi2m=(double*) malloc(sizeof(double)*(Npar));
+    rm=(double*) malloc(sizeof(double)*(Njack));
+    fit=(double**) malloc(sizeof(double*)*(en_tot));
+    
+    r=(double***) malloc(sizeof(double**)*(Npar));
+    for(i=0;i<Npar;i++){
+        r[i]=(double**) malloc(sizeof(double*)*ensembles);
+        for(j=0;j<ensembles;j++){
+            r[i][j]=(double*) malloc(sizeof(double)*Njack);
+        }
+    }
+    
+    chi2=(double*) malloc(sizeof(double)*Njack);
+    y=(double***) malloc(sizeof(double**)*Njack);
+    
+    
+    for (j=0;j<Njack;j++){
+        y[j]=(double**) malloc(sizeof(double*)*(en_tot));
+        for (n=0;n<N;n++){
+            for (ms=0;ms<nk;ms++){
+                y[j][ms+n*nk]=(double*) malloc(sizeof(double)*2);
+                
+            }
+        }
+    }
+    
+    for (e=0;e<ensembles;e++){     
+        for (n=0;n<N;n++){
+            for (ms=0;ms<nk;ms++){
+                im=mass_index[e][ms+ik2_min][ik1];
+                int imp=mass_index[e][0][0];
+                if (n==0){
+                    for (j=0;j<Njack;j++){
+                        rm[j]=gJ[e].M_PS_jack[im][j]   *  gJ[e].w0[j];
+                        rm[j]*=rm[j];
+                    }
+                    fit[ms]=mean_and_error(jack_files[0].sampling,Njack, rm);
+                }
+                if (n==1){
+                    for (j=0;j<Njack;j++){
+                        rm[j]=gJ[e].f_PS_jack[im][j]  *  gJ[e].w0[j];                           
+                    }
+                    fit[ms+n*nk]=mean_and_error(jack_files[0].sampling,Njack, rm);
+                }
+                
+                for (j=0;j<jack_tot;j++){
+                    y[j][ms+n*nk][0]=rm[j];
+                    y[j][ms+n*nk][1]=fit[ms+n*nk][1];
+                    
+                }
+                
+                //x[ms+n*nk]=(double*) malloc(sizeof(double)*Nvar);
+                
+                
+            }
+            
+        } 
+        
+        x=double_malloc_3(Njack,en_tot,Nvar);
+        sigmax=double_malloc_2(en_tot,Nvar);
+        
+        
+        for (j=0;j<Njack;j++){
+            for (n=0;n<N;n++){
+                for (ms=0;ms<nk;ms++){
+                    im=mass_index[e][ms+ik2_min][ik1];
+                    x[j][ms+n*nk][0]=head[e].k[head[e].nk+ik2_min+ms]*gJ[e].w0[j]/gJ[e].Zp[j];//ml*w0
+                }
+            }
+        }
+        
+        for (n=0;n<N;n++){
+            for (ms=0;ms<nk;ms++){
+                for(int v=0 ;v<Nvar;v++){
+                    for (j=0;j<Njack;j++)
+                        rm[j]=x[j][ms+n*nk][v];
+                    tmp=mean_and_error(jack_files[0].sampling,Njack, rm);
+                    if (fabs(tmp[1])<1e-6) {
+                        //printf("e=%d    v=%d   %g +- %g\n", e,v,tmp[0],tmp[1] );
+                        tmp[1]=tmp[0]/1.0e+8;
+                        
+                    }
+                    sigmax[ms+n*nk][v]=tmp[1];
+                    free(tmp);
+                }
+            }
+        }
+        
+        
+        
+        for (j=0;j<Njack;j++){
+            tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+            //tmp=non_linear_fit_Nf_sigmax(N, en,x[j], sigmax, y[j] , Nvar,  Npar, two_lines,guess );
+            //tmp=non_linear_fit_Nf_sigmax_iterative(N, en,x[j], sigmax, y[j] , Nvar,  Npar, two_lines,guess );
+            chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, two_lines  );
+            
+            
+            for(i=0;i<Npar;i++){
+                r[i][e][j]=tmp[i];
+            }                
+            free(tmp);
+            
+        }     
+        for (ms=0;ms<en_tot;ms++){
+            free(fit[ms]);
+        }
+        
+    } 
+    free_3(Njack,en_tot,x);
+    free_2(en_tot,sigmax);
+    
+    
+    free(fit);     
+    for (j=0;j<Njack;j++){
+        for (e=0;e<nk*N;e++){
+            free(y[j][e]);
+        }
+        free(y[j]);
+    }
+    free(y); free(guess);
+    im=mass_index[0][1][0];
+    //printf("A53: Mk(ms1)=%f   ms1=%f\n",gJ[0].M_PS_jack[im][Njack-1],head[0].k[head[0].nk+ik2_min+0]*gJ[0].w0[Njack-1] );
+    for (e=0;e<ensembles;e++)
+    {im=mass_index[e][1+0][0];
+    //    printf("%d   MKw2(ms=%f)=%f    MKw2=%f      fk=%f\n",e   ,  head[e].k[head[e].nk+ik2_min+0]*gJ[e].w0[Njack-1]/gJ[e].Zp[Njack-1]   ,pow(gJ[e].M_PS_jack[im]//[Njack-1]* gJ[e].w0[Njack-1],2) ,r[0][e][Njack-1]+mref[0]*r[1][e][Njack-1],r[2][e][Njack-1]+mref[0]*r[3][e][Njack-1] );
+        
+    }
+    free(chi2);
+    ///////////////////////////////////////////////////////////compute MK at physical point
+    free(en);
+    Nvar=fit_info.Nvar;
+    Npar=fit_info.Npar;
+    guess=(double*) malloc(sizeof(double*)*Npar);
+    for(i=0;i<Npar;i++)
+        guess[i]=1.;
+    
+    
+    double *rm1=(double*) malloc(sizeof(double)*(Njack));
+    double **y1=(double**) malloc(sizeof(double*)*(Njack));
+    // fit=(double**) malloc(sizeof(double*)*(en_tot));
+    
+    MK=(double**) malloc(sizeof(double*)*(nk*N));
+    for(i=0;i<nk*N;i++){
+        MK[i]=(double*) malloc(sizeof(double)*Njack);
+    }
+    
+    double **xphys=double_malloc_2(Njack,Nvar);
+    
+    
+    double KM,Kf;
+    for (ms=0;ms<nk;ms++){
+        
+        char fname[NAMESIZE];
+        mysprintf(fname,NAMESIZE,"%s/%s_ms%d",argv[2],prefix,ms);
+        printf("writing data to :%s\n",fname);
+        FILE *fdat=open_file(fname,"w+");
+        double ***C,**tmp1;
+        init_fit(  N, head , Njack, gJ,Nvar, Npar, &en, &en_tot, &x, &sigmax, &chi2m, &rm,&tmp1, &fit, &y,&chi2,&C);
+        
+        count=0;
+        for (n=0;n<N;n++){
+            for (e=0;e<en[n];e++){
+                im=mass_index[e][ik2][ik1];
+                if(n==0){
+                    for (j=0;j<Njack;j++){
+                        rm[j]=(r[0][e][j]+mref[ms]*r[1][e][j]);//(KM*KM);
+                        rm1[j]=(r[0][e][j]+mref[ms]*r[1][e][j]);//(KM*KM);
+                    }
+                }
+                if(n==1){
+                    for (j=0;j<Njack;j++){
+                        rm[j]=r[2][e][j]+mref[ms]*r[3][e][j];
+                        //rm1[j]=rm[j]/Kf;
+                    }
+                    
+                }
+                fit[e+count]=mean_and_error(jack_files[0].sampling,Njack, rm);
+                y1[e+count]=mean_and_error(jack_files[0].sampling,Njack, rm1);
+                
+                for (j=0;j<jack_tot;j++){
+                    y[j][e+count][0]=rm[j];
+                    y[j][e+count][1]=fit[e+count][1];
+                    //if (e==3) {y[j][e+count][1]*=100.; }
+                }
+                
+                
+                //x[e+count]=(double*) malloc(sizeof(double)*Nvar);
+                
+            }
+            count+=en[n];
+        }   
+        int ii;
+        //#pragma omp parallel for  private(tmp,e,i,xphys,n,count)  shared(N, en,x, y , Nvar,  Npar,guess,Njack,r,chi2)
+        for (j=0;j<Njack;j++){
+            count=0;
+            for (n=0;n<N;n++){
+                for (e=0;e<en[n];e++){
+                    
+                    
+                    im=mass_index[e][ik2][ik1];
+                    x[j][e+count][0]=head[e].k[head[e].nk+ik1]*gJ[e].w0[j]/gJ[e].Zp[j];//ml*w0
+                    x[j][e+count][1]=gJ[e].w0[j];//w0
+                    x[j][e+count][2]=gJ[e].M_PS_jack[im][j]*gJ[e].M_PS_jack[im][j];//MPS^2
+                    x[j][e+count][3]=gJ[e].f_PS_jack[im][j];//f_PS
+                    x[j][e+count][4]=double(head[e].l1);//f_PS
+                    x[j][e+count][5]=mref[ms];//ms*w0
+                    x[j][e+count][6]=r[0][e][j]+mref[ms]*r[1][e][j];//MKw2
+                    if (N>1)
+                        x[j][e+count][7]=r[2][e][j]+mref[ms]*r[3][e][j];//fkw
+                    x[j][e+count][8]=mud.jack_B[j]*mud.w0[j]/197.326963;
+                    x[j][e+count][9]=mud.jack_f[j]*mud.w0[j]/197.326963;
+                    
+                }
+                count+=en[n];
+            }
+        }
+        count=0;
+        for (n=0;n<1;n++){
+            for (e=0;e<en[n];e++){
+                for(int v=0 ;v<Nvar;v++){
+                    for (j=0;j<Njack;j++)
+                        rm[j]=x[j][e+count][v];
+                    tmp=mean_and_error(jack_files[0].sampling,Njack, rm);
+                    if (fabs(tmp[1])<1e-6) {
+                        //printf("e=%d    v=%d   %g +- %g\n", e,v,tmp[0],tmp[1] ); 
+                        tmp[1]=tmp[0]/1.0e+8; }
+                        sigmax[e+count][v]=tmp[1];
+                        free(tmp);
+                }
+            }
+            count+=en[n];
+        }
+        
+        guess=guess_for_non_linear_fit_Nf(N, en,x[0], y[0] , Nvar,  Npar, fit_info.function,guess ); 
+        for (j=0;j<Njack;j++){
+            
+            
+            //if (j==0){    }
+            tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+            //tmp=non_linear_fit_Nf_sigmax(N, en,x[j], sigmax, y[j] , Nvar,  Npar, fit_info.function,guess );
+            //tmp=non_linear_fit_Nf_sigmax_iterative(N, en,x[j], sigmax, y[j] , Nvar,  Npar, fit_info.function,guess );
+            chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+            C[j]=covariance_non_linear_fit_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function );  
+            
+            if(j==Njack-1){
+                //printf("#P0_w=%f ;P1_w=%f ;  P3ww=%f;  Pf1w=%f;  Pf2w=%f; Pf4www=%f;  msw=%f;\n",tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5],mref[ms]  );
+                printf("#chi2=%f    N=%d\n",chi2[j]/(en_tot-Npar),N);
+                
+                printf("# w0    mlw    MKw2/KM2  errr     fkw0/Kf    err  KM  Kf\n");
+                fprintf(fdat,"# w0    mlw    MKw2/KM2  errr     fkw0/Kf    err  KM  Kf\n");
+                double newline_if_w0=x[j][0][1];
+                std::vector<int>  myen={0,1,2,3,   8,4,5,6,   7};
+                for (auto e :myen){
+                    im=mass_index[e][ik2][ik1];
+                    KM=fit_info.function(2,Nvar,x[j][e],Npar,tmp);
+                    Kf=fit_info.function(3,Nvar,x[j][e],Npar,tmp);
+                    
+                    if (newline_if_w0!=x[j][e][1]){
+                        fprintf(fdat,"\n\n");
+                        newline_if_w0=x[j][e][1] ;
+                    }
+                    if(N==1){
+                        fprintf(fdat,"%f   %f    %f   %f           %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),KM,Kf);
+                        printf("%f   %f    %f   %f           %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),KM,Kf);
+                        
+                    }
+                    else if (N==2){
+                        fprintf(fdat,"%f   %f    %f   %f     %f       %f       %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),y[j][e+en[0]][0]/(Kf),y[j][e+en[0]][1]/(Kf),KM,Kf);
+                        printf("%f   %f    %f   %f     %f       %f       %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),y[j][e+en[0]][0]/(Kf),y[j][e+en[0]][1]/(Kf),KM,Kf);
+                    }
+                }
+            }
+            
+            
+            xphys[j][0]=mud.jack_m[j] * mud.w0[j]/197.326963;
+            xphys[j][1]=1e+6;  //w0
+            xphys[j][2]=r1->MpiMeV[j]*r1->MpiMeV[j]*(mud.w0[j]/197.326963)*(mud.w0[j]/197.326963);
+            xphys[j][3]=r1->fpiw[j];
+            xphys[j][4]=1e+10;  // L such that L/w0=1e+6
+            xphys[j][5]=mref[ms];
+            xphys[j][6]=r1->MKMeV[j]*(mud.w0[j]/197.326963)*r1->MKMeV[j]*(mud.w0[j]/197.326963);//MKw2
+            xphys[j][7]=0;//fkw
+            xphys[j][8]=mud.jack_B[j]*mud.w0[j]/197.326963;
+            xphys[j][9]=mud.jack_f[j]*mud.w0[j]/197.326963;
+            
+            /*if(j==Njack-1){
+             *         for (i=0;i<10;i++)
+             *            printf("xphis[%d]=%g\n",i,xphys[j][i]);
+             *            printf("delta=%g  %g\n",fit_info.function(2,  Nvar, xphys[j],Npar,tmp),fit_info.function(3,  Nvar, xphys[j],Npar,tmp));       
+        }*/
+            //add w0 -inft
+            MK[ms][j]=fit_info.function(0,  Nvar, xphys[j],Npar,tmp);//MK2
+            //     printf("MKw02=%f\n",MK[ms][j]);
+            if (N>1)
+                MK[ms+1*nk][j]=fit_info.function(1,  Nvar, xphys[j],Npar,tmp);//fK
+            
+            for (i=0;i<Npar;i++){
+                tmp1[i][j]=tmp[i];
+            }
+            
+            
+            free(tmp);
+        } 
+        struct fit_result  fit_out=close_fit(N,  head , Njack, gJ,Npar,&en,&en_tot, &x, &sigmax, &chi2m, &rm,&tmp1, &fit, &y,&chi2,&C);
+        
+        
+        char namefile[NAMESIZE];
+        mysprintf(namefile,NAMESIZE,"%s_ms%d",prefix,ms );
+        print_fit_info(argv, Njack, fit_out,  fit_info, xphys, gJ, head , "K",namefile);
+        
+        
+        for (e=0;e<en_tot;e++){
+            /*free(x[e]);  free(fit[e]);*/   //moved to close fit;
+            free(y1[e]);
+        }
+        fclose(fdat);
+    }//end loop ms
+    free(y1);free(rm1);
+    
+    printf("MKw2(ms1)=%f    MKw2(ms2)=%f     MKw2(ms3)=%f\n", MK[0][Njack-1],MK[1][Njack-1],MK[2][Njack-1]);
+    if (N>1)
+        printf("fKw(ms1)=%f     fKw(ms2)=%f      fKw(ms3)=%f\n", MK[0+nk][Njack-1],MK[1+nk][Njack-1],MK[2+nk][Njack-1]);
+    free(guess);
+    
+    ////////////////////////////////////////////////last interpolation  
+    en=(int*) malloc(sizeof(int)*N);
+    
+    en_tot=0;
+    for (n=0;n<N;n++){
+        en[n]=nk;
+        en_tot+=en[n];
+    }
+    if (N==1)
+        Npar=2;
+    else if (N==2)    
+        Npar=4;
+    Nvar=1;//m_l, w0,M_PS^2,f_PS
+    
+    guess=(double*) malloc(sizeof(double*)*Npar);
+    for(i=0;i<Npar;i++)
+        guess[i]=1.;
+   
+    //x=(double**) malloc(sizeof(double*)*(en_tot));
+    rm=(double*) malloc(sizeof(double)*Njack);
+    
+    fit=(double**) malloc(sizeof(double*)*(en_tot));
+    
+    y=(double***) malloc(sizeof(double**)*Njack);
+    for (j=0;j<Njack;j++){
+        y[j]=(double**) malloc(sizeof(double*)*(en_tot));
+        for (n=0;n<N;n++){
+            for (ms=0;ms<nk;ms++){
+                y[j][ms+n*nk]=(double*) malloc(sizeof(double)*2);
+                
+            }
+        }
+    }
+    
+    x=double_malloc_3(Njack,en_tot,Nvar);
+    sigmax=double_malloc_2(en_tot,Nvar);
+    
+    out=(double**) malloc(sizeof(double*)*N);
+    out[0]=(double*) malloc(sizeof(double)*Njack);
+    if (N>1)
+        out[1]=(double*) malloc(sizeof(double)*Njack);
+    
+    for (n=0;n<N;n++){
+        for (ms=0;ms<nk;ms++){
+            
+            if (n==0){
+                for (j=0;j<Njack;j++){
+                    rm[j]= MK[ms][j];
+                    //  rm[j]*=rm[j];
+                }
+                fit[ms]=mean_and_error(jack_files[0].sampling,Njack, rm);
+            }
+            if (n==1){
+                for (j=0;j<Njack;j++){
+                    rm[j]= MK[ms+1*nk][j];
+                }
+                fit[ms+n*nk]=mean_and_error(jack_files[0].sampling,Njack, rm);
+            }
+            
+            for (j=0;j<jack_tot;j++){
+                y[j][ms+n*nk][0]=rm[j];
+                y[j][ms+n*nk][1]=fit[ms+n*nk][1];
+            }
+            
+            //x[ms+n*nk]=(double*) malloc(sizeof(double)*Nvar);
+            //x[ms+n*nk][0]=mref[ms];//ml*w0
+            
+        }
+        
+    } 
+    for (j=0;j<Njack;j++){
+        for (n=0;n<N;n++){
+            for (ms=0;ms<nk;ms++){
+                x[j][ms+n*nk][0]=mref[ms];//ml*w0
+            }
+        }
+    }
+    
+    for (n=0;n<N;n++){
+        for (ms=0;ms<nk;ms++){
+            for(int v=0 ;v<Nvar;v++){
+                for (j=0;j<Njack;j++)
+                    rm[j]=x[j][ms+n*nk][v];
+                tmp=mean_and_error(jack_files[0].sampling,Njack, rm);
+                if (fabs(tmp[1])<1e-6) {
+                    //printf("e=%d    v=%d   %g +- %g\n", e,v,tmp[0],tmp[1] );
+                    tmp[1]=tmp[0]/1.0e+8; }
+                    sigmax[ms+n*nk][v]=tmp[1];
+                    free(tmp);
+            }
+        }
+    }
+    
+    
+    double in;
+    for (j=0;j<Njack;j++){
+        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+        
+        //  chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, two_lines  );
+        //in=r1->MKMeV[j]*(mud.w0[j]/197.326963)*r1->MKMeV[j]*mud.w0[j]/197.326963;
+        in=r1->MKMeV[j]*mud.w0[j]/197.326963;
+        in=in*in;
+        out[0][j]=(in-tmp[0])/tmp[1];
+        //printf("%g  %g  %g  %g  \n",tmp[0],tmp[1],out[0][j],in);
+        if (N>1)
+            out[1][j]=tmp[2]+tmp[3]*out[0][j];
+        
+        free(tmp);
+        
+    }     
+    for (ms=0;ms<en_tot;ms++){
+        free(fit[ms]);
+    }
+    
+    free_3(Njack,en_tot,x);
+    free_2(en_tot,sigmax);
+    
+    
+    free(fit);     
+    for (j=0;j<Njack;j++){
+        for (e=0;e<nk*N;e++){
+            free(y[j][e]);
+        }
+        free(y[j]);
+    }
+    free(y); free(guess);
+    
+    
+    
+    
+    free(rm);   
+    return out;
+    
+} 
 //////////////////////////////////////////////////////// spline in ms///
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2171,7 +2167,13 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
     
     int ensembles_D=8;
     int i,j,e,im;  
+    int n,count,N=fit_info.N;
     int Npar=4;
+    if (N==1)
+        Npar=2;
+    else if (N==2)
+        Npar=4;
+    
     int Nvar=1;//m_l, w0,M_PS^2,f_PS
     int ik1=0,ik2=4;
     int ik2_min=4, ik2_max=6;
@@ -2185,10 +2187,11 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
     mref[1]=1.04;
     mref[2]=1.08;
     //mref[3]=1.09;
-    int n,count,N=2;
+
     int *en=(int*) malloc(sizeof(int)*N);
-    en[0]=nk;
-    en[1]=nk;
+    for (n=0;n<N;n++)
+        en[n]=nk;
+    
     
     
     int en_tot=0;
@@ -2236,13 +2239,13 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
                 int imp=mass_index[e][0][0];
                 if (n==0){
                     for (j=0;j<Njack;j++){
-                        rm[j]=gJ[e].M_PS_jack[im][j] *gJ[e].w0[j]  ;// /  gJ[e].M_PS_jack[imp][j];
+                        rm[j]=gJ[e].M_PS_GEVP_jack[im][j] *gJ[e].w0[j]  ;// /  gJ[e].M_PS_jack[imp][j];
                     }
                     fit[ms]=mean_and_error(jack_files[0].sampling,Njack, rm);
                 }
                 if (n==1){
                     for (j=0;j<Njack;j++){
-                        rm[j]=gJ[e].f_PS_jack[im][j]*gJ[e].w0[j];//  /gJ[e].f_PS_jack[imp][j];                            ;
+                        rm[j]=gJ[e].f_PS_ls_ss_jack[im][j]*gJ[e].w0[j];//  /gJ[e].f_PS_jack[imp][j];                            ;
                     }
                     fit[ms+n*nk]=mean_and_error(jack_files[0].sampling,Njack, rm);
                 }
@@ -2326,7 +2329,7 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
     //printf("A53: Mk(ms1)=%f   ms1=%f\n",gJ[0].M_PS_jack[im][Njack-1],head[0].k[head[0].nk+ik2_min+0]*gJ[0].w0[Njack-1] );
     for (e=0;e<ensembles_D;e++)
     {im=mass_index[e][ik2_min+0][0];
-        printf("%d   MKw2(ms=%f)=%f    MKw2=%f      fk=%f\n",e   ,  head[e].k[head[e].nk+ik2_min+0]*gJ[e].w0[Njack-1]/gJ[e].Zp[Njack-1]   ,pow(gJ[e].M_PS_jack[im][Njack-1]* gJ[e].w0[Njack-1],2) ,r[0][e][Njack-1]+mref[0]*r[1][e][Njack-1],r[2][e][Njack-1]+mref[0]*r[3][e][Njack-1] );
+        //printf("%d   MKw2(ms=%f)=%f    MKw2=%f      fk=%f\n",e   ,  head[e].k[head[e].nk+ik2_min+0]*gJ[e].w0[Njack-1]/gJ[e].Zp[Njack-1]   ,pow(gJ[e].M_PS_jack[im][Njack-1]* gJ[e].w0[Njack-1],2) ,r[0][e][Njack-1]+mref[0]*r[1][e][Njack-1],r[2][e][Njack-1]+mref[0]*r[3][e][Njack-1] );
         
     }
     free(chi2);
@@ -2409,7 +2412,8 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
                     x[j][e+count][4]=double(head[e].l1);//f_PS
                     x[j][e+count][5]=mref[ms];//ms*w0
                     x[j][e+count][6]=r[0][e][j]+mref[ms]*r[1][e][j];//MKw2
-                    x[j][e+count][7]=r[2][e][j]+mref[ms]*r[3][e][j];//fkw
+                    if (N>1)
+                        x[j][e+count][7]=r[2][e][j]+mref[ms]*r[3][e][j];//fkw
                     x[j][e+count][8]=mud.jack_B[j]*mud.w0[j]/197.326963;
                     x[j][e+count][9]=mud.jack_f[j]*mud.w0[j]/197.326963;
                     
@@ -2462,8 +2466,15 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
                         fprintf(fdat,"\n\n");
                         newline_if_w0=x[j][e][1] ;
                     }
-                    fprintf(fdat,"%f   %f    %f   %f     %f       %f       %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),y[j][e+en[0]][0]/(Kf),y[j][e+en[0]][1]/(Kf),KM,Kf);
-                    printf("%f   %f    %f   %f     %f       %f       %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),y[j][e+en[0]][0]/(Kf),y[j][e+en[0]][1]/(Kf),KM,Kf);
+                    if (N==1){
+                        fprintf(fdat,"%f   %f    %f   %f           %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),KM,Kf);
+                        printf("%f   %f    %f   %f           %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),KM,Kf);
+                        
+                    }
+                    else if(N==2){
+                        fprintf(fdat,"%f   %f    %f   %f     %f       %f       %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),y[j][e+en[0]][0]/(Kf),y[j][e+en[0]][1]/(Kf),KM,Kf);
+                        printf("%f   %f    %f   %f     %f       %f       %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),y[j][e+en[0]][0]/(Kf),y[j][e+en[0]][1]/(Kf),KM,Kf);
+                    }
                 }
             }
             
@@ -2487,7 +2498,8 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
             //add w0 -inft
             MK[ms][j]=fit_info.function(0,  Nvar, xphys[j],Npar,tmp);//MK2
             //     printf("MKw02=%f\n",MK[ms][j]);
-            MK[ms+1*refs][j]=fit_info.function(1,  Nvar, xphys[j],Npar,tmp);//fK
+            if (N>1)
+                MK[ms+1*refs][j]=fit_info.function(1,  Nvar, xphys[j],Npar,tmp);//fK
             for (i=0;i<Npar;i++){
                 tmp1[i][j]=tmp[i];
             }
@@ -2512,7 +2524,8 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
     free(y1);free(rm1);
     
     printf("MKw2(ms1)=%f    MKw2(ms2)=%f     MKw2(ms3)=%f\n", MK[0][Njack-1],MK[1][Njack-1],MK[2][Njack-1]);
-    printf("fKw(ms1)=%f     fKw(ms2)=%f      fKw(ms3)=%f\n", MK[0+refs][Njack-1],MK[1+refs][Njack-1],MK[2+refs][Njack-1]);
+    if (N>1)
+        printf("fKw(ms1)=%f     fKw(ms2)=%f      fKw(ms3)=%f\n", MK[0+refs][Njack-1],MK[1+refs][Njack-1],MK[2+refs][Njack-1]);
     free(guess);
     
     ////////////////////////////////////////////////last interpolation  
@@ -2523,8 +2536,12 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
         en[n]=refs;
         en_tot+=en[n];
     }
+    if (N==1)
+        Npar=2;
+    else if (N==2)
+        Npar=4;    
+        
     
-    Npar=4;
     Nvar=1;//m_l, w0,M_PS^2,f_PS
     
     guess=(double*) malloc(sizeof(double*)*Npar);
@@ -2615,7 +2632,8 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
         //in=r1->MKMeV[j]/r1->MpiMeV[j];
         //in=in*in;
         out[0][j]=(in-tmp[0])/tmp[1];
-        out[1][j]=tmp[2]+tmp[3]*out[0][j];
+        if (N>1)
+            out[1][j]=tmp[2]+tmp[3]*out[0][j];
         
         free(tmp);
         
@@ -2739,13 +2757,13 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
                     im=mass_index[e][ik2][ms+ik1_min];
                     if (n==0){
                         for (j=0;j<Njack;j++){
-                            rm[j]=gJ[e].M_PS_jack[im][j]   *  gJ[e].w0[j];
+                            rm[j]=gJ[e].M_PS_GEVP_jack[im][j]   *  gJ[e].w0[j];
                         }
                         fit[ms]=mean_and_error(jack_files[0].sampling,Njack, rm);
                     }
                     if (n==1){
                         for (j=0;j<Njack;j++){
-                            rm[j]=gJ[e].f_PS_jack[im][j]   *  gJ[e].w0[j];
+                            rm[j]=gJ[e].f_PS_ls_ss_jack[im][j]   *  gJ[e].w0[j];
                         }
                         fit[ms+n*nk1]=mean_and_error(jack_files[0].sampling,Njack, rm);
                     }

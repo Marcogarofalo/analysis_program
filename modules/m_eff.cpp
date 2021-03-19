@@ -44,8 +44,37 @@ double M_eff(  int t, double **in){
         mass=acosh((in[t-1][0]+in[t+1][0])/(2.*in[t][0]));
     */
     return mass;
-
 }
+double M_eff_in_inp(  int t, double in, double inp){
+    double mass;
+    
+    double ct[1],ctp[1],res,tmp_mass, u,d ;
+    int i,L0;
+    
+    L0=file_head.l0;
+    ct[0]=in;
+    ctp[0]=inp;
+    
+    
+    mass=log(ct[0]/ctp[0]);
+    
+    res=1;
+    i=t;
+    while(res>1e-12){
+        u=1.+exp(-mass*(L0-2.*i-2.));
+        d=1.+exp(-mass*(L0-2.*i));
+        tmp_mass=log( (ct[0]/ctp[0]) * (u/d)) ;
+        res=fabs(tmp_mass - mass);
+        mass=tmp_mass;
+    }
+    /*  if(t==0)
+     *       mass=acosh((in[L0-1][0]+in[t+1][0])/(2.*in[t][0]));
+     *   else
+     *       mass=acosh((in[t-1][0]+in[t+1][0])/(2.*in[t][0]));
+     */
+    return mass;
+}
+
 double matrix_element_sl_ss(int t, double **in_sl,double **in_ss,double mass){
       double me_s,me_l;
       
@@ -597,7 +626,12 @@ fflush(petros);
            kinematic_2pt.k1,kinematic_2pt.r1, kinematic_2pt.mom1 );
    for(t=1;t<file_head.l0/2;t++){ 
            for (j=0;j<Njack;j++){
-                r[t][j]=M_eff(t, lambda0[j][0]);
+                //r[t][j]=M_eff(t, lambda0[j][0]);
+                
+                if((t-t0)>=0)
+                    r[t][j]=M_eff_in_inp(t-t0, lambda0[j][0][t][0], lambda0[j][0][t+1][0]);
+                else 
+                    r[t][j]=M_eff_in_inp(t-t0, lambda0[j][1][t][0], lambda0[j][1][t+1][0]);
            }
            if( strcmp(option[4],"jack")==0)
                mt[t]=mean_and_error_jack(Njack, r[t]);
