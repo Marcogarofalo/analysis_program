@@ -289,7 +289,7 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
         printf("now the matrix is positive defined.  %d\n",yn);
    }  
    double **cov1=symmetric_matrix_inverse(en_tot, cov  );
-   
+
    guess=guess_for_non_linear_fit_Nf(N, en,x[Njack-1], y[Njack-1] , Nvar,  Npar, fit_info.function,guess );
   
    

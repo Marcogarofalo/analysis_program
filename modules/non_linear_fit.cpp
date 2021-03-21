@@ -708,7 +708,7 @@ double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **
     chi2=compute_chi_non_linear_Nf(N, ensemble,x, y, P ,Nvar,  Npar,  fun)/(en_tot-Npar);
     jmax=3+((int) (chi2*2));
     
-    if (jmax>15  ) jmax=25;
+    if (jmax>15  || chi2!=chi2 ) jmax=35;
     if(jmax <=3) jmax=15;
     
     chi2_tmp1=chi2;
@@ -741,8 +741,8 @@ double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **
         }
     }
     //do an other loop if chi2 still large
-    if (chi2> 10){
-        for (j=0;j<jmax;j++){
+    if (chi2> 10 || chi2!=chi2 ){
+      for (j=0;j<jmax;j++){
         for(i=0;i<Npar;i++){
             r=(double) rand();
             guess[i]=((r/rm)-0.5)*exp(j-jmax/2);
@@ -768,8 +768,37 @@ double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **
             free(P_tmp);//printf("chi2 LARGER\n\n");
             chi2_tmp1=chi2_tmp;
         }
+      }
     }
-        
+    //do an other loop if chi2 still large
+    if (chi2> 10 || chi2!=chi2 ){
+        for (j=0;j<jmax;j++){
+            for(i=0;i<Npar;i++){
+                r=(double) rand();
+                guess[i]=((r/rm)-0.5)/exp(j-jmax/2);
+                //  printf("%f\t",guess[i]);
+            }
+            // printf("\n");
+            P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess );
+            chi2_tmp=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun)/(en_tot-Npar);
+           // printf("chi2=%.10f \tchi2_tmp=%.10f\n",chi2,chi2_tmp);
+            /*for(i=0;i<Npar;i++)
+             *       printf("P[%d]=%g\t",i,P[i]);
+             *   printf("\n");*/
+            if (fabs(chi2-chi2_tmp)<1e-3 ){
+                gmax=gmax*10;//printf("the chi2 didn't change\n\n");
+                free(P_tmp);
+            }
+            else if (chi2_tmp-chi2<-1e-3 ){
+                free(P); P=P_tmp;
+                chi2=chi2_tmp;
+                //printf("chi2 smaller founded\n\n");
+            }
+            else{
+                free(P_tmp);//printf("chi2 LARGER\n\n");
+                chi2_tmp1=chi2_tmp;
+            }
+        }
     }
     printf("final chi2=%f\n",chi2);
     free(guess);

@@ -1143,8 +1143,8 @@ double **fit_MK_fK_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
                         newline_if_w0=x[j][e][1] ;
                     }
                     if(N==1){
-                        fprintf(fdat,"%f   %f    %f   %f           %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),KM,Kf);
-                        printf("%f   %f    %f   %f           %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),KM,Kf);
+                        fprintf(fdat,"%f   %f    %f   %f           %g  %g\n",x[j][e][1],x[j][e][0], y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),KM,Kf);
+                        printf("%f   %f    %f   %f           %g  %g\n",x[j][e][1],x[j][e][0], y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),KM,Kf);
                         
                     }
                     else if (N==2){
@@ -2413,6 +2413,7 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
                 count+=en[n];
             }
         }
+        /*
         count=0;
         for (n=0;n<1;n++){
             for (int e=0;e<en[n];e++){
@@ -2420,7 +2421,7 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
                     for (j=0;j<Njack;j++)
                         rm[j]=x[j][e+count][v];
                     tmp=mean_and_error(jack_files[0].sampling,Njack, rm);
-                    if (fabs(tmp[1])<1e-6) {
+                    if (fabs(tmp[0])<1e-6) {
                         //printf("e=%d    v=%d   %g +- %g\n", e,v,tmp[0],tmp[1] ); 
                         tmp[1]=tmp[0]/1.0e+8; }
                         sigmax[e+count][v]=tmp[1];
@@ -2428,7 +2429,7 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
                 }
             }
             count+=en[n];
-        }
+        }*/
         
         guess=guess_for_non_linear_fit_Nf(N, en,x[0], y[0] , Nvar,  Npar, fit_info.function,guess ); 
         for (j=0;j<Njack;j++){
@@ -2443,7 +2444,7 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
             tmp_chi2[j]+=chi2[j];
             
             if(j==Njack-1){
-                printf("#P0_w=%f ;P1_w=%f ;  P3ww=%f;  Pf1w=%f;  Pf2w=%f; Pf4www=%f;  msw=%f;\n",tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5],mref[ms]  );
+                //printf("#P0_w=%f ;P1_w=%f ;  P3ww=%f;  Pf1w=%f;  Pf2w=%f; Pf4www=%f;  msw=%f;\n",tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5],mref[ms]  );
                 printf("#chi2=%f\n",chi2[j]/(en_tot-Npar));
                 
                 printf("# w0    mlw    MKw2/KM2  errr     fkw0/Kf    err  KM  Kf\n");
@@ -2460,13 +2461,13 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
                         newline_if_w0=x[j][e][1] ;
                     }
                     if (N==1){
-                        fprintf(fdat,"%f   %f    %f   %f           %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),KM,Kf);
-                        printf("%f   %f    %f   %f           %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),KM,Kf);
+                        fprintf(fdat,"%f   %f    %f   %f           %g  %g\n",x[j][e][1], x[j][e][0], y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),KM,Kf);
+                        printf("%f   %f    %f   %f           %g  %g\n",x[j][e][1], x[j][e][0], y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),KM,Kf);
                         
                     }
                     else if(N==2){
-                        fprintf(fdat,"%f   %f    %f   %f     %f       %f       %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),y[j][e+en[0]][0]/(Kf),y[j][e+en[0]][1]/(Kf),KM,Kf);
-                        printf("%f   %f    %f   %f     %f       %f       %g  %g\n",x[j][e][1],x[j][e][0],y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),y[j][e+en[0]][0]/(Kf),y[j][e+en[0]][1]/(Kf),KM,Kf);
+                        fprintf(fdat,"%f   %f    %f   %f     %f       %f       %g  %g\n",x[j][e][1], x[j][e][0], y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),y[j][e+en[0]][0]/(Kf),y[j][e+en[0]][1]/(Kf),KM,Kf);
+                        printf("%f   %f    %f   %f     %f       %f       %g  %g\n",x[j][e][1], x[j][e][0], y[j][e][0]/(KM*KM),y[j][e][1]/(KM*KM),y[j][e+en[0]][0]/(Kf),y[j][e+en[0]][1]/(Kf),KM,Kf);
                     }
                 }
             }
@@ -2647,7 +2648,7 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
         free(y[j]);
     }
     free(y); free(guess);
-    
+    free(tmp_chi2);
     
     
     
@@ -2671,8 +2672,8 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
 double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info , struct result_jack *r1, const char *prefix,char **argv, store_fit_clover mud, store_fit_clover result_ms, std::vector<int> myen){
     double ***y,***x,**sigmax,***r,**MK,*chi2,*tmp,*rm,*chi2m,**fit;   double **out;
     
-    int ensembles_D=8;//myen.size();
-    int i,j,e,im;  
+    int ensembles_D=myen.size();//myen.size();
+    int i,j,im;  
     
     int Nvar=1;//m_l, w0,M_PS^2,f_PS
     int ik1=0,ik2=4;
@@ -2682,7 +2683,7 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
     int nk=(ik2_max-ik2_min+1);
     int ms;
     int refs=3;
-    
+    double *tmp_chi2=(double *) calloc(Njack,sizeof(double));
     double *mref;//[Nms]={0.52,0.68,0.81};
     mref=(double*) malloc(sizeof(double)*refs);
     mref[0]=0.94;
@@ -2712,7 +2713,7 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
     guess[1]=0.113021;
     double ****MDs_mc;
     MDs_mc=(double****) malloc(sizeof(double***)*ensembles_D); 
-    for (e=0;e<ensembles_D;e++){
+    for (int e=0;e<ensembles_D;e++){
         MDs_mc[e]=(double***) malloc(sizeof(double**)*nk1);
         for (ms=0;ms<nk1;ms++){
             MDs_mc[e][ms]=(double**) malloc(sizeof(double*)*N);
@@ -2727,41 +2728,26 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
     rm=(double*) malloc(sizeof(double)*(Njack));
     fit=(double**) malloc(sizeof(double*)*(en_tot));
     
-    r=(double***) malloc(sizeof(double**)*(Npar));
-    for(i=0;i<Npar;i++){
-        r[i]=(double**) malloc(sizeof(double*)*ensembles_D);
-        for(j=0;j<ensembles_D;j++){
-            r[i][j]=(double*) malloc(sizeof(double)*Njack);
-        }
-    }
+ 
+    r=double_malloc_3(Npar,ensembles_D,Njack);
     
     chi2=(double*) malloc(sizeof(double)*Njack);
-    y=(double***) malloc(sizeof(double**)*Njack);
+    y=double_malloc_3(Njack,en_tot,2);
     
-    printf("HERE0\n");
-    for (j=0;j<Njack;j++){
-        y[j]=(double**) malloc(sizeof(double*)*(en_tot));
-        for (n=0;n<N;n++){
-            for (ms=0;ms<nk1;ms++){
-                y[j][ms+n*nk1]=(double*) malloc(sizeof(double)*2);
-                
-            }
-        }
-    }
     for (ik2=ik2_min;ik2<=ik2_max;ik2++){
-        for (e=0;e<ensembles_D;e++){     
+        for (int e=0;e<ensembles_D;e++){     
             for (n=0;n<N;n++){
                 for (ms=0;ms<nk1;ms++){
-                    im=mass_index[e][ik2][ms+ik1_min];
+                    im=mass_index[myen[e]][ik2][ms+ik1_min];
                     if (n==0){
                         for (j=0;j<Njack;j++){
-                            rm[j]=gJ[e].M_PS_GEVP_jack[im][j]   *  gJ[e].w0[j];
+                            rm[j]=gJ[myen[e]].M_PS_GEVP_jack[im][j]   *  gJ[myen[e]].w0[j];
                         }
                         fit[ms]=mean_and_error(jack_files[0].sampling,Njack, rm);
                     }
                     if (n==1){
                         for (j=0;j<Njack;j++){
-                            rm[j]=gJ[e].f_PS_ls_ss_jack[im][j]   *  gJ[e].w0[j];
+                            rm[j]=gJ[myen[e]].f_PS_ls_ss_jack[im][j]   *  gJ[myen[e]].w0[j];
                         }
                         fit[ms+n*nk1]=mean_and_error(jack_files[0].sampling,Njack, rm);
                     }
@@ -2769,7 +2755,7 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
                         y[j][ms+n*nk1][0]=rm[j];
                         y[j][ms+n*nk][1]=fit[ms][1];
                         
-                        x[j][ms+n*nk1][0]=head[e].k[head[e].nk+ms+ik1_min]*gJ[e].w0[j]/gJ[e].Zp[j];//ml*w0
+                        x[j][ms+n*nk1][0]=head[myen[e]].k[head[e].nk+ms+ik1_min]*gJ[myen[e]].w0[j]/gJ[myen[e]].Zp[j];//ml*w0
                     }
                     
                     
@@ -2799,16 +2785,11 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
     }  
     
     free(fit);     free_3(Njack,en_tot,x);
-    for (j=0;j<Njack;j++){
-        for (e=0;e<nk*N;e++){
-            free(y[j][e]);
-        }
-        free(y[j]);
-    }
+
+    free_3(Njack,en_tot,y);
     
     
-    
-    free(y); free(guess);
+     free(guess);
     free(mref);free(en);
     
     
@@ -2845,22 +2826,16 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
     rm=(double*) malloc(sizeof(double)*(Njack));
     fit=(double**) malloc(sizeof(double*)*(en_tot));
     
-    r=(double***) malloc(sizeof(double**)*(Npar));
-    for(i=0;i<Npar;i++){
-        r[i]=(double**) malloc(sizeof(double*)*ensembles_D);
-        for(j=0;j<ensembles_D;j++){
-            r[i][j]=(double*) malloc(sizeof(double)*Njack);
-        }
-    }
+   
+    r=double_malloc_3(Npar, ensembles_D,Njack);
     
     chi2=(double*) malloc(sizeof(double)*Njack);
     y=double_malloc_3(Njack,en_tot,2);
     
-    for (e=0;e<ensembles_D;e++){     
+    for (int e=0;e<ensembles_D;e++){     
         for (n=0;n<N;n++){
             for (ms=0;ms<nk;ms++){
-                im=mass_index[e][ms+ik2_min][ik1];
-                int imp=mass_index[e][0][0];
+                
                 if (n==0){
                     for (j=0;j<Njack;j++){
                         rm[j]=MDs_mc[e][ms][0][j]  ;// /  gJ[e].M_PS_jack[imp][j];
@@ -2895,8 +2870,8 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
         for (j=0;j<Njack;j++){
             for (n=0;n<N;n++){
                 for (ms=0;ms<nk;ms++){
-                    im=mass_index[e][ms+ik2_min][ik1];
-                    x[j][ms+n*nk][0]=head[e].k[head[e].nk+ik2_min+ms]*gJ[e].w0[j]/gJ[e].Zp[j];//ml*w0
+                    im=mass_index[myen[e]][ms+ik2_min][ik1];
+                    x[j][ms+n*nk][0]=head[myen[e]].k[head[myen[e]].nk+ik2_min+ms]*gJ[myen[e]].w0[j]/gJ[myen[e]].Zp[j];//ml*w0
                 }
             }
         }
@@ -2943,16 +2918,12 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
     
     
     free(fit);     
-    for (j=0;j<Njack;j++){
-        for (e=0;e<nk*N;e++){
-            free(y[j][e]);
-        }
-        free(y[j]);
-    }
-    free(y); free(guess);
+    
+    free_3(Njack,nk*N,y);
+    free(guess);
     im=mass_index[0][1][0];
     //printf("A53: Mk(ms1)=%f   ms1=%f\n",gJ[0].M_PS_jack[im][Njack-1],head[0].k[head[0].nk+ik2_min+0]*gJ[0].w0[Njack-1] );
-    for (e=0;e<ensembles_D;e++)
+    for (int e=0;e<ensembles_D;e++)
     {im=mass_index[e][ik2_min+0][0];
        // printf("%d   MKw2(ms=%f)=%f    MKw2=%f      fk=%f\n",e   ,  head[e].k[head[e].nk+ik2_min+0]*gJ[e].w0[Njack-1]/gJ[e].Zp[Njack-1]   ,pow(gJ[e].M_PS_jack[im][Njack-1]* gJ[e].w0[Njack-1],2) ,r[0][e][Njack-1]+mref[0]*r[1][e][Njack-1],r[2][e][Njack-1]+mref[0]*r[3][e][Njack-1] );
         
@@ -2991,7 +2962,7 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
         
         count=0;
         for (n=0;n<N;n++){
-            for (e=0;e<en[n];e++){
+            for (int e=0;e<en[n];e++){
                 im=mass_index[e][ik2][ik1];
                 if(n==0){
                     for (j=0;j<Njack;j++){
@@ -3026,14 +2997,14 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
         for (j=0;j<Njack;j++){
             count=0;
             for (n=0;n<N;n++){
-                for (e=0;e<en[n];e++){
+                for (int e=0;e<en[n];e++){
                     
                     
-                    im=mass_index[e][ik2][ik1];
-                    x[j][e+count][0]=head[e].k[head[e].nk+ik1]*gJ[e].w0[j]/gJ[e].Zp[j];//ml*w0
-                    x[j][e+count][1]=gJ[e].w0[j];//w0
-                    x[j][e+count][2]=gJ[e].M_PS_jack[im][j]*gJ[e].M_PS_jack[im][j];//MPS^2
-                    x[j][e+count][3]=gJ[e].f_PS_jack[im][j];//f_PS
+                    im=mass_index[myen[e]][ik2][ik1];
+                    x[j][e+count][0]=head[myen[e]].k[head[myen[e]].nk+ik1]*gJ[myen[e]].w0[j]/gJ[myen[e]].Zp[j];//ml*w0
+                    x[j][e+count][1]=gJ[myen[e]].w0[j];//w0
+                    x[j][e+count][2]=gJ[myen[e]].M_PS_jack[im][j]*gJ[myen[e]].M_PS_jack[im][j];//MPS^2
+                    x[j][e+count][3]=gJ[myen[e]].f_PS_jack[im][j];//f_PS
                     x[j][e+count][4]=double(head[e].l1);//f_PS
                     x[j][e+count][5]=mref[ms];//ms*w0
                     x[j][e+count][6]=r[0][e][j]+mref[ms]*r[1][e][j];//MKw2
@@ -3046,9 +3017,10 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
                 count+=en[n];
             }
         }
+        /*  for sigmax
         count=0;
         for (n=0;n<1;n++){
-            for (e=0;e<en[n];e++){
+            for (int e=0;e<en[n];e++){
                 for(int v=0 ;v<Nvar;v++){
                     for (j=0;j<Njack;j++)
                         rm[j]=x[j][e+count][v];
@@ -3061,7 +3033,7 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
                 }
             }
             count+=en[n];
-        }
+        }*/
         
         guess=guess_for_non_linear_fit_Nf(N, en,x[0], y[0] , Nvar,  Npar, fit_info.function,guess ); 
         for (j=0;j<Njack;j++){
@@ -3073,16 +3045,17 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
             //tmp=non_linear_fit_Nf_sigmax_iterative(N, en,x[j], sigmax, y[j] , Nvar,  Npar, fit_info.function,guess );
             chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
             C[j]=covariance_non_linear_fit_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function );  
+            tmp_chi2[j]+=chi2[j];
             
             if(j==Njack-1){
-                printf("#P0_w=%f ;P1_w=%f ;  P3ww=%f;  Pf1w=%f;  Pf2w=%f; Pf4www=%f;  msw=%f;\n",tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5],mref[ms]  );
+                //printf("#P0_w=%f ;P1_w=%f ;  P3ww=%f;  Pf1w=%f;  Pf2w=%f; Pf4www=%f;  msw=%f;\n",tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5],mref[ms]  );
                 printf("#chi2=%f\n",chi2[j]/(en_tot-Npar));
                 
                 printf("# w0    mlw    MKw2/KM2  errr     fkw0/Kf    err  KM  Kf\n");
                 fprintf(fdat,"# w0    mlw    MKw2/KM2  errr     fkw0/Kf    err  KM  Kf\n");
                 double newline_if_w0=x[j][0][1];
-                std::vector<int>  myen={0,1,2,3,   4,5,6,   7};
-                for (auto e :myen){
+
+                for (int e=0 ;e< ensembles_D; e++){
                     im=mass_index[e][ik2][ik1];
                     KM=fit_info.function(2,Nvar,x[j][e],Npar,tmp);
                     Kf=fit_info.function(3,Nvar,x[j][e],Npar,tmp);
@@ -3140,7 +3113,7 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
         print_fit_info(argv, Njack, fit_out,  fit_info, xphys, gJ, head , "D",namefile);
         
         
-        for (e=0;e<en_tot;e++){
+        for (int e=0;e<en_tot;e++){
             /*free(x[e]);  free(fit[e]);*/   //moved to close fit;
             free(y1[e]);
         }
@@ -3149,7 +3122,8 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
     free(y1);free(rm1);
     
     printf("MKw2(ms1)=%f    MKw2(ms2)=%f     MKw2(ms3)=%f\n", MK[0][Njack-1],MK[1][Njack-1],MK[2][Njack-1]);
-    printf("fKw(ms1)=%f     fKw(ms2)=%f      fKw(ms3)=%f\n", MK[0+refs][Njack-1],MK[1+refs][Njack-1],MK[2+refs][Njack-1]);
+    if(N>1)
+        printf("fKw(ms1)=%f     fKw(ms2)=%f      fKw(ms3)=%f\n", MK[0+refs][Njack-1],MK[1+refs][Njack-1],MK[2+refs][Njack-1]);
     free(guess);
     
     ////////////////////////////////////////////////last interpolation  
@@ -3160,8 +3134,10 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
         en[n]=refs;
         en_tot+=en[n];
     }
-    
-    Npar=4;
+    if(N==1)
+        Npar=2;
+    if (N>1)
+        Npar=4;
     Nvar=1;//m_l, w0,M_PS^2,f_PS
     
     guess=(double*) malloc(sizeof(double*)*Npar);
@@ -3173,24 +3149,13 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
     
     fit=(double**) malloc(sizeof(double*)*(en_tot));
     
-    y=(double***) malloc(sizeof(double**)*Njack);
-    for (j=0;j<Njack;j++){
-        y[j]=(double**) malloc(sizeof(double*)*(en_tot));
-        for (n=0;n<N;n++){
-            for (ms=0;ms<refs;ms++){
-                y[j][ms+n*refs]=(double*) malloc(sizeof(double)*2);
-                
-            }
-        }
-    }
+    
+    y=double_malloc_3(Njack,en_tot,2);
     
     x=double_malloc_3(Njack,en_tot,Nvar);
     sigmax=double_malloc_2(en_tot,Nvar);
     
-    out=(double**) malloc(sizeof(double*)*2);
-    out[0]=(double*) malloc(sizeof(double)*Njack);
-    out[1]=(double*) malloc(sizeof(double)*Njack);
-    
+    out=double_malloc_2(N+1,Njack);
     for (n=0;n<N;n++){
         for (ms=0;ms<refs;ms++){
             
@@ -3226,7 +3191,7 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
             }
         }
     }
-    
+    /*
     for (n=0;n<N;n++){
         for (ms=0;ms<refs;ms++){
             for(int v=0 ;v<Nvar;v++){
@@ -3241,7 +3206,7 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
             }
         }
     }
-    
+    */
     
     double in;
     for (j=0;j<Njack;j++){
@@ -3254,6 +3219,7 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
         out[0][j]=(in-tmp[0])/tmp[1];
         if (N>1)
             out[1][j]=tmp[2]+tmp[3]*out[0][j];
+        out[N][j]=tmp_chi2[j]/refs;
         
         free(tmp);
         
@@ -3267,14 +3233,10 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
     
     
     free(fit);     
-    for (j=0;j<Njack;j++){
-        for (e=0;e<refs*N;e++){
-            free(y[j][e]);
-        }
-        free(y[j]);
-    }
-    free(y); free(guess);
     
+    free_3(Njack,en_tot,y);
+    free(guess);
+    free(tmp_chi2);
     
     
     

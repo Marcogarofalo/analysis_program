@@ -872,9 +872,10 @@ double fit_MD_fD(int n, int Nvar, double *x,int Npar,double  *P){
     double mlw=x[0], w0=x[1];
     
     double     P0=P[0], P1w=P[1], P2ww=P[2],   P3ww=P[3];
-    double     P0f=P[4], P1fw=P[5], P2fww=P[6],   P3fww=P[7];
-    
-    
+    double     P0f, P1fw, P2fww,   P3fww;
+    if (n==1){
+        P0f=P[4]; P1fw=P[5]; P2fww=P[6];   P3fww=P[7];
+    }
     
     if (n==0)
         MKw=P0+P1w*mlw+P2ww*mlw*mlw+P3ww*(1./(w0*w0));
@@ -902,8 +903,10 @@ double fit_MD_fD_noP2(int n, int Nvar, double *x,int Npar,double  *P){
     double mlw=x[0], w0=x[1];
     
     double     P0=P[0], P1w=P[1],    P3ww=P[2];
-    double     P0f=P[3], P1fw=P[4], P2fww=P[5],   P3fww=P[6];
-    
+    double P0f, P1fw, P2fww,   P3fww;
+    if (n==1){
+             P0f=P[3]; P1fw=P[4]; P2fww=P[5];   P3fww=P[6];
+    }
     
     
     if (n==0)
@@ -2302,13 +2305,14 @@ void print_fit_Ds_info(char **argv,int jack_tot, double **fit, struct fit_type f
         mcMeV[j]=fit[0][j]/(mud.w0[j]/197.326963);
         
         ms_mud[j]=mcMeV[j]/(mud.jack_m[j]);
+        if (N>1)
         fDs[j]=fit[1][j]/(mud.w0[j]/197.326963);
         
         //fit[0][j]=fit[0][j]/r1.w0MeV[j];
         //fit[1][j]=fit[1][j]/r1.w0MeV[j];
     }
     double *Ci=mean_and_error(argv[1],jack_tot,mcMeV);
-    printf("grep mc: %g     GF=%g      m_ud=%g     m_s=%g    fDs=%g   \n",mcMeV[jack_tot-1], mud.w0[jack_tot-1], mud.jack_m[jack_tot-1], ms.ms[jack_tot-1], fDs[jack_tot-1] );
+    //printf("grep mc: %g     GF=%g      m_ud=%g     m_s=%g    fDs=%g   \n",mcMeV[jack_tot-1], mud.w0[jack_tot-1], mud.jack_m[jack_tot-1], ms.ms[jack_tot-1], fDs[jack_tot-1] );
     
     fprintf(f_fit,"Imposing $M_D =%.2f \\pm %.2g$ and $w_0=%.4f$ fm (%f MeV)\n",v_MDMeV,err_MDMeV,mud.w0[jack_tot-1],mud.w0[jack_tot-1]/197.326963);
     fprintf(f_fit,"\\begin{gather}\n   m_{c}=(%g\\pm%.2g) MeV   \\\\ \n",Ci[0],Ci[1]);
@@ -2317,13 +2321,21 @@ void print_fit_Ds_info(char **argv,int jack_tot, double **fit, struct fit_type f
     free(Ci);
     
     Ci=mean_and_error(argv[1],jack_tot,ms_mud);
-    Ci=mean_and_error(argv[1],jack_tot,fDs);
     
-    fprintf(f_fit," m_{c}=(%g\\pm%.2g),\\\\ \n  f_{D}=(%g\\pm%.2g)   \n\\end{gather} \n",Ci[0],Ci[1],Ci[0],Ci[1]);
+    fprintf(f_fit," m_{c}=(%g\\pm%.2g)  \n\\end{gather} \n",Ci[0],Ci[1]);
+    free(Ci);
     
+    
+    
+    if (N>1){
+        Ci=mean_and_error(argv[1],jack_tot,fDs);
+        
+        fprintf(f_fit,"\\begin{gather}\n f_{D_s}=(%g\\pm%.2g)  \n\\end{gather} \n",Ci[0],Ci[1]);
+        free(Ci);
+    }
     fclose(f_fit);
     
-    free(Ci);
+    
     if(strcmp(save,"yes")==0){
         store_fit_clover  tmpm;
         tmpm.M=M;
@@ -2336,6 +2348,7 @@ void print_fit_Ds_info(char **argv,int jack_tot, double **fit, struct fit_type f
         tmpm.mc_ms=(double*) malloc(sizeof(double)*jack_tot );
         tmpm.fDs=(double*) malloc(sizeof(double)*jack_tot );
         tmpm.fDs_fD=(double*) malloc(sizeof(double)*jack_tot );
+        tmpm.chi2=(double*) malloc(sizeof(double)*jack_tot );
         for (int j=0;j<jack_tot;j++){
             //tmpm.jack_m[j]=mud.jack_m[j];
             //tmpm.w0[j]=mud.w0[j];
@@ -2350,7 +2363,7 @@ void print_fit_Ds_info(char **argv,int jack_tot, double **fit, struct fit_type f
                 tmpm.fDs[j]=fDs[j];
                 tmpm.fDs_fD[j]=fDs[j]/mc.fD[j];
             }
-            //tmpm.chi2[j]=fit_out.chi2[j];
+            tmpm.chi2[j]=fit[N][j];
             
         }
         tmpm.Njack=jack_tot;
@@ -2889,6 +2902,7 @@ void compute_systematic_Ds( char **argv, std::vector<store_fit_clover>  mc){
     
     std::vector<double>  sigma(Nobs);
     std::vector<double>  ave(Nobs);
+    std::vector<int>     Ngood;
     
     for(int i=0;i<Nobs; i++){
         ave[i]=0;
@@ -2896,23 +2910,26 @@ void compute_systematic_Ds( char **argv, std::vector<store_fit_clover>  mc){
     }
     
     for (int i=0; i<  mc.size(); i++){
-        ave[0]+=mc[i].mc[Njack-1];
-        ave[1]+=mc[i].mc_ms[Njack-1];
-        ave[2]+=mc[i].fDs[Njack-1];
-        ave[3]+=mc[i].fDs_fD[Njack-1];
-        //error_i.emplace_back(error_jackboot(argv[1],Njack,mc[i].jack_m));
-        
-        sigma[0]+= pow(error_jackboot(argv[1],Njack,mc[i].mc),2);
-        sigma[1]+=pow(error_jackboot(argv[1],Njack,mc[i].mc_ms),2);
-        sigma[2]+=pow(error_jackboot(argv[1],Njack,mc[i].fDs),2);
-        sigma[3]+=pow(error_jackboot(argv[1],Njack,mc[i].fDs_fD),2);
+        if (mc[i].chi2[Njack-1]<2){
+            ave[0]+=mc[i].mc[Njack-1];
+            ave[1]+=mc[i].mc_ms[Njack-1];
+            ave[2]+=mc[i].fDs[Njack-1];
+            ave[3]+=mc[i].fDs_fD[Njack-1];
+            //error_i.emplace_back(error_jackboot(argv[1],Njack,mc[i].jack_m));
+            
+            sigma[0]+= pow(error_jackboot(argv[1],Njack,mc[i].mc),2);
+            sigma[1]+=pow(error_jackboot(argv[1],Njack,mc[i].mc_ms),2);
+            sigma[2]+=pow(error_jackboot(argv[1],Njack,mc[i].fDs),2);
+            sigma[3]+=pow(error_jackboot(argv[1],Njack,mc[i].fDs_fD),2);
+            Ngood.emplace_back(i);
+        }
         
     }
     for(int i=0;i<Nobs; i++){
-        ave[i]/=mc.size();
+        ave[i]/=Ngood.size();
     }
     
-    for (int i=0; i<  mc.size(); i++){
+    for (int i: Ngood){
         
         sigma[0]+=pow(  ave[0]-mc[i].mc[Njack-1]  ,2);
         sigma[1]+=pow(  ave[1]-mc[i].mc_ms[Njack-1]  ,2);
@@ -2922,7 +2939,7 @@ void compute_systematic_Ds( char **argv, std::vector<store_fit_clover>  mc){
     }
     
     for(int i=0;i<Nobs; i++){
-        sigma[i]/=mc.size();
+        sigma[i]/=Ngood.size();
         sigma[i]=sqrt(sigma[i]);
         
     }
@@ -2938,7 +2955,8 @@ void compute_systematic_Ds( char **argv, std::vector<store_fit_clover>  mc){
         fprintf(fdata,"%g  %g %g  %g   \t", mc[i].mc[Njack-1], error_jackboot(argv[1],Njack,mc[i].mc),ave[0],sigma[0]);
         fprintf(fdata,"%g  %g %g  %g   \t", mc[i].mc_ms[Njack-1], error_jackboot(argv[1],Njack,mc[i].mc_ms),ave[1],sigma[1]);
         fprintf(fdata,"%g  %g %g  %g   \t", mc[i].fDs[Njack-1], error_jackboot(argv[1],Njack,mc[i].fDs),ave[2],sigma[2]);
-        fprintf(fdata,"%g  %g %g  %g   \n", mc[i].fDs_fD[Njack-1], error_jackboot(argv[1],Njack,mc[i].fDs_fD),ave[3],sigma[3]);
+        fprintf(fdata,"%g  %g %g  %g   \t", mc[i].fDs_fD[Njack-1], error_jackboot(argv[1],Njack,mc[i].fDs_fD),ave[3],sigma[3]);
+        fprintf(fdata,"%g \n",mc[i].chi2[Njack-1]);
         
         
         free(mc[i].mc);
@@ -2946,6 +2964,7 @@ void compute_systematic_Ds( char **argv, std::vector<store_fit_clover>  mc){
         free(mc[i].mc_ms);
         free(mc[i].fDs);
         free(mc[i].fDs_fD);
+        free(mc[i].chi2);
         
     }
     
@@ -3613,6 +3632,21 @@ int main(int argc, char **argv){
                     printf("\n\nHERE HERE\n\n");
                     print_fit_D_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "D",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1], mc);
                     
+                    printf("\n\n///////////////////////////////////////MDs fDs   ///////////////////////\n");
+                    
+                    fit_info.Npar=4;
+                    fit_info.N=1;
+                    //fit_info.Npar=8;
+                    //fit_info.N=2;
+                    
+                    
+                    fit_info.function=fit_MD_fD;
+                    
+                    mysprintf(namefit,NAMESIZE,"MDs_fDs_%s_%s",GF.c_str(),M.c_str() );
+                    
+                    fit=fit_MDs_fDs_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1], ms_Mk[ms_Mk.size()-1], myen);
+                    print_fit_Ds_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "Ds",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1],mc[mc.size()-1], mc_Ds);
+                    
                 
             printf("\n\n///////////////////////////////////////Mpi fpi   ///////////////////////\n");
             
@@ -3621,6 +3655,7 @@ int main(int argc, char **argv){
             fit_info.function=fit_Fpi_and_Mpi_GL_NL0_am_fonly;
             //double ***scale=double_malloc_3(4,3,jack_tot);
             myen={0,1,2,   8,4,5,6,   7};
+            
             mysprintf(nameout,NAMESIZE,"fit_Mpi_Fpi_GL_NLO_am_fonly_noA12_%s_%s",GF.c_str(),M.c_str() );
             printf("\n%s\n",nameout);
             fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info,argv,nameout,myen);
@@ -3648,7 +3683,19 @@ int main(int argc, char **argv){
                     fit=fit_MD_fD_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1],myen );
                     print_fit_D_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "D",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1], mc);
                     
-                
+                    printf("\n\n///////////////////////////////////////MDs fDs   ///////////////////////\n");
+                    
+                    fit_info.Npar=4;
+                    fit_info.N=1;
+                    
+                    fit_info.function=fit_MD_fD;
+                    
+                    mysprintf(namefit,NAMESIZE,"MDs_fDs_noA12_%s_%s",GF.c_str(),M.c_str() );
+                    
+                    fit=fit_MDs_fDs_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1], ms_Mk[ms_Mk.size()-1], myen);
+                    print_fit_Ds_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "Ds",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1],mc[mc.size()-1], mc_Ds);
+                    
+                    
                 
             printf("\n\n///////////////////////////////////////Mpi fpi   ///////////////////////\n");
             
@@ -3686,8 +3733,19 @@ int main(int argc, char **argv){
                     fit=fit_MD_fD_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1],myen );
                     print_fit_D_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "D",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1], mc);
                     
-            
-            
+                    printf("\n\n///////////////////////////////////////MDs fDs   ///////////////////////\n");
+                    
+                    fit_info.Npar=4;
+                    fit_info.N=1;
+                    
+                    fit_info.function=fit_MD_fD;
+                    
+                    mysprintf(namefit,NAMESIZE,"MDs_fDs_noA12A30_%s_%s",GF.c_str(),M.c_str() );
+                    
+                    fit=fit_MDs_fDs_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1], ms_Mk[ms_Mk.size()-1], myen);
+                    print_fit_Ds_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "Ds",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1],mc[mc.size()-1], mc_Ds);
+                    
+            /*
             
             fit_info.Npar=7;
             fit_info.N=2;
@@ -3721,6 +3779,18 @@ int main(int argc, char **argv){
                     fit=fit_MD_fD_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1],myen );
                     print_fit_D_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "D",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1], mc);
                     
+                   printf("\n\n///////////////////////////////////////MDs fDs   ///////////////////////\n");
+                    
+                    fit_info.Npar=4;
+                    fit_info.N=1;
+                    
+                    fit_info.function=fit_MD_fD;
+                    
+                    mysprintf(namefit,NAMESIZE,"MDs_fDs_AB_%s_%s",GF.c_str(),M.c_str() );
+                    
+                    fit=fit_MDs_fDs_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1], ms_Mk[ms_Mk.size()-1], myen);
+                    print_fit_Ds_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "Ds",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1],mc[mc.size()-1], mc_Ds);
+                */
             
             printf("\n\n///////////////////////////////////////Mpi fpi   ///////////////////////\n");
             
@@ -3756,6 +3826,18 @@ int main(int argc, char **argv){
                     fit=fit_MD_fD_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1],myen );
                     print_fit_D_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "D",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1], mc);
                 
+                    printf("\n\n///////////////////////////////////////MDs fDs   ///////////////////////\n");
+                    
+                    fit_info.Npar=3;
+                    fit_info.N=1;
+                    
+                    fit_info.function=fit_MD_fD_noP2;
+                    
+                    mysprintf(namefit,NAMESIZE,"MDs_fDs_noP2_BC_%s_%s",GF.c_str(),M.c_str() );
+                    
+                    fit=fit_MDs_fDs_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1], ms_Mk[ms_Mk.size()-1], myen);
+                    print_fit_Ds_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "Ds",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1],mc[mc.size()-1], mc_Ds);
+                
             
             printf("\n\n///////////////////////////////////////Mpi fpi   ///////////////////////\n");
             
@@ -3790,7 +3872,19 @@ int main(int argc, char **argv){
                     myen={3,   5,6,   7};
                     fit=fit_MD_fD_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1],myen );
                     print_fit_D_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "D",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1], mc);
-            
+                    
+                    printf("\n\n///////////////////////////////////////MDs fDs   ///////////////////////\n");
+                    
+                    fit_info.Npar=3;
+                    fit_info.N=1;
+                    
+                    fit_info.function=fit_MD_fD_noP2;
+                    
+                    mysprintf(namefit,NAMESIZE,"MDs_fDs_noP2_190MeV_%s_%s",GF.c_str(),M.c_str() );
+                    
+                    fit=fit_MDs_fDs_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1], ms_Mk[ms_Mk.size()-1], myen);
+                    print_fit_Ds_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "Ds",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1],mc[mc.size()-1], mc_Ds);
+                   
             
        /*     
             fit_info.Npar=10;
@@ -3805,7 +3899,7 @@ int main(int argc, char **argv){
             print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion",nameout, "no",M,GF, mud);
             
            */ 
-            
+            /*
             ////////////////K
             printf("\n\n///////////////////////////////////////MKoverMpi fKoverfpi   ///////////////////////\n");
             
@@ -3825,29 +3919,7 @@ int main(int argc, char **argv){
             //print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result, gjack, head, "pion",nameout, "no",M,GF, mud);
             print_fit_K_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "Kaon",namefit, "no",   M,  GF , mud[mud.size()-1],ms);
                 
-            
-            
-            
-           
-            
-            printf("\n\n///////////////////////////////////////MDs fDs   ///////////////////////\n");
-            
-            fit_info.Npar=8;
-            fit_info.N=2;
-            fit_info.function=fit_MD_fD;
-            
-            //mysprintf(namefit,NAMESIZE,"MK_Mpi_fK_fpi_GL_M1a");
-            
-            mysprintf(namefit,NAMESIZE,"MDs_fDs_%s_%s",GF.c_str(),M.c_str() );
-            
-            Ci=(double**) malloc(sizeof(double*)*2);
-            
-            fit=fit_MDs_fDs_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1], ms_Mk[ms_Mk.size()-1], myen);
-            //fit_MK_double_chiral_FVE_P40(jack_files, head , jack_tot, mass_index, gjack,  &result );
-            //print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point, result, gjack, head, "pion",nameout, "no",M,GF, mud);
-            print_fit_Ds_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "Ds",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1],mc[mc.size()-1], mc_Ds);
-            
-            
+            */
             
         }       
     }
