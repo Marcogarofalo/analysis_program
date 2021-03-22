@@ -2705,7 +2705,7 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
     free_2(2,C1);
     free(w0_estimate);
     
-    ////////////////////////print fit
+    ////////////////////////print fit end
     //using w0 from silvano
     if (strcmp(AV,"pion")==0){
         for (j=0;j<jack_tot;j++){
@@ -2812,6 +2812,8 @@ void compute_systematic_D( char **argv, std::vector<store_fit_clover>  mc){
     std::vector<double>  sigma(Nobs);
     std::vector<double>  ave(Nobs);
     std::vector<int>     Ngood;
+    std::vector<double>  stat(Nobs);
+    std::vector<double>  sist(Nobs);
     
     for(int i=0;i<Nobs; i++){
         ave[i]=0;
@@ -2837,6 +2839,8 @@ void compute_systematic_D( char **argv, std::vector<store_fit_clover>  mc){
     }
     for(int i=0;i<Nobs; i++){
         ave[i]/=Ngood.size();
+        stat[i]=sigma[i]/Ngood.size();
+        
     }
     
     for (int i: Ngood){
@@ -2850,7 +2854,10 @@ void compute_systematic_D( char **argv, std::vector<store_fit_clover>  mc){
     
     for(int i=0;i<Nobs; i++){
         sigma[i]/=Ngood.size();
+        sist[i]=sigma[i]-stat[i];
         sigma[i]=sqrt(sigma[i]);
+        stat[i]=sqrt(stat[i]);
+        sist[i]=sqrt(sist[i]);
         
     }
     
@@ -2866,8 +2873,9 @@ void compute_systematic_D( char **argv, std::vector<store_fit_clover>  mc){
         fprintf(fdata,"%g  %g %g  %g   \t", mc[i].mc_ms[Njack-1], error_jackboot(argv[1],Njack,mc[i].mc_ms),ave[1],sigma[1]);
         fprintf(fdata,"%g  %g %g  %g   \t", mc[i].fD[Njack-1], error_jackboot(argv[1],Njack,mc[i].fD),ave[2],sigma[2]);
         fprintf(fdata,"%g  %g %g  %g   \t", mc[i].fD_fk[Njack-1], error_jackboot(argv[1],Njack,mc[i].fD_fk),ave[3],sigma[3]);
-        fprintf(fdata,"%g     \n", mc[i].chi2[Njack-1]);
-       
+        fprintf(fdata,"%g     \t", mc[i].chi2[Njack-1]);
+        fprintf(fdata,"%g  %g \t %g  %g \t %g  %g \t %g  %g\n", stat[0],sist[0],stat[1],sist[1],stat[2],sist[2],stat[3],sist[3]);
+        
         free(mc[i].mc);
         //free(mc[i].jack_m);
         free(mc[i].mc_ms);
@@ -2902,6 +2910,9 @@ void compute_systematic_Ds( char **argv, std::vector<store_fit_clover>  mc){
     
     std::vector<double>  sigma(Nobs);
     std::vector<double>  ave(Nobs);
+    std::vector<double>  stat(Nobs);
+    std::vector<double>  sist(Nobs);
+    
     std::vector<int>     Ngood;
     
     for(int i=0;i<Nobs; i++){
@@ -2927,6 +2938,8 @@ void compute_systematic_Ds( char **argv, std::vector<store_fit_clover>  mc){
     }
     for(int i=0;i<Nobs; i++){
         ave[i]/=Ngood.size();
+        stat[i]=sigma[i]/Ngood.size();
+        
     }
     
     for (int i: Ngood){
@@ -2940,7 +2953,10 @@ void compute_systematic_Ds( char **argv, std::vector<store_fit_clover>  mc){
     
     for(int i=0;i<Nobs; i++){
         sigma[i]/=Ngood.size();
+        sist[i]=sigma[i]-stat[i];
         sigma[i]=sqrt(sigma[i]);
+        stat[i]=sqrt(stat[i]);
+        sist[i]=sqrt(sist[i]);
         
     }
     
@@ -2956,7 +2972,8 @@ void compute_systematic_Ds( char **argv, std::vector<store_fit_clover>  mc){
         fprintf(fdata,"%g  %g %g  %g   \t", mc[i].mc_ms[Njack-1], error_jackboot(argv[1],Njack,mc[i].mc_ms),ave[1],sigma[1]);
         fprintf(fdata,"%g  %g %g  %g   \t", mc[i].fDs[Njack-1], error_jackboot(argv[1],Njack,mc[i].fDs),ave[2],sigma[2]);
         fprintf(fdata,"%g  %g %g  %g   \t", mc[i].fDs_fD[Njack-1], error_jackboot(argv[1],Njack,mc[i].fDs_fD),ave[3],sigma[3]);
-        fprintf(fdata,"%g \n",mc[i].chi2[Njack-1]);
+        fprintf(fdata,"%g \t",mc[i].chi2[Njack-1]);
+        fprintf(fdata,"%g  %g \t %g  %g \t %g  %g \t %g  %g\n", stat[0],sist[0],stat[1],sist[1],stat[2],sist[2],stat[3],sist[3]);
         
         
         free(mc[i].mc);
@@ -2993,6 +3010,8 @@ void compute_systematic_K( char **argv, std::vector<store_fit_clover>  mud){
     int Nobs=4;
 
     std::vector<double>  sigma(Nobs);
+    std::vector<double>  stat(Nobs);
+    std::vector<double>  sist(Nobs);
     std::vector<double>  ave(Nobs);
     std::vector<int> Ngood;
     
@@ -3020,6 +3039,7 @@ void compute_systematic_K( char **argv, std::vector<store_fit_clover>  mud){
     }
     for(int i=0;i<Nobs; i++){
         ave[i]/=Ngood.size();
+        stat[i]=sigma[i]/Ngood.size();
     }
      
     for (int i:Ngood){
@@ -3032,9 +3052,12 @@ void compute_systematic_K( char **argv, std::vector<store_fit_clover>  mud){
     }
     
     for(int i=0;i<Nobs; i++){
-        sigma[i]/=Ngood.size();
-        sigma[i]=sqrt(sigma[i]);
         
+        sigma[i]/=Ngood.size();
+        sist[i]=sigma[i]-stat[i];
+        sigma[i]=sqrt(sigma[i]);
+        stat[i]=sqrt(stat[i]);
+        sist[i]=sqrt(sist[i]);
     }
     
     
@@ -3049,7 +3072,9 @@ void compute_systematic_K( char **argv, std::vector<store_fit_clover>  mud){
         fprintf(fdata,"%g  %g %g  %g   \t", mud[i].ms_mud[Njack-1], error_jackboot(argv[1],Njack,mud[i].ms_mud),ave[1],sigma[1]);
         fprintf(fdata,"%g  %g %g  %g   \t", mud[i].fk[Njack-1], error_jackboot(argv[1],Njack,mud[i].fk),ave[2],sigma[2]);
         fprintf(fdata,"%g  %g %g  %g   \t", mud[i].fk_fpi[Njack-1], error_jackboot(argv[1],Njack,mud[i].fk_fpi),ave[3],sigma[3]);
-        fprintf(fdata,"%g\n", mud[i].chi2[Njack-1]);
+        fprintf(fdata,"%g\t", mud[i].chi2[Njack-1]);
+        
+        fprintf(fdata,"%g  %g \t %g  %g \t %g  %g \t %g  %g\n", stat[0],sist[0],stat[1],sist[1],stat[2],sist[2],stat[3],sist[3]);
         
         free(mud[i].ms);free(mud[i].jack_m);
         free(mud[i].ms_mud);
@@ -3081,6 +3106,8 @@ void compute_systematic( char **argv, std::vector<store_fit_clover>  mud){
     int Njack=mud[0].Njack;
     double ave=0,ave_B=0,ave_f=0, ave_chi2=0;
     double sigma=0, sigma_B=0,sigma_f=0;
+    double stat=0, stat_B=0,stat_f=0;
+    double sist=0, sist_B=0,sist_f=0;
     std::vector<double>  error_i;
     std::vector<int> Ngood;
     for (int i=0; i<  mud.size(); i++){
@@ -3092,9 +3119,14 @@ void compute_systematic( char **argv, std::vector<store_fit_clover>  mud){
             ave_chi2+=mud[i].chi2[Njack-1];
             
             sigma+=error_i[i]*error_i[i];
-            
             sigma_B+=error_jackboot(argv[1],Njack,mud[i].jack_B)*error_jackboot(argv[1],Njack,mud[i].jack_B);
             sigma_f+=error_jackboot(argv[1],Njack,mud[i].jack_f)*error_jackboot(argv[1],Njack,mud[i].jack_f);
+            
+            stat+=error_i[i]*error_i[i];
+            stat_B+=error_jackboot(argv[1],Njack,mud[i].jack_B)*error_jackboot(argv[1],Njack,mud[i].jack_B);
+            stat_f+=error_jackboot(argv[1],Njack,mud[i].jack_f)*error_jackboot(argv[1],Njack,mud[i].jack_f);
+            
+            
             Ngood.emplace_back(i);
         }
         
@@ -3105,6 +3137,10 @@ void compute_systematic( char **argv, std::vector<store_fit_clover>  mud){
     ave_f=ave_f/Ngood.size();
     ave_chi2=ave_chi2/Ngood.size();
     for (int i:Ngood){
+        sist+=  (ave-mud[i].jack_m[Njack-1] )* (ave-mud[i].jack_m[Njack-1] ) ;
+        sist_B+=  (ave_B-mud[i].jack_B[Njack-1] )* (ave_B-mud[i].jack_B[Njack-1] ) ;
+        sist_f+=  (ave_f-mud[i].jack_f[Njack-1] )* (ave_f-mud[i].jack_f[Njack-1] ) ;
+        
         sigma+=  (ave-mud[i].jack_m[Njack-1] )* (ave-mud[i].jack_m[Njack-1] ) ;
         sigma_B+=  (ave_B-mud[i].jack_B[Njack-1] )* (ave_B-mud[i].jack_B[Njack-1] ) ;
         sigma_f+=  (ave_f-mud[i].jack_f[Njack-1] )* (ave_f-mud[i].jack_f[Njack-1] ) ;
@@ -3118,6 +3154,22 @@ void compute_systematic( char **argv, std::vector<store_fit_clover>  mud){
     sigma_f=sigma_f/Ngood.size();
     sigma_f=sqrt(sigma_f);
     
+    stat=stat/Ngood.size();
+    stat=sqrt(stat);
+    stat_B=stat_B/Ngood.size();
+    stat_B=sqrt(stat_B);
+    stat_f=sigma_f/Ngood.size();
+    stat_f=sqrt(stat_f);
+    
+    sist=sist/Ngood.size();
+    sist=sqrt(sist);
+    sist_B=sist_B/Ngood.size();
+    sist_B=sqrt(sist_B);
+    sist_f=sigma_f/Ngood.size();
+    sist_f=sqrt(sist_f);
+    
+    
+    
     fprintf(ftex,"\\begin{tabular}{|c|c|c|c|c|}  \n\\hline\n");
     fprintf(ftex," $Z_p$ &  scale  &  fit & $m_ud$ [MeV]    & err   \\\\ \n\\hline \n");
     for (int i=0; i<  mud.size(); i++){
@@ -3127,7 +3179,8 @@ void compute_systematic( char **argv, std::vector<store_fit_clover>  mud){
         
         fprintf(fdata,"%g  %g %g  %g   \t", mud[i].jack_B[Njack-1], error_jackboot(argv[1],Njack,mud[i].jack_B),ave_B,sigma_B);
         fprintf(fdata,"%g  %g %g  %g   \t", mud[i].jack_f[Njack-1], error_jackboot(argv[1],Njack,mud[i].jack_f),ave_f,sigma_f);
-        fprintf(fdata,"%g    \n", mud[i].chi2[Njack-1]);
+        fprintf(fdata,"%g    \t", mud[i].chi2[Njack-1]);
+        fprintf(fdata,"%g  %g \t %g  %g \t %g  %g\n", stat,sist,stat_B,sist_B,stat_f,sist_f);
         
         
         free(mud[i].jack_m);
@@ -3473,8 +3526,8 @@ int main(int argc, char **argv){
     
     std::vector<std::string>   M_Zp;
     M_Zp.emplace_back("M1a");
-    M_Zp.emplace_back("M1b");
     M_Zp.emplace_back("M2a");
+    M_Zp.emplace_back("M1b");
     M_Zp.emplace_back("M2b");
     std::vector<std::string>   GF_scale;
     GF_scale.emplace_back("w0");
