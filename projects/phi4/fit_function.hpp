@@ -121,7 +121,7 @@ double a_luscher(int n, int Nvar, double *x,int Npar,double  *P){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_info, const char* label, struct fit_result fit_out, int *en, double ***x, double ***y,  vector<cluster::IO_params> params){
+void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_info, const char* label, struct fit_result fit_out, int *en, double ***x, double ***y,  vector<cluster::IO_params> params, std::vector<int> myen){
     int Npar=fit_info.Npar;
     int Nvar=fit_info.Nvar;
     int Njack=gjack[0].Njack;
@@ -135,7 +135,7 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     int count=0;
     for (int n=0;n<N;n++){
         for (int e=0;e<en[n];e++){
-            fprintf(f," %g   %g   %g   %d\n ",x[Njack-1][e+count][0], y[Njack-1][e+count][0], y[Njack-1][e+count][1] , params[e].data.L[0]);
+            fprintf(f," %g   %g   %g   %d\n ",x[Njack-1][e+count][0], y[Njack-1][e+count][0], y[Njack-1][e+count][1] , params[myen[e]].data.L[0]);
         }
         count+=en[n];
         fprintf(f,"\n\n");
@@ -234,15 +234,16 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
 }
 
 
-struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vector<data_phi> gjack, double lhs_fun(int, int, int ,vector<cluster::IO_params> ,vector<data_phi>,struct fit_type ) , struct fit_type fit_info, const char* label){
+struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vector<data_phi> gjack, double lhs_fun(int, int, int ,vector<cluster::IO_params> ,vector<data_phi>,struct fit_type ) , struct fit_type fit_info, const char* label, std::vector<int> myen){
     int Npar=fit_info.Npar;
     int Nvar=fit_info.Nvar+fit_info.n_ext_P;
     int Njack=gjack[0].Njack;
     int N=fit_info.N;
     ////// allocation
     int *en=(int*) malloc(sizeof(int)*fit_info.N);// we need to init en and en_tot to allocate the other 
-        for (int e=0;e< fit_info.N; e++){     en[e]=gjack.size();}
-        int en_tot=0;      for ( int n=0;n<N;n++)   {  en_tot+=en[n];   }// total data to fit
+    for (int e=0;e< fit_info.N; e++){     en[e]=myen.size();}
+    int en_tot=0;      for ( int n=0;n<N;n++)   {  en_tot+=en[n];   }// total data to fit
+        
     double ***y=double_malloc_3(Njack, en_tot, 2);// 2 is mean/error
     double ***x=double_malloc_3(Njack,en_tot,Nvar);
     struct fit_result fit_out=malloc_fit(fit_info);
@@ -261,12 +262,12 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
        int count=0;
        for (int n=0;n<N;n++){
             for (int e=0;e<en[n];e++){
-                x[j][count][0]=(double) params[e].data.L[1];//L
-                x[j][count][1]=gjack[e].jack[1][j];//m0
-                x[j][count][2]=gjack[e].jack[2][j];//m1
-                x[j][count][3]=gjack[e].jack[4][j];//E20
-                x[j][count][4]=gjack[e].jack[5][j];//E21
-                x[j][count][5]=(double) params[e].data.L[0];//T
+                x[j][count][0]=(double) params[myen[e]].data.L[1];//L
+                x[j][count][1]=gjack[myen[e]].jack[1][j];//m0
+                x[j][count][2]=gjack[myen[e]].jack[2][j];//m1
+                x[j][count][3]=gjack[myen[e]].jack[4][j];//E20
+                x[j][count][4]=gjack[myen[e]].jack[5][j];//E21
+                x[j][count][5]=(double) params[myen[e]].data.L[0];//T
                 for(int i=fit_info.Nvar ; i< fit_info.n_ext_P; i++){
                     x[j][count][i]=fit_info.ext_P[i-fit_info.Nvar][j];
                 }
@@ -286,7 +287,7 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
             double *tmpj=(double*) malloc(sizeof(double)*Njack);
             for (int j=0;j<Njack;j++){
                 //y[j][e+count][0]=gjack[e].jack[1][j];
-                tmpj[j]=lhs_fun(n,e,j,params,gjack,fit_info);
+                tmpj[j]=lhs_fun(n,myen[e],j,params,gjack,fit_info);
             }
             double err=error_jackboot(argv[1], Njack, tmpj); 
             for (int j=0;j<Njack;j++){
@@ -331,7 +332,7 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
     
      
     /////////////////////////////////////////////////////////////////////writing the result
-    print_fit_output(argv,   gjack , fit_info,  label,  fit_out , en,x,y, params);
+    print_fit_output(argv,   gjack , fit_info,  label,  fit_out , en,x,y, params,myen);
 
     ////// free
     free(en);

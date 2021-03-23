@@ -1361,7 +1361,16 @@ int main(int argc, char **argv){
     sub_jackboot(Njack,  tmpj, tmpj, mass[1] );
     fprintf(outfile,"#scattering length  a  err deltaE2 err    mu01 err    deltaE2*mu01  err   a_01*(m0+m1)=-mu/2pi  err      a_01*(m0+m1)/(a0m0)=4/3 a_01*pi/mu   err    \n %g  %g     %g  %g\t",
            a[Njack-1], error_jackboot(option[4],Njack,a),   tmpj[Njack-1],  error_jackboot(option[4],Njack,tmpj));
-    
+    /*
+    FILE *fm0=open_file("mass_0.txt","w+");
+    FILE *fm1=open_file("mass_1.txt","w+");
+    FILE *fE2_01=open_file("E2_01.txt","w+");
+    for (j=0; j<Njack;j++){
+        fprintf(fm0,"%.12g\n",mass[0][j]);
+        fprintf(fm1,"%.12g\n",mass[1][j]);
+        fprintf(fE2_01,"%.12g\n",fit_out.P[0][j]);
+    }
+    */
     //reduced mass
     for (j=0; j<Njack;j++)
         tmp_muj[j]=mass[0][j]* mass[1][j]/(mass[0][j]+ mass[1][j]);

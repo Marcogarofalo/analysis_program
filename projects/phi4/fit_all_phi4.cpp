@@ -185,26 +185,32 @@ int main(int argc, char **argv){
      //mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L16_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      //emplace_back_par_data(namefile,paramsj,dataj);
     
-     
+     //0
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
-     
+     //1
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L24_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
-     
+     //2
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L26_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
-
+     //3
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L32_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
-     
+     //4
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T48_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
-     
+     //5
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T64_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
-     
+     //6
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T96_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+     emplace_back_par_data(namefile,paramsj,dataj);
+     //7
+     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T96_L24_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+     emplace_back_par_data(namefile,paramsj,dataj);
+     //8
+     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T128_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      
      
@@ -216,6 +222,8 @@ int main(int argc, char **argv){
      Ne=gjack.size();
      printf("number of ensembles = %d\n",Ne);
      
+     vector<int> myen(Ne);
+     for(int i=0;i< Ne; i++)  myen[i]=i;
      
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      // start fitting
@@ -231,10 +239,10 @@ int main(int argc, char **argv){
      fit_info.function=M_finite_volume;
 
      
-     fit_m0=fit_data(argv,  paramsj ,gjack, M0_finite_volume_lhs ,fit_info, "M0_finite_vol" );
+     fit_m0=fit_data(argv,  paramsj ,gjack, M0_finite_volume_lhs ,fit_info, "M0_finite_vol" ,myen);
     
      
-     fit_m1=fit_data(argv,  paramsj ,gjack, M1_finite_volume_lhs ,fit_info, "M1_finite_vol" );
+     fit_m1=fit_data(argv,  paramsj ,gjack, M1_finite_volume_lhs ,fit_info, "M1_finite_vol" ,myen);
      
      
      printf("\n/////////////////////////////////     E2_0//////////////////\n");
@@ -252,7 +260,7 @@ int main(int argc, char **argv){
      
      fit_info.ext_P[0]=fit_m0.P[0];
      fit_info.ext_P[1]=fit_m0.P[0];
-     struct fit_result fit_a_00_infm=fit_data(argv,  paramsj ,gjack, muDE_00_infm_lhs ,fit_info, "a_00_lusher_infm" );
+     struct fit_result fit_a_00_infm=fit_data(argv,  paramsj ,gjack, muDE_00_infm_lhs ,fit_info, "a_00_lusher_infm" ,myen);
      
      
      ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -266,7 +274,7 @@ int main(int argc, char **argv){
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=muDE_rhs;
      
-     struct fit_result fit_a_00=fit_data(argv,  paramsj ,gjack, muDE_00_lhs ,fit_info, "a_00_lusher" );
+     struct fit_result fit_a_00=fit_data(argv,  paramsj ,gjack, muDE_00_lhs ,fit_info, "a_00_lusher",myen );
      
      printf("\n/////////////////////////////////     E2_01//////////////////\n");
      ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -280,11 +288,11 @@ int main(int argc, char **argv){
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=muDE_rhs;
      
-     struct fit_result fit_a_01=fit_data(argv,  paramsj ,gjack, muDE_01_lhs ,fit_info, "a_01_lusher" );
+     struct fit_result fit_a_01=fit_data(argv,  paramsj ,gjack, muDE_01_lhs ,fit_info, "a_01_lusher",myen );
    
      
      /////////////reload the data
-     cout << endl <<"reload the data" << endl;
+    /* cout << endl <<"reload the data" << endl;
      vector<data_phi>().swap(dataj);
      vector<data_phi>().swap(gjack);
      vector<cluster::IO_params>().swap(paramsj);
@@ -301,8 +309,13 @@ int main(int argc, char **argv){
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T96_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      gjack= create_generalised_resampling( dataj );
+     myen.resize(gjack.size());
+     for(int i=0;i< gjack.size(); i++)  myen[i]=i;
+     */
      
-     
+     printf("size=%ld\n",myen.size());
+     myen={4,5,6};
+     printf("size=%ld\n",myen.size());
      
      printf("\n/////////////////////////////////     a_00_BH//////////////////\n");
      ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -316,7 +329,7 @@ int main(int argc, char **argv){
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=constant_fit;
      
-     struct fit_result fit_a_00_BH=fit_data(argv,  paramsj ,gjack, a_00_BH_lhs ,fit_info, "a_00_BH" );
+     struct fit_result fit_a_00_BH=fit_data(argv,  paramsj ,gjack, a_00_BH_lhs ,fit_info, "a_00_BH" ,myen);
    
      
      printf("\n/////////////////////////////////     a_01_BH_03t16//////////////////\n");
@@ -332,7 +345,7 @@ int main(int argc, char **argv){
      fit_info.function=constant_fit;
      
      //lhs<53>  E4_03t16_shifted
-     struct fit_result fit_a_01_BH_03t16=fit_data(argv,  paramsj ,gjack, lhs<53> ,fit_info, "a_01_BH_03t16_shifted" );
+     struct fit_result fit_a_01_BH_03t16=fit_data(argv,  paramsj ,gjack, lhs<53> ,fit_info, "a_01_BH_03t16_shifted" ,myen);
      
      
      printf("\n/////////////////////////////////     a_01_BH_04t16//////////////////\n");
@@ -347,7 +360,7 @@ int main(int argc, char **argv){
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=constant_fit;
      //lhs<53>  E4_04t16_shifted
-     struct fit_result fit_a_01_BH_04t16=fit_data(argv,  paramsj ,gjack, lhs<56> ,fit_info, "a_01_BH_04t16_shifted" );
+     struct fit_result fit_a_01_BH_04t16=fit_data(argv,  paramsj ,gjack, lhs<56> ,fit_info, "a_01_BH_04t16_shifted" ,myen);
      
      mysprintf(namefile,NAMESIZE,"%s/%s.tex",argv[3], "PT_test_BH");
      FILE *f=open_file(namefile,"w+");
