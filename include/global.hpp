@@ -56,6 +56,9 @@
 #define v_MOmegaMeV 1672.45 
 #define err_MOmegaMeV   0.29
 
+#define m_from2to3GEV 0.901112318
+
+
 EXTERN int jack_tot;
 
 
@@ -242,6 +245,7 @@ struct store_fit_clover{
     double *jack_f;
     double *jack_B;
     double *chi2;
+    double *Sigma_13;
     
     double *ms;
     double *ms_mud;
