@@ -54,6 +54,15 @@ double muDE_01_lhs(int n, int e , int j , vector<cluster::IO_params> params,vect
     return DE*mu;
 }
 
+double muDE_01_div_shift_lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    double DE=gjack[e].jack[85][j]-gjack[e].jack[1][j]-gjack[e].jack[2][j];
+    double mu=gjack[e].jack[1][j]*gjack[e].jack[2][j]/(gjack[e].jack[1][j]+gjack[e].jack[2][j]);
+    return DE*mu;
+    
+}
+
+
+
 template<int id>
 double lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
     return gjack[e].jack[id][j];

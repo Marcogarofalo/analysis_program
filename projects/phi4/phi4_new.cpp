@@ -1,5 +1,3 @@
-
- 
 #define CONTROL
 
 #include <stdlib.h>
@@ -24,6 +22,7 @@
 #include "header_phi4.hpp"
 #include "correlators_analysis.hpp"
 #include "eigensystem.hpp"
+#include "lhs_functions.hpp"
 
 #include <cstring> 
 #include <string>
@@ -326,356 +325,6 @@ double four_pt_BH_3par(int n, int Nvar, double *x,int Npar,double  *P){
 
 
 
-double lhs_four_BH_0(int j, double ****in,int t ,struct fit_type fit_info){
-    
-    double r;
-    int T=file_head.l0;
-    double L3=(double)file_head.l1*file_head.l2*file_head.l3;
-
-    r=in[j][8][t][0];
-    r-=in[j][0][(T/2-t+T)%T][0] *in[j][0][T/8][0] ;
-    r-=in[j][0][(T/2-T/8)][0] *in[j][0][t][0] ;
-    r-=in[j][0][T/2][0]*in[j][0][(t-T/8+T)%T][0] ;
-    
-    r/=(in[j][0][T/2][0] * in[j][0][ (t-T/8+T)%T  ][0]  );
-    
-    // to_do:
-    // I think that there is a 4 M factor missing
-    r*=L3;
-    r/=(t-T/8);
-    
-    
-    return r;
-    
-}
-
-double lhs_four_BH_1(int j,double ****in,int t ,struct fit_type fit_info){
-    
-    double r;
-    int T=file_head.l0;
-    double L3=(double)file_head.l1*file_head.l2*file_head.l3;
-
-    r=in[j][9][t][0];
-    r-=in[j][1][(T/2-t+T)%T][0] *in[j][1][T/8][0] ;
-    r-=in[j][1][(T/2-T/8)][0] *in[j][1][t][0] ;
-    r-=in[j][1][T/2][0]*in[j][1][(t-T/8+T)%T][0] ;
-    
-    r/=(in[j][1][T/2][0] * in[j][1][ (t-T/8+T)%T  ][0]  );
-    r*=L3;
-    r/=(t-T/8);
-    
-    return r;
-}
-
-double lhs_four_BH(int j, double ****in,int t ,struct fit_type fit_info){
-    
-    double r;
-    int T=file_head.l0;
-    double L3=(double)file_head.l1*file_head.l2*file_head.l3;
-    double disc;
-
-    r=in[j][10][t][0];
-    r/=( in[j][1][ (t-T/8+T)%T  ][0]  *in[j][0][T/2][0]  );
-    
-    disc=1.;
-    
-    r-=disc;
-    r*=L3;
-    r/=(t-T/8);
-    
-    return r;
-}
-
-
-
-
-double lhs_four_BH_0_s(int j, double ****in,int t ,struct fit_type fit_info ,int t1, int t2,int t4, int id){
-    
-    double r;
-    int T=file_head.l0;
-    double L3=(double)file_head.l1*file_head.l2*file_head.l3;
-    int t25=((T*2)/5);
-    
-
-    r=in[j][id][t][0];
-    r-=in[j][0][(t4-t+T)%T][0] *in[j][0][(t2-t1+T)%T][0] ;
-    r-=in[j][0][(t4-t2+T)%T][0] *in[j][0][(t-t1+T)%T][0] ;
-    r-=in[j][0][(t4-t1+T)%T][0]*in[j][0][(t-t2+T)%T][0] ;
-    
-    r/=(in[j][0][(t4-t1+T)%T][0] * in[j][0][ (t-t2+T)%T  ][0]  );
-    
-    r*=L3/2;
-    r/=(t-t2);
-    
-    return r;
-    
-}
-
-
-double lhs_four_BH_1_s(int j, double ****in,int t ,struct fit_type fit_info ,int t1, int t2,int t4, int id){
-    
-    double r;
-    int T=file_head.l0;
-    double L3=(double)file_head.l1*file_head.l2*file_head.l3;
-    int t25=((T*2)/5);
-    
-
-    r=in[j][id][t][0];
-    r-=in[j][1][(t4-t+T)%T][0] *in[j][1][(t2-t1+T)%T][0] ;
-    r-=in[j][1][(t4-t2+T)%T][0] *in[j][1][(t-t1+T)%T][0] ;
-    r-=in[j][1][(t4-t1+T)%T][0]*in[j][1][(t-t2+T)%T][0] ;
-    
-    r/=(in[j][1][(t4-t1+T)%T][0] * in[j][1][ (t-t2+T)%T  ][0]  );
-    
-    r*=L3/2;
-    r/=(t-t2);
-
-    return r;
-    
-}
-
-
-
-double lhs_four_BH_s(int j, double ****in,int t ,struct fit_type fit_info ,int t1, int t2,int t4, int id){
-    
-    double r;
-    int T=file_head.l0;
-    double L3=(double)file_head.l1*file_head.l2*file_head.l3;
-
-    r=in[j][id][t][0];
-    r/=(in[j][0][(t4-t1+T)%T][0] * in[j][1][ (t-t2+T)%T  ][0]  );
-    r-=1.;
-    r*=((double) L3/2.);
-
-    r/=(t-t2);
-    
-    return r;
-    
-}
-
-
-double lhs_four_BH_10_s(int j, double ****in,int t ,struct fit_type fit_info ,int t1, int t2,int t4, int id){
-    
-    double r;
-    int T=file_head.l0;
-    double L3=(double)file_head.l1*file_head.l2*file_head.l3;
-    
-    r=in[j][id][t][0];
-    r/=(in[j][1][(t4-t1+T)%T][0] * in[j][0][ (t-t2+T)%T  ][0]  );
-    r-=1.;
-    r*=((double) L3/2.);
-    r/=(t-t2);
-    
-    return r;
-    
-}
-
-
-
-
-double lhs_four_BH_0_03t16(int j, double ****in,int t ,struct fit_type fit_info){
-    return lhs_four_BH_0_s(j, in, t, fit_info, 0 ,3, 16, 15);
-}
-double lhs_four_BH_1_03t16(int j, double ****in,int t ,struct fit_type fit_info){
-    return lhs_four_BH_1_s(j, in, t, fit_info, 0 ,3, 16, 16);
-}
-double lhs_four_BH_03t16(int j, double ****in,int t ,struct fit_type fit_info){
-    return lhs_four_BH_s(j, in, t, fit_info, 0 ,3, 16, 17);
-}
-
-
-double lhs_four_BH_0_04t16(int j, double ****in,int t ,struct fit_type fit_info){
-    return lhs_four_BH_0_s(j, in, t, fit_info, 0 ,4, 16, 18);
-}
-double lhs_four_BH_1_04t16(int j, double ****in,int t ,struct fit_type fit_info){
-    return lhs_four_BH_1_s(j, in, t, fit_info, 0 ,4, 16, 19);
-}
-double lhs_four_BH_04t16(int j, double ****in,int t ,struct fit_type fit_info){
-    return lhs_four_BH_s(j, in, t, fit_info, 0 ,4, 16, 20);
-}
-
-
-double lhs_four_BH_0_03t20(int j, double ****in,int t ,struct fit_type fit_info){
-    return lhs_four_BH_0_s(j, in, t, fit_info, 0 ,3, 20, 21);
-}
-double lhs_four_BH_1_03t20(int j, double ****in,int t ,struct fit_type fit_info){
-    return lhs_four_BH_1_s(j, in, t, fit_info, 0 ,3, 20, 22);
-}
-double lhs_four_BH_03t20(int j, double ****in,int t ,struct fit_type fit_info){
-    return lhs_four_BH_s(j, in, t, fit_info, 0 ,3, 20, 23);
-}
-
-
-double lhs_four_BH_0_04t20(int j, double ****in,int t ,struct fit_type fit_info){
-    return lhs_four_BH_0_s(j, in, t, fit_info, 0 ,4, 20, 24);
-}
-double lhs_four_BH_1_04t20(int j, double ****in,int t ,struct fit_type fit_info){
-    return lhs_four_BH_1_s(j, in, t, fit_info, 0 ,4, 20, 25);
-}
-double lhs_four_BH_04t20(int j, double ****in,int t ,struct fit_type fit_info){
-    return lhs_four_BH_s(j, in, t, fit_info, 0 ,4, 20, 26);
-}
-
-
-double lhs_four_BH_0_05t20(int j, double ****in,int t ,struct fit_type fit_info){
-    return lhs_four_BH_0_s(j, in, t, fit_info, 0 ,5, 20, 27);
-}
-double lhs_four_BH_1_05t20(int j, double ****in,int t ,struct fit_type fit_info){
-    return lhs_four_BH_1_s(j, in, t, fit_info, 0 ,5, 20, 28);
-}
-double lhs_four_BH_05t20(int j, double ****in,int t ,struct fit_type fit_info){
-    return lhs_four_BH_s(j, in, t, fit_info, 0 ,5, 20, 29);
-}
-
-
-double lhs_four_BH_10_03t16(int j, double ****in,int t ,struct fit_type fit_info){
-    return lhs_four_BH_10_s(j, in, t, fit_info, 0 ,3, 16, 30);
-}
-
-
-
-
-double lhs_four_BH_01_tx_tf(int j, double ****in,int t ,struct fit_type fit_info ,int tx, int tf,int comp0 ,int comp1,int id){
-    
-    double r;
-    int T=file_head.l0;
-    double L3=(double)file_head.l1*file_head.l2*file_head.l3;
-    
-    r=in[j][id][t][0];
-    r/=(in[j][comp0][tf][0] * in[j][comp1][ (t-tx+T)%T  ][0]  );
-    r-=1.;
-    r*=((double) L3/2.);
-    
-    //r/=(t-tx);
-    return r;
-}
-
-
-template<int delta ,int tx, int tf, int comp0 ,int comp1,int id >
-double lhs_four_BH_01_tx_tf_shifetd(int j, double ****in,int t ,struct fit_type fit_info ){
-    
-    double r=-lhs_four_BH_01_tx_tf(j, in, t , fit_info,tx,tf,comp0,comp1,id );
-    
-    r+=lhs_four_BH_01_tx_tf(j, in, t+delta , fit_info,tx,tf,comp0,comp1,id );
-    r/=delta;
-    return r;
-}
-
-
-double lhs_four_BH_00_tx_tf(int j, double ****in,int t ,struct fit_type fit_info ,int tx, int tf,int comp0 ,int comp1,int id){
-    
-    double r;
-    int T=file_head.l0;
-    double L3=(double)file_head.l1*file_head.l2*file_head.l3;
-    
-    r=in[j][id][t][0];
-    r-=in[j][comp0][tf][0] * in[j][comp1][ (t-tx+T)%T  ][0];
-    r-=in[j][comp0][(tf-t+T)%T][0] * in[j][comp1][ tx  ][0];
-    r-=in[j][comp0][(tf-tx)%T][0] * in[j][comp1][ t  ][0];
-    
-    r/=(in[j][comp0][tf][0] * in[j][comp1][ (t-tx+T)%T  ][0]  );
-    r*=((double) L3/2.);
-    
-    //r/=(t-tx);
-    return r;
-}
-
-
-template<int delta ,int tx, int tf, int comp0 ,int comp1,int id >
-double lhs_four_BH_00_tx_tf_shifetd(int j, double ****in,int t ,struct fit_type fit_info ){
-    
-    double r=-lhs_four_BH_00_tx_tf(j, in, t , fit_info,tx,tf,comp0,comp1,id );
-    r+=lhs_four_BH_00_tx_tf(j, in, t+delta , fit_info,tx,tf,comp0,comp1,id );
-    r/=delta;
-    return r;
-}
-
-
-double lhs_four_BH_no_sub(int j, double ****in,int t ,struct fit_type fit_info){
-    
-    double r;
-    int T=file_head.l0;
-    double L3=(double)file_head.l1*file_head.l2*file_head.l3;
-    int t25=((T*2)/5);
-    
-    r=in[j][10][t][0];
-    r/=( in[j][1][ (t-T/8+T)%T  ][0]  *in[j][0][T/2][0]  );
-    
-    r*=L3;
-
-    return r;
-}
-
-double GEVP_shift_matrix(int j, double ****in,int t,struct fit_type fit_info ){
-    double ct,ctp;
-    int N=2;
-    int T=file_head.l0;
-    double **M=double_calloc_2(N*N,2);// [NxN] [reim ]
-    double **Mt0=double_calloc_2(N*N,2);
-    
-    double **lambdat=double_malloc_2(N,2);// [N] [reim]
-    double **lambdatp1=double_malloc_2(N,2);// [N] [reim]
-    double **vec=double_malloc_2(N*N,2);
-    int t0=3;
-    double r;
-    
-     
-    double s[4],s0[4];
-    
-    int i00=2, i11=3, i01=12;
-    
-    s[0]=in[j][i00][t][0]-in[j][i00][t+1][0]; // two0_to_two0
-    s[1]=in[j][i01][t][0]-in[j][i01][t+1][0]; // two0_to_two1
-    s[3]=in[j][i11][t][0]-in[j][i11][t+1][0]; // two1_to_two1
-    
-    //t
-    M[0][0]=s[0];
-    M[1][0]=s[1];
-    M[3][0]=s[3];
-    M[2][0]=M[1][0];
-    
-    s0[0]=in[j][i00][t0][0]-in[j][i00][t0+1][0]; // two0_to_two0
-    s0[1]=in[j][i01][t0][0]-in[j][i01][t0+1][0]; // two0_to_two1
-    s0[3]=in[j][i11][t0][0]-in[j][i11][t0+1][0]; // two1_to_two1
-    
-    Mt0[0][0]=s0[0];
-    Mt0[1][0]=s0[1];
-    Mt0[3][0]=s0[3];
-    Mt0[2][0]=Mt0[1][0];
-     
-    generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec); 
-    
-     
-    //t+1
-    s[0]=in[j][i00][t+1][0]-in[j][i00][t+2][0]; // two0_to_two0
-    s[1]=in[j][i01][t+1][0]-in[j][i01][t+2][0]; // two0_to_two1
-    s[3]=in[j][i11][t+1][0]-in[j][i11][t+2][0]; // two1_to_two1
-    
-    //t
-    M[0][0]=s[0];
-    M[1][0]=s[1];
-    M[3][0]=s[3];
-    M[2][0]=M[1][0];
- 
-   
-    generalysed_Eigenproblem(M,Mt0,2,&lambdatp1,&vec); 
-    
-    if((t-t0)>=0)
-        r=M_eff_sinh_T_ct_ctp(t-t0,T, lambdat[0][0], lambdatp1[0][0]);
-    else 
-        r=M_eff_sinh_T_ct_ctp( t-t0, T,  lambdat[1][0], lambdatp1[1][0]);
-    
-   
-    free_2(N*N,M);
-    free_2(N*N,Mt0);
-    free_2(N,lambdat);
-    free_2(N,lambdatp1);
-    free_2(N*N,vec);
-   
-    return r;
-}
-
-
 void get_kinematic( int ik2,int r2, int ik1,int r1,int imom2, int imom1 ){
     kinematic_2pt.ik2=ik2;
     kinematic_2pt.ik1=ik1;
@@ -907,6 +556,8 @@ int main(int argc, char **argv){
    FILE  *f_ll=NULL, *f_sl=NULL,*f_ls=NULL,*f_ss=NULL;
    
    FILE *plateaux_masses=NULL, *plateaux_masses_GEVP=NULL; 
+   char namefile_plateaux[NAMESIZE];
+   mysprintf(namefile_plateaux,NAMESIZE,"plateaux.txt");
    FILE *plateaux_f=NULL;   
    char namefile[NAMESIZE];
    srand(1);
@@ -1051,6 +702,8 @@ int main(int argc, char **argv){
         
         for(int i =0 ; i< params.data.ncorr; i++)
             read_twopt(infile, iconf, &data[iconf][i], params,i);
+        
+        
             
         //read_twopt(infile, iconf, &data[iconf][0], params,0);//2pt 0
         //read_twopt(infile, iconf, &data[iconf][1], params,1);//2pt 1
@@ -1071,7 +724,17 @@ int main(int argc, char **argv){
         //read_twopt(infile, iconf, &data[iconf][11], params,11);//C201
         
     }
-
+/*
+    for(int i =0 ; i< 2; i++){
+        std::string myname="one_to_one_"+ std::to_string(i) + ".txt";
+        FILE *fi=open_file(myname.c_str() ,"w+" );
+        for (int iconf=0; iconf< confs ;iconf++){
+            for(int t=0;t<params.data.L[0];t++)
+                fprintf(fi,"%d   %d  %.12g\n",iconf,t,data[iconf][i][t][0]);
+        }
+        fclose(fi);
+    }
+  */  
     symmetrise_corr(confs, 0, file_head.l0,data);
     symmetrise_corr(confs, 1, file_head.l0,data);
     
@@ -1086,16 +749,23 @@ int main(int argc, char **argv){
     if (params.data.ncorr>11){
         symmetrise_corr(confs, 11, file_head.l0,data);
     }
+    if(params.data.ncorr>33){
+        for(int i =33 ;i< 48; i++)
+            symmetrise_corr(confs, i, file_head.l0,data);
+    }
+   
+   
    
     data_bin=binning(confs, var, file_head.l0 ,data, bin);
     //if you want to do the gamma analysis you need to do before freeing the raw data
-    effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data_bin,  Neff ,&plateaux_masses,out_gamma,0,"M_{PS}^{ll}");
-    //effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,&plateaux_masses,out_gamma,3,"M_{PS}^{ll}");
+    effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data_bin,  Neff ,namefile_plateaux,out_gamma,0,"M_{PS}^{ll}");
+    //effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,namefile_plateaux,out_gamma,3,"M_{PS}^{ll}");
     
     free_corr(confs, var, file_head.l0 ,data);
     
     conf_jack=create_resampling(option[4],Neff, var, file_head.l0, data_bin);
-   
+    double *zeros=(double*) calloc(Njack,sizeof(double));
+    
     double **mass=(double**) malloc(sizeof(double*)*3);
     fprintf(outfile,"#correlator\n");
     for (int t =1; t< T/2 ;t++){
@@ -1127,19 +797,19 @@ int main(int argc, char **argv){
     for(int icorr=0; icorr<params.data.ncorr; icorr++ ){
      //log effective mass
      double *tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack
-                                                           ,&plateaux_masses,outfile_meff_corr,icorr,"meff_corr", M_eff_log,dev_null);
+                                                           ,namefile_plateaux,outfile_meff_corr,icorr,"meff_corr", M_eff_log,dev_null);
      free(tmp_meff_corr);
      //raw correlator
      tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,
-                                                   &plateaux_masses,outfile_raw_corr,icorr,"raw_corr", identity,dev_null);
+                                                   namefile_plateaux,outfile_raw_corr,icorr,"raw_corr", identity,dev_null);
      free(tmp_meff_corr);
      // shifted correlator
      tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,
-                                                   &plateaux_masses,outfile_shifted_corr,icorr,"shifted_corr", shift_corr,dev_null);
+                                                   namefile_plateaux,outfile_shifted_corr,icorr,"shifted_corr", shift_corr,dev_null);
      free(tmp_meff_corr);
      // log_meff shifted correlator
      tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack
-                                                  ,&plateaux_masses,outfile_log_meff_shifted,icorr,"log_meff_shifted", M_eff_log_shift,dev_null);
+                                                  ,namefile_plateaux,outfile_log_meff_shifted,icorr,"log_meff_shifted", M_eff_log_shift,dev_null);
      free(tmp_meff_corr);
      
      
@@ -1152,26 +822,26 @@ int main(int argc, char **argv){
     file_head.k[3]=mu1;
 
     //c++ 1 || r 2
-    mass[0]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,0,"E1_0", M_eff_T,jack_file);
-    //mass=compute_effective_mass(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,0,"M_{PS}^{ll}");
+    mass[0]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,0,"E1_0", M_eff_T,jack_file);
+    //mass=compute_effective_mass(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,0,"M_{PS}^{ll}");
     
     file_head.k[2]=mu2;
     file_head.k[3]=mu2;
     
     //c++ 2 || r 3
-    mass[1]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,1,"E1_1", M_eff_T,jack_file);
+    mass[1]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,1,"E1_1", M_eff_T,jack_file);
     
     //!!!!!
     //there is not this correlation function  <phi0 phi1>
     //!!!!//c++ 3 || r 4
-    mass[2]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,1,"E1", M_eff_T,jack_file);
-    //compute_effective_mass(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,1,"M_{PS}^{ll}");
+    mass[2]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,1,"E1", M_eff_T,jack_file);
+    //compute_effective_mass(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,1,"M_{PS}^{ll}");
 
     
     //c++ 4 || r 5
     double **E2=(double**) malloc(sizeof(double*)*3);
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    E2[0]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,2,"E2_0", shift_and_M_eff_sinh_T,jack_file);
+    E2[0]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,2,"E2_0", shift_and_M_eff_sinh_T,jack_file);
     double *a_0=scattering_len_luscher(  Njack,  mass[0], mass[0], E2[0] ,params.data.L[3]);
     double *tmpj=(double*) malloc(sizeof(double)*Njack);
     sub_jackboot(Njack,  tmpj, E2[0], mass[0] );
@@ -1204,7 +874,7 @@ int main(int argc, char **argv){
     
     //c++ 5 || r 6
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
-    E2[1]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,3,"E2_1", shift_and_M_eff_sinh_T, jack_file);
+    E2[1]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,3,"E2_1", shift_and_M_eff_sinh_T, jack_file);
     double *a_1=scattering_len_luscher(  Njack,  mass[1], mass[1], E2[1] ,params.data.L[1]);
     tmpj=(double*) malloc(sizeof(double)*Njack);
     sub_jackboot(Njack,  tmpj, E2[1], mass[1] );
@@ -1215,7 +885,7 @@ int main(int argc, char **argv){
     
     //c++ 6 || r 7
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
-    E2[2]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,4,"E2", shift_and_M_eff_sinh_T,jack_file);
+    E2[2]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,4,"E2", shift_and_M_eff_sinh_T,jack_file);
 
     
     struct fit_type fit_info;
@@ -1232,21 +902,21 @@ int main(int argc, char **argv){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=E2[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,  5,0/*reim*/ , "E3_0",  fit_info, jack_file);
+    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  5,0/*reim*/ , "E3_0",  fit_info, jack_file);
     free_fit_result(fit_info,fit_out);
     
     //c++ 8 || r 9
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=E2[1];
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
-    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,  6,0/*reim*/ , "E3_1",  fit_info ,jack_file);
+    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  6,0/*reim*/ , "E3_1",  fit_info ,jack_file);
     free_fit_result(fit_info,fit_out);
     
     //c++ 9 || r 10
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
-    fit_info.ext_P[0]=mass[2];
+    fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=E2[2];
-    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,  7,0/*reim*/ , "E3",  fit_info 
+    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  7,0/*reim*/ , "E3",  fit_info 
         ,jack_file    );
     free_fit_result(fit_info,fit_out);
     
@@ -1262,14 +932,14 @@ int main(int argc, char **argv){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_0 , "E4_0",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_0 , "E4_0",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
     //c++ 11 || r 12
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_1 , "E4_1",  fit_info,  jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_1 , "E4_1",  fit_info,  jack_file);
     free_fit_result(fit_info,fit_out);
     
     
@@ -1277,16 +947,16 @@ int main(int argc, char **argv){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
     //c++ 12 || r 13
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH , "E4",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     //c++ 13 || r 14
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_plat1",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH , "E4_plat1",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     //c++ 14 || r 15
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_plat2",  fit_info, jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH , "E4_plat2",  fit_info, jack_file);
     free_fit_result(fit_info,fit_out);
     //c++ 15 || r 16
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_line",  fit_info,jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH , "E4_line",  fit_info,jack_file);
     free_fit_result(fit_info,fit_out);
     
 
@@ -1303,7 +973,7 @@ int main(int argc, char **argv){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
     //c++ 16 || r 17
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_2p",  fit_info, jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH , "E4_2p",  fit_info, jack_file);
     free_fit_result(fit_info,fit_out);
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
@@ -1318,7 +988,7 @@ int main(int argc, char **argv){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
     //c++ 17 || r 18
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_const",  fit_info, jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH , "E4_const",  fit_info, jack_file);
     free_fit_result(fit_info,fit_out);
 
     
@@ -1336,7 +1006,7 @@ int main(int argc, char **argv){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
         //c++ 18 || r 19
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH , "E4_3p",  fit_info, jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH , "E4_3p",  fit_info, jack_file);
     free_fit_result(fit_info,fit_out);
     
    
@@ -1353,21 +1023,24 @@ int main(int argc, char **argv){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
         //c++ 19 || r 20
-    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,  11,0/*reim*/ , "E2_01",  fit_info ,jack_file);
-    double *a=scattering_len_luscher(  Njack,  mass[0], mass[2], fit_out.P[0] ,params.data.L[1]);
+    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  11,0/*reim*/ , "E2_01",  fit_info ,jack_file);
+    double *a=scattering_len_luscher(  Njack,  mass[0], mass[1], fit_out.P[0] ,params.data.L[1]);
     tmpj=(double*) malloc(sizeof(double)*Njack);
     tmp_muj=(double*) malloc(sizeof(double)*Njack);
     sub_jackboot(Njack,  tmpj, fit_out.P[0], mass[0] );
     sub_jackboot(Njack,  tmpj, tmpj, mass[1] );
     fprintf(outfile,"#scattering length  a  err deltaE2 err    mu01 err    deltaE2*mu01  err   a_01*(m0+m1)=-mu/2pi  err      a_01*(m0+m1)/(a0m0)=4/3 a_01*pi/mu   err    \n %g  %g     %g  %g\t",
            a[Njack-1], error_jackboot(option[4],Njack,a),   tmpj[Njack-1],  error_jackboot(option[4],Njack,tmpj));
+    
     /*
     FILE *fm0=open_file("mass_0.txt","w+");
     FILE *fm1=open_file("mass_1.txt","w+");
+    FILE *fm2=open_file("mass_2.txt","w+");
     FILE *fE2_01=open_file("E2_01.txt","w+");
     for (j=0; j<Njack;j++){
         fprintf(fm0,"%.12g\n",mass[0][j]);
         fprintf(fm1,"%.12g\n",mass[1][j]);
+        fprintf(fm2,"%.12g\n",mass[2][j]);
         fprintf(fE2_01,"%.12g\n",fit_out.P[0][j]);
     }
     */
@@ -1416,7 +1089,7 @@ int main(int argc, char **argv){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
         //c++ 20 || r 21
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, GEVP_shift_matrix , "GEVP_E2_01",  fit_info, jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, GEVP_shift_matrix , "GEVP_E2_01",  fit_info, jack_file);
     free_fit_result(fit_info,fit_out);
        
     
@@ -1436,14 +1109,14 @@ if(params.data.ncorr>15){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_0_03t16 , "E4_0_03t16",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_0_03t16 , "E4_0_03t16",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
     //c++ 22 || r 23
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_1_03t16, "E4_1_03t16",  fit_info,  jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_1_03t16, "E4_1_03t16",  fit_info,  jack_file);
     free_fit_result(fit_info,fit_out);
     
     //c++ 23 || r 24
@@ -1451,7 +1124,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_03t16 , "E4_03t16",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_03t16 , "E4_03t16",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     ///// const fit
     
@@ -1466,14 +1139,14 @@ if(params.data.ncorr>15){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_0_03t16 , "E4_0_03t16_const",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_0_03t16 , "E4_0_03t16_const",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
     //c++ 25 || r 26
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_1_03t16, "E4_1_03t16_const",  fit_info,  jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_1_03t16, "E4_1_03t16_const",  fit_info,  jack_file);
     free_fit_result(fit_info,fit_out);
     
     //c++ 26 || r 27
@@ -1481,7 +1154,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_03t16 , "E4_03t16_const",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_03t16 , "E4_03t16_const",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
 
 
@@ -1499,14 +1172,14 @@ if(params.data.ncorr>15){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_0_04t16 , "E4_0_04t16",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_0_04t16 , "E4_0_04t16",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
     //c++ 28 || r 23
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_1_04t16, "E4_1_04t16",  fit_info,  jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_1_04t16, "E4_1_04t16",  fit_info,  jack_file);
     free_fit_result(fit_info,fit_out);
     
     //c++ 29 || r 24
@@ -1514,7 +1187,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_04t16 , "E4_04t16",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_04t16 , "E4_04t16",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     ///// const fit
     fit_info.Nvar=3;
@@ -1528,14 +1201,14 @@ if(params.data.ncorr>15){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_0_04t16 , "E4_0_04t16_const",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_0_04t16 , "E4_0_04t16_const",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
     //c++ 31 || r 26
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_1_04t16, "E4_1_04t16_const",  fit_info,  jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_1_04t16, "E4_1_04t16_const",  fit_info,  jack_file);
     free_fit_result(fit_info,fit_out);
     
     //c++ 32 || r 27
@@ -1543,7 +1216,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_04t16 , "E4_04t16_const",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_04t16 , "E4_04t16_const",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1559,14 +1232,14 @@ if(params.data.ncorr>15){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_0_03t20 , "E4_0_03t20",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_0_03t20 , "E4_0_03t20",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
     //c++ 34 || r 23
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_1_03t20, "E4_1_03t20",  fit_info,  jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_1_03t20, "E4_1_03t20",  fit_info,  jack_file);
     free_fit_result(fit_info,fit_out);
     
     //c++ 35 || r 24
@@ -1574,7 +1247,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_03t20, "E4_03t20",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_03t20, "E4_03t20",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     ///// const fit
     fit_info.Nvar=3;
@@ -1588,14 +1261,14 @@ if(params.data.ncorr>15){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_0_03t20 , "E4_0_03t20_const",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_0_03t20 , "E4_0_03t20_const",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
     //c++ 37 || r 26
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_1_03t20, "E4_1_03t20_const",  fit_info,  jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_1_03t20, "E4_1_03t20_const",  fit_info,  jack_file);
     free_fit_result(fit_info,fit_out);
     
     //c++ 38 || r 27
@@ -1603,7 +1276,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_03t20 , "E4_03t20_const",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_03t20 , "E4_03t20_const",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1619,14 +1292,14 @@ if(params.data.ncorr>15){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_0_04t20 , "E4_0_04t20",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_0_04t20 , "E4_0_04t20",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
     //c++ 40 || r 23
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_1_04t20, "E4_1_04t20",  fit_info,  jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_1_04t20, "E4_1_04t20",  fit_info,  jack_file);
     free_fit_result(fit_info,fit_out);
     
     //c++ 41 || r 24
@@ -1634,7 +1307,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_04t20, "E4_04t20",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_04t20, "E4_04t20",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     ///// const fit
     fit_info.Nvar=3;
@@ -1648,14 +1321,14 @@ if(params.data.ncorr>15){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_0_04t20 , "E4_0_04t20_const",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_0_04t20 , "E4_0_04t20_const",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
     //c++ 43 || r 26
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_1_04t20, "E4_1_04t20_const",  fit_info,  jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_1_04t20, "E4_1_04t20_const",  fit_info,  jack_file);
     free_fit_result(fit_info,fit_out);
     
     //c++ 44 || r 27
@@ -1663,7 +1336,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_04t20 , "E4_04t20_const",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_04t20 , "E4_04t20_const",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
     
@@ -1680,14 +1353,14 @@ if(params.data.ncorr>15){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_0_05t20 , "E4_0_05t20",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_0_05t20 , "E4_0_05t20",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
     //c++ 46 || r 23
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_1_05t20, "E4_1_05t20",  fit_info,  jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_1_05t20, "E4_1_05t20",  fit_info,  jack_file);
     free_fit_result(fit_info,fit_out);
     
     //c++ 47 || r 24
@@ -1695,7 +1368,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_05t20, "E4_05t20",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_05t20, "E4_05t20",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     ///// const fit
     fit_info.Nvar=3;
@@ -1709,14 +1382,14 @@ if(params.data.ncorr>15){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_0_05t20 , "E4_0_05t20_const",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_0_05t20 , "E4_0_05t20_const",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
     //c++ 49 || r 26
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_1_05t20, "E4_1_05t20_const",  fit_info,  jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_1_05t20, "E4_1_05t20_const",  fit_info,  jack_file);
     free_fit_result(fit_info,fit_out);
     
     //c++ 50 || r 27
@@ -1724,7 +1397,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_05t20 , "E4_05t20_const",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_05t20 , "E4_05t20_const",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
     
@@ -1742,7 +1415,7 @@ if(params.data.ncorr>15){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, 
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    lhs_four_BH_00_tx_tf_shifetd<1, 3,16,0,0, 15> , "E4_0_03t16_shifted",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
@@ -1750,7 +1423,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, 
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    lhs_four_BH_01_tx_tf_shifetd<1, 3,16,1,1, 16>, "E4_1_03t16_shifted",  fit_info,  jack_file);
     free_fit_result(fit_info,fit_out);
     
@@ -1759,7 +1432,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, 
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    lhs_four_BH_01_tx_tf_shifetd<1, 3,16,0,1, 17> , "E4_03t16_shifted",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     //////////////////////
@@ -1775,7 +1448,7 @@ if(params.data.ncorr>15){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, 
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    lhs_four_BH_00_tx_tf_shifetd<1, 4,16,0,0, 18> , "E4_0_04t16_shifted",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
@@ -1783,7 +1456,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,
                                    lhs_four_BH_01_tx_tf_shifetd<1, 4,16,1,1, 19>, "E4_1_04t16_shifted",  fit_info,  jack_file);
     free_fit_result(fit_info,fit_out);
     
@@ -1792,7 +1465,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, 
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    lhs_four_BH_01_tx_tf_shifetd<1, 4,16,0,1, 20> , "E4_04t16_shifted",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
@@ -1809,7 +1482,7 @@ if(params.data.ncorr>15){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, 
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    lhs_four_BH_00_tx_tf_shifetd<1, 3,20,0,0, 21> , "E4_0_03t20_shifted",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
@@ -1817,7 +1490,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,
                                    lhs_four_BH_01_tx_tf_shifetd<1, 3,20,1,1, 22>, "E4_1_03t20_shifted",  fit_info,  jack_file);
     free_fit_result(fit_info,fit_out);
     
@@ -1826,7 +1499,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,
                                    lhs_four_BH_01_tx_tf_shifetd<1, 3,20,0,1, 23> , "E4_03t20_shifted",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
@@ -1844,7 +1517,7 @@ if(params.data.ncorr>15){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,
                                    lhs_four_BH_00_tx_tf_shifetd<1, 4,20,0,0, 24> , "E4_0_04t20_shifted",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
@@ -1852,7 +1525,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,
                                    lhs_four_BH_01_tx_tf_shifetd<1, 4,20,1,1, 25>, "E4_1_04t20_shifted",  fit_info,  jack_file);
     free_fit_result(fit_info,fit_out);
     
@@ -1861,7 +1534,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,
                                    lhs_four_BH_01_tx_tf_shifetd<1, 4,20,0,1, 26> , "E4_04t20_shifted",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
@@ -1878,7 +1551,7 @@ if(params.data.ncorr>15){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,
                                    lhs_four_BH_00_tx_tf_shifetd<1, 5,20,0,0, 27> , "E4_0_05t20_shifted",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
@@ -1886,7 +1559,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,
                                    lhs_four_BH_01_tx_tf_shifetd<1, 5,20,1,1, 28>, "E4_1_05t20_shifted",  fit_info,  jack_file);
     free_fit_result(fit_info,fit_out);
     
@@ -1895,7 +1568,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, 
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    lhs_four_BH_01_tx_tf_shifetd<1, 5,20,0,1, 29> , "E4_05t20_shifted",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
@@ -1914,7 +1587,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, 
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    lhs_four_BH_01_tx_tf_shifetd<2, 3,16,0,1, 17> , "E4_03t16_shifted_2",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
@@ -1924,7 +1597,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,
                                    lhs_four_BH_01_tx_tf_shifetd<3, 3,16,0,1, 17> , "E4_03t16_shifted_3",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
@@ -1934,7 +1607,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,
                                    lhs_four_BH_01_tx_tf_shifetd<4, 3,16,0,1, 17> , "E4_03t16_shifted_4",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
@@ -1944,7 +1617,7 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,
                                    lhs_four_BH_01_tx_tf_shifetd<4, 3,16,0,1, 17> , "E4_03t16_shifted_5",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
@@ -1960,11 +1633,11 @@ if(params.data.ncorr>30){
     fit_info.n_ext_P=2;
     fit_info.function=four_pt_BH_t_t3;
      
-    //c++ 23 || r 24
+    //c++ 70 || r 71
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[0];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_10_03t16 , "E4_10_03t16",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_10_03t16 , "E4_10_03t16",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     ///// const fit
     
@@ -1976,11 +1649,11 @@ if(params.data.ncorr>30){
     fit_info.function=four_pt_BH_t_t3_const;
     
      
-    //c++ 26 || r 27
+    //c++ 71 || r 72
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[1];
     fit_info.ext_P[1]=mass[0];
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, lhs_four_BH_10_03t16 , "E4_10_03t16_const",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_10_03t16 , "E4_10_03t16_const",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
  
 if(params.data.ncorr>32){
@@ -1993,11 +1666,11 @@ if(params.data.ncorr>32){
     fit_info.n_ext_P=2;
     fit_info.function=four_pt_BH_t_tx_shifted<2,1>;
     
-    //c++ 57 || r 58
+    //c++ 72 || r 73
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, 
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    lhs_four_BH_01_tx_tf_shifetd<1, 2,10,0,1, 31> , "E4_02t10_shifted",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     
@@ -2010,34 +1683,62 @@ if(params.data.ncorr>32){
     fit_info.n_ext_P=2;
     fit_info.function=four_pt_BH_t_tx_shifted<2,1>;
     
-    //c++ 57 || r 58
+    //c++ 73 || r 74
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile, 
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    lhs_four_BH_01_tx_tf_shifetd<1, 2,12,0,1, 32> , "E4_02t12_shifted",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
   
 if(params.data.ncorr>33){  
     file_head.k[2]=mu1;
     file_head.k[3]=mu1;
-    //c++ 58 || r 59
-    double *E1_0_px=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,33,"E1_0_px", M_eff_T,jack_file);
+    //c++ 74 || r 75
+    double *E1_0_px=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,33,"E1_0_px", M_eff_T,jack_file);
     free(E1_0_px);
     
     file_head.k[2]=mu2;
     file_head.k[3]=mu2;
-    //c++ 59 || r 60
-    double *E1_1_px=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,34,"E1_1_px", M_eff_T,jack_file);
+    //c++ 75 || r 76
+    double *E1_1_px=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,34,"E1_1_px", M_eff_T,jack_file);
     free(E1_1_px);
     
+    file_head.k[2]=mu1;
+    file_head.k[3]=mu1;
+    //c++ 76 || r 77
+    double *E1_0_py=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,35,"E1_0_py", M_eff_T,jack_file);
+    free(E1_0_py);
+    
+    file_head.k[2]=mu2;
+    file_head.k[3]=mu2;
+    //c++ 77 || r 78
+    double *E1_1_py=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,36,"E1_1_py", M_eff_T,jack_file);
+    free(E1_1_py);
+    
+    
+    
+    file_head.k[2]=mu1;
+    file_head.k[3]=mu1;
+    //c++ 78 || r 79
+    double *E1_0_pz=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,37,"E1_0_pz", M_eff_T,jack_file);
+    free(E1_0_pz);
+    
+    file_head.k[2]=mu2;
+    file_head.k[3]=mu2;
+    //c++ 79 || r 80
+    double *E1_1_pz=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,38,"E1_1_pz", M_eff_T,jack_file);
+    free(E1_1_pz);
+    
+    
+    //c++ 80 || r 81
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    double *E2_0_A1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,39,"E2_0_A1", shift_and_M_eff_sinh_T,jack_file);
+    double *E2_0_A1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,39,"E2_0_A1", shift_and_M_eff_sinh_T,jack_file);
     free(E2_0_A1);
     
-    //c++ 60 || r 61
+    //c++ 81 || r 82
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
-    double *E2_1_A1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,40,"E2_1_A1", shift_and_M_eff_sinh_T,jack_file);
+    double *E2_1_A1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,40,"E2_1_A1", shift_and_M_eff_sinh_T,jack_file);
     free(E2_1_A1);
     
     fit_info.Nvar=3;
@@ -2050,18 +1751,18 @@ if(params.data.ncorr>33){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    //c++ 61 || r 62
-    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,  41,0/*reim*/ , "E2_01_A1",  fit_info ,jack_file);
+    //c++ 82 || r 83
+    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  41,0/*reim*/ , "E2_01_A1",  fit_info ,jack_file);
     free_fit_result(fit_info,fit_out);
        
-    //c++ 62 || r 63
+    //c++ 83 || r 84
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    double *E2_0_E1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,42,"E2_0_E1", shift_and_M_eff_sinh_T,jack_file);
+    double *E2_0_E1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,42,"E2_0_E1", shift_and_M_eff_sinh_T,jack_file);
     free(E2_0_E1);
     
-    //c++ 63 || r 64
+    //c++ 84 || r 85
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
-    double *E2_1_E1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,43,"E2_1_E1", shift_and_M_eff_sinh_T,jack_file);
+    double *E2_1_E1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,43,"E2_1_E1", shift_and_M_eff_sinh_T,jack_file);
     free(E2_1_E1);
     
     fit_info.Nvar=3;
@@ -2074,17 +1775,17 @@ if(params.data.ncorr>33){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    //c++ 64 || r 65
-    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,  44,0/*reim*/ , "E2_01_E1",  fit_info ,jack_file);
+    //c++ 85 || r 86
+    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  44,0/*reim*/ , "E2_01_E1",  fit_info ,jack_file);
     
-    //c++ 65 || r 66
+    //c++ 86 || r 87
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    double *E2_0_E2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,45,"E2_0_E2", shift_and_M_eff_sinh_T,jack_file);
+    double *E2_0_E2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,45,"E2_0_E2", shift_and_M_eff_sinh_T,jack_file);
     free(E2_0_E2);
     
-    //c++ 66 || r 67
+    //c++ 87 || r 88
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
-    double *E2_1_E2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,46,"E2_1_E2", shift_and_M_eff_sinh_T,jack_file);
+    double *E2_1_E2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,46,"E2_1_E2", shift_and_M_eff_sinh_T,jack_file);
     free(E2_1_E2);
     
     fit_info.Nvar=3;
@@ -2097,16 +1798,102 @@ if(params.data.ncorr>33){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    //c++ 67 || r 68
-    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,&plateaux_masses, outfile,  47,0/*reim*/ , "E2_01_E2",  fit_info ,jack_file);
+    //c++ 88 || r 89
+    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  47,0/*reim*/ , "E2_01_E2",  fit_info ,jack_file);
     
     
-} //if ncor>33        
+} //if ncor>33   
+else {    for(int i=74;i < 89;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+
 } //if ncorr>32
+else {    for(int i=72;i < 89;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
     
 } //if ncorr>30  
-}//if ncorr>15
+else {    for(int i=70;i < 89;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+}//if ncorr>15  
+else {    for(int i=21;i < 89;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
 
+    //E2_01_div_shift
+    fit_info.Nvar=3;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=2;
+    fit_info.function=constant_fit;
+
+    file_head.k[2]=mu1;    file_head.k[3]=mu2;
+    fit_info.ext_P[0]=mass[0];
+    fit_info.ext_P[1]=mass[1];
+    //c++ 89 || r 90
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
+                                   lhs_E2_div_shift<11>, "E2_01_div_shift",  fit_info, jack_file );
+   
+    free(a);
+    a=scattering_len_luscher(  Njack,  mass[0], mass[1], fit_out.P[0] ,params.data.L[1]);
+    tmpj=(double*) malloc(sizeof(double)*Njack);
+    tmp_muj=(double*) malloc(sizeof(double)*Njack);
+    sub_jackboot(Njack,  tmpj, fit_out.P[0], mass[0] );
+    sub_jackboot(Njack,  tmpj, tmpj, mass[1] );
+    fprintf(outfile,"#scattering length  a  err deltaE2 err    mu01 err    deltaE2*mu01  err   a_01*(m0+m1)=-mu/2pi  err      a_01*(m0+m1)/(a0m0)=4/3 a_01*pi/mu   err    \n %g  %g     %g  %g\t",
+            a[Njack-1], error_jackboot(option[4],Njack,a),   tmpj[Njack-1],  error_jackboot(option[4],Njack,tmpj));
+
+    //reduced mass
+    for (j=0; j<Njack;j++)
+        tmp_muj[j]=mass[0][j]* mass[1][j]/(mass[0][j]+ mass[1][j]);
+    fprintf(outfile,"%g   %g\t", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj) );
+
+    //reduced mass time DeltaE2
+    for (j=0; j<Njack;j++)
+        tmp_muj[j]=tmp_muj[j]*tmpj[j];
+    fprintf(outfile,"%g   %g\t", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj)  );
+
+
+    for (j=0; j<Njack;j++)
+        tmp_muj[j]=a[j]*(mass[0][j]+mass[1][j]);
+    fprintf(outfile,"%g   %g\t", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj)  );
+
+    for (j=0; j<Njack;j++)
+        tmp_muj[j]=(a[j]*(mass[0][j]+mass[1][j]))/a0m0[j];
+    fprintf(outfile,"%g   %g\t", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj)  );
+
+    // a_01*pi/mu
+    for (j=0; j<Njack;j++)
+        tmp_muj[j]=a[j]*pi_greco*(mass[0][j]+mass[1][j])/(mass[0][j]*mass[1][j]) ;
+    fprintf(outfile,"%g   %g\n", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj)  );
+
+
+    free(tmpj); free(tmp_muj);
+
+    free_fit_result(fit_info,fit_out);
+    fflush(outfile);
+    //////////////////////////////////////////////////////77
+if (params.data.ncorr>48){
+    //c++ 90 || r 91
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    double *E2_0_A1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,48,"E2_0_A1E1", shift_and_M_eff_sinh_T,jack_file);
+    free(E2_0_A1);
+    
+    //c++ 91 || r 92
+    file_head.k[2]=mu2;    file_head.k[3]=mu2;
+    double *E2_1_A1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,49,"E2_1_A1E1", shift_and_M_eff_sinh_T,jack_file);
+    free(E2_1_A1);
+    
+    fit_info.Nvar=3;
+    fit_info.Npar=3;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=2;
+    fit_info.function=C2_diff_masses;
+    
+    file_head.k[2]=mu1;    file_head.k[3]=mu2;
+    fit_info.ext_P[0]=mass[0];
+    fit_info.ext_P[1]=mass[1];
+    //c++ 92 || r 93
+    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  50,0/*reim*/ , "E2_01_A1E1",  fit_info ,jack_file);
+    free_fit_result(fit_info,fit_out);
+    
+}else {    for(int i=90;i < 93;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+    
     
     
     free_2(3,mass);free_2(3,E2);

@@ -207,9 +207,12 @@ int main(int argc, char **argv){
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T96_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      //7
-     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T96_L24_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T96_L22_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      //8
+     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T96_L24_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+     emplace_back_par_data(namefile,paramsj,dataj);
+     //9
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T128_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      
@@ -290,6 +293,16 @@ int main(int argc, char **argv){
      
      struct fit_result fit_a_01=fit_data(argv,  paramsj ,gjack, muDE_01_lhs ,fit_info, "a_01_lusher",myen );
    
+     fit_info.Nvar=6;
+     fit_info.Npar=1;
+     fit_info.N=1;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=muDE_rhs;
+     
+     struct fit_result fit_a_01_div_shift=fit_data(argv,  paramsj ,gjack, muDE_01_div_shift_lhs ,fit_info, "a_01_lusher_div_shift",myen );
+     
      
      /////////////reload the data
     /* cout << endl <<"reload the data" << endl;
@@ -314,7 +327,7 @@ int main(int argc, char **argv){
      */
      
      printf("size=%ld\n",myen.size());
-     myen={4,5,6};
+     myen={4,5,6,7,8,9};
      printf("size=%ld\n",myen.size());
      
      printf("\n/////////////////////////////////     a_00_BH//////////////////\n");

@@ -246,13 +246,13 @@ double M_eff_log_shift(  int t, int T, double **in){
 ////////////////////////////////////////////////////////////////////////////
 
 //return the line where to read the plateau
-int   line_read_plateaux(char **option, const char *corr , int &tmin, int &tmax, int &sep ){
+int   line_read_plateaux(char **option, const char *corr , int &tmin, int &tmax, int &sep , const  char *namefile_plateaux ){
     
     int line=0;
    //option[3] path   
    //option[6] file
    char namefile[NAMESIZE]; 
-   mysprintf(namefile,NAMESIZE,"%s/plateaux.txt",option[3]);
+   mysprintf(namefile,NAMESIZE,"%s/%s",option[3],namefile_plateaux);
    std::fstream newfile;
    
    newfile.open(namefile,std::ios::in); //open a file to perform read operation using file object
@@ -287,6 +287,7 @@ int   line_read_plateaux(char **option, const char *corr , int &tmin, int &tmax,
    //      "no match for plateau %s   %s \n in the file %s ",option[6], corr,namefile);
    if (match==0){
       printf("no plateau found for %s in plateau file %s\n", corr,namefile);
+      printf("looking for a line:\n %s  %s\n", option[6] ,corr);
       fprintf(stderr,"Please enter the plateau interval and separation:\n"); 
       myscanf(3, (char*) "%d %d %d",&tmin,&tmax,&sep);
       while (tmin>tmax && tmax>= file_head.l0/2 &&  tmin <0){
@@ -294,6 +295,15 @@ int   line_read_plateaux(char **option, const char *corr , int &tmin, int &tmax,
             myscanf(3,(char*)"%d %d %d",&tmin,&tmax,&sep);
     }
    }
+   if (tmin>tmax){
+      printf("\n\nerror tmin can not be more than tmax set tmin=tmax-1\n\n");
+      tmin=tmax-1;
+   }
+   if (tmax>file_head.l0){
+       printf("\n\n error tmax over T, set  tmax=T/2-1\n\n");
+       tmin=file_head.l0/2-1;
+   }
+   
    
    return line;
     
@@ -397,10 +407,10 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
 }
 
 
-struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt , char* name,const char *description,double **mt,double **r, int Njack,FILE *plateaux_masses, FILE *outfile,struct fit_type fit_info)
+struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt , char* name,const char *description,double **mt,double **r, int Njack,const char *plateaux_masses, FILE *outfile,struct fit_type fit_info)
 {
    int yn;
-   int tmin=1, tmax=6, sep=1;
+   int tmin=1, tmax=3, sep=1;
    double *m,*fit;
    struct fit_result fit_out;
    char jack_name[NAMESIZE];
@@ -423,7 +433,7 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
             }
    }
    if ( strcmp(option[1],"read_plateaux")==0 ){
-        int l=line_read_plateaux(option, description ,  tmin,  tmax,  sep );
+        int l=line_read_plateaux(option, description ,  tmin,  tmax,  sep ,plateaux_masses);
         //m=try_linear_fit(option, tmin,  tmax,sep , mt, r, Njack );    
         fit_out=try_fit(option, tmin,  tmax,sep , mt, r, Njack ,&chi2,fit_info);
         yn=1;
@@ -518,7 +528,7 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
 
 
 
-double   *plateau_correlator_function(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, int Njack ,FILE **plateaux_masses,FILE *outfile,  int index , const char *description , double (*fun)(int ,int  , double ** ),  FILE * file_jack){
+double   *plateau_correlator_function(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, int Njack ,const char  *plateaux_masses,FILE *outfile,  int index , const char *description , double (*fun)(int ,int  , double ** ),  FILE * file_jack){
    /*int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    if ( strcmp(option[1],"read_plateaux")==0 )
    	go_to_line(*plateaux_masses,line);
@@ -556,7 +566,7 @@ double   *plateau_correlator_function(char **option ,struct kinematic kinematic_
    fit_info.n_ext_P=0;
   
    //fit=fit_plateaux(option, kinematic_2pt ,  name,description/*"M_{PS}^{ll}"*/,mt,r,  Njack,*plateaux_masses,outfile);
-   struct fit_result fit_out=fit_fun_to_corr(option, kinematic_2pt ,  name, description, mt, r,  Njack, *plateaux_masses, outfile, fit_info);
+   struct fit_result fit_out=fit_fun_to_corr(option, kinematic_2pt ,  name, description, mt, r,  Njack, plateaux_masses, outfile, fit_info);
    
    fit=(double*) malloc(sizeof(double)*Njack);
    for (j=0;j<Njack;j++)
@@ -583,7 +593,7 @@ double   *plateau_correlator_function(char **option ,struct kinematic kinematic_
     
 }
 
-struct fit_result fit_function_to_corr(char **option ,struct kinematic kinematic_2pt ,  char* name, double ****conf_jack ,FILE **plateaux_masses,FILE *outfile,  int index, int re_im , const char *description , struct fit_type fit_info,  FILE * file_jack ){
+struct fit_result fit_function_to_corr(char **option ,struct kinematic kinematic_2pt ,  char* name, double ****conf_jack ,const char  *plateaux_masses,FILE *outfile,  int index, int re_im , const char *description , struct fit_type fit_info,  FILE * file_jack ){
 
 int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    /*if ( strcmp(option[1],"read_plateaux")==0 )
@@ -617,7 +627,7 @@ int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
 
    }
    
-   struct fit_result fit_out=fit_fun_to_corr(option, kinematic_2pt ,  name, description, mt, r,  Njack, *plateaux_masses, outfile, fit_info);
+   struct fit_result fit_out=fit_fun_to_corr(option, kinematic_2pt ,  name, description, mt, r,  Njack, plateaux_masses, outfile, fit_info);
    //fit=fit_plateaux(option, kinematic_2pt ,  name,description/*"M_{PS}^{ll}"*/,mt,r,  Njack,*plateaux_masses,outfile);
    
    fwrite(fit_out.P[0],sizeof(double),Njack, file_jack );
@@ -647,7 +657,7 @@ int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
 
 //fit the function of fit info.function() to a combination of correlator  y= fun_of_corr( jack_index, data[jack][corr][time][reim], time, fit_info)
 //  
-struct fit_result fit_fun_to_fun_of_corr(char **option ,struct kinematic kinematic_2pt ,  char* name, double ****conf_jack ,FILE **plateaux_masses,FILE *outfile,  double fun_of_corr(int, double****,int, struct fit_type ) , const char *description , struct fit_type fit_info,  FILE *file_jack ){
+struct fit_result fit_fun_to_fun_of_corr(char **option ,struct kinematic kinematic_2pt ,  char* name, double ****conf_jack ,const char  *plateaux_masses,FILE *outfile,  double fun_of_corr(int, double****,int, struct fit_type ) , const char *description , struct fit_type fit_info,  FILE *file_jack ){
 /*
 int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    if ( strcmp(option[1],"read_plateaux")==0 )
@@ -681,8 +691,9 @@ int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
 
    }
    
-   struct fit_result fit_out=fit_fun_to_corr(option, kinematic_2pt ,  name, description, mt, r,  Njack, *plateaux_masses, outfile, fit_info);
+   struct fit_result fit_out=fit_fun_to_corr(option, kinematic_2pt ,  name, description, mt, r,  Njack, plateaux_masses, outfile, fit_info);
    //fit=fit_plateaux(option, kinematic_2pt ,  name,description/*"M_{PS}^{ll}"*/,mt,r,  Njack,*plateaux_masses,outfile);
+   
    
    fwrite(fit_out.P[0],sizeof(double),Njack, file_jack );
    

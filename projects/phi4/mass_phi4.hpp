@@ -125,7 +125,7 @@ double   *effective_mass_phi4(char **option ,struct kinematic kinematic_2pt , ch
 
 
 //double   *effective_mass_phi4_gamma(char **option ,struct kinematic kinematic_2pt , char* name, double ****data, int Confs ,FILE **plateaux_masses,FILE *outfile,  int index , const char *description ){
-void effective_mass_phi4_gamma(char **option ,struct kinematic kinematic_2pt , char* name, double ****data, int Confs ,FILE **plateaux_masses,FILE *outfile,  int index , const char *description ){
+void effective_mass_phi4_gamma(char **option ,struct kinematic kinematic_2pt , char* name, double ****data, int Confs ,const char *plateaux_masses,FILE *outfile,  int index , const char *description ){
 
     //int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    //if ( strcmp(option[1],"read_plateaux")==0 )
