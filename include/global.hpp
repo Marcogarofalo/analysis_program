@@ -14,7 +14,7 @@
 
 //#define ensembles_reph 11
 #define ensembles_reph 11
-#define ensembles 9
+#define ensembles 10
 #define pi_greco 3.141592653589793
 #define pdiffmax  3
 
