@@ -62,6 +62,7 @@ double **fit_fw_of_Mw_chiral_FVE_P40(struct database_file_jack  *jack_files,  st
 struct fit_result fit_Mpi_fw_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info,char **argv  ,const char *nameout, std::vector<int> myen);
 
 struct fit_result fit_Mpi_fw_chiral_FVE_clover_treshold(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info, double threshold);
+struct fit_result fit_Mpiw0s0_fwMpi4_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info,char **argv  ,const char *nameout,   std::vector<int> myen );
 struct fit_result fit_Mpi_fwMpi4_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info,char **argv  ,const char *nameout );
 struct fit_result fit_Mpi_fwMpi4_chiral_FVE_clover_threshold(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info, double threshold);
 

@@ -487,6 +487,9 @@ int main(int argc, char **argv){
    
    
    FILE *outfile        =NULL; mysprintf(namefile,NAMESIZE,"%s/out/out_E0.txt",argv[3]);        outfile=fopen(namefile,"w+");       error(outfile==NULL,1,"main ", "Unable to open %s file",namefile);
+   FILE *outfile_ls        =NULL; mysprintf(namefile,NAMESIZE,"%s/out/out_E0_ls.txt",argv[3]);        outfile_ls=fopen(namefile,"w+");       error(outfile_ls==NULL,1,"main ", "Unable to open %s file",namefile);
+   FILE *outfile_ss        =NULL; mysprintf(namefile,NAMESIZE,"%s/out/out_E0_ss.txt",argv[3]);        outfile_ss=fopen(namefile,"w+");       error(outfile_ss==NULL,1,"main ", "Unable to open %s file",namefile);
+   
    FILE *m_pcac         =NULL; mysprintf(namefile,NAMESIZE,"%s/out/m_pcac.txt",argv[3]);        m_pcac=fopen(namefile,"w+");        error(m_pcac==NULL,1,"main ", "Unable to open %s file",namefile);
    FILE *outfile_RM     =NULL; mysprintf(namefile,NAMESIZE,"%s/out/Ratio_masses.txt",argv[3]);  outfile_RM=fopen(namefile,"w+");    error(outfile_RM==NULL,1,"main ",  "Unable to open %s file",namefile);
    FILE *outfile_GEVP   =NULL; mysprintf(namefile,NAMESIZE,"%s/out/out_E0_GEVP.txt",argv[3]);       outfile_GEVP=fopen(namefile,"w+");  error(outfile_GEVP==NULL,1,"main ",  "Unable to open %s file",namefile);
@@ -528,10 +531,16 @@ int main(int argc, char **argv){
    
    read_file_head_bin(f_ll);
    print_file_head(outfile);
+   print_file_head(outfile_ls);
+   print_file_head(outfile_ss);
    print_file_head(outfile_GEVP);
   
 
    fflush(outfile);
+   fflush(outfile_ls);
+   fflush(outfile_ss);
+   
+   
    init_mass_index();
 
    printf("index mass=%d\n",mass_index[1][0][0][0]);
@@ -708,6 +717,10 @@ mass_jack_fit_GEVP[ik2][ik1]=compute_effective_mass_GEVP(  argv, kinematic_2pt, 
   */  
        
        mass_jack_fit[ik2][ik1]=compute_effective_mass(  argv, kinematic_2pt,  name, conf_jack,  Njack ,&plateaux_masses,outfile,0,"M_{PS}^{ll}");
+       double *tmp=compute_effective_mass(  argv, kinematic_2pt,  name, conf_jack,  Njack ,&plateaux_masses,outfile_ls,1,"M_{PS}^{ls}");
+       free(tmp);
+       tmp=compute_effective_mass(  argv, kinematic_2pt,  name, conf_jack,  Njack ,&plateaux_masses,outfile_ss,3,"M_{PS}^{ss}");
+       free(tmp);
        //plateaux_masses=open_file(kinematic_2pt.plateau_m_ll,"r");
        
        mass_jack_fit_GEVP[ik2][ik1]=compute_effective_mass_GEVP(  argv, kinematic_2pt,  name, conf_jack,  Njack, var ,plateaux_masses_GEVP,outfile_GEVP );

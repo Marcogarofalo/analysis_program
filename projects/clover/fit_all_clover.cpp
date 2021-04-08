@@ -227,7 +227,7 @@ double fit_Fpi_and_Mpi_GL(int n, int Nvar, double *x,int Npar,double  *P){
     }
     if (n==1){
         
-        Mw2=fw*(1-2*xi*log(xi)+P3*xi)+(1./(w0*w0))*P4;
+        Mw2=fw*(1-2*xi*log(xi)+P3*xi+(1./(w0*w0))*P4);
         Mw2*=(1+Delta);
         
     }
@@ -277,7 +277,7 @@ double fit_Fpi_and_Mpi_GL_NL0_am_m2(int n, int Nvar, double *x,int Npar,double  
     }
     if (n==1){
         
-        Mw2=fw*(1-2*xi*log(xi)+P3*xi)+(1./(w0*w0))*P4+(1./(w0*w0))*mw*P[7] + mw*mw *P[9];
+        Mw2=fw*(1-2*xi*log(xi)+P3*xi+(1./(w0*w0))*P4+(1./(w0*w0))*mw*P[7] + mw*mw *P[9]);
         Mw2*=(1+Delta);
         
     }
@@ -326,7 +326,7 @@ double fit_Fpi_and_Mpi_GL_NL0_am(int n, int Nvar, double *x,int Npar,double  *P)
     }
     if (n==1){
         
-        Mw2=fw*(1-2*xi*log(xi)+P3*xi)+(1./(w0*w0))*P4+(1./(w0*w0))*mw*P[7] ;
+        Mw2=fw*(1-2*xi*log(xi)+P3*xi+(1./(w0*w0))*P4+(1./(w0*w0))*mw*P[7]) ;
         Mw2*=(1+Delta);
         
     }
@@ -375,7 +375,7 @@ double fit_Fpi_and_Mpi_GL_NL0_am_fonly(int n, int Nvar, double *x,int Npar,doubl
     }
     if (n==1){
         
-        Mw2=fw*(1-2*xi*log(xi)+P3*xi)+(1./(w0*w0))*P4+(1./(w0*w0))*mw*P[6] ;
+        Mw2=fw*(1-2*xi*log(xi)+P3*xi+(1./(w0*w0))*P4+(1./(w0*w0))*mw*P[6]) ;
         Mw2*=(1+Delta);
         
     }
@@ -626,6 +626,226 @@ double fit_FpiMpi4_and_Mpi2_GL(int n, int Nvar, double *x,int Npar,double  *P){
     
 }
 
+double fit_Mpisw_Xpi_GL_NLO_am_fonly(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Mw2=0,xi;
+    double pi=3.141592653589793;
+    double Bw, fw, l3b, P2, l4b, P4,ZP;
+    Bw=P[0], fw=P[1], l3b=P[2], P2=P[3], l4b=P[4]  ;
+    
+    double mw=x[0], w0=x[1], dmpi2=x[2], dfpi=x[3];
+    int Lsize=(int(x[4]));
+    double L_w=(x[4]) /w0;
+    double KM,Kf;
+    
+    double P1=-l3b-2*log( v_Mpiw0 /(4*pi*fw));
+    double P3=2*l4b+4*log(   v_Mpiw0/(4*pi*fw) );
+    
+    
+    double Delta=FVE_GL_fast( L_w, mw, fw, Bw);
+    
+    
+    xi=2*Bw*mw/(16.*pi*pi*fw*fw);
+    
+    if (n==0){
+        
+        Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2 ;
+        Mw2*=2*Bw*mw;
+        Mw2*=(1-0.25 *Delta)*(1-0.25 *Delta);
+        
+    }
+    if (n==1){// fit fot w0^5fpi Mpi^4
+        double ML=sqrt(2*Bw*mw)*L_w;
+        Mw2= pow(4.*pi, 4./5.);
+        Mw2*= fw  * pow(xi,2./5.);
+        Mw2*=pow(1.+ 2.*(l4b-l3b) *xi + xi*xi *P[5] +(1./(w0*w0))*P[6]+(1./(w0*w0))*xi*P[7] , 1./5.);
+        //Mw2*=(1.+ P[7]*xi*xi *exp(-ML)/ pow(ML,3./2.));
+        
+    }
+    if (n==2){
+        Mw2=(1-0.25 *Delta);  //KM   M(inf)=M(L)/KM
+        
+    }
+    if (n==3){
+        double ML=sqrt(2*Bw*mw)*L_w;
+        //Mw2=(1.+ P[7]*xi*xi *exp(-ML)/ pow(ML,3./2.));  //KfMpi4   M(inf)=M(L)/Kf
+        Mw2=1;
+    }
+    if (n==4){
+        Mw2=pow(fit_Mpisw_Xpi_GL_NLO_am_fonly(0,  Nvar, x, Npar,P), 5);
+        Mw2/=pow(fit_Mpisw_Xpi_GL_NLO_am_fonly(1,  Nvar, x, Npar,P),10);
+    }
+    
+    return Mw2;
+    
+}
+
+double fit_Mpisw_Xpi_GL_NLO_am_fonly_noxi2(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Mw2=0,xi;
+    double pi=3.141592653589793;
+    double Bw, fw, l3b, P2, l4b, P4,ZP;
+    Bw=P[0], fw=P[1], l3b=P[2], P2=P[3], l4b=P[4]  ;
+    
+    double mw=x[0], w0=x[1], dmpi2=x[2], dfpi=x[3];
+    int Lsize=(int(x[4]));
+    double L_w=(x[4]) /w0;
+    double KM,Kf;
+    
+    double P1=-l3b-2*log( v_Mpiw0 /(4*pi*fw));
+    double P3=2*l4b+4*log(   v_Mpiw0/(4*pi*fw) );
+    
+    
+    double Delta=FVE_GL_fast( L_w, mw, fw, Bw);
+    
+    
+    xi=2*Bw*mw/(16.*pi*pi*fw*fw);
+    
+    if (n==0){
+        
+        Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2 ;
+        Mw2*=2*Bw*mw;
+        Mw2*=(1-0.25 *Delta)*(1-0.25 *Delta);
+        
+    }
+    if (n==1){// fit fot w0^5fpi Mpi^4
+        double ML=sqrt(2*Bw*mw)*L_w;
+        Mw2= pow(4.*pi, 4./5.);
+        Mw2*= fw  * pow(xi,2./5.);
+        Mw2*=pow(1.+ 2.*(l4b-l3b) *xi  +(1./(w0*w0))*P[5]+(1./(w0*w0))*xi*P[6] , 1./5.);
+        //Mw2*=(1.+ P[7]*xi*xi *exp(-ML)/ pow(ML,3./2.));
+        
+    }
+    if (n==2){
+        Mw2=(1-0.25 *Delta);  //KM   M(inf)=M(L)/KM
+        
+    }
+    if (n==3){
+        double ML=sqrt(2*Bw*mw)*L_w;
+        //Mw2=(1.+ P[7]*xi*xi *exp(-ML)/ pow(ML,3./2.));  //KfMpi4   M(inf)=M(L)/Kf
+        Mw2=1;
+    }
+    if (n==4){
+        Mw2=pow(fit_Mpisw_Xpi_GL_NLO_am_fonly(0,  Nvar, x, Npar,P), 5);
+        Mw2/=pow(fit_Mpisw_Xpi_GL_NLO_am_fonly(1,  Nvar, x, Npar,P),10);
+    }
+    
+    return Mw2;
+    
+}
+
+
+double fit_Mpisw_Xpi_noam(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Mw2=0,xi;
+    double pi=3.141592653589793;
+    double Bw, fw, l3b, P2, l4b, P4,ZP;
+    Bw=P[0], fw=P[1], l3b=P[2], P2=P[3], l4b=P[4]  ;
+    
+    double mw=x[0], w0=x[1], dmpi2=x[2], dfpi=x[3];
+    int Lsize=(int(x[4]));
+    double L_w=(x[4]) /w0;
+    double KM,Kf;
+    
+    double P1=-l3b-2*log( v_Mpiw0 /(4*pi*fw));
+    double P3=2*l4b+4*log(   v_Mpiw0/(4*pi*fw) );
+    
+    
+    double Delta=FVE_GL_fast( L_w, mw, fw, Bw);
+    
+    
+    xi=2*Bw*mw/(16.*pi*pi*fw*fw);
+    
+    if (n==0){
+        
+        Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2 ;
+        Mw2*=2*Bw*mw;
+        Mw2*=(1-0.25 *Delta)*(1-0.25 *Delta);
+        
+    }
+    if (n==1){// fit fot w0^5fpi Mpi^4
+        double ML=sqrt(2*Bw*mw)*L_w;
+        Mw2= pow(4.*pi, 4./5.);
+        Mw2*= fw  * pow(xi,2./5.);
+        Mw2*=pow(1.+ 2.*(l4b-l3b) *xi + xi*xi *P[5] +(1./(w0*w0))*P[6] , 1./5.);
+        //Mw2*=(1.+ P[7]*xi*xi *exp(-ML)/ pow(ML,3./2.));
+        
+    }
+    if (n==2){
+        Mw2=(1-0.25 *Delta);  //KM   M(inf)=M(L)/KM
+        
+    }
+    if (n==3){
+        double ML=sqrt(2*Bw*mw)*L_w;
+        //Mw2=(1.+ P[7]*xi*xi *exp(-ML)/ pow(ML,3./2.));  //KfMpi4   M(inf)=M(L)/Kf
+        Mw2=1;
+        
+    }
+    if (n==4){
+        Mw2=pow(fit_Mpisw_Xpi_GL_NLO_am_fonly(0,  Nvar, x, Npar,P), 5);
+        Mw2/=pow(fit_Mpisw_Xpi_GL_NLO_am_fonly(1,  Nvar, x, Npar,P),10);
+    }
+    
+    return Mw2;
+    
+}
+
+
+
+double fit_Mpisw_Xpi_noam_noxi2(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Mw2=0,xi;
+    double pi=3.141592653589793;
+    double Bw, fw, l3b, P2, l4b, P4,ZP;
+    Bw=P[0], fw=P[1], l3b=P[2], P2=P[3], l4b=P[4]  ;
+    
+    double mw=x[0], w0=x[1], dmpi2=x[2], dfpi=x[3];
+    int Lsize=(int(x[4]));
+    double L_w=(x[4]) /w0;
+    double KM,Kf;
+    
+    double P1=-l3b-2*log( v_Mpiw0 /(4*pi*fw));
+    double P3=2*l4b+4*log(   v_Mpiw0/(4*pi*fw) );
+    
+    
+    double Delta=FVE_GL_fast( L_w, mw, fw, Bw);
+    
+    
+    xi=2*Bw*mw/(16.*pi*pi*fw*fw);
+    
+    if (n==0){
+        
+        Mw2=1+xi*log(xi)+P1*xi+ (1./(w0*w0))*P2 ;
+        Mw2*=2*Bw*mw;
+        Mw2*=(1-0.25 *Delta)*(1-0.25 *Delta);
+        
+    }
+    if (n==1){// fit fot w0^5fpi Mpi^4
+        double ML=sqrt(2*Bw*mw)*L_w;
+        Mw2= pow(4.*pi, 4./5.);
+        Mw2*= fw  * pow(xi,2./5.);
+        Mw2*=pow(1.+ 2.*(l4b-l3b) *xi +  (1./(w0*w0))*P[5] , 1./5.);
+        //Mw2*=(1.+ P[7]*xi*xi *exp(-ML)/ pow(ML,3./2.));
+        
+    }
+    if (n==2){
+        Mw2=(1-0.25 *Delta);  //KM   M(inf)=M(L)/KM
+        
+    }
+    if (n==3){
+        double ML=sqrt(2*Bw*mw)*L_w;
+        //Mw2=(1.+ P[7]*xi*xi *exp(-ML)/ pow(ML,3./2.));  //KfMpi4   M(inf)=M(L)/Kf
+        Mw2=1;
+        
+    }
+    if (n==4){
+        Mw2=pow(fit_Mpisw_Xpi_GL_NLO_am_fonly(0,  Nvar, x, Npar,P), 5);
+        Mw2/=pow(fit_Mpisw_Xpi_GL_NLO_am_fonly(1,  Nvar, x, Npar,P),10);
+    }
+    
+    return Mw2;
+    
+}
 
 double fit_FpiMpi4_and_Mpi2_GL_am(int n, int Nvar, double *x,int Npar,double  *P){
     
@@ -1355,46 +1575,56 @@ void  files_declarations(char **argv,struct database_file_jack **jack_files,stru
     (*head)=(struct header*) malloc(sizeof(struct header)*ensembles_reph);
     for (i=0;i<ensembles_reph;i++)
         (*head)[i].allocated=0;
-    
-    setup_reading_jack( argv,&((*jack_files)[0]),&((*head)[0]),"/media/marco/data/PRACE/beta1.726/cA211ab.53.24/analysis/main/jackknife");  
+    char name[NAMESIZE];
+    mysprintf(name,NAMESIZE,"%s/beta1.726/cA211ab.53.24/analysis/main/jackknife",argv[3]);
+    setup_reading_jack( argv,&((*jack_files)[0]),&((*head)[0]),name);  
     (*jack_files)[0].a=0.096;
     if (ensembles>1){
-        setup_reading_jack(argv, &((*jack_files)[1]),&((*head)[1]),"/media/marco/data/PRACE/beta1.726/cA211ab.40.24/analysis/main/jackknife");  
+        mysprintf(name,NAMESIZE,"%s/beta1.726/cA211ab.40.24/analysis/main/jackknife",argv[3]);
+        setup_reading_jack(argv, &((*jack_files)[1]),&((*head)[1]),name);  
         (*jack_files)[1].a=0.096;
     }
     if (ensembles>2){
-        setup_reading_jack(argv, &((*jack_files)[2]),&((*head)[2]),"/media/marco/data/PRACE/beta1.726/cA211ab.30.32/analysis/main/jackknife");  
+        mysprintf(name,NAMESIZE,"%s/beta1.726/cA211ab.30.32/analysis/main/jackknife",argv[3]);
+        setup_reading_jack(argv, &((*jack_files)[2]),&((*head)[2]),name);  
         (*jack_files)[2].a=0.096;
     }
     if (ensembles>3){
      //   setup_reading_jack(argv, &jack_files[3],&head[3],"../../beta1.726/cA211ab.12.48/analysis/main/jackknife");  
-        setup_reading_jack(argv, &((*jack_files)[3]),&((*head)[3]),"/media/marco/data/PRACE/beta1.726/cA211ab.12.48_no_rew/analysis/main/jackknife");  
+        mysprintf(name,NAMESIZE,"%s/beta1.726/cA211ab.12.48_no_rew/analysis/main/jackknife",argv[3]);
+        setup_reading_jack(argv, &((*jack_files)[3]),&((*head)[3]),name);  
         (*jack_files)[3].a=0.096;
     }
     if (ensembles>4){
-        setup_reading_jack(argv, &((*jack_files)[4]),&((*head)[4]),"/media/marco/data/PRACE/beta1.778/cB211ab.25.48/analysis/main/jackknife");  
+        mysprintf(name,NAMESIZE,"%s/beta1.778/cB211ab.25.48/analysis/main/jackknife",argv[3]);
+        setup_reading_jack(argv, &((*jack_files)[4]),&((*head)[4]),name);  
         (*jack_files)[4].a=0.081;
     }
     if (ensembles>5){
-        setup_reading_jack(argv,&((*jack_files)[5]),&((*head)[5]),"/media/marco/data/PRACE/beta1.778/cB211ab.14.64/analysis/main/jackknife");  
+        mysprintf(name,NAMESIZE,"%s/beta1.778/cB211ab.14.64/analysis/main/jackknife",argv[3]);
+        setup_reading_jack(argv,&((*jack_files)[5]),&((*head)[5]),name);  
         (*jack_files)[5].a=0.070;
     }
     if (ensembles>6){
-        setup_reading_jack(argv,&((*jack_files)[6]),&((*head)[6]),"/media/marco/data/PRACE/beta1.778/cB211ab.072.64/analysis/main/jackknife");  
+        mysprintf(name,NAMESIZE,"%s/beta1.778/cB211ab.072.64/analysis/main/jackknife",argv[3]);
+        setup_reading_jack(argv,&((*jack_files)[6]),&((*head)[6]),name);  
         (*jack_files)[6].a=0.081;
     }
     
     if (ensembles>7){
-        setup_reading_jack(argv, &((*jack_files)[7]),&((*head)[7]),"/media/marco/data/PRACE/beta1.836/cC211ab.06.80/analysis/main/jackknife");  
+        mysprintf(name,NAMESIZE,"%s/beta1.836/cC211ab.06.80/analysis/main/jackknife",argv[3]);
+        setup_reading_jack(argv, &((*jack_files)[7]),&((*head)[7]),name);  
         (*jack_files)[7].a=0.070;
     }
     if (ensembles>8){
-        setup_reading_jack(argv, &((*jack_files)[8]),&((*head)[8]),"/media/marco/data/PRACE/beta1.778/cB211ab.25.32/analysis/main/jackknife");  
+        mysprintf(name,NAMESIZE,"%s/beta1.778/cB211ab.25.32/analysis/main/jackknife",argv[3]);
+        setup_reading_jack(argv, &((*jack_files)[8]),&((*head)[8]),name);  
         (*jack_files)[8].a=0.081;
     }
     if (ensembles>9){
-        setup_reading_jack(argv, &((*jack_files)[9]),&((*head)[9]),"/media/marco/data/PRACE/beta1.836/cC211ab.20.48/analysis/main/jackknife");  
-        (*jack_files)[9].a=0.081;
+        mysprintf(name,NAMESIZE,"%s/beta1.836/cC211ab.20.48/analysis/main/jackknife",argv[3]);
+        setup_reading_jack(argv, &((*jack_files)[9]),&((*head)[9]),name);  
+        (*jack_files)[9].a=0.070;
     }
     
     
@@ -1644,7 +1874,7 @@ void mud(double xi,int Npar,double *P, double *f, double *df){
 
 
 
-void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,double **w0C,double **ZpA,double **ZpB,double **ZpC,int jack_tot, const char *scaletype, const char *Mtype, double ***w0, double **scalefm){
+void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,double **w0C,double **ZpA,double **ZpB,double **ZpC,int jack_tot, const char *scaletype, const char *Mtype, double ***w0, double **scalefm, double **s0_w0A,double **s0_w0B,double **s0_w0C , double **s0_w0_cont){
     
       if (strcmp(scaletype,"w0")==0 || strcmp(scaletype,"w0xensemble")==0 ){
           //(*w0A)=fake_sampling(jackboot,1.8381,  0.0037,jack_tot,123);  // petros-from jacob 31/07/20 fit   in M_PS^2/f_PS^2
@@ -1668,10 +1898,39 @@ void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,do
          (*w0C)=fake_sampling(jackboot,2.10945,0.00082,jack_tot,12345);
          (*scalefm)=fake_sampling(jackboot,0.14436, 0.00061,jack_tot,1);
      }
+     else if (strcmp(scaletype,"w0noA12")==0 ){
+         //(*w0A)=fake_sampling(jackboot,1.8381,  0.0037,jack_tot,123);  // petros-from jacob 31/07/20 fit   in M_PS^2/f_PS^2
+         //(*w0B)=fake_sampling(jackboot,2.1316 ,0.0024 ,jack_tot,1234);// petros-from jacob 31/07/20 fit  M_PS^2/f_PS^2
+         //(*w0C)=fake_sampling(jackboot,2.5039, 0.0017,jack_tot,12345);//  petros-from jacob 31/07/20 fit  M_PS^2/f_PS^2
+         (*w0A)=fake_sampling(jackboot,1.834014,  0.006294 ,jack_tot,123);  // petros-from jacob 31/07/20 fit   in M_PS^2/f_PS^2
+         (*w0B)=fake_sampling(jackboot,2.12997 ,0.00157 ,jack_tot,1234);// petros-from jacob 31/07/20 fit  M_PS^2/f_PS^2
+         (*w0C)=fake_sampling(jackboot,2.50451, 0.00172,jack_tot,12345);//  petros-from jacob 31/07/20 fit  M_PS^2/f_PS^2
+         (*scalefm)=fake_sampling(jackboot,0.17383, 0.00063,jack_tot,1);
+         
+     }
+     else if(strcmp(scaletype,"t0_w0noA12")==0){
+         (*w0A)=fake_sampling(jackboot, 1.335395 , 0.001543,jack_tot,123); //t/w0
+         (*w0B)=fake_sampling(jackboot,1.52789  ,0.00033,jack_tot,1234);// t/w0
+         (*w0C)=fake_sampling(jackboot,1.77671,0.00037,jack_tot,12345);
+         (*scalefm)=fake_sampling(jackboot,0.11969, 0.00062,jack_tot,1);
+     }
+     else if(strcmp(scaletype,"sqrtt0noA12")==0){
+         (*w0A)=fake_sampling(jackboot,1.56528943011 ,3.25371135973e-3,jack_tot,123); //t
+         (*w0B)=fake_sampling(jackboot,1.80397 ,0.00068,jack_tot,1234);// t
+         (*w0C)=fake_sampling(jackboot,2.10945,0.00082,jack_tot,12345);
+         (*scalefm)=fake_sampling(jackboot,0.14436, 0.00061,jack_tot,1);
+     }
+     
+     
      else {
          printf("error no scale selected\n"); exit(1);
     }
-     
+    (*s0_w0A)=fake_sampling(jackboot,0.8531,  0.0010,jack_tot,12345+1);  // 
+    (*s0_w0B)=fake_sampling(jackboot,0.84697 ,0.00037 ,jack_tot,12345+2);// 
+    (*s0_w0C)=fake_sampling(jackboot,0.84226, 0.00027,jack_tot,12345+3);//  
+    
+    (*s0_w0_cont)=fake_sampling(jackboot,0.8291, 1e-5,jack_tot,12345+4);//  
+    
      if(strcmp(Mtype,"M1")==0){
           /*(*ZpA)=fake_sampling(jackboot, 0.474,0.002,jack_tot,321);//M1 2Gev  Enrico-Matteo  19/05/2020  constant
           (*ZpB)=fake_sampling(jackboot, 0.482,0.0030,jack_tot,3214);//M1 2Gev Enrico-Matteo  19/05/2020  constant
@@ -1814,7 +2073,7 @@ void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,do
       if(ensembles>7) (*w0)[7]=fake_sampling(jackboot,2.50451148219,  0.0017199806,jack_tot,31+7);
      
       if(ensembles>8) (*w0)[8]=fake_sampling(jackboot,2.098181547016053,  0.0018805608969,jack_tot,31+8);
-      if(ensembles>8) (*w0)[9]=fake_sampling(jackboot, 2.4682126       ,  0.0047903,jack_tot,31+9);
+      if(ensembles>9) (*w0)[9]=fake_sampling(jackboot, 2.4682126       ,  0.0047903,jack_tot,31+9);
       
 
 
@@ -1826,48 +2085,59 @@ void  create_fake_distribution(const char *jackboot,double **w0A,double **w0B,do
 void init_Z( struct database_file_jack *jack_files, struct header *head,int jack_tot, struct data_jack **gJ, const char *scaletype, const char *Mtype){
       int j;
       double *w0A,*w0B,*w0C, *ZpA,*ZpB,*ZpC, **w0,*scalefm;
-      create_fake_distribution(jack_files[0].sampling, &w0A, &w0B, &w0C, &ZpA, &ZpB, &ZpC,jack_tot,scaletype,Mtype, &w0, &scalefm);
+      double *s0_w0A, *s0_w0B, *s0_w0C ,  *s0_w0_cont;
+      create_fake_distribution(jack_files[0].sampling, &w0A, &w0B, &w0C, &ZpA, &ZpB, &ZpC,jack_tot,scaletype,Mtype, &w0, &scalefm, &s0_w0A, &s0_w0B, &s0_w0C ,  &s0_w0_cont);
       printf("ensembles=%d\n",ensembles);
       for(j=0;j<jack_tot;j++){
       if (ensembles>0){
-        (*gJ)[0].w0[j]=w0A[j]; 
-        (*gJ)[0].Zp[j]=ZpA[j];
+          (*gJ)[0].w0[j]=w0A[j]; 
+          (*gJ)[0].s0_w0[j]=s0_w0A[j]; 
+          (*gJ)[0].Zp[j]=ZpA[j];
       }
       if (ensembles>1){
-        (*gJ)[1].w0[j]=w0A[j];
-        (*gJ)[1].Zp[j]=ZpA[j];        
+          (*gJ)[1].w0[j]=w0A[j];
+          (*gJ)[1].s0_w0[j]=s0_w0A[j];
+          (*gJ)[1].Zp[j]=ZpA[j];        
       }
       if (ensembles>2){
-        (*gJ)[2].w0[j]=w0A[j];
-        (*gJ)[2].Zp[j]=ZpA[j];        
+          (*gJ)[2].w0[j]=w0A[j];
+          (*gJ)[2].s0_w0[j]=s0_w0A[j];
+          (*gJ)[2].Zp[j]=ZpA[j];        
       }
       if (ensembles>3){
-        (*gJ)[3].w0[j]=w0A[j];
-        (*gJ)[3].Zp[j]=ZpA[j];
+          (*gJ)[3].w0[j]=w0A[j];
+          (*gJ)[3].s0_w0[j]=s0_w0A[j];
+          (*gJ)[3].Zp[j]=ZpA[j];
       }
       if (ensembles>4){
-        (*gJ)[4].w0[j]=w0B[j];
-        (*gJ)[4].Zp[j]=ZpB[j];
+          (*gJ)[4].w0[j]=w0B[j];
+          (*gJ)[4].s0_w0[j]=s0_w0B[j];
+          (*gJ)[4].Zp[j]=ZpB[j];
       }
       if (ensembles>5){
-        (*gJ)[5].w0[j]=w0B[j];
-        (*gJ)[5].Zp[j]=ZpB[j];
+          (*gJ)[5].w0[j]=w0B[j];
+          (*gJ)[5].s0_w0[j]=s0_w0B[j];
+          (*gJ)[5].Zp[j]=ZpB[j];
       }
       if (ensembles>6){
-        (*gJ)[6].w0[j]=w0B[j];
-        (*gJ)[6].Zp[j]=ZpB[j];
+          (*gJ)[6].w0[j]=w0B[j];
+          (*gJ)[6].s0_w0[j]=s0_w0B[j];
+          (*gJ)[6].Zp[j]=ZpB[j];
       }
       
       if (ensembles>7){
-        (*gJ)[7].w0[j]=w0C[j];
-        (*gJ)[7].Zp[j]=ZpC[j];
+          (*gJ)[7].w0[j]=w0C[j];
+          (*gJ)[7].s0_w0[j]=s0_w0C[j];
+          (*gJ)[7].Zp[j]=ZpC[j];
       }
       if (ensembles>8){
-        (*gJ)[8].w0[j]=w0B[j];
-        (*gJ)[8].Zp[j]=ZpB[j];
+          (*gJ)[8].w0[j]=w0B[j];
+          (*gJ)[8].s0_w0[j]=s0_w0B[j];
+          (*gJ)[8].Zp[j]=ZpB[j];
       } 
       if (ensembles>9){
           (*gJ)[9].w0[j]=w0C[j];
+          (*gJ)[9].s0_w0[j]=s0_w0C[j];
           (*gJ)[9].Zp[j]=ZpC[j];
       } 
       
@@ -1876,7 +2146,10 @@ void init_Z( struct database_file_jack *jack_files, struct header *head,int jack
           for(int e=0;e<ensembles;e++)
              (*gJ)[e].w0[j]=w0[e][j];
       }
-      (*gJ)[0].scalefm[j]=scalefm[j];
+      for(int e=0;e<ensembles;e++){
+            (*gJ)[e].scalefm[j]=scalefm[j];
+            (*gJ)[e].s0_w0_cont[j]=s0_w0_cont[j];
+      }
     }
     free(w0A);free(w0B);free(w0C); free(ZpA);free(ZpB);free(ZpC);
     free_2(ensembles,w0);
@@ -1914,6 +2187,8 @@ struct data_jack *create_generalised_boot( struct database_file_jack *jack_files
           gJ[e].w0=(double*) calloc(*jack_tot,sizeof(double));
           gJ[e].Zp=(double*) calloc(*jack_tot,sizeof(double));
           gJ[e].scalefm=(double*) calloc(*jack_tot,sizeof(double));
+          gJ[e].s0_w0=(double*) calloc(*jack_tot,sizeof(double));
+          gJ[e].s0_w0_cont=(double*) calloc(*jack_tot,sizeof(double));
             for(ik1=0;ik1<4;ik1++){     //for(ik1=0;ik1<=ik2;ik1++){
             for(ik2=ik1;ik2<head[e].nk;ik2++){   
                  im=mass_index[e][ik2][ik1];
@@ -2039,6 +2314,8 @@ struct data_jack *create_generalised_jack( struct database_file_jack *jack_files
           gJ[e].w0=(double*) malloc((*jack_tot)*sizeof(double));
           gJ[e].Zp=(double*) malloc((*jack_tot)*sizeof(double));
           gJ[e].scalefm=(double*) malloc((*jack_tot)*sizeof(double));
+          gJ[e].s0_w0=(double*) malloc((*jack_tot)*sizeof(double));
+          gJ[e].s0_w0_cont=(double*) malloc((*jack_tot)*sizeof(double));
             for(ik1=0;ik1<4;ik1++){     //for(ik1=0;ik1<=ik2;ik1++){
             for(ik2=ik1;ik2<head[e].nk;ik2++){   
                  im=mass_index[e][ik2][ik1];
@@ -2685,58 +2962,25 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
     }
     
     for (j=0;j<jack_tot;j++){
-        if(strcmp(AV,"pion")==0){
+        if(strcmp(AV,"pion")==0 ){
        
-       in=r1.MpiMeV[j]*r1.MpiMeV[j]/(r1.fpiMeV_exp[j]*r1.fpiMeV_exp[j]);
-       xi[j]=rtbis(Mw2_over_fw2_chiral_FVE_a0_minus,in,fit_info.Npar,tif[j], 0.0001, 0.01, 1e-10);//gives mw
-       phys_point[j][0]=xi[j];
-       r1.fpiw[j]=fPSw_chiral_FVE(  xi[j],fit_info.Npar,tif[j]);
-       w0_estimate[j]=r1.fpiw[j]/(v_fpiMeV_exp/197.326963);
-      /* if(strcmp(namefile,"fit_FpiMpi4_GL_w0_M1a")==0 ){
-         //  xi[j]=rtbis_func_eq_input(fit_info.function ,
-           //                          0,//double n
-            //                         fit_info.Nvar, x,fit_info.Npar, tif[j], 
-             //                        0,//ivar
-              //                       in, 0.0001, 0.01, 1e-10);//gives mw  
-           
-           x[j][0]=xi[j];
-           r1.fpiw[j]=fit_info.function(1,fit_info.Nvar,x[j],fit_info.Npar,tif[j])  / pow(fit_info.function(0,fit_info.Nvar,x[j],fit_info.Npar,tif[j]),2);
-           w0_estimate[j]=r1.fpiw[j]/(v_fpiMeV_exp/197.326963);
-           
-           w0_estimate[j]=0.171;//first guess
-           double res=1;
-           while (  res >1e-6){
-                in=r1.MpiMeV[j]*r1.MpiMeV[j]*r1.MpiMeV[j]*r1.MpiMeV[j]*r1.fpiMeV_exp[j];
-                in*=pow(w0_estimate[j]/197.326963,5);//input w0^5 fpi Mpi^4  // we need w0 in MeV-1
-                
-                xi[j]=rtbis_func_eq_input(fit_info.function ,
-                                            1,//double n
-                                            fit_info.Nvar, x[j],fit_info.Npar, tif[j], 
-                                            0,//ivar
-                                            in, 0.0001, 0.01, 1e-10); // find mw such imposing in= w0^5 fpi Mpi^4 
-                x[j][0]=xi[j]; 
-                double tmp_Mw2=fit_info.function(0,fit_info.Nvar,x[j],fit_info.Npar,tif[j]);// compute Mpi^2w0 at mw
-                double w0_tmp=sqrt(tmp_Mw2)/(r1.MpiMeV[j]/197.326963);
-                res=w0_estimate[j]-w0_tmp;
-                
-                w0_estimate[j]=w0_estimate[j] +res/2.;
-                r1.fpiw[j]=fit_info.function(1,fit_info.Nvar,x[j],fit_info.Npar,tif[j])  / pow(fit_info.function(0,fit_info.Nvar,x[j],fit_info.Npar,tif[j]),2);
-                //printf("guess w0=%f   res=%f\n" ,w0_estimate[j],res);
-           }
+            in=r1.MpiMeV[j]*r1.MpiMeV[j]/(r1.fpiMeV_exp[j]*r1.fpiMeV_exp[j]);
+            xi[j]=rtbis(Mw2_over_fw2_chiral_FVE_a0_minus,in,fit_info.Npar,tif[j], 0.0001, 0.01, 1e-10);//gives mw
+            phys_point[j][0]=xi[j];
+            r1.fpiw[j]=fPSw_chiral_FVE(  xi[j],fit_info.Npar,tif[j]);
+            w0_estimate[j]=r1.fpiw[j]/(v_fpiMeV_exp/197.326963);
+            
+            
        }
-       */
-       r1.w0fm[j]= w0_estimate[j] ;
-       r1.w0MeV[j]= w0_estimate[j]/197.326963 ;
-       r1.mlw[j]=xi[j];
-       xi[j]=xi[j]/(r1.w0MeV[j]);
-       r1.Bw[j]=fit_out.P[0][j];
-       r1.fw[j]=fit_out.P[1][j];
-       
-       
-       tmp3[j]=r1.fpiMeV_exp[j]/(r1.fw[j] /r1.w0MeV[j]);
-       
-       
-        }
+       else if (strcmp(AV,"pionY")==0){
+            in=r1.MpiMeV[j]*r1.MpiMeV[j]/(r1.fpiMeV_exp[j]*r1.fpiMeV_exp[j]);
+            xi[j]=rtbis_func_eq_input(fit_info.function ,4 , fit_info.Nvar, x[j] ,fit_info.Npar, tif[j], 0 ,in ,0.0001, 0.01, 1e-10);//gives mw
+            x[j][0]=xi[j];
+            w0_estimate[j]=sqrt(fit_info.function(0, fit_info.Nvar, x[j] ,fit_info.Npar, tif[j])   )/r1.MpiMeV[j];
+            w0_estimate[j]=w0_estimate[j]*197.326963;
+            
+            
+       }
        else if(strcmp(AV,"pionM")==0){
            
            in=r1.MpiMeV[j]*r1.MpiMeV[j]*r1.MpiMeV[j]*r1.MpiMeV[j]*r1.fpiMeV_exp[j];
@@ -2749,6 +2993,14 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
            
            
        }
+       
+       r1.w0fm[j]= w0_estimate[j] ;
+       r1.w0MeV[j]= w0_estimate[j]/197.326963 ;
+       r1.mlw[j]=xi[j];
+       xi[j]=xi[j]/(r1.w0MeV[j]);
+       r1.Bw[j]=fit_out.P[0][j];
+       r1.fw[j]=fit_out.P[1][j];
+       tmp3[j]=r1.fpiMeV_exp[j]/(r1.fw[j] /r1.w0MeV[j]);
        
     }
     
@@ -2816,7 +3068,8 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
     
     ////////////////////////print fit end
     //using w0 from silvano
-    if (strcmp(AV,"pion")==0){
+    
+    if (strcmp(AV,"pion")==0 ||strcmp(AV,"pionY")==0 ){
         for (j=0;j<jack_tot;j++){
             in=r1.MpiMeV[j]*r1.MpiMeV[j]/(r1.fpiMeV_exp[j]*r1.fpiMeV_exp[j]);
             xi[j]=rtbis(Mw2_over_fw2_chiral_FVE_a0_minus,in,fit_info.Npar,tif[j], 0.0001, 0.01, 1e-10);//gives mw
@@ -3213,11 +3466,11 @@ void compute_systematic( char **argv, std::vector<store_fit_clover>  mud, std::s
     
     int Njack=mud[0].Njack;
     double ave=0,ave_B=0,ave_f=0, ave_chi2=0;
-    double ave_S13=0;
-    double sigma=0, sigma_B=0,sigma_f=0;
+    double ave_S13=0, ave_w0=0;
+    double sigma=0, sigma_B=0,sigma_f=0, sigma_w0=0;
     double sigma_S13=0;
-    double stat=0, stat_B=0,stat_f=0, stat_S13=0;
-    double sist=0, sist_B=0,sist_f=0, sist_S13=0;
+    double stat=0, stat_B=0,stat_f=0, stat_S13=0, stat_w0=0;
+    double sist=0, sist_B=0,sist_f=0, sist_S13=0, sist_w0=0;
     std::vector<double>  error_i;
     std::vector<int> Ngood;
     for (int i=0; i<  mud.size(); i++){
@@ -3228,16 +3481,19 @@ void compute_systematic( char **argv, std::vector<store_fit_clover>  mud, std::s
             ave_f+=mud[i].jack_f[Njack-1];
             ave_chi2+=mud[i].chi2[Njack-1];
             ave_S13+=mud[i].Sigma_13[Njack-1];
+            ave_w0+=mud[i].w0[Njack-1];
             
             sigma+=error_i[i]*error_i[i];
             sigma_B+=error_jackboot(argv[1],Njack,mud[i].jack_B)*error_jackboot(argv[1],Njack,mud[i].jack_B);
             sigma_f+=error_jackboot(argv[1],Njack,mud[i].jack_f)*error_jackboot(argv[1],Njack,mud[i].jack_f);
             sigma_S13+=error_jackboot(argv[1],Njack,mud[i].Sigma_13)*error_jackboot(argv[1],Njack,mud[i].Sigma_13);
+            sigma_w0+=error_jackboot(argv[1],Njack,mud[i].w0)*error_jackboot(argv[1],Njack,mud[i].w0);
             
             stat+=error_i[i]*error_i[i];
             stat_B+=error_jackboot(argv[1],Njack,mud[i].jack_B)*error_jackboot(argv[1],Njack,mud[i].jack_B);
             stat_f+=error_jackboot(argv[1],Njack,mud[i].jack_f)*error_jackboot(argv[1],Njack,mud[i].jack_f);
             stat_S13+=error_jackboot(argv[1],Njack,mud[i].Sigma_13)*error_jackboot(argv[1],Njack,mud[i].Sigma_13);
+            stat_w0+=error_jackboot(argv[1],Njack,mud[i].w0)*error_jackboot(argv[1],Njack,mud[i].w0);
             
             Ngood.emplace_back(i);
         //}
@@ -3249,16 +3505,19 @@ void compute_systematic( char **argv, std::vector<store_fit_clover>  mud, std::s
     ave_f=ave_f/Ngood.size();
     ave_chi2=ave_chi2/Ngood.size();
     ave_S13=ave_S13/Ngood.size();
+    ave_w0=ave_w0/Ngood.size();
     for (int i:Ngood){
         sist+=  (ave-mud[i].jack_m[Njack-1] )* (ave-mud[i].jack_m[Njack-1] ) ;
         sist_B+=  (ave_B-mud[i].jack_B[Njack-1] )* (ave_B-mud[i].jack_B[Njack-1] ) ;
         sist_f+=  (ave_f-mud[i].jack_f[Njack-1] )* (ave_f-mud[i].jack_f[Njack-1] ) ;
         sist_S13+=  (ave_S13-mud[i].Sigma_13[Njack-1] )* (ave_S13-mud[i].Sigma_13[Njack-1] ) ;
+        sist_w0+=  (ave_S13-mud[i].w0[Njack-1] )* (ave_S13-mud[i].w0[Njack-1] ) ;
         
         sigma+=  (ave-mud[i].jack_m[Njack-1] )* (ave-mud[i].jack_m[Njack-1] ) ;
         sigma_B+=  (ave_B-mud[i].jack_B[Njack-1] )* (ave_B-mud[i].jack_B[Njack-1] ) ;
         sigma_f+=  (ave_f-mud[i].jack_f[Njack-1] )* (ave_f-mud[i].jack_f[Njack-1] ) ;
         sigma_S13+=  (ave_S13-mud[i].Sigma_13[Njack-1] )* (ave_S13-mud[i].Sigma_13[Njack-1] ) ;
+        sigma_w0+=  (ave_w0-mud[i].w0[Njack-1] )* (ave_w0-mud[i].w0[Njack-1] ) ;
     }
     sigma=sigma/Ngood.size();
     sigma=sqrt(sigma);
@@ -3272,6 +3531,8 @@ void compute_systematic( char **argv, std::vector<store_fit_clover>  mud, std::s
     sigma_S13=sigma_S13/Ngood.size();
     sigma_S13=sqrt(sigma_S13);
     
+    sigma_w0=sigma_w0/Ngood.size();
+    sigma_w0=sqrt(sigma_w0);
     
     stat=stat/Ngood.size();
     stat=sqrt(stat);
@@ -3282,6 +3543,8 @@ void compute_systematic( char **argv, std::vector<store_fit_clover>  mud, std::s
     stat_S13=sigma_S13/Ngood.size();
     stat_S13=sqrt(stat_S13);
     
+    stat_w0=sigma_w0/Ngood.size();
+    stat_w0=sqrt(stat_w0);
     
     sist=sist/Ngood.size();
     sist=sqrt(sist);
@@ -3291,7 +3554,8 @@ void compute_systematic( char **argv, std::vector<store_fit_clover>  mud, std::s
     sist_f=sqrt(sist_f);
     sist_S13=sigma_S13/Ngood.size();
     sist_S13=sqrt(sist_S13);
-    
+    sist_w0=sigma_w0/Ngood.size();
+    sist_w0=sqrt(sist_w0);
     
     
     fprintf(ftex,"\\begin{tabular}{|c|c|c|c|c|}  \n\\hline\n");
@@ -3306,8 +3570,8 @@ void compute_systematic( char **argv, std::vector<store_fit_clover>  mud, std::s
         fprintf(fdata,"%g    \t", mud[i].chi2[Njack-1]);
         fprintf(fdata,"%g  %g \t %g  %g \t %g  %g\t", stat,sist,stat_B,sist_B,stat_f,sist_f);
         fprintf(fdata,"%g  %g %g  %g   \t", mud[i].Sigma_13[Njack-1], error_jackboot(argv[1],Njack,mud[i].Sigma_13),ave_S13,sigma_S13);
-        fprintf(fdata,"%g  %g \n",stat_S13,sist_S13);
-        
+        fprintf(fdata,"%g  %g \t",stat_S13,sist_S13);
+        fprintf(fdata,"%g  %g %g  %g   \n", mud[i].w0[Njack-1], error_jackboot(argv[1],Njack,mud[i].w0),ave_w0,sigma_w0);
         
         free(mud[i].jack_m);
         free(mud[i].jack_B);
@@ -3332,8 +3596,8 @@ int main(int argc, char **argv){
    
     double *tmp,**fit,*tmp1;
     
-   error(argc!=3,1,"main ",
-         "usage: ./fit_all_beta   jack/boot output_folder_analysis");
+   error(argc!=4,1,"main ",
+         "usage: ./fit_all_beta   jack/boot output_folder_analysis        PRACE_folder");
 
    error(strcmp(argv[1],"jack")!=0 && strcmp(argv[1],"boot")!=0 ,2,"main ",
          "choose jack or boot \n usage: ./fit_all_beta   jack/boot");
@@ -3787,7 +4051,39 @@ int main(int argc, char **argv){
             //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
             print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion",nameout, "yes",M,GF, mud);
             
+            fit_info.Npar=6;
+            fit_info.N=2;
+            fit_info.function=fit_Fpi_and_Mpi_GL;
+            //double ***scale=double_malloc_3(4,3,jack_tot);
+            mysprintf(nameout,NAMESIZE,"fit_Mpi_Fpi_GL_%s_%s",GF.c_str(),M.c_str() );
+            printf("\n%s\n",nameout);
+            fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info,argv,nameout,myen);
+            //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+            print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion",nameout, "no",M,GF, mud);
             
+            
+            fit_info.Npar=8;
+            fit_info.N=2;
+            fit_info.function=fit_Mpisw_Xpi_GL_NLO_am_fonly;
+            //double ***scale=double_malloc_3(4,3,jack_tot);
+            mysprintf(nameout,NAMESIZE,"fit_Mpisw_Xpi_GL_NLO_am_fonly_%s_%s",GF.c_str(),M.c_str() );
+            printf("\n%s\n",nameout);
+            fit_out=fit_Mpiw0s0_fwMpi4_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info,argv,nameout,myen);
+            //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+            print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pionY",nameout, "no",M,GF, mud);
+            
+            fit_info.Npar=7;
+            fit_info.N=2;
+            fit_info.function=fit_Mpisw_Xpi_noam;
+            //double ***scale=double_malloc_3(4,3,jack_tot);
+            myen={   8,4,5,6,   7,9};
+            mysprintf(nameout,NAMESIZE,"fit_Mpisw_Xpi_BC_%s_%s",GF.c_str(),M.c_str() );
+            printf("\n%s\n",nameout);
+            fit_out=fit_Mpiw0s0_fwMpi4_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info,argv,nameout,myen);
+            //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+            print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pionY",nameout, "no",M,GF, mud);
+            
+            myen={0,1,2,3,   8,4,5,6,   7,9};
                 printf("\n\n///////////////////////////////////////MK     ///////////////////////\n");
                 fit_info.Npar=4;
                 fit_info.N=1;
@@ -3798,7 +4094,7 @@ int main(int argc, char **argv){
                 fit=fit_MK_fK_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1],myen );
                 print_fit_K_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "K",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk);
             
-                
+                /*
                 printf("\n\n///////////////////////////////////////Mpi/MK     ///////////////////////\n");
                 fit_info.Npar=4;
                 fit_info.N=1;
@@ -3841,7 +4137,7 @@ int main(int argc, char **argv){
                 
                 //////////////////////////   BC end //////////////////////////   
                 myen={0,1,2,3,   8,4,5,6,   7,9};
-                
+                */
                     printf("\n\n///////////////////////////////////////MD fD   ///////////////////////\n");
                     
                     fit_info.Npar=4;
@@ -4364,6 +4660,89 @@ int main(int argc, char **argv){
     compute_systematic_Ds(argv, mc_Ds, GF_scale[0].c_str());
     
     
+    
+    std::vector<store_fit_clover>().swap(mud);
+    std::vector<store_fit_clover>().swap(ms);
+    std::vector<store_fit_clover>().swap(ms_Mk);
+    std::vector<store_fit_clover>().swap(mc);
+    std::vector<store_fit_clover>().swap(mc_Ds);
+    mud.resize(0);
+    ms.resize(0);
+    ms_Mk.resize(0);
+    mc.resize(0);
+    mc_Ds.resize(0);
+    GF_scale[0]="w0noA12";
+    for (auto M : M_Zp){
+        for (auto GF : GF_scale){
+            init_Z( jack_files, head, jack_tot, &gjack, GF.c_str(), M.c_str());
+            printf("\n\n %s    %s \n\n", M.c_str(),GF.c_str());
+            char nameout[NAMESIZE];
+            char namefit[NAMESIZE];
+            std::vector<int> myen={0,1,2,   8,4,5,6,   7,9};
+            
+            printf("\n\n///////////////////////////////////////Mpi fpi   ///////////////////////\n");
+            
+            fit_info.Npar=7;
+            fit_info.N=2;
+            fit_info.function=fit_Fpi_and_Mpi_GL_NL0_am_fonly;
+            //double ***scale=double_malloc_3(4,3,jack_tot);
+            mysprintf(nameout,NAMESIZE,"fit_Mpi_Fpi_GL_noA12_%s_%s",GF.c_str(),M.c_str() );
+            printf("\n%s\n",nameout);
+            fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info,argv,nameout,myen);
+            //fit_chi2_good=save_fit(fit_chi2_good,fit_info,fit_out);
+            print_fit_info( argv,jack_tot,  fit_out,  fit_info, phys_point,result, gjack, head, "pion",nameout, "yes",M,GF, mud);
+            
+            printf("\n\n///////////////////////////////////////MK     ///////////////////////\n");
+            fit_info.Npar=4;
+            fit_info.N=1;
+            
+            fit_info.function=fit_FK_and_MK_GL;
+            
+            mysprintf(namefit,NAMESIZE,"MK_fK_GL_noP2_noA12_%s_%s",GF.c_str(),M.c_str() );
+            fit=fit_MK_fK_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1],myen );
+            print_fit_K_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "K",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk);
+            
+             
+            
+            printf("\n\n///////////////////////////////////////MD fD   ///////////////////////\n");
+            myen={0,1,2,   4,5,6,   7,9};
+            fit_info.Npar=4;
+            fit_info.N=1;
+            fit_info.function=fit_MD_fD;
+            mysprintf(namefit,NAMESIZE,"MD_fD_noP2_noA12_%s_%s",GF.c_str(),M.c_str() );
+            
+            fit=fit_MD_fD_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1],myen );
+            print_fit_D_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "D",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1], mc);
+            
+            printf("\n\n///////////////////////////////////////MDs fDs   ///////////////////////\n");
+            
+            fit_info.Npar=4;
+            fit_info.N=1;
+            
+            fit_info.function=fit_MD_fD;
+            
+            mysprintf(namefit,NAMESIZE,"MDs_fDs_noP2_noA12_%s_%s",GF.c_str(),M.c_str() );
+            
+            fit=fit_MDs_fDs_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1], ms_Mk[ms_Mk.size()-1], myen);
+            print_fit_Ds_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "Ds",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1],mc[mc.size()-1], mc_Ds);
+            
+            
+        }
+        
+    }
+    
+    printf("\n\n computig systematics pion \n\n");
+    compute_systematic(argv, mud, "noA12" );
+    printf("\n\n computig systematics K\n\n");
+    compute_systematic_K(argv, ms_Mk, "noA12");
+    printf("\n\n computig systematics D\n\n");
+    compute_systematic_D(argv, mc, "noA12");
+    printf("\n\n computig systematics Ds\n\n");
+    compute_systematic_Ds(argv, mc_Ds, "noA12");
+    
+    
+    /*
+    
     std::vector<store_fit_clover>().swap(mud);
     std::vector<store_fit_clover>().swap(ms);
     std::vector<store_fit_clover>().swap(ms_Mk);
@@ -4463,7 +4842,7 @@ int main(int argc, char **argv){
     printf("\n\n computig systematics Ds\n\n");
     compute_systematic_Ds(argv, mc_Ds, "BC");
     
-    
+    */
     
     std::vector<store_fit_clover>().swap(mud);
     std::vector<store_fit_clover>().swap(ms);
@@ -4475,8 +4854,7 @@ int main(int argc, char **argv){
     ms_Mk.resize(0);
     mc.resize(0);
     mc_Ds.resize(0);
-    
-    
+    GF_scale[0]="w0";
     for (auto M : M_Zp){
         for (auto GF : GF_scale){
             init_Z( jack_files, head, jack_tot, &gjack, GF.c_str(), M.c_str());
@@ -4491,7 +4869,8 @@ int main(int argc, char **argv){
             fit_info.N=2;
             fit_info.function=fit_Fpi_and_Mpi_GL;
             //double ***scale=double_malloc_3(4,3,jack_tot);
-            myen={3,   5,6,   7,9};
+            myen={3,   5,6,   7};
+
             mysprintf(nameout,NAMESIZE,"fit_Mpi_Fpi_GL_190MeV_%s_%s",GF.c_str(),M.c_str() );
             printf("\n%s\n",nameout);
             fit_out=fit_Mpi_fw_chiral_FVE_clover(jack_files,  head ,jack_tot, mass_index,gjack ,fit_info,argv,nameout,myen);
@@ -4515,7 +4894,7 @@ int main(int argc, char **argv){
             fit_info.function=fit_MD_fD_noP2;
             
             mysprintf(namefit,NAMESIZE,"MD_fD_noP2_190MeV_%s_%s",GF.c_str(),M.c_str() );
-            myen={3,   5,6,   7,9};
+            myen={3,   5,6,   7};
             fit=fit_MD_fD_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1],myen );
             print_fit_D_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "D",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1], mc);
             

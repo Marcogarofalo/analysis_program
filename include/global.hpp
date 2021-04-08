@@ -155,6 +155,9 @@ struct  data_jack
      ///dataJ[ensemble].observable[jack]
     double *w0,*Zp,*Zv;
     double *scalefm;
+    double *s0_w0;
+    double *s0_w0_cont;
+    
     
      ///dataJ[ensemble].observable[mass_index]
     double *KM,*Kf;

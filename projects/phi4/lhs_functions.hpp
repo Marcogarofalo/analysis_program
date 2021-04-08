@@ -383,6 +383,7 @@ double GEVP_shift_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     M[3][0]=s[3];
     M[2][0]=M[1][0];
     
+    
     generalysed_Eigenproblem(M,Mt0,2,&lambdatp1,&vec); 
     
     if((t-t0)>=0)

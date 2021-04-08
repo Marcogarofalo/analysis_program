@@ -99,9 +99,9 @@ void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalu
         (*eigenvectors)[j+i*N][0]=real(v(j));
         (*eigenvectors)[j+i*N][1]=imag(v(j));
       }
-      /* the eigenvalues are lambda_n ~ exp(-En(t))+exp(-En(T-t))
+      /* the eigenvalues are lambda_n ~ exp(-En(t-t0))+exp(-En(T-(t-t0)))
        * I am interesting in E0 which is smaller the the others E0 < En
-       * then i want the beggest lambda lambda_0 > lambda_1 */
+       * then i want the biggest lambda lambda_0 > lambda_1 */
       if ((*eigenvalues)[0][0] < (*eigenvalues)[i][0]){ 
   	    (*eigenvalues)[i][0]=(*eigenvalues)[0][0];
   	    (*eigenvalues)[i][1]=(*eigenvalues)[0][1];
