@@ -38,7 +38,8 @@ double M_eff(  int t, double **in){
              res=fabs(tmp_mass - mass);
              mass=tmp_mass;
     }
-  /*  if(t==0)
+    /*
+    if(t==0)
         mass=acosh((in[L0-1][0]+in[t+1][0])/(2.*in[t][0]));
     else
         mass=acosh((in[t-1][0]+in[t+1][0])/(2.*in[t][0]));
@@ -525,7 +526,8 @@ double   *compute_effective_mass(char **option ,struct kinematic kinematic_2pt ,
    }
 
    fit=fit_plateaux(option, kinematic_2pt ,  name,description/*"M_{PS}^{ll}"*/,mt,r,  Njack,*plateaux_masses,outfile);
-   write_jack_bin(Njack,fit,file_jack.M_PS);
+   if( strcmp(description,"M_{PS}^{ll}")==0)
+        write_jack_bin(Njack,fit,file_jack.M_PS);
      
    for(i=1;i<file_head.l0/2;i++)
        free(mt[i]);
@@ -554,7 +556,7 @@ double   *compute_effective_mass_GEVP(char **option ,struct kinematic kinematic_
    double **r,*m,**mt,*fit;
    int i,j,yn,t;
    int tmin=11, tmax=15, sep=1;
-   int t0=5;
+   int t0=3;
    double ****M,****vec,****lambda,****lambda0;
     
    r=(double**) malloc(sizeof(double*)*file_head.l0);
@@ -601,6 +603,7 @@ double   *compute_effective_mass_GEVP(char **option ,struct kinematic kinematic_
                 }
                 M[t][j][1][0]=(M[t][j][1][0]+M[t][j][2][0])/2.;
                 M[t][j][2][0]=M[t][j][1][0];
+                
            }
    }
       
@@ -608,8 +611,8 @@ double   *compute_effective_mass_GEVP(char **option ,struct kinematic kinematic_
            for (j=0;j<Njack;j++){
   	        generalysed_Eigenproblem(M[t][j],M[t0][j],var,&lambda[t][j],&vec[t][j]);     
                 for (i=0;i<var;i++){
-                     lambda0[j][i][t][0]=lambda[t][j][i][0];
-                     lambda0[j][i][t][1]=lambda[t][j][i][1];
+                     lambda0[j][i][t][0]=lambda[t][j][i][0];// lambda[t][jack][ index of the eigenstate ][ reim]
+                     lambda0[j][i][t][1]=lambda[t][j][i][1];// lambda0[jack] [indec eigenstate] [t ] [reim] 
                 }
                 if (lambda0[j][0][t][0]<lambda0[j][1][t][0] ) printf("ERROR t=%d   0=%g  1=%g\n",t,lambda0[j][1][t][0],lambda0[j][0][t][0]);
            }
@@ -628,10 +631,11 @@ fflush(petros);
            for (j=0;j<Njack;j++){
                 //r[t][j]=M_eff(t, lambda0[j][0]);
                 
-                if((t-t0)>=0)
-                    r[t][j]=M_eff_in_inp(t-t0, lambda0[j][0][t][0], lambda0[j][0][t+1][0]);
+                if((t-t0)>=0){
+                    r[t][j]=M_eff_in_inp(t, lambda0[j][0][t][0], lambda0[j][0][t+1][0]);
+                }
                 else 
-                    r[t][j]=M_eff_in_inp(t-t0, lambda0[j][1][t][0], lambda0[j][1][t+1][0]);
+                    r[t][j]=M_eff_in_inp(t, lambda0[j][1][t][0], lambda0[j][1][t+1][0]);
            }
            if( strcmp(option[4],"jack")==0)
                mt[t]=mean_and_error_jack(Njack, r[t]);
