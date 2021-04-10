@@ -773,8 +773,24 @@ int main(int argc, char **argv){
     double *E2_0_pzmpz=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,2,"E2_0_pzmpz", shift_and_M_eff_sinh_T,jack_file);
     free(E2_0_pzmpz);
     
+if(params.data.ncorr>3){      
+    // c++ 3  || r 4
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    double *E2_0_pxmpx0=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,3,"E2_0_pxmpx0", shift_and_M_eff_sinh_T,jack_file);
+    free(E2_0_pxmpx0);
+    
+    // c++ 4  || r 5
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    double *E2_0_pympy0=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,4,"E2_0_pympy0", shift_and_M_eff_sinh_T,jack_file);
+    free(E2_0_pympy0);
+    
+    // c++ 5  || r 6
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    double *E2_0_pzmpz0=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,5,"E2_0_pzmpz0", shift_and_M_eff_sinh_T,jack_file);
+    free(E2_0_pzmpz0);
     
     
+}else {    for(int i=3;i < 6;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
     //free_2(3,mass);
     //free_2(3,E2);
     free_corr(Neff, var, file_head.l0 ,data_bin);

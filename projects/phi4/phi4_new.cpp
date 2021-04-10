@@ -1829,7 +1829,8 @@ else {    for(int i=21;i < 89;i++ )  fwrite(zeros,sizeof(double),Njack, jack_fil
                                    lhs_E2_div_shift<11>, "E2_01_div_shift",  fit_info, jack_file );
    
     free(a);
-    a=scattering_len_luscher(  Njack,  mass[0], mass[1], fit_out.P[0] ,params.data.L[1]);
+    //a=scattering_len_luscher(  Njack,  mass[0], mass[1], fit_out.P[0] ,params.data.L[1]);
+    a=(double*) calloc(Njack,sizeof(double));
     tmpj=(double*) malloc(sizeof(double)*Njack);
     tmp_muj=(double*) malloc(sizeof(double)*Njack);
     sub_jackboot(Njack,  tmpj, fit_out.P[0], mass[0] );
