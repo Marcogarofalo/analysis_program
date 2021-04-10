@@ -726,8 +726,8 @@ double fit_Mpisw_Xpi_GL_NLO_am_fonly_noxi2(int n, int Nvar, double *x,int Npar,d
         Mw2=1;
     }
     if (n==4){
-        Mw2=pow(fit_Mpisw_Xpi_GL_NLO_am_fonly(0,  Nvar, x, Npar,P), 5);
-        Mw2/=pow(fit_Mpisw_Xpi_GL_NLO_am_fonly(1,  Nvar, x, Npar,P),10);
+        Mw2=pow(fit_Mpisw_Xpi_GL_NLO_am_fonly_noxi2(0,  Nvar, x, Npar,P), 5);
+        Mw2/=pow(fit_Mpisw_Xpi_GL_NLO_am_fonly_noxi2(1,  Nvar, x, Npar,P),10);
     }
     
     return Mw2;
@@ -782,8 +782,8 @@ double fit_Mpisw_Xpi_noam(int n, int Nvar, double *x,int Npar,double  *P){
         
     }
     if (n==4){
-        Mw2=pow(fit_Mpisw_Xpi_GL_NLO_am_fonly(0,  Nvar, x, Npar,P), 5);
-        Mw2/=pow(fit_Mpisw_Xpi_GL_NLO_am_fonly(1,  Nvar, x, Npar,P),10);
+        Mw2=pow(fit_Mpisw_Xpi_noam(0,  Nvar, x, Npar,P), 5);
+        Mw2/=pow(fit_Mpisw_Xpi_noam(1,  Nvar, x, Npar,P),10);
     }
     
     return Mw2;
@@ -839,8 +839,8 @@ double fit_Mpisw_Xpi_noam_noxi2(int n, int Nvar, double *x,int Npar,double  *P){
         
     }
     if (n==4){
-        Mw2=pow(fit_Mpisw_Xpi_GL_NLO_am_fonly(0,  Nvar, x, Npar,P), 5);
-        Mw2/=pow(fit_Mpisw_Xpi_GL_NLO_am_fonly(1,  Nvar, x, Npar,P),10);
+        Mw2=pow(fit_Mpisw_Xpi_noam_noxi2(0,  Nvar, x, Npar,P), 5);
+        Mw2/=pow(fit_Mpisw_Xpi_noam_noxi2(1,  Nvar, x, Npar,P),10);
     }
     
     return Mw2;
@@ -1131,6 +1131,39 @@ double fit_MD_fD_noP2(int n, int Nvar, double *x,int Npar,double  *P){
     
     if (n==0)
         MKw=P0+P1w*mlw  +P3ww*(1./(w0*w0));
+    else if (n==1){
+        MKw=P0f+P1fw*mlw+P2fww*mlw*mlw+P3fww*(1./(w0*w0));
+    }
+    else if (n==2){
+        MKw=1;
+    }
+    else if (n==3){
+        MKw=1;
+    }
+    
+    
+    
+    return MKw;
+    
+}
+
+
+double fit_MD_fD_const(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double MKw=0,xi;
+    double pi=3.141592653589793;
+    
+    double mlw=x[0], w0=x[1];
+    
+    double     P0=P[0], P1w=P[1]    ;
+    double P0f, P1fw, P2fww,   P3fww;
+    if (n==1){
+        P0f=P[3]; P1fw=P[4]; P2fww=P[5];   P3fww=P[6];
+    }
+    
+    
+    if (n==0)
+        MKw=P0+ P1w*(1./(w0*w0));
     else if (n==1){
         MKw=P0f+P1fw*mlw+P2fww*mlw*mlw+P3fww*(1./(w0*w0));
     }
@@ -4140,9 +4173,9 @@ int main(int argc, char **argv){
                 */
                     printf("\n\n///////////////////////////////////////MD fD   ///////////////////////\n");
                     
-                    fit_info.Npar=4;
+                    fit_info.Npar=3;
                     fit_info.N=1;
-                    fit_info.function=fit_MD_fD;
+                    fit_info.function=fit_MD_fD_noP2;
                     myen={0,1,2,3,   4,5,6,   7,9};
                     mysprintf(namefit,NAMESIZE,"MD_fD_%s_%s",GF.c_str(),M.c_str() );
                     
@@ -4152,13 +4185,13 @@ int main(int argc, char **argv){
                     
                     printf("\n\n///////////////////////////////////////MDs fDs   ///////////////////////\n");
                     
-                    fit_info.Npar=4;
+                    fit_info.Npar=2;
                     fit_info.N=1;
                     //fit_info.Npar=8;
                     //fit_info.N=2;
                     
                     
-                    fit_info.function=fit_MD_fD;
+                    fit_info.function=fit_MD_fD_const;
                     
                     mysprintf(namefit,NAMESIZE,"MDs_fDs_%s_%s",GF.c_str(),M.c_str() );
                     
@@ -4543,9 +4576,9 @@ int main(int argc, char **argv){
             
             printf("\n\n///////////////////////////////////////MD fD   ///////////////////////\n");
             
-            fit_info.Npar=4;
+            fit_info.Npar=3;
             fit_info.N=1;
-            fit_info.function=fit_MD_fD;
+            fit_info.function=fit_MD_fD_noP2;
             myen={0,1,2,3,   4,5,6,   7,9};
             mysprintf(namefit,NAMESIZE,"MD_fD_%s_%s",GF.c_str(),M.c_str() );
             
@@ -4555,12 +4588,12 @@ int main(int argc, char **argv){
             
             printf("\n\n///////////////////////////////////////MDs fDs   ///////////////////////\n");
             
-            fit_info.Npar=4;
+            fit_info.Npar=2;
             fit_info.N=1;
             //fit_info.Npar=8;
             //fit_info.N=2;
             
-            fit_info.function=fit_MD_fD;
+            fit_info.function=fit_MD_fD_const;
             mysprintf(namefit,NAMESIZE,"MDs_fDs_%s_%s",GF.c_str(),M.c_str() );
             
             fit=fit_MDs_fDs_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1], ms_Mk[ms_Mk.size()-1], myen);
@@ -4623,9 +4656,9 @@ int main(int argc, char **argv){
             
             printf("\n\n///////////////////////////////////////MD fD   ///////////////////////\n");
             
-            fit_info.Npar=4;
+            fit_info.Npar=3;
             fit_info.N=1;
-            fit_info.function=fit_MD_fD;
+            fit_info.function=fit_MD_fD_noP2;
             myen={0,1,2,3,   4,5,6,   7,9};
             mysprintf(namefit,NAMESIZE,"MD_fD_%s_%s",GF.c_str(),M.c_str() );
             
@@ -4635,12 +4668,12 @@ int main(int argc, char **argv){
             
             printf("\n\n///////////////////////////////////////MDs fDs   ///////////////////////\n");
             
-            fit_info.Npar=4;
+            fit_info.Npar=2;
             fit_info.N=1;
             //fit_info.Npar=8;
             //fit_info.N=2;
             
-            fit_info.function=fit_MD_fD;
+            fit_info.function=fit_MD_fD_const;
             mysprintf(namefit,NAMESIZE,"MDs_fDs_%s_%s",GF.c_str(),M.c_str() );
             
             fit=fit_MDs_fDs_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1], ms_Mk[ms_Mk.size()-1], myen);
@@ -4706,22 +4739,22 @@ int main(int argc, char **argv){
             
             printf("\n\n///////////////////////////////////////MD fD   ///////////////////////\n");
             myen={0,1,2,   4,5,6,   7,9};
-            fit_info.Npar=4;
+            fit_info.Npar=3;
             fit_info.N=1;
-            fit_info.function=fit_MD_fD;
-            mysprintf(namefit,NAMESIZE,"MD_fD_noP2_noA12_%s_%s",GF.c_str(),M.c_str() );
+            fit_info.function=fit_MD_fD_noP2;
+            mysprintf(namefit,NAMESIZE,"MD_fD_noA12_%s_%s",GF.c_str(),M.c_str() );
             
             fit=fit_MD_fD_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1],myen );
             print_fit_D_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "D",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1], mc);
             
             printf("\n\n///////////////////////////////////////MDs fDs   ///////////////////////\n");
             
-            fit_info.Npar=4;
+            fit_info.Npar=2;
             fit_info.N=1;
             
-            fit_info.function=fit_MD_fD;
+            fit_info.function=fit_MD_fD_const;
             
-            mysprintf(namefit,NAMESIZE,"MDs_fDs_noP2_noA12_%s_%s",GF.c_str(),M.c_str() );
+            mysprintf(namefit,NAMESIZE,"MDs_fDs_noA12_%s_%s",GF.c_str(),M.c_str() );
             
             fit=fit_MDs_fDs_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1], ms_Mk[ms_Mk.size()-1], myen);
             print_fit_Ds_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "Ds",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk[ms_Mk.size()-1],mc[mc.size()-1], mc_Ds);
@@ -4900,10 +4933,10 @@ int main(int argc, char **argv){
             
             printf("\n\n///////////////////////////////////////MDs fDs   ///////////////////////\n");
             
-            fit_info.Npar=3;
+            fit_info.Npar=2;
             fit_info.N=1;
             
-            fit_info.function=fit_MD_fD_noP2;
+            fit_info.function=fit_MD_fD_const;
             
             mysprintf(namefit,NAMESIZE,"MDs_fDs_noP2_190MeV_%s_%s",GF.c_str(),M.c_str() );
             

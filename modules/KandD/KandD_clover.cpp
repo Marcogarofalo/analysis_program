@@ -2723,14 +2723,15 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
     int n,count,N=fit_info.N;
     int Npar=4;
     double *tmp_chi2=(double*) calloc(Njack,sizeof(double));
+    int Npar_inter=2;
     if (N==1)
-        Npar=2;
+        Npar=Npar_inter;
     else if (N==2)
-        Npar=4;
+        Npar=Npar_inter*2;
     
     int Nvar=1;//m_l, w0,M_PS^2,f_PS
     int ik1=0,ik2=4;
-    int ik2_min=4, ik2_max=6;
+    int ik2_min=4, ik2_max=7;
     int nk=(ik2_max-ik2_min+1);
     int ms;
     int refs=3;
@@ -2850,10 +2851,17 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
         
         
         for (j=0;j<Njack;j++){
-            tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+            if (Npar==2 || Npar==4 ){
+                tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+                chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, two_lines  );
+            }
+            else if (Npar==3 || Npar==6 ){
+                tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_parabolas,guess );
+                chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, two_parabolas  );
+            }
+            if (j==Njack-1){printf("myen=%d   chi2=%g\n",myen[e],chi2[j]);  }
             //tmp=non_linear_fit_Nf_sigmax(N, en,x[j], sigmax, y[j] , Nvar,  Npar, two_lines,guess );
             //tmp=non_linear_fit_Nf_sigmax_iterative(N, en,x[j], sigmax, y[j] , Nvar,  Npar, two_lines,guess );
-            chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, two_lines  );
             
             
             for(i=0;i<Npar;i++){
@@ -2881,9 +2889,27 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
     free(y); free(guess);
     im=mass_index[0][1][0];
     //printf("A53: Mk(ms1)=%f   ms1=%f\n",gJ[0].M_PS_jack[im][Njack-1],head[0].k[head[0].nk+ik2_min+0]*gJ[0].w0[Njack-1] );
-    for (int e:myen)
-    {im=mass_index[e][ik2_min+0][0];
-        //printf("%d   MKw2(ms=%f)=%f    MKw2=%f      fk=%f\n",e   ,  head[e].k[head[e].nk+ik2_min+0]*gJ[e].w0[Njack-1]/gJ[e].Zp[Njack-1]   ,pow(gJ[e].M_PS_jack[im][Njack-1]* gJ[e].w0[Njack-1],2) ,r[0][e][Njack-1]+mref[0]*r[1][e][Njack-1],r[2][e][Njack-1]+mref[0]*r[3][e][Njack-1] );
+    for (int e=0; e< myen.size();e++){
+       printf("myen[e]=%d\n",myen[e]);
+       for (ms=0;ms<nk;ms++){
+            im=mass_index[myen[e]][ms+ik2_min][ik1];
+            double *M=(double*) malloc(sizeof(double)*Njack);
+            double *mw=(double*) malloc(sizeof(double)*Njack);
+            for (j=0;j<Njack;j++){
+                M[j]=gJ[myen[e]].M_PS_GEVP_jack[im][j]*gJ[myen[e]].w0[j];
+                mw[j]=head[myen[e]].k[head[myen[e]].nk+ik2_min+ms]*gJ[myen[e]].w0[j]/gJ[myen[e]].Zp[j];//ml*w0
+            }
+            printf("%g  %g    %g  %g \t", mw[Njack-1],  error_jackboot(jack_files[0].sampling,Njack  ,mw)  ,M[Njack-1], error_jackboot(jack_files[0].sampling,Njack  ,M) );
+            printf("  %g    %g",r[0][e][Njack-1], r[1][e][Njack-1]);
+            if (Npar==2 || Npar==4 ){
+                printf(" \n");
+            }
+            else if (Npar==3 || Npar==6 ){
+                printf("  %g    \n",r[2][e][Njack-1]);
+            }
+            free(M);
+            
+        }
         
     }
     free(chi2);
@@ -2924,13 +2950,24 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
                 im=mass_index[myen[e]][ik2][ik1];
                 if(n==0){
                     for (j=0;j<Njack;j++){
+                        if (Npar_inter==2  ){
                         rm[j]=(r[0][e][j]+mref[ms]*r[1][e][j]);//(KM*KM);
                         rm1[j]=(r[0][e][j]+mref[ms]*r[1][e][j]);//(KM*KM);
+                        }
+                        else if (Npar_inter==3 ){
+                            rm[j]=(r[0][e][j]+mref[ms]*r[1][e][j] +mref[ms]*mref[ms]*r[2][e][j] );//(KM*KM);
+                            rm1[j]=(r[0][e][j]+mref[ms]*r[1][e][j]+mref[ms]*mref[ms]*r[2][e][j]);//(KM*KM);
+                        }
                     }
                 }
                 if(n==1){
                     for (j=0;j<Njack;j++){
-                        rm[j]=r[2][e][j]+mref[ms]*r[3][e][j];
+                        if (Npar_inter==2 ){
+                            rm[j]=r[2][e][j]+mref[ms]*r[3][e][j];
+                        }
+                        else if (Npar_inter==3  ){
+                            rm[j]=r[3][e][j]+mref[ms]*r[4][e][j]+mref[ms]*mref[ms]*r[5][e][j] ;
+                        }
                         //rm1[j]=rm[j]/Kf;
                     }
                     
@@ -3095,7 +3132,7 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
     if (N==1)
         Npar=2;
     else if (N==2)
-        Npar=4;    
+        Npar=2*2;    
         
     
     Nvar=1;//m_l, w0,M_PS^2,f_PS
@@ -3179,15 +3216,26 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
     
     double in;
     for (j=0;j<Njack;j++){
-        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
-        
-        //  chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, two_lines  );
         in=r1->MDMeV[j]*mud.w0[j]/197.326963;
-        //in=r1->MKMeV[j]/r1->MpiMeV[j];
-        //in=in*in;
-        out[0][j]=(in-tmp[0])/tmp[1];
-        if (N>1)
-            out[1][j]=tmp[2]+tmp[3]*out[0][j];
+        
+        if (Npar==2 || Npar==4){
+            tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+            out[0][j]=(in-tmp[0])/tmp[1];
+            if (N>1)
+                out[1][j]=tmp[2]+tmp[3]*out[0][j];
+            
+        }
+        else if (Npar==3 || Npar==6){
+            tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_parabolas,guess );
+            double c=tmp[0]-in;
+            double b=tmp[1], a=tmp[2];
+            out[0][j]=-b+sqrt(b*b-4.*a*c);            
+            out[0][j]/=(2.*a);
+            if (N>1)
+                out[1][j]=tmp[3]+tmp[4]*out[0][j]+tmp[5]*out[0][j]*out[0][j];
+            
+            
+        }
         
         out[N][j]=tmp_chi2[j]/ refs;
         
@@ -3239,7 +3287,7 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
     
     int Nvar=1;//m_l, w0,M_PS^2,f_PS
     int ik1=0,ik2=4;
-    int ik2_min=4, ik2_max=6;
+    int ik2_min=4, ik2_max=7;
     int ik1_min=1, ik1_max=3;
     int nk1=(ik1_max-ik1_min+1);
     int nk=(ik2_max-ik2_min+1);
@@ -3276,8 +3324,8 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
     double ****MDs_mc;
     MDs_mc=(double****) malloc(sizeof(double***)*ensembles_D); 
     for (int e=0;e<ensembles_D;e++){
-        MDs_mc[e]=(double***) malloc(sizeof(double**)*nk1);
-        for (ms=0;ms<nk1;ms++){
+        MDs_mc[e]=(double***) malloc(sizeof(double**)*nk);
+        for (ms=0;ms<nk;ms++){
             MDs_mc[e][ms]=(double**) malloc(sizeof(double*)*N);
             for (i=0;i<N;i++)
                 MDs_mc[e][ms][i]=(double*) malloc(sizeof(double)*Njack);
@@ -3317,7 +3365,7 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
                         y[j][ms+n*nk1][0]=rm[j];
                         y[j][ms+n*nk][1]=fit[ms][1];
                         
-                        x[j][ms+n*nk1][0]=head[myen[e]].k[head[e].nk+ms+ik1_min]*gJ[myen[e]].w0[j]/gJ[myen[e]].Zp[j];//ml*w0
+                        x[j][ms+n*nk1][0]=head[myen[e]].k[head[myen[e]].nk+ms+ik1_min]*gJ[myen[e]].w0[j]/gJ[myen[e]].Zp[j];//ml*w0
                     }
                     
                     

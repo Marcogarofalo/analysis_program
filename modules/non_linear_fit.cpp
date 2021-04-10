@@ -1192,9 +1192,9 @@ double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n
         }
         //xt[ivar]=x2;
         //fmid=(*func)(n,Nvar,xt,Npar,P)-input;
-        
     }
-    error(f*fmid >= 0.0,1,"rtbis","Root must be bracketed for bisection in rtbis f(x1)=%f   f(x2)=%f",f,fmid);
+    //error(f*fmid >= 0.0,1,"rtbis","Root must be bracketed for bisection in rtbis f(x1)=%f   f(x2)=%f",f,fmid);
+    if (f*fmid >= 0.0){ return NAN;}
     
     rtb = f < 0.0 ? (dx=x2-x1,x1) : (dx=x1-x2,x2);// Orient the search so that f>0
     for (j=1;j<=MAXIT;j++) {// lies at x+dx.
