@@ -200,6 +200,8 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
                     //if (e==2 ||e==3) y[j][e+count][1]*=100;
                     
                     //if (e==3)  y[j][e+count][1]*=100;
+                    if (e==9 && n==0)   y[j][count][1]*=1.4;
+                    if (e==9 && n==1)   y[j][count][1]*=2.;
                 }
                 //x[e+count]=(double*) malloc(sizeof(double)*Nvar);
                 count++;
@@ -356,7 +358,7 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
                         fprintf(fdat,"\n\n");
                         newline_if_w0=x[j][count][1] ;
                     }
-                    fprintf(fdat,"%.5f     %.5f      %.5f   %.5f     %.5f \t\t %.5f  %.5f\n",x[j][count][1],x[j][count][0],fit[count][0]/K,fit[count][1]/K,K, tmp2[0] ,tmp2[1]);
+                    fprintf(fdat,"%.5f     %.5f      %.5f   %.5f     %.5f \t\t %.5f  %.5f\n",x[j][count][1],x[j][count][0],y[j][count][0]/K,y[j][count][1]/K,K, tmp2[0] ,tmp2[1]);
                     
                     printf("%.5f     %.5f      %.5f   %.5f     %.5f \t\t %.5f  %.5f\n",x[j][count][1],x[j][count][0],y[j][count][0]/K,y[j][count][1]/K,K, tmp2[0] ,tmp2[1]);
                     free(tmp2);free(tmp1);

@@ -529,6 +529,8 @@ int main(int argc, char **argv){
  
    cout << "Numbers of lines in the file : " << count << endl;
    confs=count/T;
+   //confs=count;
+   
    int bin=atoi(argv[6]);;
    int Neff=confs/bin;
    int Njack=Neff+1;
@@ -546,6 +548,9 @@ int main(int argc, char **argv){
            //fscanf(infile,"%d  %lf",&tt,&data[iconf][0][t][0]);
            //error(t!=tt, 1, "main: reading","time do not match  conf=%d   t=%d  read %d",iconf ,t,tt);
            double a ,b,c;
+           //fscanf(infile,"%d  ",&tt);
+           //tt=t;
+           //fscanf(infile," %lf",&data[iconf][0][t][0]);
            fscanf(infile,"%d  %lf %lf %lf %lf",&tt,&data[iconf][0][t][0],&a,&b,&c);
            error(t!=tt, 1, "main: reading","time do not match  conf=%d   t=%d  read %d",iconf ,t,tt);
            
