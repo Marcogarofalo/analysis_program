@@ -754,8 +754,16 @@ int main(int argc, char **argv){
             symmetrise_corr(confs, i, file_head.l0,data);
     }
    
-   
-   
+   /*
+   FILE *f3t16=fopen("f3t16.txt","w+");
+   for (int iconf=0; iconf< confs ;iconf++){
+       for (int t =0; t< T ;t++){
+           fprintf(f3t16,"%.12g  ",data[iconf][17][t][0]);
+       }
+       fprintf(f3t16,"\n");
+   }
+   fclose(f3t16);
+   */
     data_bin=binning(confs, var, file_head.l0 ,data, bin);
     //if you want to do the gamma analysis you need to do before freeing the raw data
     effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data_bin,  Neff ,namefile_plateaux,out_gamma,0,"M_{PS}^{ll}");

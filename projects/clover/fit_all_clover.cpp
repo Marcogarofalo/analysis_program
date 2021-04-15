@@ -4818,25 +4818,7 @@ int main(int argc, char **argv){
             fit=fit_MK_fK_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1],myen );
             print_fit_K_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "K",namefit, "yes",   M,  GF , mud[mud.size()-1],ms_Mk);
             
-            printf("\n\n///////////////////////////////////////Mpi/MK  (Mpi)   ///////////////////////\n");
-            fit_info.Npar=4;
-            fit_info.N=1;
-            
-            fit_info.function=fit_Mpi_MK;
-            mysprintf(namefit,NAMESIZE,"Mpi_MK_BC_%s_%s",GF.c_str(),M.c_str() );
-            fit=fit_Mpi_MK_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1],myen );
-            print_fit_K_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "pi/K",namefit, "no",   M,  GF , mud[mud.size()-1],ms_Mk);
-            
-            
-            printf("\n\n///////////////////////////////////////MK/Mpi     ///////////////////////\n");
-            fit_info.Npar=3;
-            fit_info.N=1;
-            
-            fit_info.function=fit_MK_Mpi_FK_Fpi_GL_noP2;
-            mysprintf(namefit,NAMESIZE,"MK_Mpi_BC_%s_%s",GF.c_str(),M.c_str() );
-            fit=fit_MK_Mpi_fK_fpi_chiral_FVE_clover(jack_files,    head , jack_tot, mass_index,  gjack ,  fit_info ,   &result, namefit ,argv,mud[mud.size()-1],myen );
-            print_fit_K_info(argv,jack_tot, fit    ,  fit_info, phys_point, result, gjack, head , "K",namefit, "no",   M,  GF , mud[mud.size()-1],ms_Mk);
-            
+             
             
             printf("\n\n///////////////////////////////////////MD fD   ///////////////////////\n");
             
