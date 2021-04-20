@@ -754,16 +754,16 @@ int main(int argc, char **argv){
             symmetrise_corr(confs, i, file_head.l0,data);
     }
    
-   /*
-   FILE *f3t16=fopen("f3t16.txt","w+");
+   
+   FILE *f3t16=fopen("E1_1.txt","w+");
    for (int iconf=0; iconf< confs ;iconf++){
        for (int t =0; t< T ;t++){
-           fprintf(f3t16,"%.12g  ",data[iconf][17][t][0]);
+           fprintf(f3t16,"%.12g  ",data[iconf][1][t][0]);
        }
        fprintf(f3t16,"\n");
    }
    fclose(f3t16);
-   */
+   
     data_bin=binning(confs, var, file_head.l0 ,data, bin);
     //if you want to do the gamma analysis you need to do before freeing the raw data
     effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data_bin,  Neff ,namefile_plateaux,out_gamma,0,"M_{PS}^{ll}");
@@ -1902,7 +1902,63 @@ if (params.data.ncorr>48){
     free_fit_result(fit_info,fit_out);
     
 }else {    for(int i=90;i < 93;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+
+if (params.data.ncorr>65){
+    //c++ 93 || r 94
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    double *E2_0_A1E2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,54,"E2_0_A1E2", shift_and_M_eff_sinh_T,jack_file);
+    free(E2_0_A1E2);
     
+    //c++ 94 || r 95
+    file_head.k[2]=mu2;    file_head.k[3]=mu2;
+    double *E2_1_A1E2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,55,"E2_1_A1E2", shift_and_M_eff_sinh_T,jack_file);
+    free(E2_1_A1E2);
+    
+    fit_info.Nvar=3;
+    fit_info.Npar=3;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=2;
+    fit_info.function=C2_diff_masses;
+    
+    file_head.k[2]=mu1;    file_head.k[3]=mu2;
+    fit_info.ext_P[0]=mass[0];
+    fit_info.ext_P[1]=mass[1];
+    //c++ 95 || r 96
+    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  56,0/*reim*/ , "E2_01_A1E2",  fit_info ,jack_file);
+    free_fit_result(fit_info,fit_out);
+    
+    
+    
+    ///////////////////////////////////////////////   A1o20   /////////////////////////////////////////////
+    //c++ 96 || r 97
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    double *E2_0_A1o20=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,60,"E2_0_A1o20", shift_and_M_eff_sinh_T,jack_file);
+    free(E2_0_A1o20);
+    
+    //c++ 97 || r 98
+    file_head.k[2]=mu2;    file_head.k[3]=mu2;
+    double *E2_1_A1o20=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,61,"E2_1_A1o20", shift_and_M_eff_sinh_T,jack_file);
+    free(E2_1_A1o20);
+    
+    fit_info.Nvar=3;
+    fit_info.Npar=3;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=2;
+    fit_info.function=C2_diff_masses;
+    
+    file_head.k[2]=mu1;    file_head.k[3]=mu2;
+    fit_info.ext_P[0]=mass[0];
+    fit_info.ext_P[1]=mass[1];
+    //c++ 98 || r 99
+    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  62,0/*reim*/ , "E2_01_A1o20",  fit_info ,jack_file);
+    free_fit_result(fit_info,fit_out);
+    
+    
+    
+}else {    for(int i=93;i < 99;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+
     
     
     free_2(3,mass);free_2(3,E2);

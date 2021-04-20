@@ -3708,25 +3708,75 @@ int main(int argc, char **argv){
 
     
     int im,ik1,ik2;
-   for(ik1=0;ik1<1;ik1++){     //for(ik1=0;ik1<=ik2;ik1++){
-   for(ik2=ik1;ik2<4;ik2++){
     printf("ensambles after generalised jack ik2=%d  ik1=%d\n",ik2,ik1);
-
-    for (i=0;i<ensembles;i++){
+    printf("ensemble   ik1 ik2  mu1 mu2   M  Merr    f   ferr\n");
+    std::vector<int> list={0,1,2,3, 8,4,5,6,9,7};
+    for (int i:list){
+        for(ik1=0;ik1<1;ik1++){     //for(ik1=0;ik1<=ik2;ik1++){
+            for(ik2=0;ik2<1;ik2++){
+                
+                
+                im=mass_index[i][ik2][ik1];
+                tmp=mean_and_error(argv[1],jack_tot,   gjack[i].M_PS_jack[im] );
+                printf("L%dT%d  %d  %d %.5f %.5f  %g    %g  \t",head[i].l1,head[i].l0, ik1 ,ik2, head[i].k[head[i].nk+ik1], head[i].k[head[i].nk+ik2] ,  tmp[0],tmp[1] );
+                free(tmp);
+                tmp=mean_and_error(argv[1],jack_tot,   gjack[i].f_PS_jack[im] );
+                printf("  %g    %g   \t",  tmp[0],tmp[1] );
+                free(tmp);
+                tmp=mean_and_error(argv[1],jack_tot,   gjack[i].Zp );
+                printf("  Zp=%g  +-  %g    %s\n",  tmp[0],tmp[1]  ,jack_files[i].f_PS);
+                free(tmp);
+                
+                
+                
+            }}
+    }
+    printf("ensambles after generalised jack ik2=%d  ik1=%d\n",ik2,ik1);
+    printf("ensemble   ik1 ik2  mu1 mu2   M  Merr    f   ferr\n");
+    for (int i:list){
+   for(ik1=0;ik1<1;ik1++){     //for(ik1=0;ik1<=ik2;ik1++){
+   for(ik2=1;ik2<4;ik2++){
+    
+    
         im=mass_index[i][ik2][ik1];
         tmp=mean_and_error(argv[1],jack_tot,   gjack[i].M_PS_jack[im] );
-        printf("L%dT%d  mu2=%.5f mu1=%.5f  M_PS=%g  +-  %g  ",head[i].l1,head[i].l0, head[i].k[head[i].nk+ik2], head[i].k[head[i].nk+ik1] ,  tmp[0],tmp[1] );
+        printf("L%dT%d  %d  %d %.5f %.5f  %g    %g  \t",head[i].l1,head[i].l0, ik1 ,ik2, head[i].k[head[i].nk+ik1], head[i].k[head[i].nk+ik2] ,  tmp[0],tmp[1] );
         free(tmp);
         tmp=mean_and_error(argv[1],jack_tot,   gjack[i].f_PS_jack[im] );
-        printf("  f_PS=%g  +-  %g   \t",  tmp[0],tmp[1] );
+        printf("  %g    %g   \t",  tmp[0],tmp[1] );
         free(tmp);
         tmp=mean_and_error(argv[1],jack_tot,   gjack[i].Zp );
         printf("  Zp=%g  +-  %g    %s\n",  tmp[0],tmp[1]  ,jack_files[i].f_PS);
         free(tmp);
         
-    }
-    printf("\n");
+    
+    
     }}
+    }
+    printf("ensambles after generalised jack ik2=%d  ik1=%d\n",ik2,ik1);
+    printf("ensemble   ik1 ik2  mu1 mu2   M  Merr    f   ferr\n");
+     list={0,1,2,3, 4,5,6,9,7};
+    for (int i:list){
+        for(ik1=0;ik1<4;ik1++){     //for(ik1=0;ik1<=ik2;ik1++){
+            for(ik2=4;ik2<8;ik2++){
+                
+                
+                im=mass_index[i][ik2][ik1];
+                tmp=mean_and_error(argv[1],jack_tot,   gjack[i].M_PS_GEVP_jack[im] );
+                printf("L%dT%d  %d  %d %.5f %.5f  %g    %g  \t",head[i].l1,head[i].l0, ik1 ,ik2, head[i].k[head[i].nk+ik1], head[i].k[head[i].nk+ik2] ,  tmp[0],tmp[1] );
+                free(tmp);
+                tmp=mean_and_error(argv[1],jack_tot,   gjack[i].f_PS_ls_ss_jack[im] );
+                printf("  %g    %g   \t",  tmp[0],tmp[1] );
+                free(tmp);
+                tmp=mean_and_error(argv[1],jack_tot,   gjack[i].Zp );
+                printf("  Zp=%g  +-  %g    %s\n",  tmp[0],tmp[1]  ,jack_files[i].f_PS);
+                free(tmp);
+                
+                
+                
+            }}
+    }
+    
     
     for (e=0;e<ensembles;e++){
      tmp1=(double*) malloc(sizeof(double)* jack_tot); 
@@ -3743,8 +3793,8 @@ int main(int argc, char **argv){
         printf("  M_PS^2/f_PS^2=%g  +-  %g  \n ",  tmp[0],tmp[1] );
         free(tmp);free(tmp1);
     }
-          
- /*   for(ik1=0;ik1<1;ik1++){     //for(ik1=0;ik1<=ik2;ik1++){
+    /*
+      for(ik1=0;ik1<1;ik1++){     //for(ik1=0;ik1<=ik2;ik1++){
    for(ik2=4;ik2<7;ik2++){
     printf("ensambles after generalised jack ik2=%d  ik1=%d\n",ik2,ik1);
     for (i=0;i<ensembles;i++){
@@ -3762,6 +3812,7 @@ int main(int argc, char **argv){
     }
      printf("\n");
     }}
+    
     for(ik1=1;ik1<2;ik1++){     //for(ik1=0;ik1<=ik2;ik1++){
    for(ik2=4;ik2<7;ik2++){
     printf("ensambles after generalised jack ik2=%d  ik1=%d\n",ik2,ik1);

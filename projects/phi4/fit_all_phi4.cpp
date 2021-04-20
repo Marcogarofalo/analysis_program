@@ -213,6 +213,10 @@ int main(int argc, char **argv){
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T96_L24_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      //9
+     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T96_L26_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+     emplace_back_par_data(namefile,paramsj,dataj);
+     
+     //10
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T128_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      
@@ -327,7 +331,7 @@ int main(int argc, char **argv){
      */
      
      printf("size=%ld\n",myen.size());
-     myen={4,5,6,7,8,9};
+     myen={4,5,6,7,8,9,10};
      printf("size=%ld\n",myen.size());
      
      printf("\n/////////////////////////////////     a_00_BH//////////////////\n");
