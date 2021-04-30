@@ -9,7 +9,7 @@
 #define EXTERN extern
 #endif
 
-#define Nbootstrap 200
+#define Nbootstrap 400
 #define NAMESIZE  1000
 
 //#define ensembles_reph 11

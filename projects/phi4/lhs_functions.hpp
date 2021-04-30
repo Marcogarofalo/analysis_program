@@ -21,6 +21,16 @@
 #include "header_phi4.hpp"
 using namespace std;
 
+
+
+template<int ix,int iy,int iz>
+double sum_corr_directions_shift(int j, double ****in,int t ,struct fit_type fit_info){
+    
+    return (in[j][ix][t][0]+in[j][iy][t][0]+in[j][iz][t][0])/3. ;
+    
+}
+
+
 double lhs_four_BH_0(int j, double ****in,int t ,struct fit_type fit_info){
     
     double r;
