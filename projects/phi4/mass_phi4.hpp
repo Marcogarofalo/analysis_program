@@ -18,6 +18,16 @@
 #include "gamma_analysis.hpp"
 #include "tower.hpp"
 
+
+
+double energy_CM(  double E  , std::vector<int>  p,int L){
+    
+    double normp=p[0]*p[0]+p[1]*p[1]+p[2]*p[2];
+    normp*=2*pi_greco/((double) L);
+    normp*=2*pi_greco/((double) L);
+    return sqrt(E*E- normp);
+}
+
 double quantization_condition_2particle(int n  , int Nvar , double* x,int Npar,double*P){
     
     double L=P[3];

@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.13)
-project(analysis_program CXX)
 #add_subdirectory(../modules  ../modules)
 
-set(CMAKE_CXX_COMPILER g++)
-set(CMAKE_CXX_FLAGS "-fopenmp   -pedantic  -g -O0 -pg -no-pie  -lm -lgmp -lfftw3 ")
+set(CMAKE_CXX_COMPILER /usr/bin/g++)
+set(CMAKE_C_COMPILER /usr/bin/gcc)
+set(CMAKE_CXX_FLAGS "-fopenmp   -pedantic  -g -O0 -pg -no-pie  -lm -lgmp -lfftw3  -lgsl ")
+set(CMAKE_C_FLAGS "-fopenmp   -pedantic  -g -O0 -pg -no-pie  -lm -lgmp -lfftw3  -lgsl ")
+
+project(analysis_program CXX C)
+
 #-g # then compile , then open gdb, write the commands : file $namefile; run  $options ; bt
 # valgrind --leak-check=yes --track-origins=yes  ./program   #compile with -g to have line number
 
@@ -27,6 +31,10 @@ INCLUDE_DIRECTORIES ( "${EIGEN3_INCLUDE_DIR}" )
 
 
 add_subdirectory(include  include)
+#include_directories( modules/zeta )
+#link_directories(modules/zeta)
+add_subdirectory(modules/zeta zeta)
+
 
 # this has been taken straight from the build system of Balint's Dslash (github.com/bjoo/KokkosDslash)
 macro(add_target_with_lib TARGETNAME)
@@ -60,7 +68,8 @@ macro(add_target_with_lib TARGETNAME)
   target_link_libraries(${TARGETNAME} PUBLIC gamma_analysis)
   target_link_libraries(${TARGETNAME} PUBLIC correlators_analysis)
   target_link_libraries(${TARGETNAME} PUBLIC tower)
-
+  target_link_libraries(${TARGETNAME} PUBLIC init_zeta_function)
+  target_link_libraries(${TARGETNAME} PUBLIC dzeta_function)
 #target_link_libraries(${TARGETNAME} PUBLIC Kokkos::kokkos)
 endmacro()
 

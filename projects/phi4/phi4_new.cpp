@@ -24,6 +24,10 @@
 #include "eigensystem.hpp"
 #include "lhs_functions.hpp"
 
+extern "C" { 
+    #include "dzeta_function.h"
+}
+
 #include <cstring> 
 #include <string>
 #include <fstream>
@@ -37,7 +41,7 @@ int r_value(int r)
     int vr;
     if (r==0) vr= 1;
     else if (r==1) vr= -1;
-    else error(0==0,0,"r_value","r value is not 0 neither 1\n");
+    else{ vr=-10; error(0==0,0,"r_value","r value is not 0 neither 1\n");}
     return vr;
 }
 
@@ -1969,6 +1973,24 @@ if (params.data.ncorr>65){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 if (params.data.ncorr>74){
+    
+    
+    fit_info.Nvar=1;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=0;
+    fit_info.function=constant_fit;
+    
+    file_head.k[2]=mu1;    file_head.k[3]=mu2;
+    //c++ 99 || r 100
+    //fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  66,0/*reim*/ , "E2_0_px",  fit_info ,jack_file);
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
+                                   m_eff_of_sum<33,35,37>, "E1_0_p1",  fit_info, jack_file );
+    
+    //free_fit_result(fit_info,fit_out);
+    double *E1_0_p1=fit_out.P[0];
+    
     fit_info.Nvar=3;
     fit_info.Npar=3;
     fit_info.N=1;
@@ -1978,29 +2000,48 @@ if (params.data.ncorr>74){
     
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
-    fit_info.ext_P[1]=E1_0_px;
-    //c++ 99 || r 100
+    fit_info.ext_P[1]=E1_0_p1;
+    //c++ 100 || r 101
     //fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  66,0/*reim*/ , "E2_0_px",  fit_info ,jack_file);
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    sum_corr_directions_shift<66,67,68>, "E2_0_p1",  fit_info, jack_file );
+    fprintf(outfile,"#E2_CM   err  E2_CM/M   err \n " );
+    double *E2_CM=(double*) malloc(sizeof(double)*Njack);
+    for (int j=0;j< Njack;j++)
+        E2_CM[j]=energy_CM(fit_out.P[0][j],{1,0,0},params.data.L[1]);
+    fprintf(outfile,"%.12g  %.12g  \t ", E2_CM[Njack-1],error_jackboot(option[4],Njack,E2_CM ) );
+    for (int j=0;j< Njack;j++)
+        E2_CM[j]/=mass[0][j];
+    fprintf(outfile,"%.12g  %.12g  \n ", E2_CM[Njack-1],error_jackboot(option[4],Njack,E2_CM ) );
+    free(E2_CM);
+    
+    
+    
     free_fit_result(fit_info,fit_out);
     
-    
-    fit_info.ext_P[0]=mass[1];
-    fit_info.ext_P[1]=E1_1_px;
-    //c++ 100 || r 101
-    //fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  69,0/*reim*/ , "E2_1_px",  fit_info ,jack_file);
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
-                                   sum_corr_directions_shift<69,70,71>, "E2_1_p1",  fit_info, jack_file );
-    free_fit_result(fit_info,fit_out);
-    
+    free(E1_0_p1);
     
 }else {    for(int i=99;i < 101;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-if (params.data.ncorr>86){
+////p=(1,1,0)
+if (params.data.ncorr>90){
+    
+    fit_info.Nvar=1;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=0;
+    fit_info.function=constant_fit;
+    
+    file_head.k[2]=mu1;    file_head.k[3]=mu2;
+    //c++ 101 || r 102
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
+                                   m_eff_of_sum<75,76,77>, "E1_0_p11",  fit_info, jack_file );
+    
+    double *E1_0_p11=fit_out.P[0];
+    
     fit_info.Nvar=3;
     fit_info.Npar=3;
     fit_info.N=1;
@@ -2010,24 +2051,63 @@ if (params.data.ncorr>86){
     
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
-    fit_info.ext_P[1]=E1_0_px;
-    //c++ 101 || r 102
-    //fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  66,0/*reim*/ , "E2_0_px",  fit_info ,jack_file);
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
-                                   sum_corr_directions_shift<66,67,68>, "E2_0_p11",  fit_info, jack_file );
-    free_fit_result(fit_info,fit_out);
-    
-    
-    fit_info.ext_P[0]=mass[1];
-    fit_info.ext_P[1]=E1_1_px;
+    fit_info.ext_P[1]=E1_0_p11;
     //c++ 102 || r 103
-    //fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  69,0/*reim*/ , "E2_1_px",  fit_info ,jack_file);
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
-                                   sum_corr_directions_shift<69,70,71>, "E2_1_p11",  fit_info, jack_file );
+                                   sum_corr_directions_shift<81,82,83>, "E2_0_p11",  fit_info, jack_file );
+    fprintf(outfile,"#E2_CM   err  E2_CM/M   err \n " );
+    double *E2_CM=(double*) malloc(sizeof(double)*Njack);
+    for (int j=0;j< Njack;j++)
+        E2_CM[j]=energy_CM(fit_out.P[0][j],{1,1,0},params.data.L[1]);
+    fprintf(outfile,"%.12g  %.12g  \t ", E2_CM[Njack-1],error_jackboot(option[4],Njack,E2_CM ) );
+    for (int j=0;j< Njack;j++)
+        E2_CM[j]/=mass[0][j];
+    fprintf(outfile,"%.12g  %.12g  \n ", E2_CM[Njack-1],error_jackboot(option[4],Njack,E2_CM ) );
+    free(E2_CM);
     free_fit_result(fit_info,fit_out);
     
+    free(E1_0_p11);
     
-}else {    for(int i=101;i < 101;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+}else {    for(int i=101;i < 103;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////p=(1,1,1)
+if (params.data.ncorr>90){
+    
+    file_head.k[2]=mu1;
+    file_head.k[3]=mu1;
+    //c++ 103 || r 74
+    double *E1_0_p111=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,90,"E1_0_p111", M_eff_T,jack_file);
+    
+    
+    fit_info.Nvar=3;
+    fit_info.Npar=3;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=2;
+    fit_info.function=C2_diff_masses;
+    
+    file_head.k[2]=mu1;    file_head.k[3]=mu2;
+    fit_info.ext_P[0]=mass[0];
+    fit_info.ext_P[1]=E1_0_p111;
+    //c++ 104 || r 105
+    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  92,0/*reim*/ , "E2_0_p111",  fit_info ,jack_file);
+    fprintf(outfile,"#E2_CM   err  E2_CM/M   err \n " );
+    double *E2_CM=(double*) malloc(sizeof(double)*Njack);
+    for (int j=0;j< Njack;j++)
+        E2_CM[j]=energy_CM(fit_out.P[0][j],{1,1,1},params.data.L[1]);
+    fprintf(outfile,"%.12g  %.12g  \t ", E2_CM[Njack-1],error_jackboot(option[4],Njack,E2_CM ) );
+    for (int j=0;j< Njack;j++)
+        E2_CM[j]/=mass[0][j];
+    fprintf(outfile,"%.12g  %.12g  \n ", E2_CM[Njack-1],error_jackboot(option[4],Njack,E2_CM ) );
+    free(E2_CM);
+    free_fit_result(fit_info,fit_out);
+    
+    free(E1_0_p111);
+    
+}else {    for(int i=103;i < 105;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+
 
     
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
@@ -2046,6 +2126,11 @@ if (params.data.ncorr>86){
    
     free(file_head.k);
     fclose(jack_file);
+    double z[2]={1,2};
+    double q2=0;
+    int dvec[3]={0,0,1};
+    //double abc=dintegrand_12( q2, z);
+    int aaa= dzeta_function(z,  q2,0 , 0, dvec, 0.1, 0.1, 0.1, 0.1,100);
     return 0;   
 }
 

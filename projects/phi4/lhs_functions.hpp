@@ -22,6 +22,14 @@
 using namespace std;
 
 
+template<int ix,int iy,int iz>
+double m_eff_of_sum(int j, double ****in,int t ,struct fit_type fit_info){
+    
+    double ct= (in[j][ix][t][0]+in[j][iy][t][0]+in[j][iz][t][0])/3. ;
+    double ctp= (in[j][ix][t+1][0]+in[j][iy][t+1][0]+in[j][iz][t+1][0])/3. ;
+    
+    return M_eff_in_inp(t,ct,ctp);
+}
 
 template<int ix,int iy,int iz>
 double sum_corr_directions_shift(int j, double ****in,int t ,struct fit_type fit_info){
