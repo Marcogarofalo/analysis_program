@@ -25,7 +25,7 @@
 #include "lhs_functions.hpp"
 
 extern "C" { 
-    #include "dzeta_function.h"
+    #include "../external/rzeta/src/dzeta_function.h"
 }
 
 #include <cstring> 

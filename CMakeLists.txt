@@ -35,27 +35,6 @@ add_subdirectory(include  include)
 #link_directories(modules/zeta)
 #add_subdirectory(external/rzeta/src zeta)
 
-add_library(
-    init_zeta_function SHARED
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/rzeta/src/init_zeta_function.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/rzeta/src/init_zeta_function.c
-    
-) 
-set_target_properties(init_zeta_function PROPERTIES LINKER_LANGUAGE C)
-target_include_directories(init_zeta_function PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
- 
-add_library(
-    dzeta_function SHARED
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/rzeta/src/dzeta_function.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/rzeta/src/dzeta_function.c
-    #qzeta_function.h
-    #qzeta_function.c
-) 
-set_target_properties(dzeta_function PROPERTIES LINKER_LANGUAGE C)
-target_link_libraries(dzeta_function PUBLIC init_zeta_function)
-target_link_libraries(dzeta_function PUBLIC gsl)
-target_include_directories(dzeta_function PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
- 
 
 # this has been taken straight from the build system of Balint's Dslash (github.com/bjoo/KokkosDslash)
 macro(add_target_with_lib TARGETNAME)
