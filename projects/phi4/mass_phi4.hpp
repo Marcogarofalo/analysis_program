@@ -17,10 +17,32 @@
 #include "eigensystem.hpp"
 #include "gamma_analysis.hpp"
 #include "tower.hpp"
+#include <cmath>
 
+extern "C" { 
+    #include "../external/rzeta/src/dzeta_function.h"
+}
+double energy_CM(  double E  , int  *p,int L);
 
+double phase_shift(double E2,double mass, int  *dvec,int L ){
+    double delta;
+    double z[2];
+    
+    
+    double ECM=energy_CM(E2,dvec,L);
+    double k=sqrt(ECM*ECM/4. - mass*mass);
+    double q=k*L/(2*pi_greco);
+    double gamma=E2/ECM;
+    double A=0;
+       
+    dzeta_function(z,  q*q,0 , 0, dvec, gamma, A, 0.000001, 1.e12,5);
+    std::complex<double>  zc(z[0],z[1]);
+    delta=real(  std::atan((pow(pi_greco,3./2.) *q*gamma )/zc   ));
+    
+    return delta;
+}
 
-double energy_CM(  double E  , std::vector<int>  p,int L){
+double energy_CM(  double E  , int  *p,int L){
     
     double normp=p[0]*p[0]+p[1]*p[1]+p[2]*p[2];
     normp*=2*pi_greco/((double) L);
