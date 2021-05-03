@@ -4,6 +4,12 @@
 git clone https://gitlab.com/libeigen/eigen.git
 ````
 
+we also need the rzeta package https://github.com/HISKP-LQCD/rzeta as extra 
+dependency
+```
+git submodule update --init --recursive
+```
+
 create a build directory and compile
 
    ````
