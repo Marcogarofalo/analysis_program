@@ -1,0 +1,3 @@
+[submodule "external/rzeta"]
+	path = external/rzeta
+	url = git@github.com:HISKP-LQCD/rzeta.git
