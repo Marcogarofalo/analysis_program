@@ -885,13 +885,15 @@ int main(int argc, char **argv){
     free(tmpj); free(tmp_muj);
     double *delta=(double*) malloc(sizeof(double)*Njack);
     double *k=(double*) malloc(sizeof(double)*Njack);
+    double *kcotd=(double*) malloc(sizeof(double)*Njack);
     int dvec[3]= {0,0,0};
-    fprintf(outfile,"#re(delta)   err   k  err\n");
+    fprintf(outfile,"#re(delta)   err   k  err   kcotd\n");
     for (int j=0;j< Njack;j++){
         delta[j]=phase_shift( E2[0][j], mass[0][j],dvec, params.data.L[1] );
         k[j]=sqrt(E2[0][j]*E2[0][j]/4.-mass[0][j]*mass[0][j]);
+        kcotd[j]=k[j]/std::tan(delta[j]);
     }
-    fprintf(outfile,"%.12g  %.12g %.12g  %.12g \n ", delta[Njack-1],error_jackboot(option[4],Njack,delta )  , k[Njack-1],  error_jackboot(option[4],Njack,k ));
+    fprintf(outfile,"%.12g  %.12g %.12g  %.12g    %.12g  %.12g\n ", delta[Njack-1],error_jackboot(option[4],Njack,delta )  , k[Njack-1],  error_jackboot(option[4],Njack,k ),       kcotd[Njack-1],  error_jackboot(option[4],Njack,kcotd ));
     free(delta);free(k);
     
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -2065,7 +2067,7 @@ if (params.data.ncorr>90){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     //c++ 101 || r 102
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
-                                   m_eff_of_sum<75,76,77>, "E1_0_p11",  fit_info, jack_file );
+                                   m_eff_of_sum<75,77,79>, "E1_0_p11",  fit_info, jack_file );
     
     double *E1_0_p11=fit_out.P[0];
     
