@@ -101,7 +101,7 @@ int main(int argc, char **argv){
         for(int j=0;j< dataj[0].Njack;j++){
             double err=error_jackboot("jack", dataj[0].Njack, dataj[0].jack[i]  );
             double c=fabs( (dataj[0].jack[i][j]- dataj[1].jack[i][j] ) / dataj[0].jack[i][j] );
-            if(c>1e-10) { printf("error at   obs=%d  jack=%d     ref=%.10g  test=%.10g err=%.10g \n",i,j,dataj[0].jack[i][j],dataj[1].jack[i][j], err);  nerrors++; }
+            if(c>1e-6) { printf("error at   obs=%d  jack=%d     ref=%.10g  test=%.10g err=%.10g \n",i,j,dataj[0].jack[i][j],dataj[1].jack[i][j], err);  nerrors++; }
         }
      }
      if (nerrors>0){
