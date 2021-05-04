@@ -17,6 +17,7 @@
 #include "non_linear_fit.hpp"
 #include "tower.hpp"
 #include "global.hpp"
+#include <random>
  /*
 double *LU_decomposition_solver(int N, double **M, double *b){
  double **U,**L,*y,*x;
@@ -708,14 +709,16 @@ double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **
     chi2=compute_chi_non_linear_Nf(N, ensemble,x, y, P ,Nvar,  Npar,  fun)/(en_tot-Npar);
     jmax=3+((int) (chi2*2));
     
+    std::mt19937 mt_rand(123);
+    
     if (jmax>15  || chi2!=chi2 ) jmax=35;
     if(jmax <=3) jmax=15;
-    
+
     chi2_tmp1=chi2;
 
     for (j=0;j<jmax;j++){
         for(i=0;i<Npar;i++){
-            r=(double) rand();
+            r=mt_rand()/((double)mt_rand.max() );
             guess[i]=((r/rm)-0.5)*(j+1);
           //  printf("%f\t",guess[i]);
         }
@@ -744,7 +747,7 @@ double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **
     if (chi2> 10 || chi2!=chi2 ){
       for (j=0;j<jmax;j++){
         for(i=0;i<Npar;i++){
-            r=(double) rand();
+            r=mt_rand()/((double)mt_rand.max() );
             guess[i]=((r/rm)-0.5)*exp(j-jmax/2);
           //  printf("%f\t",guess[i]);
         }
@@ -774,7 +777,7 @@ double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **
     if (chi2> 10 || chi2!=chi2 ){
         for (j=0;j<jmax;j++){
             for(i=0;i<Npar;i++){
-                r=(double) rand();
+                r=mt_rand()/((double)mt_rand.max() );
                 guess[i]=((r/rm)-0.5)/exp(j-jmax/2);
                 //  printf("%f\t",guess[i]);
             }
