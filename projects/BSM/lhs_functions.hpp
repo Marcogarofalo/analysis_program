@@ -33,7 +33,7 @@ double m_PCAC(int j, double ****in,int t ,struct fit_type fit_info){
     int T=file_head.l0;
     double num= (in[j][0][(t+1)%T][0]-in[j][0][t][0]);
     double den= (in[j][1][t][0]);
-    return (num/(den)) ;
+    return (-2*num/(4*den)) ;
     //return num;
 }
 
