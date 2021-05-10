@@ -19,8 +19,97 @@
 #include "tower.hpp"
 
 #include "header_phi4.hpp"
+#include "mass_phi4.hpp"
 using namespace std;
 
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////kcotd
+//////////////////////////////////////////////////////////////////////////////////////////
+inline double kcotd(double E2,double mass, int  *dvec,int L  ){
+    double E2_CM=energy_CM(E2,dvec,L);
+    double k=sqrt(E2_CM*E2_CM/4. -mass*mass);
+    double delta;
+    double kcotd;
+    
+    delta=phase_shift( E2, mass,dvec, L );
+    kcotd=k/std::tan(delta);
+    return kcotd;
+}
+
+double lhs_kcotd(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    double r;
+    if(n==0){//E2_0
+        int dvec[3]= {0,0,0};
+        r=kcotd( gjack[e].jack[4][j] ,gjack[e].jack[1][j], dvec, params[e].data.L[1]  );
+    }
+    if(n==1){//E2_0_p1
+        int dvec[3]= {1,0,0};
+        r=kcotd( gjack[e].jack[100][j] ,gjack[e].jack[1][j], dvec, params[e].data.L[1]  );
+    }
+    if(n==2){//E2_0_p1
+        int dvec[3]= {1,1,0};
+        r=kcotd( gjack[e].jack[102][j] ,gjack[e].jack[1][j], dvec, params[e].data.L[1]  );
+    }
+    if(n==3){//E2_0_p1
+        int dvec[3]= {1,1,1};
+        r=kcotd( gjack[e].jack[104][j] ,gjack[e].jack[1][j], dvec, params[e].data.L[1]  );
+    }
+    if(n==4){//E2_0_A1
+        int dvec[3]= {0,0,0};
+        r=kcotd( gjack[e].jack[80][j] ,gjack[e].jack[1][j], dvec, params[e].data.L[1]  );
+    }
+    
+    return r;
+    
+}
+double compute_k(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    double L=params[e].data.L[1];
+    double mass=gjack[e].jack[1][j];
+    double E2=gjack[e].jack[4][j];
+    double E2_0_p1=gjack[e].jack[100][j];
+    double E2_0_p11=gjack[e].jack[102][j];
+    double E2_0_p111=gjack[e].jack[104][j];
+    double E2_0_A1=gjack[e].jack[80][j];
+    double E2_CM;
+    if(n==0){//E2_0
+        int dvec[3]= {0,0,0};
+        E2_CM=energy_CM(E2,dvec,L);
+    }
+    else if(n==1){//E2_0_p1
+        int dvec[3]= {1,0,0};
+        E2_CM=energy_CM(E2_0_p1,dvec,L);
+    }
+    else if(n==2){//E2_0_p11
+        int dvec[3]= {1,1,0};
+        E2_CM=energy_CM(E2_0_p11,dvec,L);
+    }
+    else if(n==3){//E2_0_p111
+        int dvec[3]= {1,1,1};
+        E2_CM=energy_CM(E2_0_p111,dvec,L);
+    }
+    else if(n==4){//E2_0_A1
+        int dvec[3]= {0,0,0};
+        E2_CM=energy_CM(E2_0_A1,dvec,L);
+    }
+    else {
+        exit(1);
+    }
+    return sqrt(E2_CM*E2_CM/4. -mass*mass);
+    
+}
+double rhs_kcotd(int n, int Nvar, double *x,int Npar,double  *P){
+    double a0=P[0], r0=P[1], P2=P[2];
+    double k=x[6];
+    
+
+    return 1.0/a0  + r0*k*k/2. - P2*r0*r0*r0*k*k*k*k;
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////kcotd
+//////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -147,7 +236,8 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     int count=0;
     for (int n=0;n<N;n++){
         for (int e=0;e<en[n];e++){
-            fprintf(f," %g   %g   %g   %d\n ",x[Njack-1][e+count][0], y[Njack-1][e+count][0], y[Njack-1][e+count][1] , params[myen[e]].data.L[0]);
+            fprintf(f," %g   %g   %g   %d\t ",x[Njack-1][e+count][0], y[Njack-1][e+count][0], y[Njack-1][e+count][1] , params[myen[e]].data.L[0]);
+            fprintf(f," %g   \n ",x[Njack-1][e+count][6]);
         }
         count+=en[n];
         fprintf(f,"\n\n");
@@ -212,7 +302,7 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     }
     free_2(Njack,tif);
     fclose(f); 
-    /////////fit band L
+    /////////fit band T
     
     mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_T.txt",argv[3], label);
     f=open_file(namefile,"w+");
@@ -241,6 +331,35 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     free_2(Njack,tif);
     fclose(f);  
     ////////// end fit band T
+    /////////fit band T
+    
+    mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_k.txt",argv[3], label);
+    f=open_file(namefile,"w+");
+    
+    tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
+    for (int i=0 ; i<100; i++){
+        double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
+        double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+        
+        for (int j=0;j<Njack;j++){
+            tmpx[0]=(double) params[0].data.L[1];//L
+            tmpx[1]=gjack[0].jack[1][j];//m0
+            tmpx[2]=gjack[0].jack[2][j];//m1
+            tmpx[3]=gjack[0].jack[4][j];//E20
+            tmpx[4]=gjack[0].jack[5][j];//E21
+            tmpx[5]=params[0].data.L[1];//T
+            tmpx[6]=0+i*0.004;//k
+            for(int i=fit_info.Nvar ; i< fit_info.n_ext_P; i++)
+                tmpx[i]=fit_info.ext_P[fit_info.Nvar][j];
+            
+            tmpy[j]=fit_info.function(N,Nvar,tmpx,Npar,tif[j]);//N, Nvar, x ,Npar,P
+        }
+        fprintf(f,"%g  \t %g  %g\n",tmpx[6],tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
+        free(tmpy);free(tmpx);
+    }
+    free_2(Njack,tif);
+    fclose(f);  
+    ////////// end fit band k
        
     
 }
@@ -280,6 +399,11 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
                 x[j][count][3]=gjack[myen[e]].jack[4][j];//E20
                 x[j][count][4]=gjack[myen[e]].jack[5][j];//E21
                 x[j][count][5]=(double) params[myen[e]].data.L[0];//T
+                
+                x[j][count][6]=compute_k(n,myen[e],j,params,gjack,fit_info);;//E2_0_p1
+                
+                
+                
                 for(int i=fit_info.Nvar ; i< fit_info.n_ext_P; i++){
                     x[j][count][i]=fit_info.ext_P[i-fit_info.Nvar][j];
                 }

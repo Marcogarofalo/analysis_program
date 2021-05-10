@@ -22,6 +22,7 @@
 extern "C" { 
     #include "../external/rzeta/src/dzeta_function.h"
 }
+
 double energy_CM(  double E  , int  *p,int L);
 
 double phase_shift(double E2,double mass, int  *dvec,int L ){
@@ -33,8 +34,8 @@ double phase_shift(double E2,double mass, int  *dvec,int L ){
     double k=sqrt(ECM*ECM/4. - mass*mass);
     double q=k*L/(2*pi_greco);
     double gamma=E2/ECM;
-    double A=0;
-       
+    double A=1.;
+
     dzeta_function(z,  q*q,0 , 0, dvec, gamma, A, 0.000001, 1.e12,5);
     std::complex<double>  zc(z[0],z[1]);
     delta=real(  std::atan((pow(pi_greco,3./2.) *q*gamma )/zc   ));
@@ -50,6 +51,36 @@ double energy_CM(  double E  , int  *p,int L){
     normp*=2*pi_greco/((double) L);
     return sqrt(E*E- normp);
 }
+
+void phase_shift(double *E2,double *mass, int  *dvec,int L,FILE *outfile, int Njack, char *jackboot ){
+    fprintf(outfile,"#E2_CM   err  E2_CM/M   err   re(delta)   err\n " );
+    double *E2_CM=(double*) malloc(sizeof(double)*Njack);
+    //int dvec[3]= {1,1,1};
+    double *k=(double*) malloc(sizeof(double)*Njack);
+    for (int j=0;j< Njack;j++){
+        E2_CM[j]=energy_CM(E2[j],dvec,L);
+        k[j]=sqrt(E2_CM[j]*E2_CM[j]/4. -mass[j]*mass[j]);
+    }
+    fprintf(outfile,"%.12g  %.12g  \t ", E2_CM[Njack-1],error_jackboot(jackboot,Njack,E2_CM ) );
+    for (int j=0;j< Njack;j++)
+        E2_CM[j]/=mass[j];
+    fprintf(outfile,"%.12g  %.12g  \t ", E2_CM[Njack-1],error_jackboot(jackboot,Njack,E2_CM ) );
+    double *delta=(double*) malloc(sizeof(double)*Njack);
+    double *kcotd=(double*) malloc(sizeof(double)*Njack);
+    for (int j=0;j< Njack;j++){
+        delta[j]=phase_shift( E2[j], mass[j],dvec, L );
+        //k[j]=sqrt(E2[j]*E2[j]/4.-mass[j]*mass[j]);
+        kcotd[j]=k[j]/std::tan(delta[j]);
+    }
+    fprintf(outfile,"%.12g  %.12g %.12g  %.12g    %.12g  %.12g\n ", delta[Njack-1],error_jackboot(jackboot,Njack,delta )  , k[Njack-1],  error_jackboot(jackboot,Njack,k ),       kcotd[Njack-1],  error_jackboot(jackboot,Njack,kcotd ));
+    free(delta);free(kcotd);
+    free(E2_CM);free(k);
+    
+}
+
+
+
+
 
 double quantization_condition_2particle(int n  , int Nvar , double* x,int Npar,double*P){
     
