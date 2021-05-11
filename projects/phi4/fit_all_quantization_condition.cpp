@@ -181,6 +181,8 @@ int main(int argc, char **argv){
      cluster::IO_params params;
      
      char namefile[NAMESIZE];
+     char jackboot[NAMESIZE];
+     mysprintf(jackboot,NAMESIZE,"%s" ,argv[1] );
      
      //mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L16_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      //emplace_back_par_data(namefile,paramsj,dataj);
@@ -255,7 +257,7 @@ int main(int argc, char **argv){
      
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      // start fitting
-     
+    /* 
      fit_info.Nvar=7;
      fit_info.Npar=3;
      fit_info.N=5;
@@ -265,9 +267,52 @@ int main(int argc, char **argv){
      fit_info.function=rhs_kcotd;
      
      struct fit_result fit_kcotd=fit_data(argv,  paramsj ,gjack, lhs_kcotd ,fit_info, "kcotd",myen );
-     
-     
-    
-     
+     */
+     ///////////////////////////////////////////////
+     /// compute covariance energies
+     int Nmom=5;
+     double **E2corr=double_malloc_2(Nmom*gjack.size(),gjack[0].Njack);
+     int **momlist=int_malloc_2(Nmom*gjack.size(),3);
+     for(int e=0; e<gjack.size();e++ ){
+         for (int j=0;j<gjack[0].Njack;j++ ){
+             E2corr[e*Nmom+0][j]=gjack[e].jack[4][j];
+             E2corr[e*Nmom+1][j]=gjack[e].jack[100][j];
+             E2corr[e*Nmom+2][j]=gjack[e].jack[102][j];
+             E2corr[e*Nmom+3][j]=gjack[e].jack[104][j];
+             E2corr[e*Nmom+4][j]=gjack[e].jack[80][j];
+         }
+         momlist[e*Nmom+0][0]=0; momlist[e*Nmom+0][1]=0; momlist[e*Nmom+0][2]=0;
+         momlist[e*Nmom+1][0]=1; momlist[e*Nmom+1][1]=0; momlist[e*Nmom+1][2]=0;
+         momlist[e*Nmom+2][0]=1; momlist[e*Nmom+2][1]=1; momlist[e*Nmom+2][2]=0;
+         momlist[e*Nmom+3][0]=1; momlist[e*Nmom+3][1]=1; momlist[e*Nmom+3][2]=1;
+         momlist[e*Nmom+4][0]=0; momlist[e*Nmom+4][1]=0; momlist[e*Nmom+4][2]=0;
+     }
+     mysprintf(namefile,NAMESIZE,"%s/two_particle_energies.txt",argv[3] );
+     FILE *f_two_particle=open_file(namefile,"w+");
+     fprintf(f_two_particle,"#E2 dE2  P1  P2   P3   L  T\n");
+     for(int e=0; e<gjack.size();e++ ){
+         for(int n=0; n<Nmom;n++ ){
+             fprintf(f_two_particle,"%.12g  %.12g  %d  %d   %d   %d  %d\n",
+                     E2corr[e*Nmom+n][gjack[0].Njack-1],
+                     error_jackboot(jackboot, gjack[0].Njack, E2corr[e*Nmom+n]),
+                    momlist[e*Nmom+n][0],momlist[e*Nmom+n][1],momlist[e*Nmom+n][2],
+                    paramsj[e].data.L[1],paramsj[e].data.L[0]     );
+         }
+     }
+     fclose(f_two_particle);
+     double **cov=covariance(jackboot,Nmom*gjack.size() , gjack[0].Njack, E2corr);
+     double **err_cov=error_covariance(jackboot,Nmom*gjack.size() , gjack[0].Njack, E2corr);
+     mysprintf(namefile,NAMESIZE,"%s/two_particle_energies_covariance.txt",argv[3] );
+     FILE *f_two_particle_covariance=open_file(namefile,"w+");
+     for(int ne=0; ne<gjack.size()*Nmom;ne++ ){
+         for(int ne1=0; ne1<gjack.size()*Nmom;ne1++ ){
+             //fprintf( f_two_particle_covariance,"%.12g\t",cov[ne][ne1]/sqrt(cov[ne][ne]*cov[ne1][ne1]) );
+             fprintf( f_two_particle_covariance,"%.12g  %.12g\t",cov[ne][ne1],err_cov[ne][ne1] );
+         }
+         fprintf(f_two_particle_covariance,"\n");
+     }
+     free_2(Nmom,cov);
+     free_2(Nmom,err_cov);
+     fclose(f_two_particle_covariance);
      return 0;
 }

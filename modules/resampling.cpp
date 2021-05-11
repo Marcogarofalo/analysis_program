@@ -264,11 +264,11 @@ double *fake_jack(double mean,double error, int Njack,int seed){
 /////////////////////////////boot
 
 
-double ****create_boot(int  N, int Nboot, int var, int t, double ****in){
+double ****create_boot(int  N, int Nboot, int var, int t, double ****in, int seed=123){
     double ****boot;
     int i,j,k,l,b,ib;
     
-    srand(123);
+    srand(seed);
     
     
     boot=(double****) malloc(sizeof(double***)*(Nboot+1));
@@ -425,13 +425,13 @@ const char *smean_and_error(const char *option , int Np1, double *in){
 }
 
 
-double ****create_resampling(const char *option, int  N, int var, int t, double ****in){
+double ****create_resampling(const char *option, int  N, int var, int t, double ****in, int seed=123){
     double ****r;
     int Nboot=Nbootstrap;
     if( strcmp(option,"jack")==0)
               r=create_jack(  N,  var,  t,  in);
     else if( strcmp(option,"boot")==0)
-              r=create_boot(  N,  Nboot,  var,  t, in);
+              r=create_boot(  N,  Nboot,  var,  t, in,  seed);
     else 
         error(0==0,1,"create_resampling call","create_resampling called with %s while the only options supported are jack or boot",option);    
     return r;
@@ -673,7 +673,187 @@ double **covariance(const char *option , int Nobs, int Np1, double **in){
     return r;
 }
 
+/*
+//conpute  error of the covariance of in[variables=0,...,Nobs-1][jacknifes]
+//return [Nobs] x [Nobs] matrix
+double **error_covariance(const char *option , int Nobs, int Np1, double **in){
+    double **r;
+    double ****data_b=double_malloc_4(Np1,Nobs,1,2);
+    double ***data_bb=double_malloc_3(Np1,Nobs,Np1);
+    for(int j=0;j<Np1;j++){
+        for(int n=0;n<Nobs;n++)
+            for(int j1=0;j1<Np1;j1++)    
+                data_b[j1][n][0][0]=in[n][j1];
+        
+        
+        double ****tmp=  create_resampling("boot", Np1, Nobs, 1, data_b,j);
+        
+        
+        for(int j1=0;j1<Np1;j1++){
+            for(int n=0;n<Nobs;n++)
+                data_bb[j1][n][j]=tmp[j1][n][0][0];
+        }
+        
+        free_4(Np1, Nobs, 1,tmp);
+    }
+    free_4(Np1,Nobs,1,data_b);
+    
+    double ***r_b=double_malloc_3(Nobs,Nobs,Np1);
+    for(int j=0;j<Np1;j++){
+        r=covariance_boot(   Nobs,  Np1, data_bb[j]);
+        for(int n=0;n<Nobs;n++)
+            for(int n1=0;n1<Nobs;n1++)
+               r_b[n][n1][j]=r[n][n1]; 
+        free_2(Nobs,r);
+    }
+    r=double_malloc_2(Nobs,Nobs);
+    for(int n=0;n<Nobs;n++){
+        for(int n1=0;n1<Nobs;n1++){
+            r[n][n1]=error_jackboot("boot",Np1, r_b[n][n1] );
+        }
+    }
+    
+    printf("data \n");
+    printf("%g  %g    %g     ...  %g\n",in[0][0],in[0][1],in[0][2],in[0][Np1-1]);
+    printf("data bb\n");
+    printf("%g  %g    %g     ...  %g\n",data_bb[0][0][0],data_bb[0][0][1],data_bb[0][0][2],data_bb[0][0][Np1-1]);
+    printf("data bb\n");
+    printf("%g  %g    %g     ...  %g\n",data_bb[1][0][0],data_bb[1][0][1],data_bb[1][0][2],data_bb[1][0][Np1-1]);
+    
+    
+    printf("cov\n");
+    printf("%g  %g    %g     ...  %g\n",r_b[0][0][0],r_b[0][0][1],r_b[0][0][2],r_b[0][0][Np1-1]);    
+    free_3(Nobs,Nobs,r_b);
+    free_3(Np1,Nobs,data_bb);
+    return r;
+}
+*/
+//conpute  error of the covariance of in[variables=0,...,Nobs-1][jacknifes]
+//return [Nobs] x [Nobs] matrix
+double **error_covariance(const char *option , int Nobs, int Np1, double **in){
+    double **r;
+    int sN=sqrt(Np1-1);
+    int N=Np1-1;
+    int NN=N*N;
+    
+    if( strcmp(option,"boot")!=0) {
+       printf( "error_covariance: implemented for bootstrap only\n") ;
+       exit(2);
+    }
+    
+    double ***data_bb=double_malloc_3(sN,Nobs,sN);
+   
+    for(int j=0; j<sN; j++){
+        for(int n=0;n<Nobs;n++){
+            for(int j1=0;j1<sN;j1++)    {
+                data_bb[j][n][j1]=in[n][j+j1*sN];
+            }
+        }
+    }
+     
+     double ***r_b=double_malloc_3(Nobs,Nobs,sN);
+     for(int j=0;j<sN;j++){
+        r=covariance_boot(   Nobs,  sN+1, data_bb[j]);
+        for(int n=0;n<Nobs;n++)
+            for(int n1=0;n1<Nobs;n1++)
+                r_b[n][n1][j]=r[n][n1]; 
+        free_2(Nobs,r);
+    }
+    
+    r=double_malloc_2(Nobs,Nobs);
+    for(int n=0;n<Nobs;n++){
+        for(int n1=0;n1<Nobs;n1++){
+            r[n][n1]=error_jackboot("boot",sN+1, r_b[n][n1] );
+        }
+    }
+    /*
+    printf("data \n");
+    printf("%g  %g    %g     ...  mean=%g  %g\n",in[0][0],in[0][1],in[0][2],in[0][Np1-1],error_jackboot("boot",Np1,in[0]));
+    printf("data bb\n");
+    printf("%g  %g    %g     ...  mean=%g  %g\n",data_bb[0][0][0],data_bb[0][0][1],data_bb[0][0][2],data_bb[0][0][sN-1], error_jackboot("boot",sN+1,data_bb[0][0]) );
+    printf("data bb\n");
+    printf("%g  %g    %g     ...  mean=%g  %g\n",data_bb[1][0][0],data_bb[1][0][1],data_bb[1][0][2],data_bb[1][0][sN-1], error_jackboot("boot",sN+1,data_bb[1][0]) );
+    printf("cov bb\n");
+    printf("%g  %g    %g     ...  mean=%g  %g\n",r_b[0][0][0],r_b[0][0][1],r_b[0][0][2],r_b[0][0][sN-1],  error_jackboot("boot",sN+1,r_b[0][0])  );    
+    */
+    free_3(Nobs,Nobs,r_b);
+    free_3(sN,Nobs,data_bb);
+    return r;
+}
 
+
+/*
+//conpute  error of the covariance of in[variables=0,...,Nobs-1][jacknifes]
+//return [Nobs] x [Nobs] matrix
+double **error_covariance(const char *option , int Nobs, int Np1, double **in){
+    double **r;
+    int sNp1=sqrt(Np1)-1;
+    int N=Np1-1;
+    int Nboot=Nbootstrap+1;
+    int NN=N*N;
+    double ****data_b=double_malloc_4(Np1,Nobs,1,2);
+    double ***data_bb=double_malloc_3(Nboot,Nobs,Nboot);
+    double **data=double_malloc_2(Nobs,Np1-1);
+    for(int j=0; j<Np1-1; j++){
+        for(int n=0;n<Nobs;n++)
+            data[n][j]=in[n][Np1-1]-in[n][j];
+    }
+    for(int j=0; j<Nboot; j++){
+        for(int n=0;n<Nobs;n++){
+            for(int j1=0;j1<N;j1++)    {
+                data_b[j1][n][0][0]=data[n][j1];
+            }
+        }
+        
+        double ****tmp=  create_resampling("boot",N, Nobs, 1, data_b,j);
+            
+        for(int j1=0;j1<Nboot;j1++){
+            for(int n=0;n<Nobs;n++)
+                data_bb[j][n][j1]=tmp[j1][n][0][0];
+        }
+        free_4(N, Nobs, 1,tmp);
+        
+        
+    }
+    free_4(Np1,Nobs,1,data_b);
+    
+    double ***r_b=double_malloc_3(Nobs,Nobs,Nboot);
+    for(int j=0;j<Nboot-1;j++){
+        r=covariance_boot(   Nobs,  Np1, data_bb[j]);
+        for(int n=0;n<Nobs;n++)
+            for(int n1=0;n1<Nobs;n1++)
+                r_b[n][n1][j]=r[n][n1]; 
+        free_2(Nobs,r);
+    }
+    r=covariance_boot(   Nobs,  Np1, in);
+    for(int n=0;n<Nobs;n++)
+        for(int n1=0;n1<Nobs;n1++)
+            r_b[n][n1][Nboot-1]=r[n][n1]; 
+    free_2(Nobs,r);
+    
+    r=double_malloc_2(Nobs,Nobs);
+    for(int n=0;n<Nobs;n++){
+        for(int n1=0;n1<Nobs;n1++){
+            r[n][n1]=error_jackboot("boot",Nboot, r_b[n][n1] );
+        }
+    }
+    
+    printf("data \n");
+    printf("%g  %g    %g     ...  mean=%g  %g\n",in[0][0],in[0][1],in[0][2],in[0][Np1-1],error_jackboot("jack",Np1,in[0]));
+    printf("data bb\n");
+    printf("%g  %g    %g     ...  mean=%g  %g\n",data_bb[0][0][0],data_bb[0][0][1],data_bb[0][0][2],data_bb[0][0][Nboot-1], error_jackboot("boot",Nboot,data_bb[0][0]) );
+    printf("data bb\n");
+    printf("%g  %g    %g     ...  mean=%g  %g\n",data_bb[1][0][0],data_bb[1][0][1],data_bb[1][0][2],data_bb[1][0][Nboot-1], error_jackboot("boot",Nboot,data_bb[1][0]) );
+    printf("cov\n");
+    r=covariance_boot(   Nobs,  Np1, in);
+    printf("%g  \n",r[0][0] );
+    printf("cov bb\n");
+    printf("%g  %g    %g     ...  %g\n",r_b[0][0][0],r_b[0][0][1],r_b[0][0][2],r_b[0][0][Nboot-1]);    
+    free_3(Nobs,Nobs,r_b);
+    free_3(Nboot,Nobs,data_bb);
+    return r;
+}
+*/
 void sum_jackboot(int Np1,  double *r, double *a, double *b){
     for (int j=0;j<Np1;j++)
         r[j]=a[j]+b[j];

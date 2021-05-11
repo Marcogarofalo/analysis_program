@@ -36,7 +36,7 @@ double phase_shift(double E2,double mass, int  *dvec,int L ){
     double gamma=E2/ECM;
     double A=1.;
 
-    dzeta_function(z,  q*q,0 , 0, dvec, gamma, A, 0.000001, 1.e12,5);
+    dzeta_function(z,  q*q,0 , 0, dvec, gamma, A, 0.000001, 1.e10,5);
     std::complex<double>  zc(z[0],z[1]);
     delta=real(  std::atan((pow(pi_greco,3./2.) *q*gamma )/zc   ));
     
