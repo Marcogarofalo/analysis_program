@@ -368,8 +368,10 @@ double *mean_and_error(const char *option , int Np1, double *in){
               r=mean_and_error_jack_biased(Np1, in);
     else if( strcmp(option,"boot")==0)
               r=mean_and_error_boot(Np1, in);
-    else 
+    else {
         error(0==0,1,"mea_and_error call","mea_and_error called with %s while the only options supported are jack or boot",option);
+        r=(double*) malloc(sizeof(double)*2);
+    }
     return r;
 }
 
@@ -381,8 +383,10 @@ double error_jackboot(const char *option , int Np1, double *in){
               r=mean_and_error_jack_biased(Np1, in);
     else if( strcmp(option,"boot")==0)
               r=mean_and_error_boot(Np1, in);
-    else 
+    else {
         error(0==0,1,"mea_and_error call","mea_and_error called with %s while the only options supported are jack or boot",option);
+        r=(double*) malloc(sizeof(double)*2);
+    }
     r1=r[1];
     free(r);
     return r1;
@@ -395,9 +399,10 @@ const char *smean_and_error(const char *option , int Np1, double *in){
               r=mean_and_error_jack_biased(Np1, in);
     else if( strcmp(option,"boot")==0)
               r=mean_and_error_boot(Np1, in);
-    else 
+    else {
         error(0==0,1,"mea_and_error call","mea_and_error called with %s while the only options supported are jack or boot",option);
-    
+        r=(double*) malloc(sizeof(double)*2);
+    }
     //error(r[0]!=r[0],0,"smean_and_error","error  mean value is  nan");
     //error(r[1]!=r[1],0,"smean_and_error","error  error value is  nan");
     //error(r[1]<0,0,    "smean_and_error","error  is nevative");
@@ -430,10 +435,13 @@ double ****create_resampling(const char *option, int  N, int var, int t, double 
     int Nboot=Nbootstrap;
     if( strcmp(option,"jack")==0)
               r=create_jack(  N,  var,  t,  in);
-    else if( strcmp(option,"boot")==0)
+    else if( strcmp(option,"boot")==0 )
               r=create_boot(  N,  Nboot,  var,  t, in,  seed);
-    else 
-        error(0==0,1,"create_resampling call","create_resampling called with %s while the only options supported are jack or boot",option);    
+    else{
+        error(strcmp(option,"jack")!=0 || strcmp(option,"boot")!=0 ,1,"create_resampling call","create_resampling called with %s while the only options supported are jack or boot",option);    
+        r=create_boot(  N,  Nboot,  var,  t, in,  seed);
+    }
+    
     return r;
 
 }
@@ -445,9 +453,10 @@ double *fake_sampling(const char *option,double mean,double delta_mean, int Njac
               r=fake_jack(  mean, delta_mean,  Njack,seed);
     else if( strcmp(option,"boot")==0)
               r=fake_boot(  mean, delta_mean,  Njack,seed);
-    else    
+    else {   
         error(0==0,1,"fake_sampling call","fake_sampling called with %s while the only options supported are jack or boot",option);    
-
+        r=(double*) malloc(sizeof(double)*Njack);
+    }
     return r;
 }
 
@@ -741,18 +750,26 @@ double **error_covariance(const char *option , int Nobs, int Np1, double **in){
        exit(2);
     }
     
-    double ***data_bb=double_malloc_3(sN,Nobs,sN);
+    double ***data_bb=double_malloc_3(sN+1,Nobs,sN+1);
    
     for(int j=0; j<sN; j++){
         for(int n=0;n<Nobs;n++){
             for(int j1=0;j1<sN;j1++)    {
                 data_bb[j][n][j1]=in[n][j+j1*sN];
             }
+            data_bb[j][n][sN]=in[n][Np1-1];
         }
     }
-     
-     double ***r_b=double_malloc_3(Nobs,Nobs,sN);
-     for(int j=0;j<sN;j++){
+    // init the last
+    for(int n=0;n<Nobs;n++){
+        for(int j1=0;j1<sN;j1++)    {
+            data_bb[sN][n][j1]=in[n][Np1-1];
+        }
+        data_bb[sN][n][sN]=in[n][Np1-1];
+    }
+    ///////
+     double ***r_b=double_malloc_3(Nobs,Nobs,sN+1);
+     for(int j=0;j<sN+1;j++){
         r=covariance_boot(   Nobs,  sN+1, data_bb[j]);
         for(int n=0;n<Nobs;n++)
             for(int n1=0;n1<Nobs;n1++)

@@ -3,11 +3,11 @@ cmake_minimum_required(VERSION 3.13)
 
 #set(CMAKE_CXX_COMPILER /usr/bin/g++)
 #set(CMAKE_C_COMPILER /usr/bin/gcc)
-set(CMAKE_CXX_FLAGS "-fopenmp   -pedantic  -g -O0 -pg -no-pie  -lm -lgmp  ")
-set(CMAKE_C_FLAGS "-fopenmp   -pedantic  -g -O0 -pg -no-pie  -lm -lgmp  ")
+set(CMAKE_CXX_FLAGS "-fopenmp   -pedantic  -g -O3   -lm -lgmp  ")
+set(CMAKE_C_FLAGS "-fopenmp   -pedantic  -g -O3  -lm -lgmp  ")
 
 project(analysis_program CXX C)
-
+#-pg -no-pie , for gproof, then run , gproof exe  gmout.
 #-g # then compile , then open gdb, write the commands : file $namefile; run  $options ; bt
 # valgrind --leak-check=yes --track-origins=yes  ./program   #compile with -g to have line number
 
