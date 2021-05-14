@@ -487,7 +487,7 @@ double compute_chi_non_linear_Nf(int N,int *ensemble,double **x, double **y, dou
 
 // x[ensemble][variable number] ,   y[ensemble][0=mean,1=error], fun(index_function,Nvariables,variables[], Nparameters,parameters[])
 //the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 
-double  **covariance_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y,double *P ,int Nvar, int Npar,  double fun(int,int,double*,int,double*)  ){
+double  **covariance_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y,double *P ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ){
   
     double **alpha,**C;
     int i,j,k,e;
@@ -540,17 +540,16 @@ double  **covariance_non_linear_fit_Nf(int N, int *ensemble ,double **x, double 
 
 // x[ensemble][variable number] ,   y[ensemble][0=mean,1=error], fun(index_function,Nvariables,variables[], Nparameters,parameters[])
 //the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 
-double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess ){
+double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess ,  double lambda, double acc){
   
     double **alpha,*X,*beta,**a,**C,*sigma;
     int i,j,k,e;
     double f,*fk;
     double chi2,chi2_tmp;
-    double *P,*P_tmp,lambda,res;
+    double *P,*P_tmp,res;
     int n,count,Niter=0;
     double h=0.00001;
     int nerror=0;
-    lambda=0.001;
     res=1;
     
  //   double *fkk;
@@ -575,7 +574,7 @@ double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nva
     chi2_tmp=chi2+1;
    
    // printf("chi2=%f   res=%.10f Bw=%f   fw=%f\n",chi2,res,P[0],P[1]);
-    while (res>0.001){
+    while (res>acc){
         chi2_tmp=chi2+1;  
         if(Niter>200){ printf("Niter=%d of the Levenberg-Marquardt chi2 minimization: exeeds max number\n",Niter); break;}
         Niter++;
@@ -1151,13 +1150,20 @@ double rtbis(double (*func)(double , double,int,double*),double input,int Npar, 
 }
 
 
-double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double input, double x1, double x2, double xacc)
-//Using bisection, find the root of a function func-input known to lie between x1 and x2. The root,
-//returned as rtbis, will be refined until its accuracy is ±xacc.
-//func return different values for different n
-//it solves function=input 
+/*****************************************************************************************************************
+ * Using bisection, find the root of a function func-input known to lie between x1 and x2. The root,
+ * returned as rtbis, will be refined until its accuracy is ±xacc.
+ * /func return different values for different n
+ * it solves function=input 
+ * if root not in range:
+ *  Pedanticness==0 try other range if faliure return NaN (default)
+ *  Pedanticness==1 return NaN 
+ *  Pedanticness==2 try other range if faliure exit
+ *  Pedanticness==3  exit
+ *****************************************************************************************************************/
+double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double input, double x1, double x2, double xacc, int Pedanticness )
 {
-
+     
     double *xt = (double*) malloc(sizeof(double)*Nvar);
     for (int i=0;i<Nvar; i++)
         xt[i]=x[i];
@@ -1169,8 +1175,10 @@ double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n
     f=(*func)(n,Nvar,xt,Npar,P)-input;
     xt[ivar]=x2;
     fmid=(*func)(n,Nvar,xt,Npar,P)-input;
-
-    if (f*fmid >= 0.0){ 
+    error(f*fmid >= 0.0  && Pedanticness>=2 ,1,"rtbis","Root must be bracketed for bisection in rtbis f(x1)=%f   f(x2)=%f",f,fmid);
+    bool try_range = Pedanticness==0 || Pedanticness==2;
+    bool return_nan = Pedanticness<2;
+    if (f*fmid >= 0.0 && try_range ){ 
         //printf("#f(x)  x\n");
         for (int i=0;i<100; i++){
             xt[ivar]=x1-  2*(x2-x1) *i  ;
@@ -1196,8 +1204,8 @@ double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n
         //xt[ivar]=x2;
         //fmid=(*func)(n,Nvar,xt,Npar,P)-input;
     }
-    //error(f*fmid >= 0.0,1,"rtbis","Root must be bracketed for bisection in rtbis f(x1)=%f   f(x2)=%f",f,fmid);
-    if (f*fmid >= 0.0){ return NAN;}
+    error(f*fmid >= 0.0  && !return_nan ,1,"rtbis","Root must be bracketed for bisection in rtbis f(x1)=%f   f(x2)=%f",f,fmid);
+    if (f*fmid >= 0.0  && return_nan){ return NAN;}
     
     rtb = f < 0.0 ? (dx=x2-x1,x1) : (dx=x1-x2,x2);// Orient the search so that f>0
     for (j=1;j<=MAXIT;j++) {// lies at x+dx.
@@ -1212,10 +1220,13 @@ double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n
         }
     }
     free(xt);
-    //error(1>0,1,"rtbis","Too many bisections in rtbis");
+    
+    error( !return_nan,1,"rtbis","Too many bisections in rtbis");
     //printf("Too many bisections in rtbis\n");
     return NAN;
 }
+
+
 
 /*
 
