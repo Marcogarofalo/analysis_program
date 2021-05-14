@@ -218,7 +218,7 @@ int main(int argc, char **argv){
      int Njack=gjack[0].Njack;
      struct fit_type fit_info;
      struct fit_result  fit_m1, fit_m0;
-     fit_info.Nvar=6;
+     fit_info.Nvar=7;
      fit_info.Npar=2;
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
@@ -240,7 +240,6 @@ int main(int argc, char **argv){
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      // start fitting
      
-     fit_info.Nvar=6;
      fit_info.Npar=1;
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
@@ -252,13 +251,10 @@ int main(int argc, char **argv){
      
      printf("\n/////////////////////////////////     k cot delta    //////////////////\n");
      ///////////////////////////////////////////////////////////////////////////////////////////////////
-     // E20
+     // kcot
      //////////////////////////////////////////////////////////////////////////////////////////////////
      
-     ///////////////////////////////////////////////////////////////////////////////////////////////////
-     // start fitting
-    /* 
-     fit_info.Nvar=7;
+    
      fit_info.Npar=3;
      fit_info.N=5;
      fit_info.Njack=gjack[0].Njack;
@@ -267,7 +263,7 @@ int main(int argc, char **argv){
      fit_info.function=rhs_kcotd;
      
      struct fit_result fit_kcotd=fit_data(argv,  paramsj ,gjack, lhs_kcotd ,fit_info, "kcotd",myen );
-     */
+     
      ///////////////////////////////////////////////
      /// compute covariance energies
      int Nmom=5;
@@ -301,7 +297,7 @@ int main(int argc, char **argv){
      }
      fclose(f_two_particle);
      double **cov=covariance(jackboot,Nmom*gjack.size() , gjack[0].Njack, E2corr);
-     double **err_cov=error_covariance(jackboot,Nmom*gjack.size() , gjack[0].Njack, E2corr);
+     /*double **err_cov=error_covariance(jackboot,Nmom*gjack.size() , gjack[0].Njack, E2corr);
      mysprintf(namefile,NAMESIZE,"%s/two_particle_energies_covariance.txt",argv[3] );
      FILE *f_two_particle_covariance=open_file(namefile,"w+");
      for(int ne=0; ne<gjack.size()*Nmom;ne++ ){
@@ -314,5 +310,23 @@ int main(int argc, char **argv){
      free_2(Nmom,cov);
      free_2(Nmom,err_cov);
      fclose(f_two_particle_covariance);
+     */
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     printf("\n/////////////////////////////////   fit  k  form from_phase_shift    //////////////////\n");
+     //////////////////////////////////////////////////////////////////////////////////////////////////
+     
+     
+     fit_info.Nvar=7;
+     fit_info.Npar=3;
+     fit_info.N=5;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=rhs_k_from_phase_shift;
+     
+     struct fit_result k_from_phase_shift=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift",myen , {-0.948817,-114.788,0.0003987});
+     
+     
+     
      return 0;
 }
