@@ -296,6 +296,33 @@ int main(int argc, char **argv){
          }
      }
      fclose(f_two_particle);
+     free(E2corr);
+     ///////CM
+     
+     E2corr=double_malloc_2(Nmom*gjack.size(),gjack[0].Njack);
+     for(int e=0; e<gjack.size();e++ ){
+         for (int j=0;j<gjack[0].Njack;j++ ){
+             E2corr[e*Nmom+0][j]=energy_CM(gjack[e].jack[4][j], momlist[e*Nmom+0],paramsj[e].data.L[1]  );
+             E2corr[e*Nmom+1][j]=energy_CM(gjack[e].jack[100][j], momlist[e*Nmom+1],paramsj[e].data.L[1]  );
+             E2corr[e*Nmom+2][j]=energy_CM(gjack[e].jack[102][j], momlist[e*Nmom+2],paramsj[e].data.L[1]  );
+             E2corr[e*Nmom+3][j]=energy_CM(gjack[e].jack[104][j], momlist[e*Nmom+3],paramsj[e].data.L[1]  );
+             E2corr[e*Nmom+4][j]=energy_CM(gjack[e].jack[80][j], momlist[e*Nmom+4],paramsj[e].data.L[1] );
+         }
+         
+     }
+     mysprintf(namefile,NAMESIZE,"%s/two_particle_energies_CM.txt",argv[3] );
+     f_two_particle=open_file(namefile,"w+");
+     fprintf(f_two_particle,"#E2CM dE2CM  P1  P2   P3   L  T\n");
+     for(int e=0; e<gjack.size();e++ ){
+         for(int n=0; n<Nmom;n++ ){
+             fprintf(f_two_particle,"%.12g  %.12g  %d  %d   %d   %d  %d\n",
+                     E2corr[e*Nmom+n][gjack[0].Njack-1],
+                     error_jackboot(jackboot, gjack[0].Njack, E2corr[e*Nmom+n]),
+                     momlist[e*Nmom+n][0],momlist[e*Nmom+n][1],momlist[e*Nmom+n][2],
+                     paramsj[e].data.L[1],paramsj[e].data.L[0]     );
+         }
+     }
+     fclose(f_two_particle);
      double **cov=covariance(jackboot,Nmom*gjack.size() , gjack[0].Njack, E2corr);
      /*double **err_cov=error_covariance(jackboot,Nmom*gjack.size() , gjack[0].Njack, E2corr);
      mysprintf(namefile,NAMESIZE,"%s/two_particle_energies_covariance.txt",argv[3] );
@@ -318,7 +345,7 @@ int main(int argc, char **argv){
      
      fit_info.Nvar=7;
      fit_info.Npar=3;
-     fit_info.N=5;
+     fit_info.N=4;
      fit_info.Njack=gjack[0].Njack;
      fit_info.n_ext_P=0;
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
