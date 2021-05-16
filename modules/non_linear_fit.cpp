@@ -476,7 +476,8 @@ double compute_chi_non_linear_Nf(int N,int *ensemble,double **x, double **y, dou
     count=0;
     for (n=0;n<N;n++){
         for (e=0;e<ensemble[n];e++){
-             f=fun(n,Nvar,x[count],Npar,P)-y[count][0];
+            f=fun(n,Nvar,x[count],Npar,P)-y[count][0];
+//             printf("e=%d  n=%d   f=%g  y=%g err=%g    dchi= %g  \n ",e,n,f+y[count][0],y[count][0],y[count][1],f*f/(y[count][1]* y[count][1]));
             f/=y[count][1];
             chi2+=f*f;
             count++;
@@ -537,10 +538,13 @@ double  **covariance_non_linear_fit_Nf(int N, int *ensemble ,double **x, double 
 }
 
 
-
-// x[ensemble][variable number] ,   y[ensemble][0=mean,1=error], fun(index_function,Nvariables,variables[], Nparameters,parameters[])
-//the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 
-double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess ,  double lambda, double acc){
+/*********************************************************************************
+ * x[ensemble][variable number] ,   y[ensemble][0=mean,1=error],
+ * fun(index_function,Nvariables,variables[], Nparameters,parameters[])
+ * the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 
+ ***********************************************************************************/
+double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess ,  double lambda, double acc, double h, 
+    std::vector<double>  Prange){
   
     double **alpha,*X,*beta,**a,**C,*sigma;
     int i,j,k,e;
@@ -548,7 +552,6 @@ double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nva
     double chi2,chi2_tmp;
     double *P,*P_tmp,res;
     int n,count,Niter=0;
-    double h=0.00001;
     int nerror=0;
     res=1;
     
@@ -573,7 +576,7 @@ double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nva
 
     chi2_tmp=chi2+1;
    
-   // printf("chi2=%f   res=%.10f Bw=%f   fw=%f\n",chi2,res,P[0],P[1]);
+//     printf("chi2=%f   res=%.10f P0=%f   P1=%f\n",chi2,res,P[0],P[1]);
     while (res>acc){
         chi2_tmp=chi2+1;  
         if(Niter>200){ printf("Niter=%d of the Levenberg-Marquardt chi2 minimization: exeeds max number\n",Niter); break;}
@@ -586,7 +589,8 @@ double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nva
                 for (e=0;e<ensemble[n];e++){//printf("e=%d   n=%d   en[%d]=%d\n",e,n,n,ensemble[n]);
                     f=fun(n,Nvar,x[e+count],Npar,P);
                     fk=der_fun_Nf_h(n,  Nvar, x[e+count], Npar,P,  fun,  h);
-                //   fk=funk(Nvar,x[e],Npar,P);
+//                     printf("n=%d     e=%d   fun=%g  derivative=\t",n,e,f);
+//                     for(j=0;j<Npar;j++){printf("%g \t",fk[j]);}printf("\n");
                     for (j=0;j<Npar;j++){
                         beta[j]+=(y[e+count][0]-f)*fk[j]/(y[e+count][1]*y[e+count][1]);
                 //      printf("|analitic-numeric|=  |%g -%g|   = %g\n",fk[j],fkk[j],fabs(fk[j]-fkk[j]));
@@ -626,13 +630,34 @@ double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nva
             free(P_tmp);
             P_tmp=cholesky_solver_if_possible(Npar , alpha , beta);
             //P_tmp=LU_decomposition_solver(Npar , alpha , beta);
-            for (j=0;j<Npar;j++)
+            if (Prange.size()==Npar){
+                bool too_far=false;
+                for (j=0;j<Npar;j++){
+                    if (fabs((P_tmp[j]-P[j])/P[j])>Prange[j]){
+                        
+                        too_far=true;
+                    }
+                    
+                }
+                if (too_far){
+                    printf(" non_linear_fit_Nf a parameter proposal was rejected because out of range\n");
+                    lambda*=10;
+                    printf("lambda=%f\n",lambda);
+                    printf("chi2=%f chi2_tmp=%f  res=%f \n\n",chi2,chi2_tmp,res);
+                    for (j=0;j<Npar;j++)
+                        printf("P[%d]=%g   Ptmp[%d]=%g\n",j,P[j],j,P_tmp[j]);
+                    
+                    continue;
+                }
+            }
+            
+            for (j=0;j<Npar;j++){
                 P_tmp[j]+=P[j];
-            //printf("lambda=%f\n",lambda);
+            }
+            
             chi2_tmp=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun);
 	        if (chi2_tmp!=chi2_tmp) chi2_tmp=chi2+1;
-            //       printf("chi2=%f chi2_tmp=%f  res=%f P0=%f P0_tmp=%f  P0=%f P0_tmp=%f\n",chi2,chi2_tmp,res,P[0],P_tmp[0],P[1],P_tmp[1]);
-		    
+           
 
             if (chi2_tmp>chi2)
                 lambda*=10;
@@ -1175,7 +1200,8 @@ double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n
     f=(*func)(n,Nvar,xt,Npar,P)-input;
     xt[ivar]=x2;
     fmid=(*func)(n,Nvar,xt,Npar,P)-input;
-    error(f*fmid >= 0.0  && Pedanticness>=2 ,1,"rtbis","Root must be bracketed for bisection in rtbis f(x1)=%f   f(x2)=%f",f,fmid);
+    
+    error(f*fmid >= 0.0  && Pedanticness>=2 ,1,"rtbis","Root must be bracketed for bisection in rtbis f(%g)=%f   f(%g)=%f",x1,f,x2,fmid);
     bool try_range = Pedanticness==0 || Pedanticness==2;
     bool return_nan = Pedanticness<2;
     if (f*fmid >= 0.0 && try_range ){ 
@@ -1205,7 +1231,7 @@ double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n
         //fmid=(*func)(n,Nvar,xt,Npar,P)-input;
     }
     error(f*fmid >= 0.0  && !return_nan ,1,"rtbis","Root must be bracketed for bisection in rtbis f(x1)=%f   f(x2)=%f",f,fmid);
-    if (f*fmid >= 0.0  && return_nan){ return NAN;}
+    if (f*fmid >= 0.0  && return_nan){printf("error: bisect f(%g)=%f   f(%g)=%f\n",x1,f,x2,fmid); return NAN;}
     
     rtb = f < 0.0 ? (dx=x2-x1,x1) : (dx=x1-x2,x2);// Orient the search so that f>0
     for (j=1;j<=MAXIT;j++) {// lies at x+dx.
@@ -1225,8 +1251,62 @@ double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n
     //printf("Too many bisections in rtbis\n");
     return NAN;
 }
+/*Using the Newton-Raphson method, find the root of a function known to lie in the interval  [ x1, x2]. The root rtnew*t will be refined until its accuracy is known within ±xacc. funcd
+ is a user-supplied routine that returns both the function value and the first derivative of the
+ function at the point x.
+ * 
+ * 
+*/
 
+inline double derivative_ivar(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double h){
+    
+    x[ivar]=x[ivar]-2.*h;    
+    double df=func(n,Nvar,x,Npar,P);
+    
+    x[ivar]=x[ivar]+h;
+    df-=8*func(n,Nvar,x,Npar,P);
+    
+    x[ivar]=x[ivar]+h;
+    df+=8*func(n,Nvar,x,Npar,P);
+    
+    x[ivar]=x[ivar]+h;
+    df-=func(n,Nvar,x,Npar,P);
+    
+    x[ivar]=x[ivar]-2.*h;//you need to leave the parameter as it was before you move to the next parameter
+    df/=(12.*h);
+    
+    return df;
+} 
 
+double rtnewt(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double input, double xstart,  float xacc, int JMAX, double h)
+{
+    void nrerror(char error_text[]);
+    int j;
+    double df,dx,f,rtn;
+    double *xt = (double*) malloc(sizeof(double)*Nvar);
+    for (int i=0;i<Nvar; i++)
+        xt[i]=x[i];
+    xt[ivar]=xstart;
+    
+    for (j=1;j<=JMAX;j++) {
+        
+        f=(*func)(n,Nvar,xt,Npar,P)-input;
+        df=derivative_ivar(func,n,Nvar,xt,Npar,P,ivar,h );
+        dx=f/df;
+        xt[ivar] -= dx;
+        printf("j=%d   k=%g    f=%g  df=%g  dx=%g\n",j,xt[ivar],f,df,dx);
+        
+//         if ((x1-rtn)*(rtn-x2) < 0.0)
+//             nrerror("Jumped out of brackets in rtnewt");
+        if (fabs(dx) < xacc) return xt[ivar];
+        
+    }
+    
+    error(0==0,1,"rtnwt","Maximum number of iterations exceeded in rtnewt");
+    //nrerror("Maximum number of iterations exceeded in rtnewt");
+    return 0.0;
+    
+}
 
 /*
 

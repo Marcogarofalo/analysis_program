@@ -8,7 +8,7 @@
 #include <time.h>
 #include <string.h>
 #include <complex.h>
-
+#include <vector>
 struct fit_result malloc_fit( struct  fit_type  fit_info);
 void free_fit_result( struct  fit_type  fit_info,struct fit_result  out);
 
@@ -21,7 +21,7 @@ double  *non_linear_fit(int ensemble,double **x, double **y ,int Nvar, int Npar,
 double compute_chi_non_linear(int ensemble,double **x, double **y, double *P ,int Nvar, int Npar, double fun(int,double*,int,double*));
 
 
-double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess , double lambda=0.001, double acc=0.001);
+double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess , double lambda=0.001, double acc=0.001, double h=0.00001, std::vector<double>  Prange={} );
 double compute_chi_non_linear_Nf(int N,int *ensemble,double **x, double **y, double *P ,int Nvar, int Npar,  double fun(int,int,double*,int,double*)) ;
 double  **covariance_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y,double *P ,int Nvar, int Npar,  double fun(int,int,double*,int,double*)  );
 
@@ -36,6 +36,8 @@ double  *non_linear_fit_Nf_sigmax_covariance(int N, int *ensemble ,double **x, d
 double rtsafe(void (*funcd)(double,int,double*, double *, double *),int Npar,double *P , double x1, double x2,double xacc);//non funziona rotine di merda!
 double rtbis(double (*func)(double,double,int,double*),double input,int Npar, double *P, double x1, double x2, double xacc);
 double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double input, double x1, double x2, double xacc, int Pedanticness =0);
+double rtnewt(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double input, double xstart,  float xacc, int JMAX=1000, double h=1e-6);
+
 double *der_fun_Nf_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(int,int,double*,int,double*), double h);
 double *derN_fun_Nf_var_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(int,int,double*,int,double*), double h,int N);
 
