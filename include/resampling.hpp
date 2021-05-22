@@ -57,7 +57,8 @@ double **fake_sampling_covariance(const char *option,double *mean, int Njack,int
 
 
 ///////////////////////////////////////////////////////
-
+double* malloc_copy_jackboot(int Np1,  double *a);
+    
 void sum_jackboot(int Np1,  double *r, double *a, double *b);
 void sub_jackboot(int Np1,  double *r, double *a, double *b);
 void mult_jackboot(int Np1,  double *r, double *a, double *b);

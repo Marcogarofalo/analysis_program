@@ -139,65 +139,6 @@ static void  print_file_head(FILE *stream)
 }
 
 
-void read_header(FILE *stream, cluster::IO_params &params ){
-   
-     fread(&params.data.L[0], sizeof(int), 1, stream); 
-     fread(&params.data.L[1], sizeof(int), 1, stream); 
-     fread(&params.data.L[2], sizeof(int), 1, stream); 
-     fread(&params.data.L[3], sizeof(int), 1, stream); 
-     char string[100];
-     fread(string, sizeof(char)*100, 1, stream); 
-     //params.data.formulation = std::to_string(string);
-     
-     fread(&params.data.msq0, sizeof(double), 1, stream); 
-     fread(&params.data.msq1, sizeof(double), 1, stream); 
-     fread(&params.data.lambdaC0, sizeof(double), 1, stream); 
-     fread(&params.data.lambdaC1, sizeof(double), 1, stream); 
-     fread(&params.data.muC, sizeof(double), 1, stream); 
-     fread(&params.data.gC, sizeof(double), 1, stream); 
-
-     fread(&params.data.metropolis_local_hits, sizeof(int), 1, stream); 
-     fread(&params.data.metropolis_global_hits, sizeof(int), 1, stream); 
-     fread(&params.data.metropolis_delta, sizeof(double), 1, stream); 
-     
-     fread(&params.data.cluster_hits, sizeof(int), 1, stream); 
-     fread(&params.data.cluster_min_size, sizeof(double), 1, stream); 
-
-     fread(&params.data.seed, sizeof(int), 1, stream); 
-     fread(&params.data.replica, sizeof(int), 1, stream); 
-     
-     
-     int ncorr=4;
-     fread(&ncorr, sizeof(size_t), 1, stream); 
-     
-     size_t size=sizeof(int)+ sizeof(double)*params.data.L[0]*4;
-     fread(&size, sizeof(size_t), 1, stream); 
-}
-static void  write_file_head(FILE *stream)
-{
-    int i,dsize;
-    double *dstd;
-    
-    fwrite(&file_head.twist,sizeof(int),1,stream);
-    fwrite(&file_head.nf,sizeof(int),1,stream);
-    fwrite(&file_head.nsrc,sizeof(int),1,stream);
-    fwrite(&file_head.l0,sizeof(int),1,stream);
-    fwrite(&file_head.l1,sizeof(int),1,stream);
-    fwrite(&file_head.l2,sizeof(int),1,stream);
-    fwrite(&file_head.l3,sizeof(int),1,stream);
-    fwrite(&file_head.nk,sizeof(int),1,stream);
-    fwrite(&file_head.nmoms,sizeof(int),1,stream);
-    
-    fwrite(&file_head.beta,sizeof(double),1,stream);
-    fwrite(&file_head.ksea,sizeof(double),1,stream);
-    fwrite(&file_head.musea,sizeof(double),1,stream);
-    fwrite(&file_head.csw,sizeof(double),1,stream);
-   
-    fwrite(file_head.k,sizeof(double),2*file_head.nk,stream);
-
-    for(i=0;i<file_head.nmoms;i++)  
-        fwrite(file_head.mom[i],sizeof(double),4,stream);
-}
 /*
 void read_nconfs(int *s, int *c, FILE *stream){
 

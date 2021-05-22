@@ -368,11 +368,9 @@ double  *non_linear_fit(int ensemble,double **x, double **y ,int Nvar, int Npar,
     return P;
 }
 
-
-
 //https://en.wikipedia.org/wiki/Finite_difference_coefficient#Central_finite_difference 
 //derivative 1 accuracy 4
-double *der_fun_Nf_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(int,int,double*,int,double*), double h){
+double *der_O4_fun_Nf_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(int,int,double*,int,double*), double h){
     
     double *Ph=(double*) malloc(sizeof(double)*Npar);
     double *df=(double*) calloc(Npar,sizeof(double));
@@ -384,16 +382,16 @@ double *der_fun_Nf_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(
     for (i=0;i<Npar;i++){
         Ph[i]=P[i]-2.*h;
         df[i]=fun(n,Nvar,x,Npar,Ph);
-    
+        
         Ph[i]=P[i]-h;
         df[i]-=8*fun(n,Nvar,x,Npar,Ph);
         
         Ph[i]=P[i]+h;
         df[i]+=8*fun(n,Nvar,x,Npar,Ph);
-    
+        
         Ph[i]=P[i]+2.*h;
         df[i]-=fun(n,Nvar,x,Npar,Ph);
-    
+        
         Ph[i]=P[i];//you need to leave the parameter as it was before you move to the next parameter
         df[i]/=(12.*h);
     }
@@ -403,6 +401,71 @@ double *der_fun_Nf_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(
     
     return df;
 }
+
+
+//https://en.wikipedia.org/wiki/Finite_difference_coefficient#Central_finite_difference 
+//derivative 1 accuracy 4
+double *der_O2_fun_Nf_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(int,int,double*,int,double*), double h){
+    
+    double *Ph=(double*) malloc(sizeof(double)*Npar);
+    double *df=(double*) calloc(Npar,sizeof(double));
+    int i;
+    
+    for (i=0;i<Npar;i++)
+        Ph[i]=P[i];
+    
+    for (i=0;i<Npar;i++){
+         
+        Ph[i]=P[i]-h;
+        df[i]=-fun(n,Nvar,x,Npar,Ph);
+        
+        Ph[i]=P[i]+h;
+        df[i]+=fun(n,Nvar,x,Npar,Ph);
+        
+          
+        Ph[i]=P[i];//you need to leave the parameter as it was before you move to the next parameter
+        df[i]/=(2.*h);
+    }
+    
+    
+    free(Ph);
+    
+    return df;
+}
+
+//https://en.wikipedia.org/wiki/Finite_difference_coefficient#Central_finite_difference 
+//derivative 1 accuracy 4
+// double *der_fun_Nf_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(int,int,double*,int,double*), double h){
+//     
+//     double *Ph=(double*) malloc(sizeof(double)*Npar);
+//     double *df=(double*) calloc(Npar,sizeof(double));
+//     int i;
+//     
+//     for (i=0;i<Npar;i++)
+//         Ph[i]=P[i];
+//     
+//     for (i=0;i<Npar;i++){
+//         Ph[i]=P[i]-2.*h;
+//         df[i]=fun(n,Nvar,x,Npar,Ph);
+//     
+//         Ph[i]=P[i]-h;
+//         df[i]-=8*fun(n,Nvar,x,Npar,Ph);
+//         
+//         Ph[i]=P[i]+h;
+//         df[i]+=8*fun(n,Nvar,x,Npar,Ph);
+//     
+//         Ph[i]=P[i]+2.*h;
+//         df[i]-=fun(n,Nvar,x,Npar,Ph);
+//     
+//         Ph[i]=P[i];//you need to leave the parameter as it was before you move to the next parameter
+//         df[i]/=(12.*h);
+//     }
+//     
+//     
+//     free(Ph);
+//     
+//     return df;
+// }
 //https://en.wikipedia.org/wiki/Finite_difference_coefficient#Central_finite_difference 
 //derivative 1 accuracy 4
 double *derN_fun_Nf_var_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(int,int,double*,int,double*), double h,int N){
@@ -505,7 +568,7 @@ double  **covariance_non_linear_fit_Nf(int N, int *ensemble ,double **x, double 
     for (n=0;n<N;n++){
         for (e=0;e<ensemble[n];e++){
             f=fun(n,Nvar,x[e+count],Npar,P);
-            fk=der_fun_Nf_h(n,  Nvar, x[e+count], Npar,P,  fun,  h);
+            fk=der_O4_fun_Nf_h(n,  Nvar, x[e+count], Npar,P,  fun,  h);
             for (j=0;j<Npar;j++){
                     for (k=j;k<Npar;k++){
                     alpha[j][k]+=fk[j]*fk[k]/(y[e+count][1]*y[e+count][1]);
@@ -543,9 +606,21 @@ double  **covariance_non_linear_fit_Nf(int N, int *ensemble ,double **x, double 
  * fun(index_function,Nvariables,variables[], Nparameters,parameters[])
  * the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 
  ***********************************************************************************/
-double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess ,  double lambda, double acc, double h, 
-    std::vector<double>  Prange){
-  
+double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar,  double fun(int, int, double*, int, double*) , double* guess, double lambda, double acc, double h, std::vector< double > Prange, int devorder)
+{
+    double* (*der_fun_Nf_h)(int , int , double* ,int ,double*  , double (int,int,double*,int,double*), double );
+    if (devorder==4){
+        der_fun_Nf_h=der_O4_fun_Nf_h;
+    }
+    else if (devorder==2){
+        der_fun_Nf_h=der_O2_fun_Nf_h;
+    }else{
+        error(true,1,"non_linear_fit_Nf", "order of the derivative must be 4 (default) or 2");
+    }
+        
+    
+        
+    
     double **alpha,*X,*beta,**a,**C,*sigma;
     int i,j,k,e;
     double f,*fk;
@@ -555,7 +630,6 @@ double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nva
     int nerror=0;
     res=1;
     
- //   double *fkk;
     P=(double*) malloc(Npar*sizeof(double));
     P_tmp=(double*) malloc(Npar*sizeof(double));
    
@@ -610,6 +684,9 @@ double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nva
                 for (k=0;k<j;k++)
                     alpha[j][k]=alpha[k][j];
             
+//                 for (k=0;k<Npar;k++)
+//                     printf("%g\t",alpha[j][k]);
+//                 printf("\n");
             }
 /*
             if (Npar==1){
@@ -640,8 +717,14 @@ double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nva
                     
                 }
                 if (too_far){
-                    printf(" non_linear_fit_Nf a parameter proposal was rejected because out of range\n");
+                    printf(" non_linear_fit_Nf a parameter proposal was rejected because out of range Niter=%d\n",Niter);
                     lambda*=10;
+                    for (j=0;j<Npar;j++){
+                        beta[j]=0;
+                        for (k=0;k<Npar;k++){
+                            alpha[j][k]=0;
+                        }
+                    }
                     printf("lambda=%f\n",lambda);
                     printf("chi2=%f chi2_tmp=%f  res=%f \n\n",chi2,chi2_tmp,res);
                     for (j=0;j<Npar;j++)
@@ -899,8 +982,18 @@ double compute_chi_non_linear_Nf_cov(int N,int *ensemble,double **x, double **y,
 // x[ensemble][variable number] ,   y[ensemble][0=mean,1=error], fun(index_function,Nvariables,variables[], Nparameters,parameters[]), 
 //cov[en_tot][en_tot]  is the covariance matrix, with en_tot=sum_i^N ensemble[i],
 //the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 
-double  *non_linear_fit_Nf_covariance(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess, double **cov1 ){
+double  *non_linear_fit_Nf_covariance(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess, double **cov1, int devorder ){
   
+    
+    double* (*der_fun_Nf_h)(int , int , double* ,int ,double*  , double (int,int,double*,int,double*), double );
+    if (devorder==4){
+        der_fun_Nf_h=der_O4_fun_Nf_h;
+    }
+    else if (devorder==2){
+        der_fun_Nf_h=der_O2_fun_Nf_h;
+    }else{
+        error(true,1,"non_linear_fit_Nf", "order of the derivative must be 4 (default) or 2");
+    }
     double **alpha,*X,*beta,**a,**C,*sigma;
     int i,j,k,e;
     double f,*fk,f1,*fk1;
@@ -1251,25 +1344,20 @@ double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n
     //printf("Too many bisections in rtbis\n");
     return NAN;
 }
-/*Using the Newton-Raphson method, find the root of a function known to lie in the interval  [ x1, x2]. The root rtnew*t will be refined until its accuracy is known within ±xacc. funcd
- is a user-supplied routine that returns both the function value and the first derivative of the
- function at the point x.
- * 
- * 
-*/
 
-inline double derivative_ivar(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double h){
+
+inline double derivative_O4_ivar(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double h){
     
-    x[ivar]=x[ivar]-2.*h;    
+    x[ivar]=x[ivar]-2.*h;      // x-2*h
     double df=func(n,Nvar,x,Npar,P);
     
-    x[ivar]=x[ivar]+h;
+    x[ivar]=x[ivar]+h;        // x-h
     df-=8*func(n,Nvar,x,Npar,P);
     
-    x[ivar]=x[ivar]+h;
+    x[ivar]=x[ivar]+2*h;     // x+h
     df+=8*func(n,Nvar,x,Npar,P);
     
-    x[ivar]=x[ivar]+h;
+    x[ivar]=x[ivar]+h;      //h+2h
     df-=func(n,Nvar,x,Npar,P);
     
     x[ivar]=x[ivar]-2.*h;//you need to leave the parameter as it was before you move to the next parameter
@@ -1278,7 +1366,28 @@ inline double derivative_ivar(double (*func)(int , int , double*,int,double*),in
     return df;
 } 
 
-double rtnewt(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double input, double xstart,  float xacc, int JMAX, double h)
+inline double derivative_O2_ivar(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double h){
+    
+    x[ivar]=x[ivar]-h;      // x-h
+    double df=-func(n,Nvar,x,Npar,P);
+    
+    x[ivar]=x[ivar]+2*h;        // x+h
+    df+=func(n,Nvar,x,Npar,P);
+    
+    
+    x[ivar]=x[ivar]-h;//you need to leave the parameter as it was before you move to the next parameter
+    df/=(2.*h);
+    
+    return df;
+} 
+
+/*Using the Newton-Raphson method, find the root of a function known to lie in the interval  [ x1, x2]. The root rtnew*t will be refined until its accuracy is known within ±xacc. funcd
+ i *s a user-supplied routine that returns both the function value and the first derivative of the
+ function at the point x.
+ * 
+ * 
+ */
+double rtnewt(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double input, double xstart,  double xmin, double xmax ,  float xacc, int JMAX, double h)
 {
     void nrerror(char error_text[]);
     int j;
@@ -1291,13 +1400,13 @@ double rtnewt(double (*func)(int , int , double*,int,double*),int n, int Nvar, d
     for (j=1;j<=JMAX;j++) {
         
         f=(*func)(n,Nvar,xt,Npar,P)-input;
-        df=derivative_ivar(func,n,Nvar,xt,Npar,P,ivar,h );
+        df=derivative_O2_ivar(func,n,Nvar,xt,Npar,P,ivar,h );
         dx=f/df;
         xt[ivar] -= dx;
         printf("j=%d   k=%g    f=%g  df=%g  dx=%g\n",j,xt[ivar],f,df,dx);
         
-//         if ((x1-rtn)*(rtn-x2) < 0.0)
-//             nrerror("Jumped out of brackets in rtnewt");
+        if ((xmin-xt[ivar])*(xt[ivar]-xmax) < 0.0)
+            error(0==0,1,"rtnwt","Jumped out of brackets [%g,%g] in rtnewt x=%g ",xmin,xmax,xt[ivar]);
         if (fabs(dx) < xacc) return xt[ivar];
         
     }
@@ -1307,6 +1416,79 @@ double rtnewt(double (*func)(int , int , double*,int,double*),int n, int Nvar, d
     return 0.0;
     
 }
+
+/***********************************************************************
+ * Using a combination of Newton-Raphson and bisection, find the root of a function bracketed
+ * b etween x1 and x2. The root, returned as the function va*lue rtsafe, will be refined until
+ * its accuracy is known within ±xacc. funcd is a user-supplied routine that returns both the
+ * function value and the first derivative of the function.
+ ***********************************************************************/
+// float rtsafe(void (*funcd)(float, float *, float *), float x1, float x2,
+//              float xacc)
+double  rtsafe(double (*func)(int , int , double*,int,double*), int n, int Nvar, double *x,int Npar, double *P, int ivar,double input,   double x1, double x2 ,  float xacc, int JMAX, double h)
+{
+    void nrerror(char error_text[]);
+    int j;
+    double df,dx,dxold,f,fh,fl;
+    double temp,xh,xl,rts;
+    double *xt = (double*) malloc(sizeof(double)*Nvar);
+    for (int i=0;i<Nvar; i++)
+        xt[i]=x[i];
+    
+    
+    xt[ivar]=x1;
+    fl=(*func)(n,Nvar,xt,Npar,P)-input;
+//     df=derivative_ivar(func,n,Nvar,xt,Npar,P,ivar,h );
+    xt[ivar]=x2;
+    fh=(*func)(n,Nvar,xt,Npar,P)-input;
+//     df=derivative_ivar(func,n,Nvar,xt,Npar,P,ivar,h );
+    
+    
+    error((fl > 0.0 && fh > 0.0) || (fl < 0.0 && fh < 0.0),2,"rtsafe","Root must be bracketed in rtsafe  f(%g)=%g  f(%g)=%g",x1,fl,x2,fh );
+    if (fl == 0.0) return x1;
+    if (fh == 0.0) return x2;
+    if (fl < 0.0) {
+//         Orient the search so that f (xl) < 0.
+        xl=x1;
+        xh=x2;
+    } else {
+        xh=x1;
+        xl=x2;
+    }
+    rts=0.5*(x1+x2);           // Initialize the guess for root,
+    dxold=fabs(x2-x1);         // the “stepsize before last,”
+    dx=dxold;                  //and the last step.
+    
+    xt[ivar]=rts;
+    f=(*func)(n,Nvar,xt,Npar,P)-input;
+    df=derivative_O2_ivar(func,n,Nvar,xt,Npar,P,ivar,h );
+    for (j=1;j<=MAXIT;j++) {//     Loop over allowed iterations.
+        if ((((rts-xh)*df-f)*((rts-xl)*df-f) > 0.0) || (fabs(2.0*f) > fabs(dxold*df))) { //      Bisect if Newton out of range,   or not decreasing fast enough.
+            dxold=dx;
+        dx=0.5*(xh-xl);
+        rts=xl+dx;
+        if (xl == rts) return rts; // Change in root is negligible.
+        }
+        else {  //Newton step acceptable. Take it.
+            dxold=dx;
+            dx=f/df;
+            temp=rts;
+            rts -= dx;
+            if (temp == rts) return rts;
+        }
+        if (fabs(dx) < xacc) return rts; //    Convergence criterion.
+        xt[ivar]=rts;   // The one new function evaluation per iteration.
+        f=(*func)(n,Nvar,xt,Npar,P)-input;
+        df=derivative_O2_ivar(func,n,Nvar,xt,Npar,P,ivar,h );
+        if (f < 0.0)//            Maintain the bracket on the root.
+            xl=rts;
+        else
+            xh=rts;
+    }
+    error(0==0,1,"rtsafe:","Maximum number of iterations exceeded in rtsafe");
+    return 0.0;//Never get here.
+}
+            
 
 /*
 

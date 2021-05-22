@@ -33,54 +33,6 @@
 #include "header_phi4.hpp"
 using namespace std;
 
-void read_Njack_Nobs( FILE *stream, cluster::IO_params params, int &Njack, int &Nobs ){
-
-   long int tmp;
-   int s=params.data.header_size;
-    
-   fread(&Njack, sizeof(int), 1, stream );
-   
-   
-   fseek(stream, 0, SEEK_END);
-   tmp = ftell(stream);
-   tmp-= params.data.header_size+sizeof(int) ;
-   
-   s=Njack;
-
-   Nobs= (tmp)/ ((s)*sizeof(double) );
-
-   fseek(stream, params.data.header_size+sizeof(int), SEEK_SET);
-   ;
-  
-
-}
-
-void read_dataj(FILE *stream,cluster::IO_params params, data_phi &dj){
-    read_Njack_Nobs(stream, params, dj.Njack, dj.Nobs );
-    //printf("Nobs=%d   Njack=%d\n",dj.Nobs,dj.Njack)
-    dj.jack=double_malloc_2( dj.Nobs, dj.Njack);
-    
-    for (int obs=0; obs<dj.Nobs; obs++ ){
-        fread(dj.jack[obs], sizeof(double ), dj.Njack, stream );
-    }
-    
-}
-
-void emplace_back_par_data( char *namefile , vector<cluster::IO_params> &paramsj, vector<data_phi> &dataj){
-    cluster::IO_params params;
-    data_phi  data;
-    FILE *f=open_file(namefile,"r");
-    read_header( f  , params);
-    read_dataj(f,params,data );
-    fclose(f);
-
-    paramsj.emplace_back(params);
-    dataj.emplace_back(data);
-    //printf("E1=%g    %g\n",dataj[0].jack[1][   dataj[0].Njack-1 ],    data.jack[1][data.Njack-1]);
-    
-}
-
-
 int main(int argc, char **argv){
     vector<cluster::IO_params> paramsj;
      vector<data_phi> dataj;

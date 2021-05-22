@@ -173,12 +173,6 @@ void get_kinematic_G( struct header_virph head ,int icomb ){
     */
 }
 
-double timestamp()
-{
-	struct timeval tm;
-	gettimeofday(&tm, NULL);
-	return tm.tv_sec + 1.0e-6 * tm.tv_usec;
-}
 
 
 static int ****mass_index;

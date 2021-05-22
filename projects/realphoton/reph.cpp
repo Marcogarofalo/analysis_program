@@ -168,14 +168,6 @@ void get_kinematic_G( int ikt, int iks,int imom0, int imomt, int imoms ){
 }
 
 
-double timestamp()
-{
-	struct timeval tm;
-	gettimeofday(&tm, NULL);
-	return tm.tv_sec + 1.0e-6 * tm.tv_usec;
-}
-
-
 static int ****mass_index;
 
 void init_mass_index()

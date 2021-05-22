@@ -37,120 +37,6 @@ using namespace std;
 int Ne=0;
 
 
-void read_Njack_Nobs( FILE *stream, cluster::IO_params params, int &Njack, int &Nobs ){
-
-   long int tmp;
-   int s=params.data.header_size;
-    
-   fread(&Njack, sizeof(int), 1, stream );
-   
-   
-   fseek(stream, 0, SEEK_END);
-   tmp = ftell(stream);
-   tmp-= params.data.header_size+sizeof(int) ;
-   
-   s=Njack;
-
-   Nobs= (tmp)/ ((s)*sizeof(double) );
-
-   fseek(stream, params.data.header_size+sizeof(int), SEEK_SET);
-   
-  
-
-}
-
-void read_dataj(FILE *stream,cluster::IO_params params, data_phi &dj){
-    read_Njack_Nobs(stream, params, dj.Njack, dj.Nobs );
-    //printf("Nobs=%d   Njack=%d\n",dj.Nobs,dj.Njack)
-    dj.jack=double_malloc_2( dj.Nobs, dj.Njack);
-    
-    for (int obs=0; obs<dj.Nobs; obs++ ){
-        fread(dj.jack[obs], sizeof(double ), dj.Njack, stream );
-    }
-    
-}
-
-void emplace_back_par_data( char *namefile , vector<cluster::IO_params> &paramsj, vector<data_phi> &dataj){
-    cluster::IO_params params;
-    data_phi  data;
-    FILE *f=open_file(namefile,"r");
-    read_header( f  , params);
-    read_dataj(f,params,data );
-    fclose(f);
-
-    paramsj.emplace_back(params);
-    dataj.emplace_back(data);
-    //printf("E1=%g    %g\n",dataj[0].jack[1][   dataj[0].Njack-1 ],    data.jack[1][data.Njack-1]);
-    printf("ending the function: emplace_back_par_data\n");
-}
-
-vector<data_phi> create_generalised_resampling(  vector<data_phi> &dataj ){
-    // if the length is the same return dataj
-    int same=0;
-    for( auto &d :dataj){
-        printf("jacks=%d\n",d.Njack);
-        if (d.Njack==dataj[0].Njack)
-            same++;
-    }
-    if (same==dataj.size()){
-            cout << "all the files have the same number of jack/boot , do nothing"<<endl;
-            return dataj;
-    }
-    else{
-        cout << "creating generalised jack"<<endl;
-        vector<data_phi> gjack;
-        //gjack.resize(dataj.size());
-        //jac_tot is the summ of all jackknife +1 
-        //remember alle the dataj have one extra entry for the mean
-        int jack_tot=0;
-        for( int e=0 ; e<dataj.size();e++)
-            jack_tot+=dataj[e].Njack;
-        jack_tot=jack_tot-dataj.size()+1;
-        cout << "ensembles "<< dataj.size() << endl;
-        cout<< "jack tot= "<< jack_tot<< endl;
-        
-        //get Nobs the minimum number of observable between the diles
-        int Nobs=1000;
-        for( auto &d :dataj)
-            if(Nobs> d.Nobs )
-                Nobs=d.Nobs;
-       
-        
-        
-        
-        for(int e=0;e<dataj.size();e++){
-            data_phi tmp;
-            tmp.Njack=jack_tot;
-            tmp.Nobs=Nobs;
-            cout<< Nobs<<" " <<jack_tot<< endl;
-            tmp.jack=double_malloc_2( Nobs, jack_tot);
-            int counter=0;
-            for(int e1=0;e1<dataj.size();e1++){
-                for(int j=0;j<(dataj[e1].Njack-1);j++){
-                    for(int o=0;o<Nobs;o++){ 
-                        if (e==e1){
-                            tmp.jack[o][j+counter]=dataj[e].jack[o][j];
-                        }
-                        else{
-                            tmp.jack[o][j+counter]=dataj[e].jack[o][ dataj[e].Njack-1  ];
-                        }
-                    }
-                }
-                counter+=dataj[e1].Njack-1 ;
-            }
-            for(int o=0;o<Nobs;o++)
-                tmp.jack[o][ jack_tot-1 ]=dataj[e].jack[o][ dataj[e].Njack-1  ];
-            
-            free_2(dataj[e].Nobs, dataj[e].jack);
-            gjack.emplace_back(tmp);
-        }
-        vector<data_phi>().swap(dataj);
-        
-        return gjack;
-        
-    }
-
-}
 
 
 
@@ -169,7 +55,7 @@ int main(int argc, char **argv){
      char namefile[NAMESIZE];
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L32_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      FILE *f=open_file(namefile,"r");
-     read_header( f  , params[0]);
+     read_header_phi4( f  , params[0]);
      read_dataj(f,params[0],dataj[0] );
      fclose(f);
      */

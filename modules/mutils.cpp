@@ -134,6 +134,7 @@
 #include <vector>
 #include <iterator>
 
+#include <sys/time.h>
 
 #define NAME_SIZE 1000
 
@@ -849,4 +850,12 @@ std::vector<std::string> split(const std::string &s, char delim) {
         }
             
     return r;
+}
+
+
+double timestamp()
+{
+    struct timeval tm;
+    gettimeofday(&tm, NULL);
+    return tm.tv_sec + 1.0e-6 * tm.tv_usec;
 }

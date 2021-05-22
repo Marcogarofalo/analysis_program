@@ -477,7 +477,7 @@ void read_twopt(FILE *stream, int iconf , double ***to_write ,cluster::IO_params
     double *obs=(double*) malloc(params.data.size*sizeof(double)); 
     
     fseek(stream, tmp, SEEK_SET);
-    fread(obs,sizeof(double),params.data.size,stream); 
+    size_t i=fread(obs,sizeof(double),params.data.size,stream); 
     
     for(int t=0 ;t<params.data.L[0];t++){
         size_t  id=index+ t*params.data.ncorr;
@@ -572,7 +572,7 @@ int main(int argc, char **argv){
     cluster::IO_params params;
     mysprintf(namefile,NAMESIZE,"%s/%s",argv[3],argv[4]);
     FILE *infile=open_file(namefile,"r+");
-    read_header(infile,params);
+    read_header_phi4(infile,params);
     
     
     
@@ -667,7 +667,7 @@ int main(int argc, char **argv){
               params.data.lambdaC0, params.data.lambdaC1, params.data.muC, params.data.gC,params.data.replica);
     
     FILE *jack_file=open_file(namefile,"w+");
-    write_header(jack_file,params);
+    write_header_phi4(jack_file,params);
     
     // open infile and count the lines
     //

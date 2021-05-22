@@ -871,6 +871,13 @@ double **error_covariance(const char *option , int Nobs, int Np1, double **in){
     return r;
 }
 */
+double* malloc_copy_jackboot(int Np1,  double *a){
+    double *r=(double*) malloc(sizeof(double)*Np1);
+    for (int j=0;j<Np1;j++)
+        r[j]=a[j];
+    return r;
+}
+
 void sum_jackboot(int Np1,  double *r, double *a, double *b){
     for (int j=0;j<Np1;j++)
         r[j]=a[j]+b[j];

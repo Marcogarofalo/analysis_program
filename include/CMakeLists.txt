@@ -269,3 +269,22 @@ target_link_libraries(dzeta_function PUBLIC gsl)
 target_include_directories(dzeta_function PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
  
 
+add_library(
+    header_phi4 STATIC
+    header_phi4.hpp
+    ../modules/header_phi4.cpp
+)
+#target_link_libraries(header_phi4 PUBLIC global)
+set_target_properties(header_phi4 PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(header_phi4 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+ 
+ 
+add_library(
+    zeta_interpolation STATIC
+    zeta_interpolation.hpp
+    ../modules/Zeta/zeta_interpolation.cpp
+)
+target_link_libraries(zeta_interpolation PUBLIC dzeta_function)
+target_link_libraries(zeta_interpolation PUBLIC header_phi4)
+target_include_directories(zeta_interpolation PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+

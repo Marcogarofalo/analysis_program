@@ -34,7 +34,7 @@ add_subdirectory(include  include)
 #include_directories( modules/zeta )
 #link_directories(modules/zeta)
 #add_subdirectory(external/rzeta/src zeta)
-
+#include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # this has been taken straight from the build system of Balint's Dslash (github.com/bjoo/KokkosDslash)
 macro(add_target_with_lib TARGETNAME)
@@ -70,6 +70,11 @@ macro(add_target_with_lib TARGETNAME)
   target_link_libraries(${TARGETNAME} PUBLIC tower)
   target_link_libraries(${TARGETNAME} PUBLIC init_zeta_function)
   target_link_libraries(${TARGETNAME} PUBLIC dzeta_function)
+  #target_link_libraries(${TARGETNAME} PUBLIC header_phi4)
+  target_link_libraries(${TARGETNAME} PUBLIC zeta_interpolation)
+  target_include_directories(${TARGETNAME} PUBLIC "${CMAKE_SOURCE_DIR}/include")
+  target_include_directories(${TARGETNAME} PUBLIC "${CMAKE_BINARY_DIR}/include")
+
 #target_link_libraries(${TARGETNAME} PUBLIC Kokkos::kokkos)
 endmacro()
 
