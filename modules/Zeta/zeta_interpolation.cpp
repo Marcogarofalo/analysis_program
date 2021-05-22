@@ -134,7 +134,7 @@ void zeta_interpolation::Init(char *resampling, std::vector<int>  myen,  std::ve
     // init the workspace of the dzeta_function
     dzeta_function(z,  1 ,0 , 0, tmp_vec, 1, 1. , 1.e-3, 1.e6 ,1);
     etot=myen.size();
-    std::vector< std::vector<int> > momenta(5,std::vector<int>(3));
+    std::vector< std::vector<int> > momenta(ntot,std::vector<int>(3));
     momenta[0][0]=0; momenta[0][1]=0; momenta[0][2]=0; 
     momenta[1][0]=1; momenta[1][1]=0; momenta[1][2]=0; 
     momenta[2][0]=1; momenta[2][1]=1; momenta[2][2]=0; 
@@ -154,7 +154,7 @@ void zeta_interpolation::Init(char *resampling, std::vector<int>  myen,  std::ve
         double twopiL=(2.*pi_greco/L[e]);
         double twopiL2=twopiL*twopiL;
         m[e][0]=(gjack[myen[e]].jack[1][Njack-1]-3.*err)/twopiL; 
-        for (int im=0; im<Nm;im++){
+        for (int im=1; im<Nm;im++){
             m[e][im]=m[e][0] +(2.*(3.*err)*im/((double) Nm))/twopiL ;
         }
         
@@ -309,13 +309,13 @@ double zeta_interpolation::compute(double inL, int n, double mass,  double k ){
         
     }
     else { //e==-1 interpolate in L // inL is not a double 
-        double z1[2];
-        int dvec[3]={mom[n][0],mom[n][1],mom[n][2]};
-        double ECM2=4*(k+mass*mass);
-        double E2=ECM2+(dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
-        double gamma=sqrt(E2/ECM2);
-        dzeta_function(z1,  k ,0 , 0, dvec, gamma, 1. , 1.e-3, 1.e6 ,2);
-        return z1[0];
+//         double z1[2];
+//         int dvec[3]={mom[n][0],mom[n][1],mom[n][2]};
+//         double ECM2=4*(k+mass*mass);
+//         double E2=ECM2+(dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
+//         double gamma=sqrt(E2/ECM2);
+//         dzeta_function(z1,  k ,0 , 0, dvec, gamma, 1. , 1.e-3, 1.e6 ,2);
+//         return z1[0];
         
         int Lmin=0;
         for(int iL=1; iL<(etot-2);iL++) {
@@ -361,11 +361,11 @@ double zeta_interpolation::compute(double inL, int n, double mass,  double k ){
                 M[1][0]=k1*k1;  M[1][1]=k1;   M[1][2]=1.;
                 M[2][0]=k2*k2;  M[2][1]=k2;   M[2][2]=1.;
                 y[0]=grid[iL][n][im][x0]; y[1]=grid[iL][n][im][x1];  y[2]=grid[iL][n][im][x2];
-//                 printf("im=%d  mass=%g L=%d  n=%d x=(%d,%d,%d)   k=(%g,%g,%g)    Z= %g   %g   %g    k=(%g,%g,%g)\n", im, m[iL][im],L[iL],n,x0,x1,x2,k0,k1,k2,y[0],y[1],y[2],  kint[iL][n][im][x0],kint[iL][n][im][x1],kint[iL][n][im][x2]);
+                printf("im=%d  mass=%g L=%d  n=%d x=(%d,%d,%d)   k=(%g,%g,%g)    Z= %g   %g   %g   \n", im, m[iL][im],L[iL],n,x0,x1,x2,k0,k1,k2,y[0],y[1],y[2]);
                 double *P=LU_decomposition_solver(3, M, y  );
                 
                 r[im-m_min]=P[0]*k*k+P[1]*k+P[2];
-//                 printf("interpl k=%g -> %g\n",k,r[im-m_min]);
+                printf("interpl k=%g -> %g\n",k,r[im-m_min]);
                 free(P);
                 
             }// loop in mass
@@ -379,7 +379,7 @@ double zeta_interpolation::compute(double inL, int n, double mass,  double k ){
             
             zL[iL-Lmin]=P[0]*mass*mass+P[1]*mass+P[2];
             free(P);
-//             printf("interpl m=%g -> %g\n",mass,zL[iL-Lmin]);
+            printf("interpl m=%g -> %g\n",mass,zL[iL-Lmin]);
             
         } // loop in L
         M[0][0]=L[Lmin]*L[Lmin];      M[0][1]=L[Lmin];     M[0][2]=1.;
@@ -389,6 +389,7 @@ double zeta_interpolation::compute(double inL, int n, double mass,  double k ){
         double *P=LU_decomposition_solver(3, M, y  );
         
         z=P[0]*inL*inL+P[1]*inL+P[2];
+        printf("final L=%g -> Z=%g \n",inL,z);
         free(P);
         
     }// end if 
@@ -403,12 +404,107 @@ zeta_interpolation::~zeta_interpolation(){
         free_4(etot,ntot,3,grid);
         free_2(etot,m);
         free_4(etot,ntot,3,krange);
-        free_4(etot,ntot,3,kint);
+//         free_4(etot,ntot,3,kint);
     }
 }
     /*
 } ;*/
 
+    
+void zeta_interpolation::write(){
+    FILE *f=open_file("zeta_interpolation.dat","w+");
+    double a=timestamp();
+    size_t ir;
+    double z[2];
+    ir=fwrite(&etot,sizeof(int),1,f );
+    ir=fwrite(&ntot,sizeof(int),1,f );
+    ir=fwrite(&h,sizeof(double),1,f );
+    ir=fwrite(&Nm,sizeof(int),1,f );
+    
+    for (int i=0;i<ntot;i++){
+        ir=fwrite(&mom[i][0],sizeof(double),1,f );
+        ir=fwrite(&mom[i][2],sizeof(double),1,f );
+        ir=fwrite(&mom[i][3],sizeof(double),1,f );
+    }
+    printf("writing zeta grid for interpolation \n");
+    for (int e=0; e<etot;e++){
+        ir=fwrite(&L[e],sizeof(int),1,f );        
+             
+        for (int im=0; im<Nm;im++)
+            ir=fwrite(&m[e][im],sizeof(double),1,f );
+            
+        for (int d=0; d<ntot;d++){
+            for (int im=0; im<Nm;im++){
+                ir=fwrite(&krange[e][d][im][0],sizeof(double),1,f );
+                ir=fwrite(&krange[e][d][im][1],sizeof(double),1,f );
+                    
+                int iter=(krange[e][d][im][1]-krange[e][d][im][0]) /h+1 ;
+                for (int ik=0;ik< iter;ik++){
+                    ir=fwrite(&grid[e][d][im][ik],sizeof(double),1,f );
+//                     ir=fwrite(&kint[e][d][im][ik],sizeof(double),1,f );
+                }
+                
+                
+            }
+        }
+        double b=timestamp();
+        printf("time to Init zeta_interpolation=%g s\n",b-a);
+    }
+}
+    
+
+    
+void zeta_interpolation::read(){
+    FILE *f=open_file("zeta_interpolation.dat","r+");
+    double a=timestamp();
+    size_t ir;
+    ir=fread(&etot,sizeof(int),1,f );
+    ir=fread(&ntot,sizeof(int),1,f );
+    ir=fread(&h,sizeof(double),1,f );
+    ir=fread(&Nm,sizeof(int),1,f );
+    
+    std::vector< std::vector<int> > momenta(ntot,std::vector<int>(3));
+    for (int i=0;i<ntot;i++){
+        ir=fread(&momenta[i][0],sizeof(double),1,f );
+        ir=fread(&momenta[i][2],sizeof(double),1,f );
+        ir=fread(&momenta[i][3],sizeof(double),1,f );
+    }
+    mom=momenta;
+    
+    krange=double_malloc_4(etot,ntot,Nm,2);
+    m=double_malloc_2(etot,Nm);
+    grid=(double****)  malloc(sizeof(double***)*etot);
+    printf("reading zeta grid for interpolation \n");
+    for (int e=0; e<etot;e++){
+        int Ltmp;
+        ir=fread(&Ltmp,sizeof(int),1,f );        
+        L.emplace_back(Ltmp );
+        
+        for (int im=0; im<Nm;im++)
+            ir=fread(&m[e][im],sizeof(double),1,f );
+        grid[e]=(double***)  malloc(sizeof(double**)*ntot);
+        for (int d=0; d<ntot;d++){
+            grid[e][d]=(double**)  malloc(sizeof(double*)*Nm);
+            for (int im=0; im<Nm;im++){
+                ir=fread(&krange[e][d][im][0],sizeof(double),1,f );
+                ir=fread(&krange[e][d][im][1],sizeof(double),1,f );
+                    
+                int iter=(krange[e][d][im][1]-krange[e][d][im][0]) /h+1 ;
+                grid[e][d][im]=(double*)  malloc(sizeof(double)*iter);
+                for (int ik=0;ik< iter;ik++){
+                    ir=fread(&grid[e][d][im][ik],sizeof(double),1,f );
+//                     ir=fread(&kint[e][d][im][ik],sizeof(double),1,f );
+                }
+            }
+        }
+    }
+    double b=timestamp();
+    printf("time to read zeta_interpolation=%g s\n",b-a);
+    allocated=0;
+}
+    
+    
+    
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void zeta_interpolation_qsqg::Init(){
     double a=timestamp();

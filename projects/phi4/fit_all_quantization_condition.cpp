@@ -122,7 +122,9 @@ int main(int argc, char **argv){
      momenta[2][0]=1; momenta[2][1]=1; momenta[2][2]=0; 
      momenta[3][0]=0; momenta[3][1]=0; momenta[3][2]=0; 
      momenta[4][0]=1; momenta[4][1]=1; momenta[4][2]=1; 
-      zeta.Init(argv[1] , myen , paramsj ,gjack  );
+     zeta.Init(argv[1] , myen , paramsj ,gjack  );
+     zeta.write();
+//      zeta.read();
 //      zeta_qsqg.Init(  );
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      // start fitting

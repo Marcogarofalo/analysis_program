@@ -15,11 +15,13 @@ private:
     int ntot=5;
 //     double h=1e-4;
     double h=1e-3;
-    double maxk;
-    double hg=0.01;
-    double maxg=4;
+    int Nh=100;
+    int Nm=5;
+    
+//     double maxk;
+//     double hg=0.01;
+//     double maxg=4;
     std::vector<int> L;
-    int Nm=7;
 //      int Nm=3;
     double  **m;//[en]  [ mass =0,1,2 mean-err,mean,mean+err] 
     std::vector< std::vector<int> > mom;
@@ -29,6 +31,8 @@ public:
     zeta_interpolation(){};
     void Init(char *resampling, std::vector<int>  myen,  std::vector<cluster::IO_params> paramsj, std::vector<data_phi> gjack );
     double compute(double inL, int n, double mass,  double k );
+    void write();
+    void read();
     ~zeta_interpolation();
 } ;
 

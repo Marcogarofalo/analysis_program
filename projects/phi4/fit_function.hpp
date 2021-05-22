@@ -686,7 +686,7 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     
     double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
     
-    if (strcmp(label,"k_from_phase_shift")!=0 ){
+    if (strcmp(label,"k_from_phase_shift")!=0 && strcmp(label,"k_from_phase_shift_n4")!=0 && strcmp(label,"k_from_phase_shift_n5")!=0){
         /////////fit band L
         print_fit_band_L( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
         print_fit_band_T( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
@@ -703,8 +703,8 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
             double *tmpy=(double*) malloc(sizeof(double*)* Njack);
             printf("writing: %s\n",namefile);
             
-            for (int i=0 ; i<100; i++){
-                double finalL=16+i*0.5;
+            for (int i=0 ; i<80; i++){
+                double finalL=18+i*0.5;
                 for (int j=0;j<Njack;j++){
                     tmpx[1]=gjack[myen.back()].jack[1][j];//m0   put for each n the mass of the last ensemble
                     tmpx[2]=gjack[0].jack[2][j];//m1  //
@@ -712,6 +712,7 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
                     tmpx[4]=gjack[0].jack[5][j];//E21
                     tmpx[5]=(double) params[0].data.L[0];//T
                     tmpx[6]=x[j][0][6];
+                    tmpx[7]=x[j][0][7];
                     for(int i=fit_info.Nvar ; i<fit_info.Nvar+ fit_info.n_ext_P; i++)
                         tmpx[i]=fit_info.ext_P[fit_info.Nvar][j];
                     
