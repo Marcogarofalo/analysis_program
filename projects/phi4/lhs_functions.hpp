@@ -39,6 +39,18 @@ double sum_corr_directions_shift(int j, double ****in,int t ,struct fit_type fit
 }
 
 
+template<int id,int tf>
+double matrix_element_k3pi(int j, double ****in,int t ,struct fit_type fit_info){
+    int T=file_head.l0;
+    return (in[j][id][t][0])/sqrt(in[j][5][t][0]*in[j][1][(tf-t+T)%T][0] )  ;    
+}
+double matrix_element_k3pi_T_2(int j, double ****in,int t ,struct fit_type fit_info){
+    int T=file_head.l0;
+//     return (in[j][119][t][0])/sqrt(in[j][5][t][0]*in[j][1][abs(T/2-t)%T][0] )  ;
+    return sqrt(in[j][5][t][0]*in[j][1][(T/2-t+T)%T][0] )  ;
+    
+}
+
 double lhs_four_BH_0(int j, double ****in,int t ,struct fit_type fit_info){
     
     double r;

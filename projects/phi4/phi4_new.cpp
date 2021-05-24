@@ -55,7 +55,7 @@ double C3(int n, int Nvar, double *x,int Npar,double  *P){
     //check if file_head.l0 arrives here
     double T=(double)file_head.l0;
     C3=A3*A3 *  exp(-E3*T/2.) * cosh( E3 *(t -T/2.));
-    C3+=A12*A12 *  exp(-(E3+M)*T/2.) * cosh( (E2-M) *(t -T/2.));
+    C3+=A12*A12 *  exp(-(E2+M)*T/2.) * cosh( (E2-M) *(t -T/2.));
     
     return C3;
     
@@ -80,8 +80,43 @@ double C3p(int n, int Nvar, double *x,int Npar,double  *P){
     double T=(double)file_head.l0;
     C3=A3*A3 *  exp(-E3*T/2.) * cosh( E3 *(t -T/2.));
     C3+=A10_2p*A10_2p *  exp(-(E2p+E1)*T/2.) * cosh( (E2p-E1) *(t -T/2.));
-    C3+=A1p_20*A1p_20 *  exp(-(E3+E1p)*T/2.) * cosh( (E2-E1p) *(t -T/2.));
+    C3+=A1p_20*A1p_20 *  exp(-(E2+E1p)*T/2.) * cosh( (E2-E1p) *(t -T/2.));
     
+    return C3;
+    
+}
+
+double me_k3pi_rhs_T_2(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double C3;
+    
+    double A=P[0];
+    double t= x[0];
+    double E1_1=x[1];
+    double E3_0=x[2];
+    
+    //check if file_head.l0 arrives here
+    double T=(double)file_head.l0;
+    double tf=T/2;
+    C3=A * exp(-E3_0*t/2. -E1_1*(tf-t)/2.  );
+    
+    return C3;
+    
+}
+template<int tf>
+double me_k3pi_rhs(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double C3;
+    
+    double A=P[0];
+    double t= x[0];
+    double E1_1=x[1];
+    double E3_0=x[2];
+    
+    //check if file_head.l0 arrives here
+//     double T=(double)file_head.l0;
+    
+    C3=A * exp(-E3_0*t/2. -E1_1*(tf-t)/2.  );
     return C3;
     
 }
@@ -778,7 +813,10 @@ int main(int argc, char **argv){
         for(int i =33 ;i< 48; i++)
             symmetrise_corr(confs, i, file_head.l0,data);
     }
-   
+    if(params.data.ncorr>105){
+        for(int i =49 ;i< 116; i++)
+            symmetrise_corr(confs, i, file_head.l0,data);
+    }   
    
    FILE *f3t16=fopen("E1_1.txt","w+");
    for (int iconf=0; iconf< confs ;iconf++){
@@ -820,6 +858,7 @@ int main(int argc, char **argv){
     double *E1_0_p1, *E1_0_p11 , *E1_0_p111;
     double *E2_0_p1, *E2_0_p11 , *E2_0_p111;
     double *E2_0_A1;
+    double *E3_0;
     /////!!!!!!!!!!!!!!!!! write 0 in the first jackknife!!!!!!!!!!!!!
     double *mj0=(double*) calloc(Njack,sizeof(double)); 
     fwrite(mj0,sizeof(double),Njack,jack_file);
@@ -960,6 +999,7 @@ int main(int argc, char **argv){
     fit_info.ext_P[1]=E2[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  5,0/*reim*/ , "E3_0",  fit_info, jack_file);
+    E3_0=malloc_copy_jackboot(Njack,fit_out.P[0]);
     free_fit_result(fit_info,fit_out);
     
     //c++ 8 || r 9
@@ -2245,17 +2285,140 @@ if (params.data.ncorr>122){
     free_fit_result(fit_info,fit_out);
     
     fit_info.ext_P[0]=mass[0];
-    fit_info.ext_P[1]=E2_0_A1;
+    fit_info.ext_P[1]=E2_0_p1;
     fit_info.ext_P[2]=E1_0_p1;
-    fit_info.ext_P[3]=E2_0_p1;
+    fit_info.ext_P[3]=E2_0_A1;
     //c++ 108 || r 109
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  116,0/*reim*/ , "E3_0_A1",  fit_info, jack_file);
     free_fit_result(fit_info,fit_out);
     
     
-}else { for(int i=106;i < 110;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+    /////////////////////////////////////////////////////////////////////////////////////
+    /////////////matrix element
+    /////////////////////////////////////////////////////////////////////////////////////
+    int T=params.data.L[0];
+    fit_info.Nvar=3;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.function=me_k3pi_rhs_T_2;
+    fit_info.n_ext_P=2;
     
+    fit_info.ext_P[0]=mass[1];
+    fit_info.ext_P[1]=E3_0;
+    
+    // c++ 109|| r110
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  matrix_element_k3pi_T_2, "me_T_2",  fit_info, jack_file );
+    
+    fit_info.Nvar=3;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.function=me_k3pi_rhs<10>;
+    fit_info.n_ext_P=2;
+    
+    fit_info.ext_P[0]=mass[1];
+    fit_info.ext_P[1]=E3_0;
+    
+    // c++ 110|| r111
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  matrix_element_k3pi<120,10>, "me_t10",  fit_info, jack_file );
+    
+    fit_info.Nvar=3;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.function=me_k3pi_rhs<12>;
+    fit_info.n_ext_P=2;
+    
+    fit_info.ext_P[0]=mass[1];
+    fit_info.ext_P[1]=E3_0;
+
+    // c++ 111|| r112
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  matrix_element_k3pi<121,12>, "me_t12",  fit_info, jack_file );
+    
+    fit_info.Nvar=3;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.function=me_k3pi_rhs<16>;
+    fit_info.n_ext_P=2;
+    
+    fit_info.ext_P[0]=mass[1];
+    fit_info.ext_P[1]=E3_0;
+    
+    // c++ 112|| r113
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  matrix_element_k3pi<122,16>, "me_t16",  fit_info, jack_file );
+    
+    
+}else { for(int i=106;i < 111;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+
+    
+
+
+
+if (params.data.ncorr>122){
+    fit_info.Nvar=5;
+    fit_info.Npar=3;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.function=C3;
+    fit_info.n_ext_P=4;
+    fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+    
+    //c++ 105 || r 106
+    fit_info.ext_P[0]=mass[0];
+    fit_info.ext_P[1]=E2_0_p1;//E2[0];
+    fit_info.ext_P[2]=E1_0_p1;
+    fit_info.ext_P[3]=E2_0_p1;
+    
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  sum_corr_directions_shift<95,96,97>, "E3_0_p1_3par",  fit_info, jack_file );
+    /*fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  95,0 , "E3_0_p1",  fit_info, jack_file);
+     */ 
+    free_fit_result(fit_info,fit_out);
+    
+    //c++ 106 || r 107
+    fit_info.ext_P[0]=mass[0];
+    fit_info.ext_P[1]=E2_0_p11;//E2[0];
+    fit_info.ext_P[2]=E1_0_p11;
+    fit_info.ext_P[3]=E2_0_p11;
+    
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  sum_corr_directions_shift<104,105,106>, "E3_0_p11_3par",  fit_info, jack_file );
+    //     fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  104,0/*reim*/ , "E3_0_p11",  fit_info, jack_file);
+    //     free_fit_result(fit_info,fit_out);
+    //     
+    
+    fit_info.ext_P[0]=mass[0];
+    fit_info.ext_P[1]=E2_0_p111;//E2[0];
+    fit_info.ext_P[2]=E1_0_p111;
+    fit_info.ext_P[3]=E2_0_p111;
+    //c++ 107 || r 108
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  113,0/*reim*/ , "E3_0_p111_3par",  fit_info, jack_file);
+    free_fit_result(fit_info,fit_out);
+    
+    fit_info.ext_P[0]=mass[0];
+    fit_info.ext_P[1]=E2_0_p1;//E2_0_A1;
+    fit_info.ext_P[2]=E1_0_p1;
+    fit_info.ext_P[3]=E2_0_p1;
+    //c++ 108 || r 109
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  116,0/*reim*/ , "E3_0_A1_3par",  fit_info, jack_file);
+    free_fit_result(fit_info,fit_out);
+    
+    
+}else { for(int i=106;i < 110;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 // free(E1_0_p1);
 // free(E1_0_p11);

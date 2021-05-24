@@ -619,8 +619,6 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
     }
         
     
-        
-    
     double **alpha,*X,*beta,**a,**C,*sigma;
     int i,j,k,e;
     double f,*fk;
@@ -818,7 +816,7 @@ double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **
     
     std::mt19937 mt_rand(123);
     
-    if (jmax>15  || chi2!=chi2 ) jmax=35;
+    if (jmax>15  || chi2!=chi2 || chi2<0 ) jmax=35;
     if(jmax <=3) jmax=15;
 
     chi2_tmp1=chi2;
