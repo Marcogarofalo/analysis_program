@@ -14,9 +14,8 @@ private:
     int etot;
     int ntot=5;
 //     double h=1e-4;
-    double h=1e-3;
-    int Nh=100;
-    int Nm=5;
+    int Nh=1000;
+    int Nm=10;
     
 //     double maxk;
 //     double hg=0.01;
@@ -30,9 +29,13 @@ private:
 public:
     zeta_interpolation(){};
     void Init(char *resampling, std::vector<int>  myen,  std::vector<cluster::IO_params> paramsj, std::vector<data_phi> gjack );
+    void Init_Lmq( std::vector<int>  Ls,  std::vector<double> masses, std::vector<double> err_mass );
     double compute(double inL, int n, double mass,  double k );
     void write();
     void read();
+    double mass(int i,int j){return m[i][j];};
+    int Ls(int i){return L[i];};
+    int moms(int i,int j){return mom[i][j];};
     ~zeta_interpolation();
 } ;
 

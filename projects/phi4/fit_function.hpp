@@ -160,7 +160,7 @@ double to_invert_k_from_phase_shift(int n, int Nvar, double *x,int Npar,double  
 //       printf("a0=%.12g   r0=%.12g    P2=%.12g  dvec=(%d,%d,%d)\n",a0,r0,P2,dvec[0] ,dvec[1] ,dvec[2]);
 //      dzeta_function(z,  qsq,0 , 0, dvec, gamma, A, 1.e-3, 1.e6 ,3);
     
-    double zinter=zeta.compute( L,  n,  mass*(L/(2*pi_greco)) ,  qsq);
+    double zinter=zeta.compute( L,  n,  mass/*(L/(2*pi_greco))*/ ,  qsq);
 //     double zinter=zeta_qsqg.compute(qsq,n,gamma);
      z[0]=zinter; z[1]=0;
     
@@ -173,8 +173,8 @@ double to_invert_k_from_phase_shift(int n, int Nvar, double *x,int Npar,double  
     double kcotdelta_m=1.0/a0m0+ + r0_m0*k*k/2.;  //   (k cot(d) )/ mass
     
 //     if (fabs((z[0]-zinter)/z[0])>1e-4 )    {
-//         printf("%g  %g   im=%g \n",z[0],zinter,z[1]);
-//         printf("zeta input: k=%g qsq=%g   dvec=(%d,%d,%d) gamma=%g   L=%g mass=%g fun=%g\n ",k,qsq,dvec[0] ,dvec[1] ,dvec[2], gamma, L, mass, kcotdelta_m-r);
+//          printf("%g  %g   im=%g \n",z[0],zinter,z[1]);
+//          printf("zeta input: k=%g qsq=%g   dvec=(%d,%d,%d) gamma=%g   L=%g mass=%g fun=%g\n ",k,qsq,dvec[0] ,dvec[1] ,dvec[2], gamma, L, mass, kcotdelta_m-r);
 //         
 //     }
     
@@ -704,7 +704,7 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
             printf("writing: %s\n",namefile);
             
             for (int i=0 ; i<80; i++){
-                double finalL=18+i*0.5;
+                double finalL=16+i*0.5;
                 for (int j=0;j<Njack;j++){
                     tmpx[1]=gjack[myen.back()].jack[1][j];//m0   put for each n the mass of the last ensemble
                     tmpx[2]=gjack[0].jack[2][j];//m1  //

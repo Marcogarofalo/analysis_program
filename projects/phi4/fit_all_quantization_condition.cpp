@@ -101,7 +101,7 @@ int main(int argc, char **argv){
      for(int i=0;i< Ne; i++)  myen[i]=i;
     
      int Njack=gjack[0].Njack;
-     std::vector<double> masses(Ne);
+     /*std::vector<double> masses(Ne);
      printf("masses:");
      for(int e=0;e< Ne; e++){ masses[e]=gjack[e].jack[1][Njack-1];
         printf(" %g\t",masses[e]);
@@ -122,9 +122,37 @@ int main(int argc, char **argv){
      momenta[2][0]=1; momenta[2][1]=1; momenta[2][2]=0; 
      momenta[3][0]=0; momenta[3][1]=0; momenta[3][2]=0; 
      momenta[4][0]=1; momenta[4][1]=1; momenta[4][2]=1; 
-     zeta.Init(argv[1] , myen , paramsj ,gjack  );
-     zeta.write();
-//      zeta.read();
+     */
+     std::vector<int> Ls={16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56};
+//      std::vector<int> Ls={28,30,32,36};
+     std::vector<double> masses;
+     std::vector<double> err_mass;
+     int e1;
+     for (int L: Ls){
+         e1=Ne-1;
+         for(int e=0; e< Ne;e++){
+             if (L==paramsj[e].data.L[1]){
+                 e1=e;
+                 printf("L=%d found\n",L);
+             }
+         }
+         masses.emplace_back(gjack[e1].jack[1][Njack-1]);
+         err_mass.emplace_back(  error_jackboot(argv[1],Njack, gjack[e1].jack[1] )  );
+     }
+     
+//       zeta.Init_Lmq(Ls, masses, err_mass  );
+//      zeta_interpolation   zz;
+//      zz.Init(argv[1] , myen , paramsj ,gjack  );
+//      for(int e=0; e< Ne;e++){
+//          printf("%g  %g\t",zeta.compute(28,0 ,12 *2* pi_greco/28., 0.5), zz.compute(28,0 ,12 *2* pi_greco/28., 0.5));
+//          printf("%g  %g\t",zeta.compute(28,1 ,12 *2* pi_greco/28., 0.5), zz.compute(28,1 ,12 *2* pi_greco/28., 0.5));
+//          printf("%g  %g\t",zeta.compute(28,2 ,12 *2* pi_greco/28., 0.5), zz.compute(28,2 ,12 *2* pi_greco/28., 0.5));
+//          printf("%g  %g  %d %d\n",zeta.mass(e,0) , zz.mass(e,0),zeta.Ls(e),zz.Ls(e) );
+//          printf(" %d %d %d %d %d %d\n",zeta.moms(0,0) , zz.moms(0,0),zeta.moms(0,1) , zz.moms(0,1),zeta.moms(0,1) , zz.moms(0,1) );
+//          printf(" %d %d %d %d %d %d\n",zeta.moms(1,0) , zz.moms(1,0),zeta.moms(1,1) , zz.moms(1,1),zeta.moms(1,1) , zz.moms(1,1) );
+//     }
+//       zeta.write();
+      zeta.read();
 //      zeta_qsqg.Init(  );
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      // start fitting
