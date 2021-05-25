@@ -1328,7 +1328,7 @@ int main(int argc, char **argv){
    double **H_H0=               (double**) malloc(sizeof(double*)*header.ncomb*header.nqsml);
    double **HmH0_HA=            (double**) malloc(sizeof(double*)*header.ncomb*header.nqsml);
    double **Zf_PS_jack_fit=     (double**) malloc(sizeof(double*)*header.ncomb*header.nqsml);
-   
+   FILE *test=open_file("test_barRA.txt","w+");
    for(int smearing=0; smearing<header.nqsml; smearing++){
       if(smearing==0) mysprintf(namefile,NAMESIZE,"M_{PS}^{ll}");
       if(smearing==1) mysprintf(namefile,NAMESIZE,"M_{PS}^{s_1l}");
@@ -1410,6 +1410,7 @@ int main(int argc, char **argv){
       free(tmp_mass);
       
       
+      double *tmp=H_over_H0(  argv, kinematic_2pt_G,  (char*) "H_H0_A_test", conf_jack,  mass_jack_fit[i],  mass_jack_fit[i_m],   oPp_jack_fit[i],  Njack ,plateaux_H_H0_A,test ,2,sym);
       H_H0[iG]=H_over_H0_vir(  argv, kinematic_2pt_G,  (char*) "H_H0_A", conf_jack,  mass_jack_fit[i],  mass_jack_fit[i_m], Njack ,plateaux_H_H0_A,outfile_H_H0_A ,2,sym);
       HmH0_HA[iG]=H_minus_H0_HA_vir(  argv, kinematic_2pt_G,  (char*) "HmH0_V_HA", conf_jack,  mass_jack_fit[i],  mass_jack_fit[i_m],   Zf_PS_jack_fit[i_ml],  Njack ,plateaux_RV,outfile_HmH0_V_HA ,3,sym);
       //free
