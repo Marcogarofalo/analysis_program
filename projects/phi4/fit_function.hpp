@@ -202,16 +202,8 @@ double rhs_k_from_phase_shift(int n, int Nvar, double *x,int Npar,double  *P){
      double Ef=E1f+E2f;
      double ECMfsq=Ef*Ef-(2*pi_greco/L)*(2*pi_greco/L)*(dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
      double gamma=E2f/sqrt(ECMfsq);
-    /*    printf("\nn=%d   (%d,%d,%d)=(%d,%d,%d)+(%d,%d,%d)   a=%g  r=%g   P=%g\n",n,
-             dvec[0],dvec[1],dvec[2],dvec1[0],dvec1[1],dvec1[2], dvec2[0],dvec2[1],dvec2[2] ,P[0],P[1],P[2] );
-   */ 
-    double kf=sqrt(ECMfsq/4. -mass*mass);
-     /*if (n==0) {kf*=0;  kf1*=1; }
-     if (n==1) {kf*=0.5;  kf1*=sqrt(5./4.); }
-     if (n==2) {kf*=0.5;  kf1*=sqrt(5./4.); }
-    */ //double kf=sqrt(ECMfsq/4.-mass*mass);
-     
-    
+ 
+     double kf=sqrt(ECMfsq/4. -mass*mass);
     
     
     E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dvec1[0])*(dvec1[0])+dvec1[1]*dvec1[1]+(dvec1[2]+1)*(dvec1[2]+1))   );
@@ -223,45 +215,76 @@ double rhs_k_from_phase_shift(int n, int Nvar, double *x,int Npar,double  *P){
 
     double xmin=kf+1e-6;
     double xmax=kf1-1e-6;//- (kf1-kf)/1e+3;
-//      printf("kf=%g   kf1=%g      x=%g   %g\n",kf,kf1,xmin,xmax);
-   /* if (n==0)  {xmin=0+1e-6; xmax=2.*pi_greco/L-1e-6;}//0.015
-    if (n==1)  {
-        xmin=(1./8.)* (-4. *mass*mass + sqrt(16.* pow(mass,4) + (64.* mass*mass *pi_greco*pi_greco)/(L*L)));
-        xmin=sqrt(xmin)+1e-6;
-        xmax=(1./8.)* (-4. *mass*mass+ 32*pi_greco*pi_greco/(L*L) + sqrt(576.* pow(mass,2)*pi_greco*pi_greco/(L*L) + pow(4.* mass*mass-32. *pi_greco*pi_greco/(L*L),2) )); ;
-        xmax=sqrt(xmax)-1e-6;
-    }//0.7
-    if (n==2)  {
-        xmin=(1./8.)* (-4. *mass*mass + sqrt(16.* pow(mass,4) + (128.* mass*mass *pi_greco*pi_greco)/(L*L)));
-        xmin=sqrt(xmin)+1e-6;
-        xmax=(1./8.)* (-4. *mass*mass+ 16*pi_greco*pi_greco/(L*L) + sqrt(384.* pow(mass,2)*pi_greco*pi_greco/(L*L) + pow(4.* mass*mass-16. *pi_greco*pi_greco/(L*L),2) )); ;
-        xmax=sqrt(xmax)+1e-6;
-    }//0.7
-    if (n==4)  {
-        xmin=(1./8.)* (-4. *mass*mass + sqrt(16.* pow(mass,4) + (192.* mass*mass *pi_greco*pi_greco)/(L*L)));
-        xmin=sqrt(xmin)+1e-6;
-        xmax=(1./8.)* (-4. *mass*mass+ 32*pi_greco*pi_greco/(L*L) + sqrt(704.* pow(mass,2)*pi_greco*pi_greco/(L*L) + pow(4.* mass*mass-32. *pi_greco*pi_greco/(L*L),2) )); ;
-        xmax=sqrt(xmax)-1e-6;
-    }//0.7
-    if (n==3)  { xmin=2.*pi_greco/L+1e-6; xmax=sqrt(2)*2.*pi_greco/L-1e-6;}//0.8
-    */
-//      
-   /* for(int ik =0;ik<100;ik++){
-        double k=0+0.0001*ik;
-        xx[2]=k;
-        double f=to_invert_k_from_phase_shift( n, 3, xx, Npar,P);
-        printf("k=%g   fun(to be 1)=%g\n ",k,f);
-        
-    }
-  */  
-//    double start=x[6];
-   //printf("starting point=%g\n",start);
-//     E2=rtnewt( to_invert_k_from_phase_shift , n,  3, xx, Npar, P, 2/*ivar*/,0. /*input*/,   (xmin+xmax/3.), xmin, xmax,  1e-3, 100, 1e-3);
    
     E2=rtsafe( to_invert_k_from_phase_shift , n,  3, xx, Npar, P, 2/*ivar*/,0. /*input*/,    xmin, xmax,  1e-5, 100, 1e-4);
-//     E2=rtbis_func_eq_input( to_invert_k_from_phase_shift , n,  3, xx, Npar, P, 2/*ivar*/,0.0 /*input*/,   xmin,   xmax , 1.e-8,  3);
+
+    return E2/mass;
+}
+
+
+double to_invert_k_from_phase_shift_cotZ(int n, int Nvar, double *x,int Npar,double  *P){
+    double a0m0=P[0], r0_m0=P[1];//, P2=P[2];
+    double L=x[0];
+    double mass=x[1];
+    double k=x[2];
+    int dvec[3],dvec1[3],dvec2[3];
     
-    //printf("after  found root k=%.8g   n=%d\n",E2,n);
+    init_dvec(n,dvec,dvec1,dvec2);
+    
+    double E2_CM=sqrt(k*k+mass*mass)*2.;
+    double E2=sqrt( (k*k+mass*mass)*4.+ (2*pi_greco/L)*(2*pi_greco/L)*( dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]   )  );
+    
+    double qsq=k*k * (L/(2*pi_greco))*  (L/(2*pi_greco));
+    double gamma=E2/E2_CM;
+    double A=1.;
+    double z[2];
+   
+    double zinter=zeta.compute( L,  n,  mass/*(L/(2*pi_greco))*/ ,  qsq);
+    z[0]=zinter; z[1]=0;
+    
+    std::complex<double>  zc(z[0],z[1]);
+      
+    double r=real(zc*2.*pi_greco/( pow(pi_greco,3./2.) *L*gamma*mass )    );
+    double delta=std::atan(k/(r));
+    double kcotdelta_m=1.0/a0m0+ + r0_m0*k*k/2.;  //   (k cot(d) )/ mass
+    double delta_r= std::atan(k/kcotdelta_m);
+   
+    return     delta_r-delta;
+    
+    
+}
+double rhs_k_from_phase_shift_cotZ(int n, int Nvar, double *x,int Npar,double  *P){
+    double E2;
+    double xx[3]={x[0],x[1],1} ; //{L,mass,   k to be find by the bisection}
+    //double p[5]={0 ,2.*pi_greco/x[0], sqrt(2)*2.*pi_greco/x[0] , sqrt(3)*2.*pi_greco/x[0],0 };
+    
+    //      printf("before   n=%d   L=%g   m=%g  a=%g  r=%g   P=%g\n",n,x[0],x[1],P[0],P[1],P[2]);
+    int dvec[3],dvec1[3],dvec2[3];
+    init_dvec(n,dvec,dvec1,dvec2);
+    double mass=x[1];
+    double L=x[0];
+    // xmin have to be k in free theory
+    double E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
+    double E2f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
+    double Ef=E1f+E2f;
+    double ECMfsq=Ef*Ef-(2*pi_greco/L)*(2*pi_greco/L)*(dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
+    double gamma=E2f/sqrt(ECMfsq);
+    
+    double kf=sqrt(ECMfsq/4. -mass*mass);
+    
+    
+    E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dvec1[0])*(dvec1[0])+dvec1[1]*dvec1[1]+(dvec1[2]+1)*(dvec1[2]+1))   );
+    E2f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dvec2[0])*(dvec2[0])+dvec2[1]*dvec2[1]+(dvec2[2]-1)*(dvec2[2]-1))   );
+    Ef=E1f+E2f;
+    ECMfsq=Ef*Ef-(2*pi_greco/L)*(2*pi_greco/L)*((dvec[0])*(dvec[0])+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
+    double kf1=sqrt(ECMfsq/4.-mass*mass);
+    
+    
+    double xmin=kf+1e-6;
+    double xmax=kf1-1e-6;//- (kf1-kf)/1e+3;
+    
+    E2=rtsafe( to_invert_k_from_phase_shift_cotZ , n,  3, xx, Npar, P, 2/*ivar*/,0. /*input*/,    xmin, xmax,  1e-5, 100, 1e-4);
+    
     return E2/mass;
 }
 
@@ -686,72 +709,74 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     
     double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
     
-    if (strcmp(label,"k_from_phase_shift")!=0 && strcmp(label,"k_from_phase_shift_n4")!=0 && strcmp(label,"k_from_phase_shift_n5")!=0){
+    if (strcmp(label,"k_from_phase_shift")!=0 && strcmp(label,"k_from_phase_shift_n4")!=0 && strcmp(label,"k_from_phase_shift_n5")!=0 && strcmp(label,"k_from_phase_shift_acotZ")!=0){
         /////////fit band L
         print_fit_band_L( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
         print_fit_band_T( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
         print_fit_band_k( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
         
     }
-    if (strcmp(label,"k_from_phase_shift")==0 || strcmp(label,"k_from_phase_shift_n4")==0 || strcmp(label,"k_from_phase_shift_n5")==0 ) {
-        /////////fit band L for each n
-        for (int n=0;n< N; n++){
-            
-            mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_n%d_L.txt",argv[3], label,n);
-            f=open_file(namefile,"w+");
-            double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
-            double *tmpy=(double*) malloc(sizeof(double*)* Njack);
-            printf("writing: %s\n",namefile);
-            
-            for (int i=0 ; i<80; i++){
-                double finalL=16+i*0.5;
-                for (int j=0;j<Njack;j++){
-                    tmpx[1]=gjack[myen.back()].jack[1][j];//m0   put for each n the mass of the last ensemble
-                    tmpx[2]=gjack[0].jack[2][j];//m1  //
-                    tmpx[3]=gjack[0].jack[4][j];//E20
-                    tmpx[4]=gjack[0].jack[5][j];//E21
-                    tmpx[5]=(double) params[0].data.L[0];//T
-                    tmpx[6]=x[j][0][6];
-                    tmpx[7]=x[j][0][7];
-                    for(int i=fit_info.Nvar ; i<fit_info.Nvar+ fit_info.n_ext_P; i++)
-                        tmpx[i]=fit_info.ext_P[fit_info.Nvar][j];
-                    
-//                     int Lmin=0;
-//                     for(int iL=1; iL<(myen.size()-2);iL++) {
-//                         if (finalL> params[iL].data.L[1] )
-//                             Lmin++;
-//                     }
-//                     double zL[3];
-//                     int Lmax=Lmin+3;
-//                     double **M=double_malloc_2(3,3);
-//                     double y[3];
+//     if (strcmp(label,"k_from_phase_shift")==0 || strcmp(label,"k_from_phase_shift_n4")==0 || strcmp(label,"k_from_phase_shift_n5")==0 || strcmp(label,"k_from_phase_shift_acotZ")==0) {
+//         /////////fit band L for each n
+//         for (int n=0;n< N; n++){
+//             
+//             mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_n%d_L.txt",argv[3], label,n);
+//             f=open_file(namefile,"w+");
+//             double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
+//             double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+//             printf("writing: %s\n",namefile);
+//             
+//             for (int i=0 ; i<80; i++){
+//                 double finalL=16+i*0.5;
+//                 for (int j=0;j<Njack;j++){
+//                     tmpx[1]=gjack[myen.back()].jack[1][j];//m0   put for each n the mass of the last ensemble
+//                     tmpx[2]=gjack[0].jack[2][j];//m1  //
+//                     tmpx[3]=gjack[0].jack[4][j];//E20
+//                     tmpx[4]=gjack[0].jack[5][j];//E21
+//                     tmpx[5]=(double) params[0].data.L[0];//T
+//                     tmpx[6]=x[j][0][6];
+//                     tmpx[7]=x[j][0][7];
+//                     for(int i=fit_info.Nvar ; i<fit_info.Nvar+ fit_info.n_ext_P; i++)
+//                         tmpx[i]=fit_info.ext_P[fit_info.Nvar][j];
 //                     
-//                     for(int iL=Lmin;iL<Lmax;iL++){
-//                         tmpx[0]=params[iL].data.L[1];
-//                         zL[iL-Lmin]=fit_info.function(n,Nvar,tmpx,Npar,tif[j]);//N, Nvar, x ,Npar,P
-//                     }
-//                     M[0][0]=params[Lmin].data.L[1]*params[Lmin].data.L[1];      M[0][1]=params[Lmin].data.L[1];     M[0][2]=1.;
-//                     M[1][0]=params[Lmin+1].data.L[1]*params[Lmin+1].data.L[1];  M[1][1]=params[Lmin+1].data.L[1];   M[1][2]=1.;
-//                     M[2][0]=params[Lmin+2].data.L[1]*params[Lmin+2].data.L[1];  M[2][1]=params[Lmin+2].data.L[1];   M[2][2]=1.;
-//                     y[0]=zL[0]; y[1]=zL[1];  y[2]=zL[2];
-//                     double *P=LU_decomposition_solver(3, M, y  );
-//                     
-//                     tmpy[j]=P[0]*finalL*finalL+P[1]*finalL+P[2];
-//                     free_2(3,M);
-//                     free(P);
-                       tmpx[0]=finalL;
-                       tmpy[j]=fit_info.function(n,Nvar,tmpx,Npar,tif[j]);
-                       
-                }
-                fprintf(f,"%g  \t %g  %g\n",finalL,tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
-                
-                
-            }
-            free(tmpy);free(tmpx);
-            fclose(f); 
-            
-        }
-    }
+// //                     int Lmin=0;
+// //                     for(int iL=1; iL<(myen.size()-2);iL++) {
+// //                         if (finalL> params[iL].data.L[1] )
+// //                             Lmin++;
+// //                     }
+// //                     double zL[3];
+// //                     int Lmax=Lmin+3;
+// //                     double **M=double_malloc_2(3,3);
+// //                     double y[3];
+// //                     
+// //                     for(int iL=Lmin;iL<Lmax;iL++){
+// //                         tmpx[0]=params[iL].data.L[1];
+// //                         zL[iL-Lmin]=fit_info.function(n,Nvar,tmpx,Npar,tif[j]);//N, Nvar, x ,Npar,P
+// //                     }
+// //                     M[0][0]=params[Lmin].data.L[1]*params[Lmin].data.L[1];      M[0][1]=params[Lmin].data.L[1];     M[0][2]=1.;
+// //                     M[1][0]=params[Lmin+1].data.L[1]*params[Lmin+1].data.L[1];  M[1][1]=params[Lmin+1].data.L[1];   M[1][2]=1.;
+// //                     M[2][0]=params[Lmin+2].data.L[1]*params[Lmin+2].data.L[1];  M[2][1]=params[Lmin+2].data.L[1];   M[2][2]=1.;
+// //                     y[0]=zL[0]; y[1]=zL[1];  y[2]=zL[2];
+// //                     double *P=LU_decomposition_solver(3, M, y  );
+// //                     
+// //                     tmpy[j]=P[0]*finalL*finalL+P[1]*finalL+P[2];
+// //                     free_2(3,M);
+// //                     free(P);
+//                        tmpx[0]=finalL;
+//                        tmpy[j]=fit_info.function(n,Nvar,tmpx,Npar,tif[j]);
+//                        
+//                 }
+//                 fprintf(f,"%g  \t %g  %g\n",finalL,tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
+//                 
+//                 
+//             }
+//             free(tmpy);free(tmpx);
+//             fclose(f); 
+//             
+//         }
+//     }
+    
+    free_2(Njack,tif);
     
 }
 

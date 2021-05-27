@@ -14,7 +14,7 @@ private:
     int etot;
     int ntot=5;
 //     double h=1e-4;
-    int Nh=1000;
+    int Nh=2000;
     int Nm=10;
     
 //     double maxk;
@@ -33,9 +33,12 @@ public:
     double compute(double inL, int n, double mass,  double k );
     void write();
     void read();
+    
     double mass(int i,int j){return m[i][j];};
     int Ls(int i){return L[i];};
     int moms(int i,int j){return mom[i][j];};
+    double kmax(int e,int n,int im ){return krange[e][n][im][0];};
+    double kmin(int e,int n,int im ){return krange[e][n][im][1];};
     ~zeta_interpolation();
 } ;
 

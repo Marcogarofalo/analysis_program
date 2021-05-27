@@ -12,7 +12,7 @@
 #include "m_eff.hpp"
 #include "gnuplot.hpp"
 #include "global.hpp"
-
+#include <tower.hpp>
 
 
 double   *H_AV(char **option ,struct kinematic_G kinematic_2pt_G , char* name, double ****conf_jack,double *mass_jack_fit_k2k1,  double* mass_rest, double *oPp, int Njack ,FILE *plateaux_masses,FILE *outfile,int index,int *sym )
@@ -174,13 +174,27 @@ double   *H_over_H0_vir(char **option ,struct kinematic_G kinematic_2pt_G , char
    kp=mass_jack_fit_k2k1[Njack-1]*kinematic_2pt_G.E_g- kinematic_2pt_G.kp;
    xG=2*kp/(mass_rest[Njack-1]*mass_rest[Njack-1]);
    fprintf(outfile,"## E_g=%g      E_gT=%g     E=%g     xG=%g  index=%d\n",kinematic_2pt_G.E_g,kinematic_2pt_G.E_gT,mass_jack_fit_k2k1[Njack-1],xG ,line);
+  /* double **jack1=double_malloc_2(file_head.l0,Njack);
+   double **jack2=double_malloc_2(file_head.l0,Njack);
+   for(i=0;i<file_head.l0;i++){    
+        for (j=0;j<Njack;j++){
+                ii=sym[index];
+            jack1[i][j]=conf_jack[j][index][i][ii];
+            jack2[i][j]=(conf_jack[j][index][i][ii]+conf_jack[j][index][(file_head.l0-i)%file_head.l0][ii])/2;
+        }
+        printf(" %d %g %g   %g  %g \n",i, jack1[i][Njack-1],error_jackboot(option[4],Njack,jack1[i]),jack2[i][Njack-1],error_jackboot(option[4],Njack,jack2[i])  );
+   }
+ */  
+   
+   
    for(i=1;i<file_head.l0/2;i++){    
            for (j=0;j<Njack;j++){            
               ii=sym[index];
               //symmetrization
-              double    HA=conf_jack[j][index][i][ii]/exp(-((kinematic_2pt_G.Twall-i))*kinematic_2pt_G.E_g );
-              HA+=conf_jack[j][index][file_head.l0-i][ii]/exp(-((file_head.l0-i-file_head.l0+kinematic_2pt_G.Twall) )*kinematic_2pt_G.E_g );
-              HA/=2.;
+              double    HA=conf_jack[j][index][i][ii];
+              HA+=conf_jack[j][index][file_head.l0-i][ii];
+              HA/=(2.*exp(-((kinematic_2pt_G.Twall-i))*kinematic_2pt_G.E_g ));
+//                if (j==Njack-1)printf(" %d %g      %g \n ",i,conf_jack[j][index][i][ii]/exp(-((kinematic_2pt_G.Twall-i))*kinematic_2pt_G.E_g )   ,conf_jack[j][index][file_head.l0-i][ii]/exp(-((file_head.l0-i-file_head.l0+kinematic_2pt_G.Twall) )*kinematic_2pt_G.E_g ));
               
               //r[i][j]=conf_jack[j][index][i][ii]/conf_jack[j][index+2][i][ii];    // index+2 is the correlator at p =0
               //r[i][j]=r[i][j]/exp(-(kinematic_2pt_G.Twall-i)*kinematic_2pt_G.E_g );

@@ -1363,7 +1363,7 @@ int main(int argc, char **argv){
       symmetrise_corr(confs, 6, header.tmax,data);
 
       //symmetrise_corr(confs, 2, header.tmax,data);
-      symmetrise_corr(confs, 4, header.tmax,data);
+//       symmetrise_corr(confs, 4, header.tmax,data);
       //antisymmetrise_corr(confs, 3, header.tmax,data);
       antisymmetrise_corr(confs, 5, header.tmax,data);
 

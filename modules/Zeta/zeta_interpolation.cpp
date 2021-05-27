@@ -383,6 +383,7 @@ double zeta_interpolation::compute(double inL, int n, double mass,  double k ){
         for(int  im=m_min;im<m_min+3;im++){
             double kmin=krange[e][n][im][0];
             double kmax=krange[e][n][im][1];
+//             printf("qsq: e=%d  n=%d  im=%d min=%.12g max=%.12g\n",e,n,im,kmin,kmax);
             //error(k<kmin || k>kmax  , 3,"zeta_interpolation::compute"," k=%g out of range [%g,%g ] ",k,kmin,kmax);
             
             // select k for interpolation

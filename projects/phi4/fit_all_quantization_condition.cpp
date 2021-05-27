@@ -37,7 +37,67 @@
 using namespace std;
 int Ne=0;
 
-
+void print_fit_band_L_M(char **argv,vector<data_phi> gjack ,struct fit_type fit_info,struct fit_type fit_info_m0 , const char* label, struct fit_result fit_out, struct fit_result fit_out_m0,    vector<cluster::IO_params> params, std::vector<int> myen){
+    int Npar=fit_info.Npar;
+    int Nvar=fit_info.Nvar+fit_info.n_ext_P;
+    int Njack=gjack[0].Njack;
+    int N=fit_info.N;
+    char namefile[NAMESIZE];
+    FILE *f;
+    
+    mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_k.txt",argv[3], label);
+    f=open_file(namefile,"w+");
+    double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
+    double **tif_m0=swap_indices(fit_info_m0.Npar,Njack,fit_out_m0.P);
+    double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
+    double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+    printf("writing: %s\n",namefile);
+    
+    for (int n=0;n< N; n++){
+        
+        mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_n%d_L.txt",argv[3], label,n);
+        f=open_file(namefile,"w+");
+        double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
+        double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+        printf("writing: %s\n",namefile);
+        
+        for (int i=0 ; i<40; i++){
+            double finalL=16+i;
+            tmpx[0]=finalL;
+            for (int j=0;j<Njack;j++){
+                
+                tmpx[2]=gjack[0].jack[2][j];//m1  //
+                tmpx[3]=gjack[0].jack[4][j];//E20
+                tmpx[4]=gjack[0].jack[5][j];//E21
+                tmpx[5]=(double) params[0].data.L[0];//T
+                tmpx[6]=1;//k
+                tmpx[7]=1;//MpiL
+                for(int i=fit_info.Nvar ; i<fit_info.Nvar+ fit_info.n_ext_P; i++)
+                    tmpx[i]=fit_info.ext_P[fit_info.Nvar][j];
+                
+                tmpx[1]=fit_info_m0.function(0,fit_info_m0.Nvar,tmpx,fit_info_m0.Npar,tif_m0[j]); //m0   put for each n the mass of the last ensemble
+                
+                
+                tmpy[j]=fit_info.function(n,Nvar,tmpx,Npar,tif[j]);
+                if (fabs(finalL-36)<1e-5  && n==2)
+                    printf("%g   j=%d \t k=%g  m=%g P0=%g  P1=%g\n",finalL,j,tmpy[j], tmpx[1], tif[j][0] ,tif[j][1]  );
+                
+            }
+            if (fabs(finalL-36)<1e-5  && n==2){
+                printf("%g  \t %g  %g\n",finalL,tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
+                
+            }
+            fprintf(f,"%g  \t %g  %g\n",finalL,tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
+            
+            
+        }
+        free(tmpy);free(tmpx);
+        fclose(f); 
+    }
+    free_2(Njack,tif);
+    free_2(Njack,tif_m0);
+    
+}
 
 
 
@@ -123,7 +183,9 @@ int main(int argc, char **argv){
      momenta[3][0]=0; momenta[3][1]=0; momenta[3][2]=0; 
      momenta[4][0]=1; momenta[4][1]=1; momenta[4][2]=1; 
      */
-     std::vector<int> Ls={16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56};
+//      std::vector<int> Ls={16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56};
+     std::vector<int> Ls;//={16,17,18,19,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56};
+     for (int  i=16;i<57;i++){Ls.emplace_back(i);}
 //      std::vector<int> Ls={28,30,32,36};
      std::vector<double> masses;
      std::vector<double> err_mass;
@@ -140,8 +202,8 @@ int main(int argc, char **argv){
          err_mass.emplace_back(  error_jackboot(argv[1],Njack, gjack[e1].jack[1] )  );
      }
      
-//       zeta.Init_Lmq(Ls, masses, err_mass  );
-//      zeta_interpolation   zz;
+        zeta.Init_Lmq(Ls, masses, err_mass  );
+//       zeta_interpolation   zz;
 //      zz.Init(argv[1] , myen , paramsj ,gjack  );
 //      for(int e=0; e< Ne;e++){
 //          printf("%g  %g\t",zeta.compute(28,0 ,12 *2* pi_greco/28., 0.5), zz.compute(28,0 ,12 *2* pi_greco/28., 0.5));
@@ -151,20 +213,29 @@ int main(int argc, char **argv){
 //          printf(" %d %d %d %d %d %d\n",zeta.moms(0,0) , zz.moms(0,0),zeta.moms(0,1) , zz.moms(0,1),zeta.moms(0,1) , zz.moms(0,1) );
 //          printf(" %d %d %d %d %d %d\n",zeta.moms(1,0) , zz.moms(1,0),zeta.moms(1,1) , zz.moms(1,1),zeta.moms(1,1) , zz.moms(1,1) );
 //     }
-//       zeta.write();
-      zeta.read();
+      zeta.write();
+//      zeta.read();
+     for(int e=0+12; e< Ne+20;e++){
+         for(int im=0;im<10;im++){
+             printf("e=%d  L=%d im=%d  krange=[%g,%g] \n",e,zeta.Ls(e),im,
+                    sqrt(zeta.kmax(e,2,im))*(2.*pi_greco)/zeta.Ls(e),
+                    sqrt(zeta.kmin(e,2,im))*(2.*pi_greco)/zeta.Ls(e)
+                    );
+        }
+     }
 //      zeta_qsqg.Init(  );
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      // start fitting
      //////////////////////////////////////////////////////////////////////////////////////////////////
-     struct fit_type fit_info;
+     struct fit_type fit_info, fit_info_m0;
+     
      struct fit_result  fit_m1, fit_m0;
-     fit_info.Nvar=8;
-     fit_info.Npar=2;
-     fit_info.N=1;
-     fit_info.Njack=gjack[0].Njack;
-     fit_info.n_ext_P=0;
-     fit_info.function=M_finite_volume;
+     fit_info.Nvar=8;                   fit_info_m0.Nvar=8;            
+     fit_info.Npar=2;                   fit_info_m0.Npar=2;           
+     fit_info.N=1;                      fit_info_m0.N=1;
+     fit_info.Njack=gjack[0].Njack;     fit_info_m0.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;                fit_info_m0.n_ext_P=0;
+     fit_info.function=M_finite_volume; fit_info_m0.function=M_finite_volume;
 
      
      fit_m0=fit_data(argv,  paramsj ,gjack, M0_finite_volume_lhs ,fit_info, "M0_finite_vol" ,myen);
@@ -307,7 +378,7 @@ int main(int argc, char **argv){
      fit_info.function=rhs_k_from_phase_shift;
      
      struct fit_result k_from_phase_shift=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift",myen ,  {-0.121902,8.20332} );// {-0.948817,-114.788,0.0003987}
-     
+     print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "k_from_phase_shift",   k_from_phase_shift ,fit_m0,    paramsj,  myen);
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      printf("\n/////////////////////////////////   fit  k  form from_phase_shift   n4 //////////////////\n");
      //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -319,6 +390,7 @@ int main(int argc, char **argv){
      fit_info.n_ext_P=0;
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=rhs_k_from_phase_shift;
+     
      
      struct fit_result k_from_phase_shift_n4=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n4",myen ,  {-0.121902,8.20332} );// {-0.948817,-114.788,0.0003987}
      
@@ -336,6 +408,20 @@ int main(int argc, char **argv){
      
      struct fit_result k_from_phase_shift_n5=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5",myen ,  {-0.121902,8.20332} );// {-0.948817,-114.788,0.0003987}
      
+     
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     printf("\n/////////////////////////////////   k_from_phase_shift_acotZ  //////////////////\n");
+     //////////////////////////////////////////////////////////////////////////////////////////////////
+     
+     
+     fit_info.Npar=2;
+     fit_info.N=5;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=rhs_k_from_phase_shift;
+     
+     struct fit_result k_from_phase_shift_acotZ=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_acotZ",myen ,  {-0.121902,8.20332} );// {-0.948817,-114.788,0.0003987}
      
      
      return 0;
