@@ -281,28 +281,38 @@ void zeta_interpolation::Init_Lmq( std::vector<int>  Ls,  std::vector<double> ma
             kint[e][d]=(double**) malloc(sizeof(double*)*Nm);
             for (int im=0; im<Nm;im++){
                 //int dvec[3]={momenta[d][0],momenta[d][1],momenta[d][2]};
-                int dvec[3],dvec1[3],dvec2[3];
-                dvec[0]=mom[d][0]; dvec[1]=mom[d][1]; dvec[2]=mom[d][2];
+                int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+                dvec[0]=mom[d][0]; dvec[1]=mom[d][1]; dvec[2]=mom[d][2]; 
                 
                 if(d==0){//E2_0
                     dvec1[0]=0; dvec1[1]=0; dvec1[2]=0;
                     dvec2[0]=0; dvec2[1]=0; dvec2[2]=0;
+                    dmax1[0]=1; dmax1[1]=0; dmax1[2]=0;
+                    dmax2[0]=-1; dmax2[1]=0; dmax2[2]=0;
                 }
                 else if(d==1){//E2_0_p1
                     dvec1[0]=1; dvec1[1]=0; dvec1[2]=0;
                     dvec2[0]=0; dvec2[1]=0; dvec2[2]=0;
+                    dmax1[0]=1; dmax1[1]=1; dmax1[2]=0;
+                    dmax2[0]=0; dmax2[1]=-1; dmax2[2]=0;
                 }
                 else if(d==2){//E2_0_p11
                     dvec1[0]=1; dvec1[1]=1; dvec1[2]=0;
                     dvec2[0]=0; dvec2[1]=0; dvec2[2]=0;
+                    dmax1[0]=1; dmax1[1]=0; dmax1[2]=0;
+                    dmax2[0]=0; dmax2[1]=1; dmax2[2]=0;
                 }
                 else if(d==4){//E2_0_p111
                     dvec1[0]=1; dvec1[1]=1; dvec1[2]=1;
                     dvec2[0]=0; dvec2[1]=0; dvec2[2]=0;
+                    dmax1[0]=1; dmax1[1]=1; dmax1[2]=0;
+                    dmax2[0]=0; dmax2[1]=0; dmax2[2]=1;
                 }
                 else if(d==3){//E2_0_A1
                     dvec1[0]=1; dvec1[1]=0; dvec1[2]=0;
                     dvec2[0]=-1; dvec2[1]=0; dvec2[2]=0;
+                    dmax1[0]=1; dmax1[1]=0; dmax1[2]=1;
+                    dmax2[0]=-1; dmax2[1]=0; dmax2[2]=-1;
                 }
                 else {
                     exit(1);
@@ -315,8 +325,8 @@ void zeta_interpolation::Init_Lmq( std::vector<int>  Ls,  std::vector<double> ma
                 double ECMfsq=Ef*Ef-(dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
                 double kf=(ECMfsq/4. -m[e][im]*m[e][im]/twopiL2);
                 krange[e][d][im][0]=kf;//+1e-10;
-                E1f=sqrt(m[e][im]*m[e][im]/twopiL2+((dvec1[0])*(dvec1[0])+dvec1[1]*dvec1[1]+(dvec1[2]+1)*(dvec1[2]+1))   );
-                E2f=sqrt(m[e][im]*m[e][im]/twopiL2+((dvec2[0])*(dvec2[0])+dvec2[1]*dvec2[1]+(dvec2[2]-1)*(dvec2[2]-1))   );
+                E1f=sqrt(m[e][im]*m[e][im]/twopiL2+((dmax1[0])*(dmax1[0])+dmax1[1]*dmax1[1]+(dmax1[2])*(dmax1[2]))   );
+                E2f=sqrt(m[e][im]*m[e][im]/twopiL2+((dmax2[0])*(dmax2[0])+dmax2[1]*dmax2[1]+(dmax2[2])*(dmax2[2]))   );
                 Ef=E1f+E2f;
                 ECMfsq=Ef*Ef-((dvec[0])*(dvec[0])+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
                 double kf1=(ECMfsq/4.-m[e][im]*m[e][im]/twopiL2);
@@ -582,6 +592,7 @@ void zeta_interpolation::write(){
 
     
 void zeta_interpolation::read(){
+    error(allocated==0,1,"zeta_interpolation::read", "zeta grid already allocated");
     FILE *f=open_file("zeta_interpolation.dat","r+");
     double a=timestamp();
     size_t ir;

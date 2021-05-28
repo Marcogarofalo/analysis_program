@@ -79,14 +79,13 @@ void print_fit_band_L_M(char **argv,vector<data_phi> gjack ,struct fit_type fit_
                 
                 
                 tmpy[j]=fit_info.function(n,Nvar,tmpx,Npar,tif[j]);
-                if (fabs(finalL-36)<1e-5  && n==2)
-                    printf("%g   j=%d \t k=%g  m=%g P0=%g  P1=%g\n",finalL,j,tmpy[j], tmpx[1], tif[j][0] ,tif[j][1]  );
-                
+//                 if (fabs(finalL-36)<1e-5  && n==2)
+//                     printf("%g   j=%d \t k=%g  m=%g P0=%g  P1=%g\n",finalL,j,tmpy[j], tmpx[1], tif[j][0] ,tif[j][1]  );
+//                 
             }
-            if (fabs(finalL-36)<1e-5  && n==2){
+            /*if (fabs(finalL-36)<1e-5  && n==2){
                 printf("%g  \t %g  %g\n",finalL,tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
-                
-            }
+            }*/
             fprintf(f,"%g  \t %g  %g\n",finalL,tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
             
             
@@ -202,7 +201,7 @@ int main(int argc, char **argv){
          err_mass.emplace_back(  error_jackboot(argv[1],Njack, gjack[e1].jack[1] )  );
      }
      
-        zeta.Init_Lmq(Ls, masses, err_mass  );
+//       zeta.Init_Lmq(Ls, masses, err_mass  );
 //       zeta_interpolation   zz;
 //      zz.Init(argv[1] , myen , paramsj ,gjack  );
 //      for(int e=0; e< Ne;e++){
@@ -213,8 +212,8 @@ int main(int argc, char **argv){
 //          printf(" %d %d %d %d %d %d\n",zeta.moms(0,0) , zz.moms(0,0),zeta.moms(0,1) , zz.moms(0,1),zeta.moms(0,1) , zz.moms(0,1) );
 //          printf(" %d %d %d %d %d %d\n",zeta.moms(1,0) , zz.moms(1,0),zeta.moms(1,1) , zz.moms(1,1),zeta.moms(1,1) , zz.moms(1,1) );
 //     }
-      zeta.write();
-//      zeta.read();
+//       zeta.write();
+       zeta.read();
      for(int e=0+12; e< Ne+20;e++){
          for(int im=0;im<10;im++){
              printf("e=%d  L=%d im=%d  krange=[%g,%g] \n",e,zeta.Ls(e),im,
@@ -377,8 +376,10 @@ int main(int argc, char **argv){
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=rhs_k_from_phase_shift;
      
-     struct fit_result k_from_phase_shift=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift",myen ,  {-0.121902,8.20332} );// {-0.948817,-114.788,0.0003987}
+     struct fit_result k_from_phase_shift=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift",myen ,  {-0.121902,-100} );// {-0.948817,-114.788,0.0003987}
      print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "k_from_phase_shift",   k_from_phase_shift ,fit_m0,    paramsj,  myen);
+     
+     
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      printf("\n/////////////////////////////////   fit  k  form from_phase_shift   n4 //////////////////\n");
      //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -392,7 +393,8 @@ int main(int argc, char **argv){
      fit_info.function=rhs_k_from_phase_shift;
      
      
-     struct fit_result k_from_phase_shift_n4=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n4",myen ,  {-0.121902,8.20332} );// {-0.948817,-114.788,0.0003987}
+     struct fit_result k_from_phase_shift_n4=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n4",myen ,  {-0.121902,-80.20332} );// {-0.948817,-114.788,0.0003987}
+     print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "k_from_phase_shift_n4",   k_from_phase_shift_n4 ,fit_m0,    paramsj,  myen);
      
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      printf("\n/////////////////////////////////   fit  k  form from_phase_shift   n5  //////////////////\n");
@@ -406,22 +408,25 @@ int main(int argc, char **argv){
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=rhs_k_from_phase_shift;
      
-     struct fit_result k_from_phase_shift_n5=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5",myen ,  {-0.121902,8.20332} );// {-0.948817,-114.788,0.0003987}
+     struct fit_result k_from_phase_shift_n5=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5",myen ,  {-0.121902,-80.20332} );// {-0.948817,-114.788,0.0003987}
+     print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "k_from_phase_shift_n5",   k_from_phase_shift_n5 ,fit_m0,    paramsj,  myen);
      
      
      ///////////////////////////////////////////////////////////////////////////////////////////////////
-     printf("\n/////////////////////////////////   k_from_phase_shift_acotZ  //////////////////\n");
+     printf("\n/////////////////////////////////   fit  k  form from_phase_shift   n5 3par  //////////////////\n");
      //////////////////////////////////////////////////////////////////////////////////////////////////
      
      
-     fit_info.Npar=2;
+     fit_info.Npar=3;
      fit_info.N=5;
      fit_info.Njack=gjack[0].Njack;
      fit_info.n_ext_P=0;
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=rhs_k_from_phase_shift;
      
-     struct fit_result k_from_phase_shift_acotZ=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_acotZ",myen ,  {-0.121902,8.20332} );// {-0.948817,-114.788,0.0003987}
+     struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.11,-950, 6.4e-6} );// {-0.948817,-114.788,0.0003987}
+     print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "k_from_phase_shift_n5_3par",   k_from_phase_shift_3par ,fit_m0,    paramsj,  myen);
+     
      
      
      return 0;

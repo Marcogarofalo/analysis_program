@@ -1425,7 +1425,6 @@ double rtnewt(double (*func)(int , int , double*,int,double*),int n, int Nvar, d
 //              float xacc)
 double  rtsafe(double (*func)(int , int , double*,int,double*), int n, int Nvar, double *x,int Npar, double *P, int ivar,double input,   double x1, double x2 ,  float xacc, int JMAX, double h)
 {
-    void nrerror(char error_text[]);
     int j;
     double df,dx,dxold,f,fh,fl;
     double temp,xh,xl,rts;
@@ -1463,9 +1462,9 @@ double  rtsafe(double (*func)(int , int , double*,int,double*), int n, int Nvar,
     for (j=1;j<=MAXIT;j++) {//     Loop over allowed iterations.
         if ((((rts-xh)*df-f)*((rts-xl)*df-f) > 0.0) || (fabs(2.0*f) > fabs(dxold*df))) { //      Bisect if Newton out of range,   or not decreasing fast enough.
             dxold=dx;
-        dx=0.5*(xh-xl);
-        rts=xl+dx;
-        if (xl == rts) return rts; // Change in root is negligible.
+            dx=0.5*(xh-xl);
+            rts=xl+dx;
+            if (xl == rts) return rts; // Change in root is negligible.
         }
         else {  //Newton step acceptable. Take it.
             dxold=dx;

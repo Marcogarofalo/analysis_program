@@ -14,7 +14,7 @@ private:
     int etot;
     int ntot=5;
 //     double h=1e-4;
-    int Nh=2000;
+    int Nh=1000;
     int Nm=10;
     
 //     double maxk;

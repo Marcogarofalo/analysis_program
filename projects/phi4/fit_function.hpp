@@ -7,6 +7,8 @@
 #include <time.h>
 #include <string.h>
 #include <complex.h>
+#include <random>
+
 #include "linear_fit.hpp"
 #include "non_linear_fit.hpp"
 #include "mutils.hpp"
@@ -108,32 +110,42 @@ double rhs_kcotd(int n, int Nvar, double *x,int Npar,double  *P){
     return 1.0/a0  + r0*k*k/2. - P2*r0*r0*r0*k*k*k*k;
 
 }
-void init_dvec(int n,int *dvec,int *dvec1, int *dvec2){
+void init_dvec(int n,int *dvec,int *dvec1, int *dvec2, int *dmax1, int *dmax2 ){
     
     if(n==0){//E2_0
         dvec[0]=0; dvec[1]=0; dvec[2]=0;
         dvec1[0]=0; dvec1[1]=0; dvec1[2]=0;
         dvec2[0]=0; dvec2[1]=0; dvec2[2]=0;
+        dmax1[0]=1; dmax1[1]=0; dmax1[2]=0;
+        dmax2[0]=-1; dmax2[1]=0; dmax2[2]=0;
     }
     else if(n==1){//E2_0_p1
         dvec[0]=1; dvec[1]=0; dvec[2]=0;
         dvec1[0]=1; dvec1[1]=0; dvec1[2]=0;
         dvec2[0]=0; dvec2[1]=0; dvec2[2]=0;
+        dmax1[0]=1; dmax1[1]=1; dmax1[2]=0;
+        dmax2[0]=0; dmax2[1]=-1; dmax2[2]=0;
     }
     else if(n==2){//E2_0_p11
         dvec[0]=1; dvec[1]=1; dvec[2]=0;
         dvec1[0]=1; dvec1[1]=1; dvec1[2]=0;
         dvec2[0]=0; dvec2[1]=0; dvec2[2]=0;
+        dmax1[0]=1; dmax1[1]=0; dmax1[2]=0;
+        dmax2[0]=0; dmax2[1]=1; dmax2[2]=0;
     }
     else if(n==4){//E2_0_p111
         dvec[0]=1; dvec[1]=1; dvec[2]=1;
         dvec1[0]=1; dvec1[1]=1; dvec1[2]=1;
         dvec2[0]=0; dvec2[1]=0; dvec2[2]=0;
+        dmax1[0]=1; dmax1[1]=1; dmax1[2]=0;
+        dmax2[0]=0; dmax2[1]=0; dmax2[2]=1;
     }
     else if(n==3){//E2_0_A1
         dvec[0]=0; dvec[1]=0; dvec[2]=0;
         dvec1[0]=1; dvec1[1]=0; dvec1[2]=0;
         dvec2[0]=-1; dvec2[1]=0; dvec2[2]=0;
+        dmax1[0]=1; dmax1[1]=0; dmax1[2]=1;
+        dmax2[0]=-1; dmax2[1]=0; dmax2[2]=-1;
     }
     else {
         exit(1);
@@ -146,9 +158,9 @@ double to_invert_k_from_phase_shift(int n, int Nvar, double *x,int Npar,double  
     double L=x[0];
     double mass=x[1];
     double k=x[2];
-    int dvec[3],dvec1[3],dvec2[3];
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
     
-    init_dvec(n,dvec,dvec1,dvec2);
+    init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
     
     double E2_CM=sqrt(k*k+mass*mass)*2.;
     double E2=sqrt( (k*k+mass*mass)*4.+ (2*pi_greco/L)*(2*pi_greco/L)*( dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]   )  );
@@ -158,9 +170,12 @@ double to_invert_k_from_phase_shift(int n, int Nvar, double *x,int Npar,double  
     double A=1.;
     double z[2];
 //       printf("a0=%.12g   r0=%.12g    P2=%.12g  dvec=(%d,%d,%d)\n",a0,r0,P2,dvec[0] ,dvec[1] ,dvec[2]);
-//      dzeta_function(z,  qsq,0 , 0, dvec, gamma, A, 1.e-3, 1.e6 ,3);
     
     double zinter=zeta.compute( L,  n,  mass/*(L/(2*pi_greco))*/ ,  qsq);
+//     if(n==2 && fabs(L-36)<1e-3){
+//         dzeta_function(z,  qsq,0 , 0, dvec, gamma, A, 1.e-3, 1.e6 ,3);
+//         printf("zeta=%g  zint=%g    qsq=%g  gamma=%g  L=%g   mass=%g\n",z[0],zinter,qsq,gamma,L,mass);
+//     }
 //     double zinter=zeta_qsqg.compute(qsq,n,gamma);
      z[0]=zinter; z[1]=0;
     
@@ -171,14 +186,10 @@ double to_invert_k_from_phase_shift(int n, int Nvar, double *x,int Npar,double  
     double r=real(zc*2.*pi_greco/( pow(pi_greco,3./2.) *L*gamma*mass )    );
 //     double kcotdelta=1.0/a0  + r0*k*k/2. - P2*r0*r0*r0*k*k*k*k;
     double kcotdelta_m=1.0/a0m0+ + r0_m0*k*k/2.;  //   (k cot(d) )/ mass
-    
-//     if (fabs((z[0]-zinter)/z[0])>1e-4 )    {
-//          printf("%g  %g   im=%g \n",z[0],zinter,z[1]);
-//          printf("zeta input: k=%g qsq=%g   dvec=(%d,%d,%d) gamma=%g   L=%g mass=%g fun=%g\n ",k,qsq,dvec[0] ,dvec[1] ,dvec[2], gamma, L, mass, kcotdelta_m-r);
-//         
-//     }
-    
-//      printf("kcotdelta_m =%g  k=%g   r=%g  qsq=%g  gamma=%g  z=%g, %g   fun=%g  dvec=(%d,%d,%d)\n",kcotdelta_m,k,r,qsq,gamma,z[0],z[1], kcotdelta_m-r,dvec[0] ,dvec[1] ,dvec[2]);
+    if (Npar>=3){
+        kcotdelta_m-=P[2]*r0_m0*r0_m0*r0_m0*k*k*k*k;
+    }
+//      if(n==2 && fabs(L-36)<1e-3)  printf("kcotdelta_m =%g  k=%g   r=%g  qsq=%g  gamma=%g  z=%g, %g   fun=%g  dvec=(%d,%d,%d)\n",kcotdelta_m,k,r,qsq,gamma,z[0],z[1], kcotdelta_m-r,dvec[0] ,dvec[1] ,dvec[2]);
 //    std::cout<< "ZC " << zc << "       q "<< q<<endl;
 //     printf(" k=%g   fit=%g        mass=%g    dvec=(%d,%d,%d) E2CM=%g\n ",k, r/kcotdelta  ,mass, dvec[0] ,dvec[1] ,dvec[2], E2_CM);
     return         kcotdelta_m-r;
@@ -192,22 +203,22 @@ double rhs_k_from_phase_shift(int n, int Nvar, double *x,int Npar,double  *P){
     //double p[5]={0 ,2.*pi_greco/x[0], sqrt(2)*2.*pi_greco/x[0] , sqrt(3)*2.*pi_greco/x[0],0 };
     
 //      printf("before   n=%d   L=%g   m=%g  a=%g  r=%g   P=%g\n",n,x[0],x[1],P[0],P[1],P[2]);
-    int dvec[3],dvec1[3],dvec2[3];
-    init_dvec(n,dvec,dvec1,dvec2);
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
     double mass=x[1];
     double L=x[0];
     // xmin have to be k in free theory
-     double E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
-     double E2f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
-     double Ef=E1f+E2f;
-     double ECMfsq=Ef*Ef-(2*pi_greco/L)*(2*pi_greco/L)*(dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
-     double gamma=E2f/sqrt(ECMfsq);
+
+    double E1f=sqrt(mass*mass+(2.*pi_greco/L)*(2.*pi_greco/L)*(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
+    double E2f=sqrt(mass*mass+(2.*pi_greco/L)*(2.*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
+    double Ef=E1f+E2f;
+    double ECMfsq=Ef*Ef-(2*pi_greco/L)*(2*pi_greco/L)*(dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
+    double gamma=E2f/sqrt(ECMfsq);
  
-     double kf=sqrt(ECMfsq/4. -mass*mass);
+    double kf=sqrt(ECMfsq/4. -mass*mass);
     
-    
-    E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dvec1[0])*(dvec1[0])+dvec1[1]*dvec1[1]+(dvec1[2]+1)*(dvec1[2]+1))   );
-    E2f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dvec2[0])*(dvec2[0])+dvec2[1]*dvec2[1]+(dvec2[2]-1)*(dvec2[2]-1))   );
+    E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dmax1[0])*(dmax1[0])+dmax1[1]*dmax1[1]+(dmax1[2])*(dmax1[2]))   );
+    E2f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dmax2[0])*(dmax2[0])+dmax2[1]*dmax2[1]+(dmax2[2])*(dmax2[2]))   );
     Ef=E1f+E2f;
     ECMfsq=Ef*Ef-(2*pi_greco/L)*(2*pi_greco/L)*((dvec[0])*(dvec[0])+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
     double kf1=sqrt(ECMfsq/4.-mass*mass);
@@ -215,11 +226,19 @@ double rhs_k_from_phase_shift(int n, int Nvar, double *x,int Npar,double  *P){
 
     double xmin=kf+1e-6;
     double xmax=kf1-1e-6;//- (kf1-kf)/1e+3;
-   
-    E2=rtsafe( to_invert_k_from_phase_shift , n,  3, xx, Npar, P, 2/*ivar*/,0. /*input*/,    xmin, xmax,  1e-5, 100, 1e-4);
+//     if(n==2 && fabs(L-36)<1e-3) 
+//         printf("L=%g  n=%d      P0=%g  P1=%g  P2=%g  kmin=%g  kmax=%g   d=(%d,%d,%d)=(%d,%d,%d)+(%d,%d,%d)\n",L,n,P[0],P[1],P[2],xmin,xmax,
+//                 dvec[0],dvec[1],dvec[2], dvec1[0],dvec1[1],dvec1[2], dvec2[0],dvec2[1],dvec2[2]    );
+    E2=rtsafe( to_invert_k_from_phase_shift , n,  3, xx, Npar, P, 2/*ivar*/,0. /*input*/,    xmin, xmax,  1e-5, 100, 4e-5);
 
+    
     return E2/mass;
 }
+
+
+
+
+
 
 
 double to_invert_k_from_phase_shift_cotZ(int n, int Nvar, double *x,int Npar,double  *P){
@@ -227,9 +246,8 @@ double to_invert_k_from_phase_shift_cotZ(int n, int Nvar, double *x,int Npar,dou
     double L=x[0];
     double mass=x[1];
     double k=x[2];
-    int dvec[3],dvec1[3],dvec2[3];
-    
-    init_dvec(n,dvec,dvec1,dvec2);
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
     
     double E2_CM=sqrt(k*k+mass*mass)*2.;
     double E2=sqrt( (k*k+mass*mass)*4.+ (2*pi_greco/L)*(2*pi_greco/L)*( dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]   )  );
@@ -259,8 +277,8 @@ double rhs_k_from_phase_shift_cotZ(int n, int Nvar, double *x,int Npar,double  *
     //double p[5]={0 ,2.*pi_greco/x[0], sqrt(2)*2.*pi_greco/x[0] , sqrt(3)*2.*pi_greco/x[0],0 };
     
     //      printf("before   n=%d   L=%g   m=%g  a=%g  r=%g   P=%g\n",n,x[0],x[1],P[0],P[1],P[2]);
-    int dvec[3],dvec1[3],dvec2[3];
-    init_dvec(n,dvec,dvec1,dvec2);
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
     double mass=x[1];
     double L=x[0];
     // xmin have to be k in free theory
@@ -294,9 +312,8 @@ double to_invert_q_from_phase_shift(int n, int Nvar, double *x,int Npar,double  
 
     double mL_2pi=x[0];
     double q=x[1];
-    int dvec[3],dvec1[3],dvec2[3];
-    
-    init_dvec(n,dvec,dvec1,dvec2);
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
     
     double E2_CM=sqrt(q*q+mL_2pi*mL_2pi)*2.;
     double E2=sqrt( (q*q+mL_2pi*mL_2pi)*4.+ ( dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]   )  );
@@ -322,8 +339,8 @@ double to_invert_q_from_phase_shift(int n, int Nvar, double *x,int Npar,double  
 double rhs_q_from_phase_shift(int n, int Nvar, double *x,int Npar,double  *P){
     double q;
     double xx[3] ; 
-    int dvec[3],dvec1[3],dvec2[3];
-    init_dvec(n,dvec,dvec1,dvec2);
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
     double mL_2pi=x[7];
     
     double E1f=sqrt(mL_2pi*mL_2pi+(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
@@ -799,9 +816,10 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
 
     ////// allocation end
     /////////////// init
+    std::mt19937 mt_rand(123);
     if (start_point.size()==0){
         for (int i=0;i<Npar;i++)
-            guess[i]=rand()/((double)RAND_MAX);
+            guess[i]=mt_rand()/((double)mt_rand.max() );//rand()/((double)RAND_MAX);
     }
     else{
         for (int i=0;i<start_point.size();i++)
@@ -869,12 +887,21 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
         if (strcmp(label,"k_from_phase_shift")==0 ){
             double a=timestamp();
             
-            fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess,0.001, 0.01, 1e-3 ,{1000,1000,1000}, 2);
+            fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess,0.001, 0.01, 1e-3 ,{100,100,100}, 2);
             fit_out.chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
             printf("jack =%d  chi2/dof=%g   chi2=%g   time=%g    1/a0m0=%g   -a0m0=%g\n",j,fit_out.chi2[j],fit_out.chi2[j]*(en_tot-Npar) , timestamp( )-a, fit[j][0] ,-1./fit[j][0] );
             
+        }
+        else if ( strcmp(label,"k_from_phase_shift_n5_3par")==0 ){
+            double a=timestamp();
+            
+            fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess,0.001, 0.01, 1e-3 ,{100,100,100}, 2);
+            fit_out.chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+            printf("jack =%d  chi2/dof=%g   chi2=%g   time=%g    1/a0m0=%g   P[1]=%g  P[2=%g]\n",j,fit_out.chi2[j],fit_out.chi2[j]*(en_tot-Npar) , timestamp( )-a, fit[j][0] ,fit[j][1],fit[j][2] );
             
         }
+        
+        
         else {
             fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
         //tmp=non_linear_fit_Nf_sigmax( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess );
