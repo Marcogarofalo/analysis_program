@@ -181,15 +181,36 @@ int main(int argc, char **argv){
     FILE *jack_file=open_file(namefile,"w+");
     write_header_BSM_bin(header,jack_file);
     
+    int var_to_read=correlators.size();
+    correlators.emplace_back("JTILDEA1P1TRIVIALphi");
+    correlators.emplace_back("P1DP1NONSMEAREDNONTRIVIALphi");
     int var=correlators.size();
     data=calloc_corr(confs, var,  header.T );
+    int tau=5;
+    
     for (int iconf=0; iconf< confs ;iconf++){
         
-        for(int i =0 ; i< correlators.size(); i++)
+        for(int i =0 ; i< 8; i++){//var_to_read
             for (int t =0; t< header.T;t++)
                 fscanf(f_correlators[i],"%lf  %lf\n",&data[iconf][i][t][0],&data[iconf][i][t][1]);
+        }
                 //read_twopt(f_correlators[i], iconf, &data[iconf][i], params,i);
+        for (int t =0; t< header.T;t++){
+            int tptau=(t+tau)%T;
+            data[iconf][8][t][0]= (data[iconf][0][(t+1)%T][0]-data[iconf][0][t][0])*data[iconf][7][tptau][0];
+            data[iconf][8][t][1]=0;
+            data[iconf][9][t][0]= data[iconf][5][t][0]*data[iconf][7][tptau][0];
+            data[iconf][9][t][1]=0;
+        }
+        for(int i =8 ; i<var_to_read ; i++){//var_to_read
+            for (int t =0; t< header.T;t++)
+                fscanf(f_correlators[i],"%lf  %lf\n",&data[iconf][i+2][t][0],&data[iconf][i+2][t][1]);
+        }
+        
     }
+    
+    
+    
 //forward_derivative_corr(confs,0,header.T,data);
     symmetrise_corr(confs, 1, header.T,data);    
     symmetrise_corr(confs, 2, header.T,data);
@@ -222,19 +243,19 @@ int main(int argc, char **argv){
     for(int icorr=0; icorr<correlators.size(); icorr++ ){
         //log effective mass
         double *tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  header.Njack
-        ,namefile_plateaux,outfile_meff_corr,icorr,"meff_corr", M_eff_log,dev_null);
+        ,namefile_plateaux,outfile_meff_corr,icorr,(char*) correlators[icorr].c_str(), M_eff_log,dev_null);
         free(tmp_meff_corr);
         //raw correlator
         tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,
-                                                      namefile_plateaux,outfile_raw_corr,icorr,"raw_corr", identity,dev_null);
+                                                      namefile_plateaux,outfile_raw_corr,icorr,(char*) correlators[icorr].c_str(), identity,dev_null);
         free(tmp_meff_corr);
         // shifted correlator
         tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,
-                                                      namefile_plateaux,outfile_shifted_corr,icorr,"shifted_corr", shift_corr,dev_null);
+                                                      namefile_plateaux,outfile_shifted_corr,icorr,(char*) correlators[icorr].c_str(), shift_corr,dev_null);
         free(tmp_meff_corr);
         // log_meff shifted correlator
         tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack
-        ,namefile_plateaux,outfile_log_meff_shifted,icorr,"log_meff_shifted", M_eff_log_shift,dev_null);
+        ,namefile_plateaux,outfile_log_meff_shifted,icorr,(char*) correlators[icorr].c_str(), M_eff_log_shift,dev_null);
         free(tmp_meff_corr);
     }
     sprintf(option[1],"%s",save_option);// restore option
@@ -258,9 +279,13 @@ int main(int argc, char **argv){
     
     //c++ 1 || r 2
     fit_result fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1phi", conf_jack ,namefile_plateaux, outfile, 
-                                              r_AWI<4>, "r_AWI",  fit_info, jack_file );
+                                              r_AWI, "r_AWI",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1", conf_jack ,namefile_plateaux, outfile, 
                                               m_PCAC, "m_PCAC",  fit_info, jack_file );
+    free_fit_result(fit_info,fit_out);
+      
+    
+    
     
 }
