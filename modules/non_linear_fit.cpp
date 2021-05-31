@@ -797,7 +797,7 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
 
 // x[ensemble][variable number] ,   y[ensemble][0=mean,1=error], fun(index_function,Nvariables,variables[], Nparameters,parameters[])
 //the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 
-double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess ){
+double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess ,int repeat){
   
     int i,j,jmax,k,e,n;
     double en_tot=0;
@@ -822,77 +822,19 @@ double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **
     chi2_tmp1=chi2;
 
     for (j=0;j<jmax;j++){
-        for(i=0;i<Npar;i++){
-            r=mt_rand()/((double)mt_rand.max() );
-            guess[i]=((r/rm)-0.5)*(j+1);
-          //  printf("%f\t",guess[i]);
-        }
-       // printf("\n");
-        P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess );
-        chi2_tmp=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun)/(en_tot-Npar);
-        //printf("chi2=%.10f \tchi2_tmp=%.10f   dof=%f\n",chi2,chi2_tmp,en_tot-Npar);
-        /*for(i=0;i<Npar;i++)
-            printf("P[%d]=%g\t",i,P[i]);
-        printf("\n");*/
-        if (fabs(chi2-chi2_tmp)<1e-3 ){
-            gmax=gmax*10;//printf("the chi2 didn't change\n\n");
-            free(P_tmp);
-        }
-        else if (chi2_tmp-chi2<-1e-3 ){
-            free(P); P=P_tmp;
-            chi2=chi2_tmp;
-            //printf("chi2 smaller founded\n\n");
-        }
-        else{
-            free(P_tmp);//printf("chi2 LARGER\n\n");
-            chi2_tmp1=chi2_tmp;
-        }
-    }
-    //do an other loop if chi2 still large
-    if (chi2> 10 || chi2!=chi2 ){
-      for (j=0;j<jmax;j++){
-        for(i=0;i<Npar;i++){
-            r=mt_rand()/((double)mt_rand.max() );
-            guess[i]=((r/rm)-0.5)*exp(j-jmax/2);
-          //  printf("%f\t",guess[i]);
-        }
-       // printf("\n");
-        P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess );
-        chi2_tmp=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun)/(en_tot-Npar);
-        //printf("chi2=%.10f \tchi2_tmp=%.10f\n",chi2,chi2_tmp);
-        /*for(i=0;i<Npar;i++)
-            printf("P[%d]=%g\t",i,P[i]);
-        printf("\n");*/
-        if (fabs(chi2-chi2_tmp)<1e-3 ){
-            gmax=gmax*10;//printf("the chi2 didn't change\n\n");
-            free(P_tmp);
-        }
-        else if (chi2_tmp-chi2<-1e-3 ){
-            free(P); P=P_tmp;
-            chi2=chi2_tmp;
-            //printf("chi2 smaller founded\n\n");
-        }
-        else{
-            free(P_tmp);//printf("chi2 LARGER\n\n");
-            chi2_tmp1=chi2_tmp;
-        }
-      }
-    }
-    //do an other loop if chi2 still large
-    if (chi2> 10 || chi2!=chi2 ){
-        for (j=0;j<jmax;j++){
+        for(int ir=0;ir<repeat;ir++){
             for(i=0;i<Npar;i++){
                 r=mt_rand()/((double)mt_rand.max() );
-                guess[i]=((r/rm)-0.5)/exp(j-jmax/2);
-                //  printf("%f\t",guess[i]);
+                guess[i]=((r/rm)-0.5)*(j+1);
+            //  printf("%f\t",guess[i]);
             }
-            // printf("\n");
+        // printf("\n");
             P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess );
             chi2_tmp=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun)/(en_tot-Npar);
-           // printf("chi2=%.10f \tchi2_tmp=%.10f\n",chi2,chi2_tmp);
+            //printf("chi2=%.10f \tchi2_tmp=%.10f   dof=%f\n",chi2,chi2_tmp,en_tot-Npar);
             /*for(i=0;i<Npar;i++)
-             *       printf("P[%d]=%g\t",i,P[i]);
-             *   printf("\n");*/
+                printf("P[%d]=%g\t",i,P[i]);
+            printf("\n");*/
             if (fabs(chi2-chi2_tmp)<1e-3 ){
                 gmax=gmax*10;//printf("the chi2 didn't change\n\n");
                 free(P_tmp);
@@ -905,6 +847,71 @@ double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **
             else{
                 free(P_tmp);//printf("chi2 LARGER\n\n");
                 chi2_tmp1=chi2_tmp;
+            }
+        }
+    }
+    //do an other loop if chi2 still large
+    if (chi2> 10 || chi2!=chi2 ){
+        for (j=0;j<jmax;j++){
+            for(int ir=0;ir<repeat;ir++){
+                
+                for(i=0;i<Npar;i++){
+                    r=mt_rand()/((double)mt_rand.max() );
+                    guess[i]=((r/rm)-0.5)*exp(j-jmax/2);
+                //  printf("%f\t",guess[i]);
+                }
+            // printf("\n");
+                P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess );
+                chi2_tmp=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun)/(en_tot-Npar);
+                //printf("chi2=%.10f \tchi2_tmp=%.10f\n",chi2,chi2_tmp);
+                /*for(i=0;i<Npar;i++)
+                    printf("P[%d]=%g\t",i,P[i]);
+                printf("\n");*/
+                if (fabs(chi2-chi2_tmp)<1e-3 ){
+                    gmax=gmax*10;//printf("the chi2 didn't change\n\n");
+                    free(P_tmp);
+                }
+                else if (chi2_tmp-chi2<-1e-3 ){
+                    free(P); P=P_tmp;
+                    chi2=chi2_tmp;
+                    //printf("chi2 smaller founded\n\n");
+                }
+                else{
+                    free(P_tmp);//printf("chi2 LARGER\n\n");
+                    chi2_tmp1=chi2_tmp;
+                }
+            }
+        }
+    }
+    //do an other loop if chi2 still large
+    if (chi2> 10 || chi2!=chi2 ){
+        for (j=0;j<jmax;j++){
+            for(int ir=0;ir<repeat;ir++){
+                for(i=0;i<Npar;i++){
+                    r=mt_rand()/((double)mt_rand.max() );
+                    guess[i]=((r/rm)-0.5)/exp(j-jmax/2);
+                    //  printf("%f\t",guess[i]);
+                }
+                // printf("\n");
+                P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess );
+                chi2_tmp=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun)/(en_tot-Npar);
+            // printf("chi2=%.10f \tchi2_tmp=%.10f\n",chi2,chi2_tmp);
+                /*for(i=0;i<Npar;i++)
+                *       printf("P[%d]=%g\t",i,P[i]);
+                *   printf("\n");*/
+                if (fabs(chi2-chi2_tmp)<1e-3 ){
+                    gmax=gmax*10;//printf("the chi2 didn't change\n\n");
+                    free(P_tmp);
+                }
+                else if (chi2_tmp-chi2<-1e-3 ){
+                    free(P); P=P_tmp;
+                    chi2=chi2_tmp;
+                    //printf("chi2 smaller founded\n\n");
+                }
+                else{
+                    free(P_tmp);//printf("chi2 LARGER\n\n");
+                    chi2_tmp1=chi2_tmp;
+                }
             }
         }
     }

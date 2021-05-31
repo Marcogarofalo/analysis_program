@@ -375,6 +375,11 @@ int main(int argc, char **argv){
      fit_info.n_ext_P=0;
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=rhs_k_from_phase_shift;
+     fit_info.lambda=0.001;
+     fit_info.acc=0.01;
+     fit_info.h=1e-3;
+     fit_info.Prange={100,100,100};
+     fit_info.devorder=2;
      
      struct fit_result k_from_phase_shift=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift",myen ,  {-0.121902,-100} );// {-0.948817,-114.788,0.0003987}
      print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "k_from_phase_shift",   k_from_phase_shift ,fit_m0,    paramsj,  myen);

@@ -80,6 +80,22 @@ void phase_shift(double *E2,double *mass, int  *dvec,int L,FILE *outfile, int Nj
     
 }
 
+void E3_print_extra(double *E3,double *mass, int  *dvec,int L,FILE *outfile, int Njack, char *jackboot){
+    fprintf(outfile,"#E2_CM   err  E2_CM/M   err  k errk \n " );
+    double *E3_CM=(double*) malloc(sizeof(double)*Njack);
+    //int dvec[3]= {1,1,1};
+    double *k=(double*) malloc(sizeof(double)*Njack);
+    for (int j=0;j< Njack;j++){
+        E3_CM[j]=energy_CM(E3[j],dvec,L);
+        k[j]=sqrt(E3_CM[j]*E3_CM[j]/4. -mass[j]*mass[j]);
+    }
+    fprintf(outfile,"%.12g  %.12g  \t ", E3_CM[Njack-1],error_jackboot(jackboot,Njack,E3_CM ) );
+    for (int j=0;j< Njack;j++)
+        E3_CM[j]/=mass[j];
+    fprintf(outfile,"%.12g  %.12g  \t ", E3_CM[Njack-1],error_jackboot(jackboot,Njack,E3_CM ) );
+    
+    fprintf(outfile,"\n");
+}
 
 
 

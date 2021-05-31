@@ -886,16 +886,16 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
     for (int j=Njack-1;j>=0;j--){
         if (strcmp(label,"k_from_phase_shift")==0 ){
             double a=timestamp();
-            
-            fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess,0.001, 0.01, 1e-3 ,{100,100,100}, 2);
+            fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function, guess, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder);
+//             fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess,0.001, 0.01, 1e-3 ,{100,100,100}, 2);
             fit_out.chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
             printf("jack =%d  chi2/dof=%g   chi2=%g   time=%g    1/a0m0=%g   -a0m0=%g\n",j,fit_out.chi2[j],fit_out.chi2[j]*(en_tot-Npar) , timestamp( )-a, fit[j][0] ,-1./fit[j][0] );
             
         }
         else if ( strcmp(label,"k_from_phase_shift_n5_3par")==0 ){
             double a=timestamp();
-            
-            fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess,0.001, 0.01, 1e-3 ,{100,100,100}, 2);
+            fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function, guess, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder);
+//             fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess,0.001, 0.01, 1e-3 ,{100,100,100}, 2);
             fit_out.chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
             printf("jack =%d  chi2/dof=%g   chi2=%g   time=%g    1/a0m0=%g   P[1]=%g  P[2=%g]\n",j,fit_out.chi2[j],fit_out.chi2[j]*(en_tot-Npar) , timestamp( )-a, fit[j][0] ,fit[j][1],fit[j][2] );
             

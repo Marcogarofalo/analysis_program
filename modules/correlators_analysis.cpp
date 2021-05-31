@@ -331,6 +331,13 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
    for (i=0;i< fit_info.Npar; i++)
        guess[i]=1.;
    
+   if(fit_info.guess.size()>0){
+       error(fit_info.guess.size()>Npar,1,"try_fit", " more guess than parametes");
+       for (int i=0;i<fit_info.guess.size();i++)
+           guess[i]=fit_info.guess[i];
+       for (int i=fit_info.guess.size();i<Npar;i++)
+           guess[i]=1;
+   }
    
    
    chi2j=(double*) malloc(sizeof(double)*Njack);
@@ -362,14 +369,15 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
         }
         
     }
+//     if(fit_info.guess.size()==0)
+    guess=guess_for_non_linear_fit_Nf(N, en,x[Njack-1], y[Njack-1] , Nvar,  Npar, fit_info.function,guess ,fit_info.repeat_start);
     
    
     //for (j=0;j<Njack;j++){
     for (j=Njack-1;j>=0;j--){    
         //tmp=linear_fit( (tmax-tmin)/sep +1, x, y[j],  1,constant_fit_to_try );
-        if (j==Njack-1) guess=guess_for_non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
 
-        fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+        fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder );
         chi2j[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
         
         //chi2j[j]=compute_chisqr((tmax-tmin)/sep +1, x, y[j],  1, tmp, constant_fit_to_try )/((tmax-tmin)/sep +1);

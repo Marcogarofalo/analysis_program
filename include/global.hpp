@@ -1,7 +1,7 @@
 #ifndef global_H
 #define global_H
 
-
+#include <vector>
 
 #ifdef CONTROL 
 #define EXTERN 
@@ -206,6 +206,24 @@ struct  fit_type
   double (*f2)(int,int,double*,int,double*);
   int n_ext_P; //number of external parameter that will no be fitted
   double **ext_P;  //parameter to not fit, they will be add to the Nvar,  Nvar=variables+(prameter to not fit)
+  int custom=1; // 1 means default fit , 0 custom fit options
+  double lambda=0.001;
+  double acc=0.001; 
+  double h=1e-5; 
+  std::vector<double>  Prange={};
+  std::vector<double>  guess={};
+  int devorder=4;
+  int repeat_start=1;
+  void restore_default(){
+     custom=1; // 1 means default fit , 0 custom fit options
+     lambda=0.001;
+     acc=0.001; 
+     h=1e-5; 
+     Prange={};
+     guess={};
+     devorder=4; 
+     repeat_start=1;
+  };
   
 };
 
