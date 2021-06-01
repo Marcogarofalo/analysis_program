@@ -51,6 +51,19 @@ double matrix_element_k3pi_T_2(int j, double ****in,int t ,struct fit_type fit_i
     
 }
 
+
+template<int id,int tf>
+double matrix_element_3pik(int j, double ****in,int t ,struct fit_type fit_info){
+    int T=file_head.l0;
+    return (in[j][id][t][0])/sqrt(in[j][1][t][0]*in[j][5][(tf-t+T)%T][0] )  ;    
+}
+double matrix_element_3pik_T_2(int j, double ****in,int t ,struct fit_type fit_info){
+    int T=file_head.l0;
+    return (in[j][123][t][0])/sqrt(in[j][1][t][0]*in[j][5][(T/2-t+T)%T][0] )  ;
+    //     return sqrt(in[j][5][t][0]*in[j][1][(T/2-t+T)%T][0] )  ;
+    
+}
+
 double lhs_four_BH_0(int j, double ****in,int t ,struct fit_type fit_info){
     
     double r;

@@ -121,6 +121,41 @@ double me_k3pi_rhs(int n, int Nvar, double *x,int Npar,double  *P){
     
 }
 
+double me_3pik_rhs_T_2(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double C3;
+    
+    double A=P[0];
+    double t= x[0];
+    double E1_1=x[1];
+    double E3_0=x[2];
+    
+    //check if file_head.l0 arrives here
+    double T=(double)file_head.l0;
+    double tf=T/2;
+    C3=A * exp( -E3_0*(tf-t)/2. -E1_1*t/2 );
+    
+    return C3;
+    
+}
+template<int tf>
+double me_3pik_rhs(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double C3;
+    
+    double A=P[0];
+    double t= x[0];
+    double E1_1=x[1];
+    double E3_0=x[2];
+    
+    //check if file_head.l0 arrives here
+    //     double T=(double)file_head.l0;
+    
+    C3=A * exp( -E3_0*(tf-t)/2. -E1_1*t/2. );
+    return C3;
+    
+}
+
 double C2_diff_masses(int n, int Nvar, double *x,int Npar,double  *P){
     
     double C2;
@@ -2211,6 +2246,13 @@ if (params.data.ncorr>90){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=E1_0_p111;
+    
+    fit_info.plateaux_scan=true;
+    mysprintf(namefile,NAMESIZE,"%s/out/G2t_T%d_L%d_msq0%.6f_msq1%.6f_l0%.6f_l1%.6f_mu%.6f_g%.6f_rep%d_scan_plateaux",
+              argv[3], T, params.data.L[1],params.data.msq0, params.data.msq1,
+              params.data.lambdaC0, params.data.lambdaC1, params.data.muC, params.data.gC,params.data.replica);    
+    fit_info.name_plateaux_scan=namefile;
+    fit_info.f_plateaux_scan=open_file(fit_info.name_plateaux_scan.c_str(),"w+");
     //c++ 104 || r 105
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  92,0/*reim*/ , "E2_0_p111",  fit_info ,jack_file);
     int dvec[3]= {1,1,1};
@@ -2237,7 +2279,7 @@ if (params.data.ncorr>90){
     E2_0_p111=malloc_copy_jackboot(Njack,fit_out.P[0]);
     
     free_fit_result(fit_info,fit_out);
-    
+    fit_info.restore_default();
     
     
 }else {    for(int i=103;i < 105;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
@@ -2384,7 +2426,7 @@ if (params.data.ncorr>122){
     ///////////////////////////////////////////////////
     
     
-    fit_info.Nvar=5;
+    fit_info.Nvar=3;
     fit_info.Npar=3;
     fit_info.N=1;
     fit_info.Njack=Njack;
@@ -2443,10 +2485,75 @@ if (params.data.ncorr>122){
     
     
     
+    
 }else { for(int i=106;i < 117;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
 
+if (params.data.ncorr>126){    
+    /////////////////////////////////////////////////////////////////////////////////////
+    /////////////matrix element
+    /////////////////////////////////////////////////////////////////////////////////////
+    int T=params.data.L[0];
+    fit_info.Nvar=3;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.function=me_3pik_rhs_T_2;
+    fit_info.n_ext_P=2;
     
-
+    fit_info.ext_P[0]=mass[1];
+    fit_info.ext_P[1]=E3_0;
+    
+    // c++ 117|| r110
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  matrix_element_3pik_T_2, "me_3pik_T_2",  fit_info, jack_file );
+    
+    fit_info.Nvar=3;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.function=me_3pik_rhs<10>;
+    fit_info.n_ext_P=2;
+    
+    fit_info.ext_P[0]=mass[1];
+    fit_info.ext_P[1]=E3_0;
+    
+    // c++ 118|| r111
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  matrix_element_3pik<124,10>, "me_3pik_t10",  fit_info, jack_file );
+    
+    fit_info.Nvar=3;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.function=me_3pik_rhs<12>;
+    fit_info.n_ext_P=2;
+    
+    fit_info.ext_P[0]=mass[1];
+    fit_info.ext_P[1]=E3_0;
+    
+    // c++ 119|| r112
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  matrix_element_3pik<125,12>, "me_3pik_t12",  fit_info, jack_file );
+    
+    fit_info.Nvar=3;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.function=me_3pik_rhs<16>;
+    fit_info.n_ext_P=2;
+    
+    fit_info.ext_P[0]=mass[1];
+    fit_info.ext_P[1]=E3_0;
+    
+    // c++ 120|| r113
+    file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  matrix_element_3pik<126,16>, "me_3pik_t16",  fit_info, jack_file );
+    
+}else { for(int i=117;i < 121;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    

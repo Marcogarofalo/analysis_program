@@ -206,7 +206,7 @@ struct  fit_type
   double (*f2)(int,int,double*,int,double*);
   int n_ext_P; //number of external parameter that will no be fitted
   double **ext_P;  //parameter to not fit, they will be add to the Nvar,  Nvar=variables+(prameter to not fit)
-  int custom=1; // 1 means default fit , 0 custom fit options
+  int custom=false; // false=0 means default fit , 1 custom fit options
   double lambda=0.001;
   double acc=0.001; 
   double h=1e-5; 
@@ -214,8 +214,12 @@ struct  fit_type
   std::vector<double>  guess={};
   int devorder=4;
   int repeat_start=1;
+  
+  bool plateaux_scan=false;
+  FILE *f_plateaux_scan=NULL;
+  std::string name_plateaux_scan;
   void restore_default(){
-     custom=1; // 1 means default fit , 0 custom fit options
+     custom=false; // 1 means default fit , 0 custom fit options
      lambda=0.001;
      acc=0.001; 
      h=1e-5; 
@@ -223,14 +227,19 @@ struct  fit_type
      guess={};
      devorder=4; 
      repeat_start=1;
+     
+     plateaux_scan=false;
+//      f_plateaux_scan=NULL;
+//      name_plateaux_scan="\0";
   };
+  
   
 };
 
 struct fit_result
 {
   int Njack;
-  double **P;
+  double **P;// [par][jack]
   double *chi2;
   double ***C;   
     

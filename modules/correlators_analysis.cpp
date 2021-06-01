@@ -424,6 +424,21 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
    char jack_name[NAMESIZE];
    double *chi2;
    
+   if (fit_info.plateaux_scan){
+       fprintf(fit_info.f_plateaux_scan,"#tmin tmax chi2 P1 P1err ...\n");
+       for(tmax=1;tmax<file_head.l0/2;tmax++){
+           for(tmin=1;tmin<=tmax-fit_info.Npar;tmin++){
+               fit_result tmp=try_fit(option, tmin,  tmax,sep , mt, r, Njack ,&chi2,fit_info);
+               fprintf(fit_info.f_plateaux_scan,"%d   %d ",tmin,tmax);
+               fprintf(fit_info.f_plateaux_scan," %.5g \t",tmp.chi2[Njack-1]);
+               for (int i=0; i< fit_info.Npar; i++){
+                   fprintf(fit_info.f_plateaux_scan,"%.15g    %.15g    \t",tmp.P[i][Njack-1],error_jackboot(option[4],Njack,tmp.P[i])  );
+               }
+               free_fit_result( fit_info, tmp);
+               fprintf(fit_info.f_plateaux_scan,"\n");               
+           }
+       }
+   }
    
    yn=1;
    if ( strcmp(option[1],"see")==0 ){
@@ -472,6 +487,8 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
 
       
    }
+   
+   
    fit_out=try_fit(option, tmin,  tmax,sep , mt, r, Njack ,&chi2,fit_info);              
    //fit=give_jack_linear_fit( tmin,  tmax,sep , mt, r, Njack );    
    //printing the correlator and the function   
