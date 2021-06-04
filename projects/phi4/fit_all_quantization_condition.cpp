@@ -275,6 +275,24 @@ int main(int argc, char **argv){
      
      struct fit_result fit_kcotd=fit_data(argv,  paramsj ,gjack, lhs_kcotd ,fit_info, "kcotd",myen );
      
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // kcot Elatt
+     //////////////////////////////////////////////////////////////////////////////////////////////////
+     printf("\n/////////////////////////////////     k cot delta  E_latt   //////////////////\n");
+     
+     
+     fit_info.Npar=3;
+     fit_info.N=5;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=rhs_kcotd;
+     
+     struct fit_result fit_kcotd_Elatt=fit_data(argv,  paramsj ,gjack, lhs_kcotd_Elatt ,fit_info, "kcotd_Elatt",myen );
+     
+     
+     
+     
      ///////////////////////////////////////////////
      /// compute covariance energies
      int Nmom=5;
@@ -378,7 +396,7 @@ int main(int argc, char **argv){
      fit_info.lambda=0.001;
      fit_info.acc=0.01;
      fit_info.h=1e-3;
-     fit_info.Prange={100,100,100};
+     fit_info.Prange={100,100000};
      fit_info.devorder=2;
      
      struct fit_result k_from_phase_shift=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift",myen ,  {-0.121902,-100} );// {-0.948817,-114.788,0.0003987}
@@ -430,11 +448,36 @@ int main(int argc, char **argv){
      fit_info.function=rhs_k_from_phase_shift;
      fit_info.Prange={100,100,100};
      fit_info.h=5e-5;
+     fit_info.acc=0.1;
      
-     struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.11,-950, 6.4e-6} );// {-0.948817,-114.788,0.0003987}
-     
+//      the zeta is computed analytically, use the interpolated one for faster result!!!!!!!!!
+//      struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.11,-950, 6.4e-6} );// {-0.948817,-114.788,0.0003987}
+     struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.124389,-1221.58, 4.23469e-06} );
      print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "k_from_phase_shift_n5_3par",   k_from_phase_shift_3par ,fit_m0,    paramsj,  myen);
      
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     printf("\n/////////////////////////////////   fit  deltaE2_m_quant_cond  //////////////////\n");
+     //////////////////////////////////////////////////////////////////////////////////////////////////
+     fit_info.restore_default();
+     
+     fit_info.Npar=2;
+     fit_info.N=5;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=rhs_deltaE2_m_quant_cond;
+     
+     fit_info.lambda=0.001;
+     fit_info.acc=0.01;
+     fit_info.h=1e-3;
+     fit_info.Prange={100,100000};
+     fit_info.devorder=2;
+     
+     
+     //      the zeta is computed analytically, use the interpolated one for faster result!!!!!!!!!
+     //      struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.11,-950, 6.4e-6} );// {-0.948817,-114.788,0.0003987}
+     struct fit_result deltaE2_m_quant_cond=fit_data(argv,  paramsj ,gjack, lhs_deltaE2_m_latt ,fit_info, "deltaE2_m_quant_cond",myen , {-0.121902,-80.20332} );
+     print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "deltaE2_m_quant_cond",   deltaE2_m_quant_cond ,fit_m0,    paramsj,  myen);
      
      
      return 0;

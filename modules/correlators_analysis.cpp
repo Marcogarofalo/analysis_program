@@ -425,7 +425,7 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
    double *chi2;
    
    if (fit_info.plateaux_scan){
-       fprintf(fit_info.f_plateaux_scan,"#tmin tmax chi2 P1 P1err ...\n");
+       fprintf(fit_info.f_plateaux_scan,"\n\n#tmin tmax chi2 P1 P1err ...\n");
        for(tmax=1;tmax<file_head.l0/2;tmax++){
            for(tmin=1;tmin<=tmax-fit_info.Npar;tmin++){
                fit_result tmp=try_fit(option, tmin,  tmax,sep , mt, r, Njack ,&chi2,fit_info);
@@ -438,6 +438,7 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
                fprintf(fit_info.f_plateaux_scan,"\n");               
            }
        }
+       
    }
    
    yn=1;
@@ -529,10 +530,12 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
    
    m=mean_and_error(option[4],Njack, fit_out.chi2);
    fprintf(outfile,"\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n",description,tmin,tmax,m[0],m[1]);
+   if (fit_info.plateaux_scan)fprintf(fit_info.f_plateaux_scan,"\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n",description,tmin,tmax,m[0],m[1]);
    free(m);
    for (int i=0; i< fit_info.Npar; i++){
        m=mean_and_error(option[4],Njack, fit_out.P[i]);
        fprintf(outfile,"%.15g    %.15g    \t",m[0],m[1]);
+       if (fit_info.plateaux_scan) fprintf(fit_info.f_plateaux_scan,"%.15g    %.15g    \t",m[0],m[1]);
        if (i==0){
            printf("#%s (mu_h=%.4f, mu_l=%.4f) fit in [%d,%d]:  %.15g    %.15g\n",description,kinematic_2pt.k2,kinematic_2pt.k1 ,tmin,tmax,m[0],m[1]);
        }
@@ -540,6 +543,7 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
 
    }
    fprintf(outfile,"\n");
+   if (fit_info.plateaux_scan) fprintf(fit_info.f_plateaux_scan,"\n");
    //fprintf(outfile,"%d   %d   \n\n\n",tmin,tmax);
 
    
@@ -620,7 +624,7 @@ double   *plateau_correlator_function(char **option ,struct kinematic kinematic_
 
 struct fit_result fit_function_to_corr(char **option ,struct kinematic kinematic_2pt ,  char* name, double ****conf_jack ,const char  *plateaux_masses,FILE *outfile,  int index, int re_im , const char *description , struct fit_type fit_info,  FILE * file_jack ){
 
-int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
+   int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    /*if ( strcmp(option[1],"read_plateaux")==0 )
    	go_to_line(*plateaux_masses,line);
    */

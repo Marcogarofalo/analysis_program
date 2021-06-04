@@ -54,6 +54,7 @@ double energy_CM(  double E  , int  *p,int L){
     return sqrt(E*E- normp);
 }
 
+
 void phase_shift(double *E2,double *mass, int  *dvec,int L,FILE *outfile, int Njack, char *jackboot ){
     fprintf(outfile,"#E2_CM   err  E2_CM/M   err   re(delta)   err\n " );
     double *E2_CM=(double*) malloc(sizeof(double)*Njack);
