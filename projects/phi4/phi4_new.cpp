@@ -176,6 +176,29 @@ double C2_diff_masses(int n, int Nvar, double *x,int Npar,double  *P){
     
 }
 
+double C2_diff_masses_weight_shift(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double C2;
+    
+    double E2=P[0];
+    double A2=P[1];
+    //double A12=P[2];
+    
+    double t= x[0];
+    double tp=t+1;
+    double M0=x[1];
+    double M1=x[2];
+    //check if file_head.l0 arrives here
+    double T=(double)file_head.l0;
+    
+    C2=A2*A2 * ( exp(-tp*E2)+ exp(-(T-tp)*E2) )  /( exp(-T*M0-tp*M1 +tp*M0)+ exp(-T*M1-tp*M0 +tp*M1) );
+    C2-=A2*A2 * ( exp(-t*E2)+ exp(-(T-t)*E2) )  /( exp(-T*M0-t*M1 +t*M0)+ exp(-T*M1-t*M0 +t*M1) );
+    
+    
+    
+    return C2;
+    
+}
 
 
 double four_pt_BH_t_T_8(int n, int Nvar, double *x,int Npar,double  *P){
@@ -2142,11 +2165,16 @@ if (params.data.ncorr>74){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=E1_0_p1;
+    
+    fit_info.plateaux_scan=true;
+    
     //c++ 100 || r 101
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    sum_corr_directions_shift<66,67,68>, "E2_0_p1",  fit_info, jack_file );
     int dvec[3]= {1,0,0};
     if (params.data.lambdaC0!=0) phase_shift(fit_out.P[0],mass[0],dvec, params.data.L[1], outfile,  Njack, option[4] );
+    fit_info.restore_default();
+    
     /*
     fprintf(outfile,"#E2_CM   err  E2_CM/M   err   re(delta)   err\n " );
     double *E2_CM=(double*) malloc(sizeof(double)*Njack);
@@ -2445,7 +2473,6 @@ if (params.data.ncorr>122){
     fit_info.guess={0.517571,7.49491e-05,0.00119068 };
     fit_info.h=0.001;
     fit_info.acc=1e-8;
-    
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  sum_corr_directions_shift<95,96,97>, "E3_0_p1_2exp",  fit_info, jack_file );
     /*fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  95,0 , "E3_0_p1",  fit_info, jack_file);
@@ -2559,6 +2586,78 @@ if (params.data.ncorr>126){
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  matrix_element_3pik<126,16>, "me_3pik_t16",  fit_info, jack_file );
     
 }else { for(int i=117;i < 121;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+
+
+
+
+if (params.data.ncorr>74){
+    
+       
+    fit_info.Nvar=3;
+    fit_info.Npar=2;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=2;
+    fit_info.function=C2_diff_masses_weight_shift;
+    
+    file_head.k[2]=mu1;    file_head.k[3]=mu2;
+    fit_info.ext_P[0]=mass[0];
+    fit_info.ext_P[1]=E1_0_p1;
+    fit_info.plateaux_scan=true;
+    
+    //c++ 121 || r 101
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
+                                   sum_corr_weight_shift<66,67,68>, "E2_0_p1_ws",  fit_info, jack_file );
+    int dvec[3]= {1,0,0};
+//     if (params.data.lambdaC0!=0) phase_shift(fit_out.P[0],mass[0],dvec, params.data.L[1], outfile,  Njack, option[4] );
+   
+    E2_0_p1=malloc_copy_jackboot(Njack,fit_out.P[0]);
+    free_fit_result(fit_info,fit_out);
+    fit_info.restore_default();
+    
+    fit_info.Nvar=3;
+    fit_info.Npar=2;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=2;
+    fit_info.function=C2_diff_masses_weight_shift;
+    
+    file_head.k[2]=mu1;    file_head.k[3]=mu2;
+    fit_info.ext_P[0]=mass[0];
+    fit_info.ext_P[1]=E1_0_p11;
+    //c++ 122 || r 103
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
+                                   sum_corr_weight_shift<81,82,83>, "E2_0_p11_ws",  fit_info, jack_file );
+    int dvec_p11[3]= {1,1,0};
+//     if (params.data.lambdaC0!=0) phase_shift(fit_out.P[0],mass[0],dvec_p11, params.data.L[1], outfile,  Njack, option[4] );
+    free_fit_result(fit_info,fit_out);
+    
+    fit_info.Nvar=3;
+    fit_info.Npar=2;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=2;
+    fit_info.function=C2_diff_masses_weight_shift;
+    
+    file_head.k[2]=mu1;    file_head.k[3]=mu2;
+    fit_info.ext_P[0]=mass[0];
+    fit_info.ext_P[1]=E1_0_p111;
+    
+    fit_info.plateaux_scan=true;
+    
+    
+    //c++ 123 || r 105
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
+                                   sum_corr_weight_shift<92,92,92>, "E2_0_p111_ws",  fit_info, jack_file );
+    int dvec_p111[3]= {1,1,1};
+//     if (params.data.lambdaC0!=0) phase_shift(fit_out.P[0],mass[0],dvec_p111, params.data.L[1], outfile,  Njack, option[4] );
+    free_fit_result(fit_info,fit_out);
+    fit_info.restore_default();
+    
+}else {    for(int i=121;i < 124;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    

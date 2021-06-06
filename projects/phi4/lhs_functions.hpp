@@ -39,6 +39,21 @@ double sum_corr_directions_shift(int j, double ****in,int t ,struct fit_type fit
 }
 
 
+template<int ix,int iy,int iz>
+double sum_corr_weight_shift(int j, double ****in,int t ,struct fit_type fit_info){
+    int T=file_head.l0;
+    double m0=fit_info.ext_P[0][j];
+    double m1=fit_info.ext_P[1][j];
+    
+    double ct=(in[j][ix][t][0]+in[j][iy][t][0]+in[j][iz][t][0])/3.;
+    double ctp=(in[j][ix][t+1][0]+in[j][iy][t+1][0]+in[j][iz][t+1][0])/3.;
+    
+    ct=ct/( exp(- (m0+m1)*T/2.) * cosh((m0-m1)* (t-T/2.))  );
+    ctp=ctp/( exp(- (m0+m1)*T/2.) * cosh((m0-m1)* (t+1.-T/2.))  );
+    return ctp-ct;
+}
+
+
 template<int id,int tf>
 double matrix_element_k3pi(int j, double ****in,int t ,struct fit_type fit_info){
     int T=file_head.l0;

@@ -426,8 +426,8 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
    
    if (fit_info.plateaux_scan){
        fprintf(fit_info.f_plateaux_scan,"\n\n#tmin tmax chi2 P1 P1err ...\n");
-       for(tmax=1;tmax<file_head.l0/2;tmax++){
-           for(tmin=1;tmin<=tmax-fit_info.Npar;tmin++){
+       for(tmin=1;tmin<file_head.l0/2-fit_info.Npar;tmin++){
+            for(tmax=tmin+fit_info.Npar;tmax<file_head.l0/2;tmax++){
                fit_result tmp=try_fit(option, tmin,  tmax,sep , mt, r, Njack ,&chi2,fit_info);
                fprintf(fit_info.f_plateaux_scan,"%d   %d ",tmin,tmax);
                fprintf(fit_info.f_plateaux_scan," %.5g \t",tmp.chi2[Njack-1]);
