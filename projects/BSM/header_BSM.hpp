@@ -21,7 +21,7 @@ struct  header_BSM
     double csw;
     double mu03;
     double m0;
-    double confs;
+    int confs;
     double Njack;
     double Nobs;
     
@@ -68,8 +68,13 @@ void check_header_BSM(header_BSM head, FILE *stream, std::string namefile){
         chr = getc(stream);
     }
     rewind(stream);
-    error((count_lines-7)%head.T!=0,1,"header","numer of line= %d - header_lines=%d is not a multiple of T=%d\n file:%s",count_lines,7,head.T,namefile.c_str());
-    error(head.confs!=(count_lines-7)/head.T,1,"header","file: %s \n confs does not match ref=%d read=%d ",head.confs,(count_lines-7)/head.T);
+    error((count_lines-7)%head.T!=0,1,"header","numer of line= %d - header_lines=%d is not a multiple of T=%d\n file:%s",count_lines, 7,head.T,namefile.c_str());
+    if (head.confs>(count_lines-7)/head.T){
+        printf("file: %s \n confs does not match ref=%d read=%d  getting the minimum of the two\n",namefile.c_str(),head.confs,(count_lines-7)/head.T);
+        head.confs=(count_lines-7)/head.T;
+    }
+    
+//     error(head.confs!=(count_lines-7)/head.T,1,"header","file: %s \n confs does not match ref=%d read=%d ",namefile.c_str(),head.confs,(count_lines-7)/head.T);
     
     int tmp;
     fscanf(stream,"T  %d\n",&tmp); error(tmp!=head.T,1,"check header ","file: %s \n T does not match ref=%d read=%d ",namefile.c_str(),head.T,tmp);
