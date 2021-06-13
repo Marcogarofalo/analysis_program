@@ -22,6 +22,17 @@
 using namespace std;
 
 
+template<int id>
+double me_oPp(int j, double ****in,int t ,struct fit_type fit_info){
+    
+    double E=fit_info.ext_P[0][j];
+    double T=file_head.l0;
+    double ct= in[j][id][t][0]/(exp(-E*t)+exp(-E*(T-t))  );
+    ct*=2*E;
+    
+    return sqrt(ct);
+}
+
 template<int ix,int iy,int iz>
 double m_eff_of_sum(int j, double ****in,int t ,struct fit_type fit_info){
     

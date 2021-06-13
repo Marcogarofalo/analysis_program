@@ -31,6 +31,7 @@ double constant_fit(int n, int Nvar, double *x,int Npar,double  *P){
     return P[0];
 }
 
+
 double  sinh_mass(int n, int Nvar, double *x,int Npar,double  *P){
     
     double t=P[0];
