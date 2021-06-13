@@ -157,7 +157,7 @@ double C3_A1(int n, int Nvar, double *x,int Npar,double  *P){
     C3+=A10_2p*A10_2p *  exp(-(E2A1+E1)*T/2.) * cosh( (E2A1-E1) *(t -T/2.));
     C3+=A1p_20*A1p_20 *  exp(-(E2p+E1p)*T/2.) * cosh( (E2p-E1p) *(t -T/2.));
     C3+=A10_20*A10_20 *  exp(-(E1)*T/2.) *cosh( (E1) *(t -T/2.));
-//     C3+=A10_20*A10_20 *  exp(-(E2+E1)*T/2.) *cosh( (E2-E1) *(t -T/2.));//* cosh( (0.12591+0.004) *(t -T/2.));//
+//    C3+=A10_20*A10_20 *  exp(-(E2+E1)*T/2.) *cosh( (E2-E1) *(t -T/2.));//* cosh( (0.12591+0.004) *(t -T/2.));//
  
 //     C3+=A10_20*A10_20 *  exp(-(E2+E1)*T/2.) * cosh( (DE) *(t -T/2.));
 //        printf(" E3=%g   E1=%g   E1p=%g   E2=%g   E2p=%g   E2_A1=%g  E2-E1=%g\n", E3,E1,E1p,E2,E2p,E2A1,  E2-E1);  
@@ -165,6 +165,38 @@ double C3_A1(int n, int Nvar, double *x,int Npar,double  *P){
     
 }
 
+
+
+double C3_A1_old(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double C3;
+    
+    double E3=P[0];
+    double A3=P[1];
+    double A10_2p=P[2];
+    double A1p_20=P[3];
+//     double A10_20=P[4];
+    //     double DE=P[5];
+    double t= x[0];
+    double E1=x[1];
+    double E2p=x[2];
+    double E1p=x[3];
+    double E2A1=x[4];
+    double E2=x[5];
+    
+    //check if file_head.l0 arrives here
+    double T=(double)file_head.l0;
+    C3=A3*A3 *  exp(-E3*T/2.) * cosh( E3 *(t -T/2.));
+    C3+=A10_2p*A10_2p *  exp(-(E2A1+E1)*T/2.) * cosh( (E2A1-E1) *(t -T/2.));
+    C3+=A1p_20*A1p_20 *  exp(-(E2p+E1p)*T/2.) * cosh( (E2p-E1p) *(t -T/2.));
+//     C3+=A10_20*A10_20 *  exp(-(E1)*T/2.) *cosh( (E1) *(t -T/2.));
+    //    C3+=A10_20*A10_20 *  exp(-(E2+E1)*T/2.) *cosh( (E2-E1) *(t -T/2.));//* cosh( (0.12591+0.004) *(t -T/2.));//
+    
+    //     C3+=A10_20*A10_20 *  exp(-(E2+E1)*T/2.) * cosh( (DE) *(t -T/2.));
+    //        printf(" E3=%g   E1=%g   E1p=%g   E2=%g   E2p=%g   E2_A1=%g  E2-E1=%g\n", E3,E1,E1p,E2,E2p,E2A1,  E2-E1);  
+    return C3;
+    
+}
 
 double me_k3pi_rhs_T_2(int n, int Nvar, double *x,int Npar,double  *P){
     
@@ -2480,10 +2512,10 @@ if (params.data.ncorr>122){
     
     
     fit_info.Nvar=6;
-    fit_info.Npar=5;
+    fit_info.Npar=4;
     fit_info.N=1;
     fit_info.Njack=Njack;
-    fit_info.function=C3_A1;
+    fit_info.function=C3_A1_old;
     fit_info.n_ext_P=5;
     fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
     
@@ -2495,7 +2527,7 @@ if (params.data.ncorr>122){
     
     //c++ 108 || r 109
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_info.guess={ 0.63738,   387.1e-7,    1.0e-7 ,   0.0060975,    6473.0e-8 };//0.12720
+    fit_info.guess={ 0.63738,   387.1e-7,    1.0e-7 ,   0.0060975 };//0.12720
 //     fit_info.guess={0.773652, 3.96386e-05 ,1.33604e-05 ,0.0241938};
     
 //      fit_info.repeat_start=40;
