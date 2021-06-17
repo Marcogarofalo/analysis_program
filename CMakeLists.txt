@@ -27,14 +27,19 @@ ENDIF()
 INCLUDE_DIRECTORIES ( "${EIGEN3_INCLUDE_DIR}" )
 
 
-
+IF(WITH_PYTHON)
+    SET(python_dir "/usr/include/python3.9/")  #sudo apt-get install python3.9-dbg
+    #include_directories(${python_dir})  
+    find_package(PythonLibs REQUIRED)
+    MESSAGE( "using python at:  " ${PythonLibs})
+    include_directories(${PYTHON_INCLUDE_DIRS})
+    #include_directories(${PYTHON_INCLUDE_DIRS})
+    #link_directories(/usr/lib/python3.9)
+    #MESSAGE( "using python at:  " ${python_dir})
+ENDIF()
 
 
 add_subdirectory(include  include)
-#include_directories( modules/zeta )
-#link_directories(modules/zeta)
-#add_subdirectory(external/rzeta/src zeta)
-#include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # this has been taken straight from the build system of Balint's Dslash (github.com/bjoo/KokkosDslash)
 macro(add_target_with_lib TARGETNAME)
@@ -74,7 +79,13 @@ macro(add_target_with_lib TARGETNAME)
   target_link_libraries(${TARGETNAME} PUBLIC zeta_interpolation)
   target_include_directories(${TARGETNAME} PUBLIC "${CMAKE_SOURCE_DIR}/include")
   target_include_directories(${TARGETNAME} PUBLIC "${CMAKE_BINARY_DIR}/include")
+  IF(WITH_PYTHON)
+        #target_include_directories(${TARGETNAME} PUBLIC pyhelper)
+        #target_include_directories(${TARGETNAME} PUBLIC python3.9)
+        target_link_libraries(${TARGETNAME} PUBLIC ${PYTHON_LIBRARIES})
+        target_link_libraries(${TARGETNAME} PUBLIC pyhelper)
 
+  ENDIF()
 #target_link_libraries(${TARGETNAME} PUBLIC Kokkos::kokkos)
 endmacro()
 
@@ -85,6 +96,8 @@ add_subdirectory(projects/virtualphoton  virtualphoton)
 add_subdirectory(tools tools)
 add_subdirectory(projects/phi4 phi4)
 add_subdirectory(projects/BSM BSM)
+
+add_subdirectory(projects/python_wrapper python_wrapper)
 
 
 

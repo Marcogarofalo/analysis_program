@@ -288,3 +288,12 @@ target_link_libraries(zeta_interpolation PUBLIC dzeta_function)
 target_link_libraries(zeta_interpolation PUBLIC header_phi4)
 target_include_directories(zeta_interpolation PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
+if(WITH_PYTHON)
+    add_library(
+        pyhelper STATIC
+        pyhelper.hpp
+    )
+    set_target_properties(pyhelper PROPERTIES LINKER_LANGUAGE CXX)
+
+    target_include_directories(pyhelper PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+ENDIF()

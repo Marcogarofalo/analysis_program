@@ -2787,10 +2787,14 @@ if (params.data.ncorr>122){
     
     //c++ 121 || r 122
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
-    fit_info.guess={ 0.63738,   387.1e-7,    1.0e-7 ,   0.0060975,    6473.0e-8 };//0.12720
+    fit_info.guess={ 0.6352,   387.1e-7,    1.0e-7 ,   0.0060975,    6473.0e-8 };//0.12720
     //     fit_info.guess={0.773652, 3.96386e-05 ,1.33604e-05 ,0.0241938};
+    fit_info.h=1e-6;
+    fit_info.acc=1e-8;
+    fit_info.lambda=1e-4;
+    fit_info.repeat_start=100;
     
-    //      fit_info.repeat_start=40;
+    //fit_info.repeat_start=40;
     //     fit_info.plateaux_scan=true;
     
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  116,0/*reim*/ , "E3_0_A1_vev",  fit_info, jack_file);
@@ -2799,6 +2803,7 @@ if (params.data.ncorr>122){
     free_fit_result(fit_info,fit_out);
     //  
     fit_info.restore_default();
+    
     
 }else {    for(int i=116;i < 122;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
 

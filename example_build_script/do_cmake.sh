@@ -6,6 +6,7 @@ rm -rv CMakeCache.txt CMakeFiles
 src_dir=..
 ## CXXFLAGS="-O3 -mtune=native -march=native -g" \
   cmake   ${src_dir}  
+  #-DWITH_PYTHON=ON
  # -D CMAKE_FIND_DEBUG_MODE=ON
 
 
