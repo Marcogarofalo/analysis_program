@@ -29,13 +29,10 @@ INCLUDE_DIRECTORIES ( "${EIGEN3_INCLUDE_DIR}" )
 
 IF(WITH_PYTHON)
     SET(python_dir "/usr/include/python3.9/")  #sudo apt-get install python3.9-dbg
-    #include_directories(${python_dir})  
     find_package(PythonLibs REQUIRED)
     MESSAGE( "using python at:  " ${PythonLibs})
     include_directories(${PYTHON_INCLUDE_DIRS})
-    #include_directories(${PYTHON_INCLUDE_DIRS})
-    #link_directories(/usr/lib/python3.9)
-    #MESSAGE( "using python at:  " ${python_dir})
+   
 ENDIF()
 
 
@@ -97,7 +94,9 @@ add_subdirectory(tools tools)
 add_subdirectory(projects/phi4 phi4)
 add_subdirectory(projects/BSM BSM)
 
-add_subdirectory(projects/python_wrapper python_wrapper)
+if(WITH_PYTHON)
+    add_subdirectory(projects/python_wrapper python_wrapper)
+ENDIF()
 
 
 
