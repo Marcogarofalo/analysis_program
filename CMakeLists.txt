@@ -29,10 +29,14 @@ INCLUDE_DIRECTORIES ( "${EIGEN3_INCLUDE_DIR}" )
 
 IF(WITH_PYTHON)
     SET(python_dir "/usr/include/python3.9/")  #sudo apt-get install python3.9-dbg
-    find_package(PythonLibs REQUIRED)
-    MESSAGE( "using python at:  " ${PythonLibs})
-    include_directories(${PYTHON_INCLUDE_DIRS})
-   
+    #find_package( PythonInterp REQUIRED )
+    #find_package(PythonLibs REQUIRED)
+    find_package (Python3 COMPONENTS Interpreter  Development )
+    
+    include_directories(${Python3_INCLUDE_DIRS})
+   # include_directories(${PYTHON_INCLUDE_DIRS})
+    SET(Python3_LINK_OPTIONS "/usr/lib/python3.9/config-3.9-x86_64-linux-gnu -L/usr/lib/x86_64-linux-gnu  -lcrypt -lpthread -ldl  -lutil -lm -lm")
+    MESSAGE("link options: " ${Python3_LINK_OPTIONS})
 ENDIF()
 
 
@@ -81,7 +85,8 @@ macro(add_target_with_lib TARGETNAME)
         #target_include_directories(${TARGETNAME} PUBLIC python3.9)
         target_link_libraries(${TARGETNAME} PUBLIC ${PYTHON_LIBRARIES})
         target_link_libraries(${TARGETNAME} PUBLIC pyhelper)
-
+        target_link_libraries(${TARGETNAME} PUBLIC ${Python3_LIBRARIES})
+        
   ENDIF()
 #target_link_libraries(${TARGETNAME} PUBLIC Kokkos::kokkos)
 endmacro()

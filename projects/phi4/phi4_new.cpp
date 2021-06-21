@@ -2626,7 +2626,7 @@ if (params.data.ncorr>74){
     fit_info.ext_P[1]=E1_0_p1;
     fit_info.plateaux_scan=true;
     
-    //c++ 113 || r 101
+    //c++ 113 || r 114
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    sum_corr_weight_shift<66,67,68>, "E2_0_p1_ws",  fit_info, jack_file );
     int dvec[3]= {1,0,0};
@@ -2646,7 +2646,7 @@ if (params.data.ncorr>74){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=E1_0_p11;
-    //c++ 114 || r 103
+    //c++ 114 || r 115
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    sum_corr_weight_shift<81,82,83>, "E2_0_p11_ws",  fit_info, jack_file );
     int dvec_p11[3]= {1,1,0};
@@ -2667,7 +2667,7 @@ if (params.data.ncorr>74){
     fit_info.plateaux_scan=true;
     
     
-    //c++ 115 || r 115
+    //c++ 115 || r 116
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    sum_corr_weight_shift<92,92,92>, "E2_0_p111_ws",  fit_info, jack_file );
     int dvec_p111[3]= {1,1,1};
@@ -2762,7 +2762,7 @@ if (params.data.ncorr>122){
     fit_info.ext_P[4]=E1_0_p111;
     fit_info.guess={ 0.6449,    60.6e-6,    1.0e-4,    0.00077,    42.6e-6};
     fit_info.repeat_start=10;
-    //c++ 120 || r 121
+    //c++ 119 || r 120
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  113,0/*reim*/ , "E3_0_p111_vev",  fit_info, jack_file);
     int dvec_p111[3]={1,1,1};
@@ -2785,7 +2785,7 @@ if (params.data.ncorr>122){
     fit_info.ext_P[3]=E2_0_A1;
     fit_info.ext_P[4]=E2[0];
     
-    //c++ 121 || r 122
+    //c++ 120 || r 121
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_info.guess={ 0.6352,   387.1e-7,    1.0e-7 ,   0.0060975,    6473.0e-8 };//0.12720
     //     fit_info.guess={0.773652, 3.96386e-05 ,1.33604e-05 ,0.0241938};
@@ -2805,7 +2805,7 @@ if (params.data.ncorr>122){
     fit_info.restore_default();
     
     
-}else {    for(int i=116;i < 122;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+}else {    for(int i=116;i < 121;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
 
 
 double *me_phi1;
@@ -2825,7 +2825,7 @@ if (params.data.ncorr>126){
     
     fit_info.ext_P[0]=mass[1];
     
-    // c++ 122|| r123
+    // c++ 121|| r122
     
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  me_oPp<1>, "me_phi1",  fit_info, jack_file );
     
@@ -2852,7 +2852,7 @@ if (params.data.ncorr>126){
     
     fit_info.ext_P[4]=me_phi1;
     fit_info.ext_P[5]=me_3phi;
-    // c++ 123|| r124
+    // c++ 122|| r123
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_info.guess={2.2e-15,   10.4e-12,    0.1e-10};
     fit_info.repeat_start=100;
@@ -2864,19 +2864,19 @@ if (params.data.ncorr>126){
     
     fit_info.function=me_3pik_rhs<10>;
      
-    // c++ 124|| r125
+    // c++ 123|| r124
      
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  124,0 , "me_3pik_t10",  fit_info, jack_file );
     
     fit_info.function=me_3pik_rhs<12>;
-      // c++ 125|| r126
+    // c++ 124|| r125
      fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  125,0, "me_3pik_t12",  fit_info, jack_file );
     
      fit_info.function=me_3pik_rhs<16>;
-    // c++ 126|| r127
+    // c++ 125|| r126
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  126,0, "me_3pik_t16",  fit_info, jack_file );
     
-}else { for(int i=122;i < 128;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+}else { for(int i=122;i < 126;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
 
 
 

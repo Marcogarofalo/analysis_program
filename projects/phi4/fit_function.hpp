@@ -25,7 +25,8 @@
 #include "zeta_interpolation.hpp"
 #include "mutils.hpp"
 #include "linear_fit.hpp"
-using namespace std;
+#include <pyhelper.hpp>
+//using namespace std;
 
 void init_dvec(int n,int *dvec,int *dvec1, int *dvec2, int *dmax1, int *dmax2 ){
     
@@ -388,6 +389,40 @@ double rhs_deltaE2_m_quant_cond(int n, int Nvar, double *x,int Npar,double  *P){
 }
 
 
+
+double rhs_E3_m_QC3(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Pkcot[2];
+        Pkcot[0]=x[Nvar-2];
+        Pkcot[1]=x[Nvar-1];
+         
+    double Pkiso[2];
+        Pkiso[0]=P[0];
+        Pkiso[1]=P[1];
+    int Nkcot=2;
+    int Nkiso=Npar;
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    double nnP[3];
+    nnP[0]=(double) dvec[0]; nnP[1]=(double) dvec[1]; nnP[2]=(double) dvec[2];
+    double mass=x[1];
+    double L=x[0];
+    int steps=5;
+    double E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
+    double E2f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
+    double E3f=mass;
+    double Estart=(E1f+E2f+E3f)/mass+1e-6;
+    
+    E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dmax1[0])*(dmax1[0])+dmax1[1]*dmax1[1]+(dmax1[2])*(dmax1[2]))   );
+    E2f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dmax2[0])*(dmax2[0])+dmax2[1]*dmax2[1]+(dmax2[2])*(dmax2[2]))   );
+    double Eend=(E1f+E2f+E3f)/mass- 1e-6;
+    
+    
+    double r=python_detQC(Estart, Eend, steps,  L,  nnP, Nkcot,Pkcot,Nkiso, Pkiso);
+    printf("res=%g\n",r);
+    return r;
+}
+
 double to_invert_q_from_phase_shift(int n, int Nvar, double *x,int Npar,double  *P){
     double L_a0=P[0], r0L=P[1];//, P2=P[2];
 
@@ -579,6 +614,56 @@ double lhs_q(int n, int e , int j , vector<cluster::IO_params> params,vector<dat
 }
 
 
+///////////////////////////////////////////////////////////////////////////////////////////
+///////  lhs E3/m
+//////////////////////////////////////////////////////////////////////////////////////////
+
+
+double lhs_E3_m(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    double E3;
+    double mass=gjack[e].jack[1][j];
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    
+    if(n==0){//E2_0
+        E3=gjack[e].jack[116][j];
+        //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
+    }
+    else if(n==1){//E2_0_p1
+        E3=gjack[e].jack[117][j];
+        //         dvec[0]=1; dvec[1]=0; dvec[2]=0;
+    }
+    else if(n==2){//E2_0_p11
+        E3=gjack[e].jack[118][j];
+        //         dvec[0]=1; dvec[1]=1; dvec[2]=0;
+    }
+    else if(n==4){//E2_0_p111
+        E3=gjack[e].jack[119][j];
+        //         dvec[0]=1; dvec[1]=1; dvec[2]=1;
+    }
+    else if(n==3){//E2_0_A1
+        E3=gjack[e].jack[120][j];
+        //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
+    }
+    else{ E3=0 ; dvec[0]=0; dvec[1]=0; dvec[2]=0; exit(1);}
+
+//     double hatp2=4.*sin(dvec1[0]*pi_greco/params[e].data.L[1]) *sin(dvec1[0]*pi_greco/params[e].data.L[1]) ;
+//     hatp2+=4.*sin(dvec1[1]*pi_greco/params[e].data.L[2]) *sin(dvec1[1]*pi_greco/params[e].data.L[2]) ;
+//     hatp2+=4.*sin(dvec1[2]*pi_greco/params[e].data.L[3]) *sin(dvec1[2]*pi_greco/params[e].data.L[3]) ;
+// 
+//     double E2fL=acosh(  cosh(mass) +0.5*( hatp2));
+//     hatp2=4.*sin(dvec2[0]*pi_greco/params[e].data.L[1]) *sin(dvec2[0]*pi_greco/params[e].data.L[1]) ;
+//     hatp2+=4.*sin(dvec2[1]*pi_greco/params[e].data.L[2]) *sin(dvec2[1]*pi_greco/params[e].data.L[2]) ;
+//     hatp2+=4.*sin(dvec2[2]*pi_greco/params[e].data.L[3]) *sin(dvec2[2]*pi_greco/params[e].data.L[3]) ;
+//     E2fL+=acosh(cosh(mass) +0.5*( + hatp2));
+//     
+//     double L=params[e].data.L[1];
+//     double Ef1=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
+//     double Ef2=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
+//     double E2f=Ef1+Ef2;
+//     return (E2-E2fL+E2f)/mass;
+    return E3/mass;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////kcotd
@@ -992,8 +1077,8 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
                 x[j][count][7]=gjack[myen[e]].jack[1][j]*(double) params[myen[e]].data.L[1]/(2.*pi_greco);//mL_2pi
                 
                 
-                for(int i=fit_info.Nvar ; i< fit_info.n_ext_P; i++){
-                    x[j][count][i]=fit_info.ext_P[i-fit_info.Nvar][j];
+                for(int i=0 ; i< fit_info.n_ext_P; i++){
+                    x[j][count][i+fit_info.Nvar]=fit_info.ext_P[i][j];
                 }
                 //copy the other variables after 
                  //other var

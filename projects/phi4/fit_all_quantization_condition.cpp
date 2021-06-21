@@ -31,6 +31,7 @@
 //local folder
 #include "mass_phi4.hpp"
 #include "fit_function.hpp"
+#include <pyhelper.hpp>
 
 
 
@@ -478,6 +479,59 @@ int main(int argc, char **argv){
      //      struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.11,-950, 6.4e-6} );// {-0.948817,-114.788,0.0003987}
      struct fit_result deltaE2_m_quant_cond=fit_data(argv,  paramsj ,gjack, lhs_deltaE2_m_latt ,fit_info, "deltaE2_m_quant_cond",myen , {-0.121902,-80.20332} );
      print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "deltaE2_m_quant_cond",   deltaE2_m_quant_cond ,fit_m0,    paramsj,  myen);
+     
+     
+     
+     
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     printf("\n/////////////////////////////////   fit  E3 quant cond  //////////////////\n");
+     //////////////////////////////////////////////////////////////////////////////////////////////////
+     
+     //// we need python
+     wchar_t *program = Py_DecodeLocale(argv[0], NULL);
+     if (program == NULL) {
+         fprintf(stderr, "Fatal error: cannot decode argv[0]\n");
+         exit(1);
+     }  
+     Py_SetProgramName(program);  /* optional but recommended */
+     
+     Py_Initialize();
+     ///////////// end python init
+     
+     
+     
+     fit_info.restore_default();
+     
+     fit_info.Npar=2;
+     fit_info.N=1;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=2;
+     fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     
+     fit_info.ext_P[0]=deltaE2_m_quant_cond.P[0];
+     fit_info.ext_P[1]=deltaE2_m_quant_cond.P[1];
+     
+     fit_info.function=rhs_E3_m_QC3;
+     
+     fit_info.lambda=0.001;
+     fit_info.acc=0.01;
+     fit_info.h=1e-3;
+     fit_info.Prange={100,100000};
+     fit_info.devorder=2;
+     
+     
+     //      the zeta is computed analytically, use the interpolated one for faster result!!!!!!!!!
+     //      struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.11,-950, 6.4e-6} );// {-0.948817,-114.788,0.0003987}
+     struct fit_result fit_QC3=fit_data(argv,  paramsj ,gjack, lhs_E3_m ,fit_info, "QC3",myen , {-0.121902,-80.20332} );
+     print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "QC3",   deltaE2_m_quant_cond ,fit_m0,    paramsj,  myen);
+     
+     
+     
+     ///// close python
+     if (Py_FinalizeEx() < 0) {
+         exit(120);
+     }
+     PyMem_RawFree(program);
      
      
      return 0;

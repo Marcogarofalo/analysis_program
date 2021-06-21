@@ -294,6 +294,6 @@ if(WITH_PYTHON)
         pyhelper.hpp
     )
     set_target_properties(pyhelper PROPERTIES LINKER_LANGUAGE CXX)
-
+    target_link_libraries(pyhelper PUBLIC  ${PYTHON_LIBRARIES})
     target_include_directories(pyhelper PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 ENDIF()
