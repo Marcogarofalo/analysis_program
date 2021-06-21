@@ -25,7 +25,9 @@
 #include "zeta_interpolation.hpp"
 #include "mutils.hpp"
 #include "linear_fit.hpp"
+#ifdef PYTHON
 #include <pyhelper.hpp>
+#endif
 //using namespace std;
 
 void init_dvec(int n,int *dvec,int *dvec1, int *dvec2, int *dmax1, int *dmax2 ){
@@ -389,7 +391,7 @@ double rhs_deltaE2_m_quant_cond(int n, int Nvar, double *x,int Npar,double  *P){
 }
 
 
-
+#ifdef PYTHON
 double rhs_E3_m_QC3(int n, int Nvar, double *x,int Npar,double  *P){
     
     double Pkcot[2];
@@ -422,6 +424,7 @@ double rhs_E3_m_QC3(int n, int Nvar, double *x,int Npar,double  *P){
     printf("res=%g\n",r);
     return r;
 }
+#endif
 
 double to_invert_q_from_phase_shift(int n, int Nvar, double *x,int Npar,double  *P){
     double L_a0=P[0], r0L=P[1];//, P2=P[2];

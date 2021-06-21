@@ -36,6 +36,7 @@ IF(WITH_PYTHON)
     include_directories(${Python3_INCLUDE_DIRS})
    # include_directories(${PYTHON_INCLUDE_DIRS})
     SET(Python3_LINK_OPTIONS "/usr/lib/python3.9/config-3.9-x86_64-linux-gnu -L/usr/lib/x86_64-linux-gnu  -lcrypt -lpthread -ldl  -lutil -lm -lm")
+    set(CMAKE_CXX_FLAGS  " ${CMAKE_CXX_FLAGS} ${CXXFLAGS} -DPYTHON   ")
     MESSAGE("link options: " ${Python3_LINK_OPTIONS})
 ENDIF()
 
