@@ -419,7 +419,8 @@ double rhs_E3_m_QC3(int n, int Nvar, double *x,int Npar,double  *P){
     E2f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dmax2[0])*(dmax2[0])+dmax2[1]*dmax2[1]+(dmax2[2])*(dmax2[2]))   );
     double Eend=(E1f+E2f+E3f)/mass- 1e-6;
     
-    
+    L=L*mass;
+    printf("L=%g  m=%g\n",L,mass);
     double r=python_detQC(Estart, Eend, steps,  L,  nnP, Nkcot,Pkcot,Nkiso, Pkiso);
     printf("res=%g\n",r);
     return r;

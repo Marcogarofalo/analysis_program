@@ -175,7 +175,7 @@ double *mean_jack(int N,int var,int t, int call, double ****jack, double functio
 
 //mean_and_error_jack
 //returns the mean and error from set of N  jacknife called *in  and the average stored in in[N]
-double *mean_and_error_jack(int Np1, double *in){
+double *mean_and_error_jack_unbias(int Np1, double *in){
     double *r;
     int i,N;
     
@@ -196,6 +196,32 @@ double *mean_and_error_jack(int Np1, double *in){
     
     r[0]=((double)N)*in[N]-((double) (N-1))*r[0];
     
+    return r;
+}
+
+//mean_and_error_jack
+//returns the mean and error from set of N  jacknife called *in  and the average stored in in[N]
+double *mean_and_error_jack(int Np1, double *in){
+    double *r;
+    int i,N;
+    
+    N=Np1-1;
+    r=(double*) calloc(2,sizeof(double));
+    
+    for(i=0;i<N;i++)
+        r[0]+=in[i];
+    
+    r[0]/=((double) N);
+    
+    
+    for(i=0;i<N;i++)
+        r[1]+=(in[i]-r[0])*(in[i]-r[0]);
+    
+    r[1]*=(N-1.)/((double) N);
+    r[1]=sqrt(r[1]);
+    
+    //r[0]=((double)N)*in[N]-((double) (N-1))*r[0];
+    r[0]=in[N];
     return r;
 }
 

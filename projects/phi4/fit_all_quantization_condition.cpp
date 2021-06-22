@@ -487,7 +487,7 @@ int main(int argc, char **argv){
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      printf("\n/////////////////////////////////   fit  E3 quant cond  //////////////////\n");
      //////////////////////////////////////////////////////////////////////////////////////////////////
-     
+#ifdef PYTHON
      //// we need python
      wchar_t *program = Py_DecodeLocale(argv[0], NULL);
      if (program == NULL) {
@@ -534,6 +534,6 @@ int main(int argc, char **argv){
      }
      PyMem_RawFree(program);
      
-     
+#endif
      return 0;
 }

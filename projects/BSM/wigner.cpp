@@ -86,7 +86,7 @@ int main(int argc, char **argv){
     error(strcmp(argv[1],"blind")!=0 &&  strcmp(argv[1],"see")!=0 && strcmp(argv[1],"read_plateaux")!=0   ,1,"main ",
           "argv[1] only options:  blind/see/read_plateaux ");
     error(strcmp(argv[4],"-bin")!=0 ,1,"main", "argv[4] must be: -bin");
-    error(strcmp(argv[6],"jack")!=0 &&  strcmp(argv[7],"boot")!=0,1,"main",
+    error(strcmp(argv[6],"jack")!=0 &&  strcmp(argv[6],"boot")!=0,1,"main",
           "argv[6] only options: jack/boot");
     char **option;
     option=(char **) malloc(sizeof(char*)*7);
