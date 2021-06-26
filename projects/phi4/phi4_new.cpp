@@ -1311,6 +1311,7 @@ int main(int argc, char **argv){
    
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
+    
     fit_info.Nvar=3;
     fit_info.Npar=3;
     fit_info.N=1;
@@ -1321,8 +1322,19 @@ int main(int argc, char **argv){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-        //c++ 19 || r 20
-    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  11,0/*reim*/ , "E2_01",  fit_info ,jack_file);
+    //c++ 19 || r 20
+    if (params.data.L[0]<100){
+        fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  11,0/*reim*/ , "E2_01",  fit_info ,jack_file);
+    
+    }else{
+        double *tmp=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,11,"E2_01", M_eff_T,jack_file);
+        fit_out.P=(double **) malloc(sizeof(double*)*Njack);
+        fit_out.P[0]=tmp;
+        fit_out.P[1]=(double*) malloc(sizeof(double)*Njack);
+        fit_out.P[2]=(double*) malloc(sizeof(double)*Njack);
+        fit_out.chi2=(double*) malloc(sizeof(double)*Njack);
+        fit_out.C=double_malloc_3(Njack,fit_info.Npar,fit_info.Npar);
+    }
     
     E2_01=malloc_copy_jackboot( Njack,fit_out.P[0]);
     double *a=scattering_len_luscher(  Njack,  mass[0], mass[1], fit_out.P[0] ,params.data.L[1]);
@@ -1410,8 +1422,10 @@ if(params.data.ncorr>15){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
+    
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_0_03t16 , "E4_0_03t16",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
+    
     
     //c++ 22 || r 23
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
@@ -1425,8 +1439,10 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
+    fit_info.plateaux_scan=true;
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_03t16 , "E4_03t16",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
+    fit_info.restore_default();
     ///// const fit
     
     fit_info.Nvar=3;
@@ -1969,7 +1985,7 @@ if(params.data.ncorr>32){
     
     //c++ 72 || r 73
     fit_info.ext_P[0]=mass[0];
-    fit_info.ext_P[1]=mass[0];
+    fit_info.ext_P[1]=mass[1];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    lhs_four_BH_01_tx_tf_shifetd<1, 2,10,0,1, 31> , "E4_02t10_shifted",  fit_info, jack_file );
@@ -1986,7 +2002,7 @@ if(params.data.ncorr>32){
     
     //c++ 73 || r 74
     fit_info.ext_P[0]=mass[0];
-    fit_info.ext_P[1]=mass[0];
+    fit_info.ext_P[1]=mass[1];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    lhs_four_BH_01_tx_tf_shifetd<1, 2,12,0,1, 32> , "E4_02t12_shifted",  fit_info, jack_file );
@@ -2611,14 +2627,14 @@ if (params.data.ncorr>122){
 
 
 
-if (params.data.ncorr>74){
+if (params.data.ncorr>90){
     
        
     fit_info.Nvar=3;
     fit_info.Npar=2;
     fit_info.N=1;
     fit_info.Njack=Njack;
-    fit_info.n_ext_P=2;
+    fit_info.n_ext_P=1;
     fit_info.function=C2_diff_masses_weight_shift;
     
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
@@ -2745,8 +2761,8 @@ if (params.data.ncorr>122){
     fit_info.ext_P[2]=E1_0_p11;
     fit_info.ext_P[3]=E2_0_p11;
     fit_info.ext_P[4]=E1_0_p11;
-    fit_info.guess={0.5876,    661.1e-7,   0.00016,    0.00037,    46.3e-6 };
-    fit_info.repeat_start=2;
+    fit_info.guess={0.5876,    661.1e-7,   0.00016,    0.00037,    46.3e-8 };
+    fit_info.repeat_start=10;
     
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  sum_corr_directions_shift<104,105,106>, "E3_0_p11_vev",  fit_info, jack_file );
@@ -2876,10 +2892,65 @@ if (params.data.ncorr>126){
     // c++ 125|| r126
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  126,0, "me_3pik_t16",  fit_info, jack_file );
     
+    fit_info.restore_default();
 }else { for(int i=122;i < 126;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////   E2_01 ws
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+fit_info.Nvar=3;
+fit_info.Npar=2;
+fit_info.N=1;
+fit_info.Njack=Njack;
+fit_info.n_ext_P=2;
+fit_info.function=C2_diff_masses_weight_shift;
+
+file_head.k[2]=mu1;    file_head.k[3]=mu2;
+fit_info.ext_P[0]=mass[0];
+fit_info.ext_P[1]=mass[1];
+//c++ 126 || r 127
+fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, sum_corr_weight_shift<11,11,11> /*reim*/ , "E2_01_ws",  fit_info ,jack_file);
+
+double *E2_01_ws=malloc_copy_jackboot( Njack,fit_out.P[0]);
+double *a_01_ws=scattering_len_luscher(  Njack,  mass[0], mass[1], fit_out.P[0] ,params.data.L[1]);
+tmpj=(double*) malloc(sizeof(double)*Njack);
+tmp_muj=(double*) malloc(sizeof(double)*Njack);
+sub_jackboot(Njack,  tmpj, fit_out.P[0], mass[0] );
+sub_jackboot(Njack,  tmpj, tmpj, mass[1] );
+fprintf(outfile,"#scattering length  a  err deltaE2 err    mu01 err    deltaE2*mu01  err   a_01*(m0+m1)=-mu/2pi  err      a_01*(m0+m1)/(a0m0)=4/3 a_01*pi/mu   err    \n %g  %g     %g  %g\t",
+        a_01_ws[Njack-1], error_jackboot(option[4],Njack,a_01_ws),   tmpj[Njack-1],  error_jackboot(option[4],Njack,tmpj));
 
 
+//reduced mass
+for (j=0; j<Njack;j++)
+    tmp_muj[j]=mass[0][j]* mass[1][j]/(mass[0][j]+ mass[1][j]);
+fprintf(outfile,"%g   %g\t", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj) );
+
+//reduced mass time DeltaE2
+for (j=0; j<Njack;j++)
+    tmp_muj[j]=tmp_muj[j]*tmpj[j];
+fprintf(outfile,"%g   %g\t", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj)  );
+
+
+for (j=0; j<Njack;j++)
+    tmp_muj[j]=a_01_ws[j]*(mass[0][j]+mass[1][j]);
+fprintf(outfile,"%g   %g\t", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj)  );
+
+for (j=0; j<Njack;j++)
+    tmp_muj[j]=(a_01_ws[j]*(mass[0][j]+mass[1][j]))/a0m0[j];
+fprintf(outfile,"%g   %g\t", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj)  );
+
+// a_01*pi/mu
+for (j=0; j<Njack;j++)
+    tmp_muj[j]=a_01_ws[j]*pi_greco*(mass[0][j]+mass[1][j])/(mass[0][j]*mass[1][j]) ;
+fprintf(outfile,"%g   %g\n", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj)  );
+
+
+free(tmpj); free(tmp_muj);
+
+free_fit_result(fit_info,fit_out);
+fflush(outfile);
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 // free(E1_0_p1);
