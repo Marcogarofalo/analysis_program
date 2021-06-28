@@ -410,7 +410,7 @@ double rhs_E3_m_QC3(int n, int Nvar, double *x,int Npar,double  *P){
     nnP[0]=(double) dvec[0]; nnP[1]=(double) dvec[1]; nnP[2]=(double) dvec[2];
     double mass=x[1];
     double L=x[0];
-    int steps=10;
+    int steps=20;
     double E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
     double E2f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
     double E3f=mass;
@@ -943,9 +943,9 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     mysprintf(namefile,NAMESIZE,"%s/%s_fit_P.tex",argv[3], label);
     f=open_file(namefile,"w+");
     fprintf(f,"\\begin{gather}\n");
-    fprintf(f,"\\chi^2/d.o.f.=%g\\pm %.2g \\\\ \n", fit_out.chi2[Njack-1], error_jackboot(argv[1], Njack, fit_out.chi2));
+    fprintf(f,"\\chi^2/d.o.f.=%g \\\\ \n", fit_out.chi2[Njack-1]);//error_jackboot(argv[1], Njack, fit_out.chi2)
     for (int i=0;i<Npar;i++){
-        fprintf(f,"P[%d]=%g\\pm %.2g \\\\ \n",i, fit_out.P[i][Njack-1], error_jackboot(argv[1], Njack, fit_out.P[i]));
+        fprintf(f,"P[%d]=%g\\pm (%.2g) \\\\ \n",i, fit_out.P[i][Njack-1], error_jackboot(argv[1], Njack, fit_out.P[i]));
     }
     fprintf(f,"\\end{gather}\n");
     double **cov=covariance(argv[1], Npar, Njack, fit_out.P);

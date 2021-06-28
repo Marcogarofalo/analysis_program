@@ -20,6 +20,10 @@ double **symmetric_matrix_inverse(int N, double **M  );
 double *LU_decomposition_solver(int N, double **M, double *b);
 //return the inverse matrix of M
 double **matrix_inverse(int N, double **M  );
+
+double inter_spline(double at, int Npoints, double *x, double *y);
+    
+
 //fit N data y[N][value][error]  with the function sum_{i=0;i<M}  a_i f_i(x)
 //*fit_functions is a function such that fit_function(int M,double x)[i]=f_i
 //it returns a[i][value,error]

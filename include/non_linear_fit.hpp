@@ -9,6 +9,8 @@
 #include <string.h>
 #include <complex.h>
 #include <vector>
+
+
 struct fit_result malloc_fit( struct  fit_type  fit_info);
 void free_fit_result( struct  fit_type  fit_info,struct fit_result  out);
 

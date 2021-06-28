@@ -9,6 +9,7 @@
 #include <complex.h>
 #include "resampling.hpp"
 #include "linear_fit.hpp"
+#include "tower.hpp"
 
 //Given a positive-definite symmetric matrix a[1..n][1..n] , this routine constructs its Cholesky
 //decomposition, A = L · L T . On input, only the upper triangle of a need be given; it is not
@@ -289,6 +290,30 @@ double **symmetric_matrix_inverse(int N, double **M  ){
     
     free(b);
         
+    return r;
+}
+
+
+
+double inter_spline(double at, int Npoints, double *x, double *y){
+    double **M=double_malloc_2(Npoints,Npoints);
+    double xn;
+    for (int i=0; i< Npoints ;i++){
+        xn=1;
+        for (int j=0; j< Npoints ;j++){
+            M[i][j]=xn;
+            xn*=x[i];
+        }
+    }
+    double *P=LU_decomposition_solver(Npoints, M, y  );
+    free_2(Npoints,M);
+    double r=0;
+    xn=1;
+    for (int i=0; i< Npoints ;i++){
+        r+=P[i]*xn;
+        xn*=at;
+    }
+    free(P);
     return r;
 }
 

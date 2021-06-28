@@ -102,7 +102,8 @@ double **matrix_inverse(int N, double **M  ){
     return r;
 }*/
 
-
+ 
+ 
 
 struct fit_result malloc_fit( struct  fit_type  fit_info){
    struct fit_result fit_out;
