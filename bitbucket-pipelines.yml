@@ -6,7 +6,8 @@
 
 image: gcc:10.2
 
-
+options:
+  max-time: 3
 pipelines:
   default:
     - parallel:
