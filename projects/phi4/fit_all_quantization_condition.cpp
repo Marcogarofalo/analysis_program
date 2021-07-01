@@ -32,7 +32,7 @@
 #include "mass_phi4.hpp"
 #include "fit_function.hpp"
 
-#include <pyhelper.hpp>
+#include <QC3_interface.hpp>
 
 
 
@@ -66,7 +66,13 @@ void print_fit_band_L_M(char **argv,vector<data_phi> gjack ,struct fit_type fit_
         for (int i=Lrange[0] ; i<Lrange[1]; i++){
             double finalL=i;
             tmpx[0]=finalL;
+            double *E3_m=(double*) malloc(sizeof(double) *Njack);
             for (int j=0;j<Njack;j++){
+                E3_m[j]=lhs_E3_m(n,0,j,params,gjack,fit_info);
+            }
+            double E3_m_err=error_jackboot(argv[1], Njack, E3_m );
+            for (int j=0;j<Njack;j++){
+                tmpx[1]=fit_info_m0.function(0,fit_info_m0.Nvar,tmpx,fit_info_m0.Npar,tif_m0[j]); //m0   put for each n the mass of the last ensemble
                 
                 tmpx[2]=gjack[0].jack[2][j];//m1  //
                 tmpx[3]=gjack[0].jack[4][j];//E20
@@ -74,23 +80,30 @@ void print_fit_band_L_M(char **argv,vector<data_phi> gjack ,struct fit_type fit_
                 tmpx[5]=(double) params[0].data.L[0];//T
                 tmpx[6]=1;//k
                 tmpx[7]=1;//MpiL
-                //tmpx[8]=lhs_E3_m(n,0,j,params,gjack,fit_info);// E3( \vec{n} )/mass
+                
                 double *x=(double*) malloc(sizeof(double)*myen.size());
                 double *y=(double*) malloc(sizeof(double)*myen.size());
                 for (int e=0; e<myen.size();e++){
                     y[e]= lhs_E3_m(n,myen[e],j,params,gjack,fit_info);// E3( \vec{n} )/mass
                     x[e]=params[myen[e]].data.L[1];
                 }
-                tmpx[8]=inter_spline(tmpx[0],myen.size(), x,y   ); // tmpx[0]=L 
+                tmpx[8]=inter_spline( tmpx[0], myen.size(), x, y   ); // tmpx[0]=L 
+                                     
+                free(x);free(y);
+                //tmpx[8]=E3_m[j];// E3( \vec{n} )/mass
+                
+                // as error on E3/m  we take the error on the ensemble=0
+                tmpx[9]=E3_m_err;
+                
                 
                 for(int i=fit_info.Nvar ; i<fit_info.Nvar+ fit_info.n_ext_P; i++)
                     tmpx[i]=fit_info.ext_P[i-fit_info.Nvar][j];
                 
-                tmpx[1]=fit_info_m0.function(0,fit_info_m0.Nvar,tmpx,fit_info_m0.Npar,tif_m0[j]); //m0   put for each n the mass of the last ensemble
                 
                 
                 tmpy[j]=fit_info.function(n,Nvar,tmpx,Npar,tif[j]);
-         
+//                 tmpy[j]=tmpx[8];
+//                 printf("L=%g  j=%d  E=%g\n",finalL,j,tmpx[8]);
 //                 if (fabs(finalL-36)<1e-5  && n==2)
 //                     printf("%g   j=%d \t k=%g  m=%g P0=%g  P1=%g\n",finalL,j,tmpy[j], tmpx[1], tif[j][0] ,tif[j][1]  );
 //                 
@@ -100,8 +113,9 @@ void print_fit_band_L_M(char **argv,vector<data_phi> gjack ,struct fit_type fit_
             }*/
             fprintf(f,"%g  \t %g  %g\n",finalL,tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
             
-            
+            free(E3_m);
         }
+        
         free(tmpy);free(tmpx);
         fclose(f); 
     }
@@ -241,7 +255,7 @@ int main(int argc, char **argv){
      struct fit_type fit_info, fit_info_m0;
      
      struct fit_result  fit_m1, fit_m0;
-     fit_info.Nvar=9;                   fit_info_m0.Nvar=8;            
+     fit_info.Nvar=10;                   fit_info_m0.Nvar=10;            
      fit_info.Npar=2;                   fit_info_m0.Npar=2;           
      fit_info.N=1;                      fit_info_m0.N=1;
      fit_info.Njack=gjack[0].Njack;     fit_info_m0.Njack=gjack[0].Njack;
@@ -270,7 +284,7 @@ int main(int argc, char **argv){
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=muDE_rhs;
      
-     struct fit_result fit_a_00=fit_data(argv,  paramsj ,gjack, muDE_00_lhs ,fit_info, "a_00_lusher",myen );
+     struct fit_result fit_a_00=fit_data(argv,  paramsj ,gjack, muDE_00_lhs ,fit_info, "a_00_luscher",myen );
      
      printf("\n/////////////////////////////////     k cot delta    //////////////////\n");
      ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -410,9 +424,11 @@ int main(int argc, char **argv){
      fit_info.h=1e-3;
      fit_info.Prange={100,100000};
      fit_info.devorder=2;
+     fit_info.guess= {-0.121902,-100};
      
-     struct fit_result k_from_phase_shift=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift",myen ,  {-0.121902,-100} );// {-0.948817,-114.788,0.0003987}
+     struct fit_result k_from_phase_shift=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift",myen  );// {-0.948817,-114.788,0.0003987}
      print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "k_from_phase_shift",   k_from_phase_shift ,fit_m0,    paramsj,  myen);
+     fit_info.guess=std::vector<double>();
      
      
      ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -426,10 +442,11 @@ int main(int argc, char **argv){
      fit_info.n_ext_P=0;
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=rhs_k_from_phase_shift;
+     fit_info.guess=  {-0.121902,-80.20332};
      
-     
-     struct fit_result k_from_phase_shift_n4=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n4",myen ,  {-0.121902,-80.20332} );// {-0.948817,-114.788,0.0003987}
+     struct fit_result k_from_phase_shift_n4=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n4",myen  );// {-0.948817,-114.788,0.0003987}
      print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "k_from_phase_shift_n4",   k_from_phase_shift_n4 ,fit_m0,    paramsj,  myen);
+     fit_info.guess=std::vector<double>();
      
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      printf("\n/////////////////////////////////   fit  k  form from_phase_shift   n5  //////////////////\n");
@@ -442,11 +459,12 @@ int main(int argc, char **argv){
      fit_info.n_ext_P=0;
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=rhs_k_from_phase_shift;
-     
-     struct fit_result k_from_phase_shift_n5=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5",myen ,  {-0.121902,-10.9868} );// {-0.948817,-114.788,0.0003987}
+     fit_info.guess={-0.121902,-10.9868};
+     struct fit_result k_from_phase_shift_n5=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5",myen  );// {-0.948817,-114.788,0.0003987}
      print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "k_from_phase_shift_n5",   k_from_phase_shift_n5 ,fit_m0,    paramsj,  myen);
      
      
+     fit_info.guess=std::vector<double>();
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      printf("\n/////////////////////////////////   fit  k  form from_phase_shift   n5 3par  //////////////////\n");
      //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -461,10 +479,10 @@ int main(int argc, char **argv){
      fit_info.Prange={100,100,100};
      fit_info.h=5e-5;
      fit_info.acc=0.1;
+     fit_info.guess={-0.120802,  -17.3748,  -0.000372984};
+     //{-0.124389,-10.9868, 0.000300135};
      
-//      the zeta is computed analytically, use the interpolated one for faster result!!!!!!!!!
-//      struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.11,-950, 6.4e-6} );// {-0.948817,-114.788,0.0003987}
-     struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.124389,-10.9868, 0.000300135} );
+     struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen );
      print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "k_from_phase_shift_n5_3par",   k_from_phase_shift_3par ,fit_m0,    paramsj,  myen);
      
      ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -484,14 +502,14 @@ int main(int argc, char **argv){
      fit_info.h=1e-3;
      fit_info.Prange={100,100000};
      fit_info.devorder=2;
-     
+     fit_info.guess={-0.121902,-80.20332} ;
      
      //      the zeta is computed analytically, use the interpolated one for faster result!!!!!!!!!
      //      struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.11,-950, 6.4e-6} );// {-0.948817,-114.788,0.0003987}
-     struct fit_result deltaE2_m_quant_cond=fit_data(argv,  paramsj ,gjack, lhs_deltaE2_m_latt ,fit_info, "deltaE2_m_quant_cond",myen , {-0.121902,-80.20332} );
+     struct fit_result deltaE2_m_quant_cond=fit_data(argv,  paramsj ,gjack, lhs_deltaE2_m_latt ,fit_info, "deltaE2_m_quant_cond",myen );
      print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "deltaE2_m_quant_cond",   deltaE2_m_quant_cond ,fit_m0,    paramsj,  myen);
      
-     
+     fit_info.restore_default();
      
      
      ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -510,11 +528,9 @@ int main(int argc, char **argv){
      ///////////// end python init
      
      
-     
-     fit_info.restore_default();
-     
-     fit_info.Npar=2;
-     fit_info.N=1;
+     printf("//////////////////// 1 parameter kiso   ////////////////////////////////////\n");
+     fit_info.Npar=1;
+     fit_info.N=2;
      fit_info.Njack=gjack[0].Njack;
      fit_info.n_ext_P=2;
      fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
@@ -527,15 +543,39 @@ int main(int argc, char **argv){
      fit_info.lambda=0.001;
      fit_info.acc=0.01;
      fit_info.h=1e-3;
-     fit_info.Prange={100,100000};
+     fit_info.Prange={1000,10000};
      fit_info.devorder=2;
      
+     fit_info.guess={6.42227};
+     mysprintf(namefile,NAMESIZE,"QC3_N%d_1par",fit_info.N );
+     struct fit_result fit_QC3_1par=fit_data(argv,  paramsj ,gjack, lhs_E3_m ,fit_info, namefile,myen   );
+     print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3_1par ,fit_m0,    paramsj,  myen, {26,40});
+     fit_info.restore_default();
+    
+     printf("//////////////////// 2 parameter kiso   ////////////////////////////////////\n");
+     fit_info.Npar=2;
+     fit_info.N=2;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=2;
+     fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      
-     //      the zeta is computed analytically, use the interpolated one for faster result!!!!!!!!!
-     //      struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.11,-950, 6.4e-6} );// {-0.948817,-114.788,0.0003987}
-     struct fit_result fit_QC3=fit_data(argv,  paramsj ,gjack, lhs_E3_m ,fit_info, "QC3",myen , {213.584,1803} );
-     print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "QC3",   fit_QC3 ,fit_m0,    paramsj,  myen, {26,40});
+     fit_info.ext_P[0]=deltaE2_m_quant_cond.P[0];
+     fit_info.ext_P[1]=deltaE2_m_quant_cond.P[1];
      
+     fit_info.function=rhs_E3_m_QC3;
+     
+     fit_info.lambda=0.001;
+     fit_info.acc=0.01;
+     fit_info.h=1e-3;
+     fit_info.Prange={1000,10000};
+     fit_info.devorder=2;
+     
+     fit_info.guess={4.67161 ,1803};
+     mysprintf(namefile,NAMESIZE,"QC3_N%d_2par",fit_info.N );
+     
+    /*  struct fit_result fit_QC3=fit_data(argv,  paramsj ,gjack, lhs_E3_m ,fit_info, namefile,myen   );
+      print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3 ,fit_m0,    paramsj,  myen, {26,40});
+    */ 
      
      
      ///// close python

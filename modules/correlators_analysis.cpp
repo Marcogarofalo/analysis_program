@@ -24,6 +24,7 @@
 #include <sstream>
 #include <vector>
 #include <iterator>
+#include <random>
 
 
 double constant_fit(int n, int Nvar, double *x,int Npar,double  *P){
@@ -380,7 +381,27 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
 
         fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder );
         chi2j[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
-        
+        int max=0;
+        while (fabs(chi2j[j]-chi2j[Njack-1])/chi2j[Njack-1]>10 && max<fit_info.guess_per_jack){
+            std::mt19937 mt_rand(max);
+            printf("jack %d has a chi2= %g   while the mean has chi2=%g \n retry\n",j,chi2j[j],chi2j[Njack-1]);
+            double *guess1=(double*) malloc(sizeof(double)*Npar);
+            for (int i=0;i< Npar;i++) guess1[i]=guess[i]+guess[i]* mt_rand()/((double) 10*mt_rand.max() ) ;
+            guess1=guess_for_non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess1 ,fit_info.repeat_start);
+            
+            double *tmp_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess1, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder );
+            double tmp_chi2=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp_fit , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+            
+            if (tmp_chi2<chi2j[j]){
+                chi2j[j]=tmp_chi2;
+                for (int i=0;i< Npar;i++) fit[j][i]=tmp_fit[i];
+            }
+                
+            free(tmp_fit);
+            free(guess1);
+            
+            max++;
+        }
         //chi2j[j]=compute_chisqr((tmax-tmin)/sep +1, x, y[j],  1, tmp, constant_fit_to_try )/((tmax-tmin)/sep +1);
        
     } 
@@ -460,31 +481,31 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
    if ( strcmp(option[1],"read_plateaux")==0 ){
         int l=line_read_plateaux(option, description ,  tmin,  tmax,  sep ,plateaux_masses);
         //m=try_linear_fit(option, tmin,  tmax,sep , mt, r, Njack );    
-        fit_out=try_fit(option, tmin,  tmax,sep , mt, r, Njack ,&chi2,fit_info);
-        yn=1;
-        if(fit_out.chi2[Njack-1]>5.5){
-             free_fit_result( fit_info, fit_out);
-             while(yn>0){
-                   fit_out=try_fit(option, tmin,  tmax,sep , mt, r, Njack ,&chi2 ,fit_info);
-                   printf("#%s from %s 1) mu %g r %d theta %g 2) mu %g r %d theta %g  line_plateaux=%d\n",
-                        description,name,
-                    kinematic_2pt.k2,kinematic_2pt.r2,kinematic_2pt.mom2,
-                    kinematic_2pt.k1,kinematic_2pt.r1,kinematic_2pt.mom1,kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1)+1 );   
-                    printf("The chi2 in the range [%d,%d] is %g  consider changing time interval\n",tmin,tmax,fit_out.chi2[Njack-1]);
-                    //plotting( file_head.l0, mt , &tmin,&tmax, &sep);
-                    //yn=plotting_fit(file_head.l0, mt , tmin,tmax,m,chi2);
-                     // to_do:    add test of the fit
-                    yn=0;
-                    if (yn>0){
-                        plotting( file_head.l0, mt , &tmin,&tmax, &sep);
-                        free_fit_result( fit_info, fit_out);
-                    }
-            }
-            //to_do
-            //replace_plateau(  kinematic_2pt ,  description,tmin,tmax,sep);
-
-         }
-         free_fit_result( fit_info, fit_out);
+//         fit_out=try_fit(option, tmin,  tmax,sep , mt, r, Njack ,&chi2,fit_info);
+//         yn=1;
+//         if(fit_out.chi2[Njack-1]>5.5){
+//              free_fit_result( fit_info, fit_out);
+//              while(yn>0){
+//                    fit_out=try_fit(option, tmin,  tmax,sep , mt, r, Njack ,&chi2 ,fit_info);
+//                    printf("#%s from %s 1) mu %g r %d theta %g 2) mu %g r %d theta %g  line_plateaux=%d\n",
+//                         description,name,
+//                     kinematic_2pt.k2,kinematic_2pt.r2,kinematic_2pt.mom2,
+//                     kinematic_2pt.k1,kinematic_2pt.r1,kinematic_2pt.mom1,kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1)+1 );   
+//                     printf("The chi2 in the range [%d,%d] is %g  consider changing time interval\n",tmin,tmax,fit_out.chi2[Njack-1]);
+//                     //plotting( file_head.l0, mt , &tmin,&tmax, &sep);
+//                     //yn=plotting_fit(file_head.l0, mt , tmin,tmax,m,chi2);
+//                      // to_do:    add test of the fit
+//                     yn=0;
+//                     if (yn>0){
+//                         plotting( file_head.l0, mt , &tmin,&tmax, &sep);
+//                         free_fit_result( fit_info, fit_out);
+//                     }
+//             }
+//             //to_do
+//             //replace_plateau(  kinematic_2pt ,  description,tmin,tmax,sep);
+// 
+//          }
+//          free_fit_result( fit_info, fit_out);
 
 
       

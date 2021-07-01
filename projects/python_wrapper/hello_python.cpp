@@ -2,7 +2,7 @@
 // #include <conio.h>
 #include <Python.h>
 
-#include <pyhelper.hpp>
+#include <QC3_interface.hpp>
 
 int main(int argc, char **argv)
 {

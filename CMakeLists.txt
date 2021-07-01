@@ -85,7 +85,7 @@ macro(add_target_with_lib TARGETNAME)
         #target_include_directories(${TARGETNAME} PUBLIC pyhelper)
         #target_include_directories(${TARGETNAME} PUBLIC python3.9)
         target_link_libraries(${TARGETNAME} PUBLIC ${PYTHON_LIBRARIES})
-        target_link_libraries(${TARGETNAME} PUBLIC pyhelper)
+        target_link_libraries(${TARGETNAME} PUBLIC QC3_interface)
         target_link_libraries(${TARGETNAME} PUBLIC ${Python3_LIBRARIES})
         
   ENDIF()

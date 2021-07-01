@@ -26,7 +26,7 @@
 #include "mutils.hpp"
 #include "linear_fit.hpp"
 #ifdef PYTHON
-#include <pyhelper.hpp>
+#include <QC3_interface.hpp>
 #endif
 //using namespace std;
 
@@ -410,19 +410,25 @@ double rhs_E3_m_QC3(int n, int Nvar, double *x,int Npar,double  *P){
     nnP[0]=(double) dvec[0]; nnP[1]=(double) dvec[1]; nnP[2]=(double) dvec[2];
     double mass=x[1];
     double L=x[0];
-    int steps=20;
+    int steps=10;
     double E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
     double E2f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
     double E3f=mass;
     double Estart=(E1f+E2f+E3f)/mass+1e-6;
+//     double Estart=(E1f+E2f+E3f)/mass+0.05;
+//     double Estart=x[8]-x[8]*1e-3 ;// E3/mass
     
-//     E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dmax1[0])*(dmax1[0])+dmax1[1]*dmax1[1]+(dmax1[2])*(dmax1[2]))   );
-//     E2f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dmax2[0])*(dmax2[0])+dmax2[1]*dmax2[1]+(dmax2[2])*(dmax2[2]))   );
-//     double Eend=(E1f+E2f+E3f)/mass- 1e-6;
-    double Eend=x[8] ;// E3/mass
+    E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dmax1[0])*(dmax1[0])+dmax1[1]*dmax1[1]+(dmax1[2])*(dmax1[2]))   );
+    E2f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dmax2[0])*(dmax2[0])+dmax2[1]*dmax2[1]+(dmax2[2])*(dmax2[2]))   );
+    double Eend=(E1f+E2f+E3f)/mass- 1e-6;
+    
+//     double Eend=x[8]+x[8]*1e-3 ;
+//     double Eend=Estart+0.10;
     
     L=L*mass;
-//     printf("L=%g  m=%g\n",L,mass);
+    if (n==0){ Estart=x[8]-x[9];  Eend=x[8]+x[9];}
+    
+//  printf("E=[%g , %g]   E1f=%g   E2f=%g  m=%g\n",Estart,Eend,E1f,E2f,mass);
     double r=python_detQC(Estart, Eend, steps,  L,  nnP, Nkcot,Pkcot,Nkiso, Pkiso);
 //     printf("res=%g\n",r);
     return r;
@@ -718,6 +724,14 @@ double muDE_01_div_shift_lhs(int n, int e , int j , vector<cluster::IO_params> p
 }
 
 
+double a_01_luescher_lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    
+    double *a=scattering_len_luscher(  fit_info.Njack, gjack[e].jack[1], gjack[e].jack[2], gjack[e].jack[19] ,params[e].data.L[1]);
+    double r=a[j];
+    free(a);
+    return r;//   03t16_shifted1
+}
+
 
 template<int id>
 double lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
@@ -972,7 +986,12 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     
     double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
     
-    if (strcmp(label,"k_from_phase_shift")!=0 && strcmp(label,"k_from_phase_shift_n4")!=0 && strcmp(label,"k_from_phase_shift_n5")!=0 && strcmp(label,"k_from_phase_shift_acotZ")!=0 && strcmp(label,"QC3")!=0 && strcmp(label,"deltaE2_m_quant_cond")!=0 ){
+//     if (strcmp(label,"k_from_phase_shift")!=0 && strcmp(label,"k_from_phase_shift_n4")!=0 && strcmp(label,"k_from_phase_shift_n5")!=0 && strcmp(label,"k_from_phase_shift_acotZ")!=0 && strcmp(label,"QC3")!=0 && strcmp(label,"deltaE2_m_quant_cond")!=0 ){
+        if (strcmp(label,"M0_finite_vol")==0  || strcmp(label,"M1_finite_vol")==0  || strcmp(label,"a_00_luscher")==0  || strcmp(label,"kcotd")==0 
+            || strcmp(label,"kcotd_Elatt")==0 || strcmp(label,"a_00_lucsher_infm")==0 || strcmp(label,"a_01_lusher")==0 || strcmp(label,"a_01_lusher_div_shift")==0
+            || strcmp(label,"a_00_BH")==0 || strcmp(label,"a_01_BH_03t16_shifted")==0 || strcmp(label,"a_01_BH_04t16_shifted")==0 ,  strcmp(label,"a_01_BH_02t10_shifted")==0  || strcmp(label,"a_01_lusher_const")==0
+        ){    
+        
         /////////fit band L
         print_fit_band_L( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
         print_fit_band_T( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
@@ -1044,7 +1063,7 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
 }
 
 
-struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vector<data_phi> gjack, double lhs_fun(int, int, int ,vector<cluster::IO_params> ,vector<data_phi>,struct fit_type ) , struct fit_type fit_info, const char* label, std::vector<int> myen, std::vector<double> start_point={}){
+struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vector<data_phi> gjack, double lhs_fun(int, int, int ,vector<cluster::IO_params> ,vector<data_phi>,struct fit_type ) , struct fit_type fit_info, const char* label, std::vector<int> myen ){
     int Npar=fit_info.Npar;
     int Nvar=fit_info.Nvar+fit_info.n_ext_P;
     int Njack=gjack[0].Njack;
@@ -1063,16 +1082,18 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
     ////// allocation end
     /////////////// init
     std::mt19937 mt_rand(123);
-    if (start_point.size()==0){
+    if (fit_info.guess.size()==0){
         for (int i=0;i<Npar;i++)
             guess[i]=mt_rand()/((double)mt_rand.max() );//rand()/((double)RAND_MAX);
     }
     else{
-        for (int i=0;i<start_point.size();i++)
-            guess[i]=start_point[i];
-        for (int i=start_point.size();i<Npar;i++)
+        for (int i=0;i<fit_info.guess.size();i++)
+            guess[i]=fit_info.guess[i];
+        for (int i=fit_info.guess.size();i<Npar;i++)
             guess[i]=1;
     }
+    
+    
     
     //init x
     for (int j=0;j<Njack;j++){
@@ -1091,6 +1112,7 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
                 
                 x[j][count][8]=lhs_E3_m(n,myen[e],j,params,gjack,fit_info);// E3( \vec{n} )/mass
                 
+                
                 for(int i=0 ; i< fit_info.n_ext_P; i++){
                     x[j][count][i+fit_info.Nvar]=fit_info.ext_P[i][j];
                 }
@@ -1102,9 +1124,26 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
             }
        }
     }
-    
-    
     int count=0;
+    for (int n=0;n<N;n++){
+        for (int e=0;e<en[n];e++){
+            double *E3_m=(double*) malloc(sizeof(double)*Njack);
+            for (int j=0;j<Njack;j++)
+                E3_m[j]=x[j][count][8];
+        
+            
+            double err=error_jackboot(argv[1], Njack,E3_m );
+            for (int j=0;j<Njack;j++)
+                x[j][count][9]=err;
+            free(E3_m);
+            
+            count++;
+        }
+    }
+    
+    
+    
+    count=0;
     for (int n=0;n<N;n++){
         for (int e=0;e<en[n];e++){
             double *tmpj=(double*) malloc(sizeof(double)*Njack);
@@ -1126,7 +1165,7 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
     
     ///////////////// the fit 
     // scan the parameter of the fit with the last jack
-    if (start_point.size()==0){
+    if (fit_info.guess.size()==0){
         guess=guess_for_non_linear_fit_Nf(N, en,x[Njack-1], y[Njack-1] , Nvar,  Npar, fit_info.function,guess );
     }
     
@@ -1139,7 +1178,9 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
             printf("jack =%d  chi2/dof=%g   chi2=%g   time=%g    1/a0m0=%g   -a0m0=%g\n",j,fit_out.chi2[j],fit_out.chi2[j]*(en_tot-Npar) , timestamp( )-a, fit[j][0] ,-1./fit[j][0] );
             
         }
-        else if ( strcmp(label,"k_from_phase_shift_n5_3par")==0  || strcmp(label,"QC3")==0   ){
+        else if ( strcmp(label,"k_from_phase_shift_n5_3par")==0  || strcmp(label,"QC3_N1_1par")==0 || strcmp(label,"QC3_N2_1par")==0 || strcmp(label,"QC3_N3_1par")==0
+            || strcmp(label,"QC3_N4_1par")==0 || strcmp(label,"QC3_N5_1par")==0
+        ){
             double a=timestamp();
             fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function, guess, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder);
 //             fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess,0.001, 0.01, 1e-3 ,{100,100,100}, 2);

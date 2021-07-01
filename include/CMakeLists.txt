@@ -290,10 +290,10 @@ target_include_directories(zeta_interpolation PUBLIC "${CMAKE_CURRENT_SOURCE_DIR
 
 if(WITH_PYTHON)
     add_library(
-        pyhelper STATIC
-        pyhelper.hpp
+        QC3_interface STATIC
+        QC3_interface.hpp
     )
-    set_target_properties(pyhelper PROPERTIES LINKER_LANGUAGE CXX)
-    target_link_libraries(pyhelper PUBLIC  ${PYTHON_LIBRARIES})
-    target_include_directories(pyhelper PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+    set_target_properties(QC3_interface PROPERTIES LINKER_LANGUAGE CXX)
+    target_link_libraries(QC3_interface PUBLIC  ${PYTHON_LIBRARIES})
+    target_include_directories(QC3_interface PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 ENDIF()

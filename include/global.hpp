@@ -218,17 +218,20 @@ struct  fit_type
   bool plateaux_scan=false;
   FILE *f_plateaux_scan=NULL;
   std::string name_plateaux_scan;
+  int guess_per_jack=0;
+  
   void restore_default(){
      custom=false; // 1 means default fit , 0 custom fit options
      lambda=0.001;
      acc=0.001; 
      h=1e-5; 
-     Prange={};
-     guess={};
+     Prange=std::vector<double>();
+     guess=std::vector<double>();
      devorder=4; 
      repeat_start=1;
      
      plateaux_scan=false;
+     guess_per_jack=0;
 //      f_plateaux_scan=NULL;
 //      name_plateaux_scan="\0";
   };

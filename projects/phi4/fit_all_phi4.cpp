@@ -72,7 +72,7 @@ int main(int argc, char **argv){
      //emplace_back_par_data(namefile,paramsj,dataj);
     
      //0
-     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+    /* mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      //1
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L24_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
@@ -83,7 +83,7 @@ int main(int argc, char **argv){
      //3
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L32_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
-     //4
+   */  //4
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T48_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      //5
@@ -124,7 +124,7 @@ int main(int argc, char **argv){
      int Njack=gjack[0].Njack;
      struct fit_type fit_info;
      struct fit_result  fit_m1, fit_m0;
-     fit_info.Nvar=11;
+     fit_info.Nvar=10;
      fit_info.Npar=2;
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
@@ -152,7 +152,7 @@ int main(int argc, char **argv){
      
      fit_info.ext_P[0]=fit_m0.P[0];
      fit_info.ext_P[1]=fit_m0.P[0];
-     struct fit_result fit_a_00_infm=fit_data(argv,  paramsj ,gjack, muDE_00_infm_lhs ,fit_info, "a_00_lusher_infm" ,myen);
+     struct fit_result fit_a_00_infm=fit_data(argv,  paramsj ,gjack, muDE_00_infm_lhs ,fit_info, "a_00_luscher_infm" ,myen);
      
      
      ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -165,8 +165,10 @@ int main(int argc, char **argv){
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=muDE_rhs;
      
-     struct fit_result fit_a_00=fit_data(argv,  paramsj ,gjack, muDE_00_lhs ,fit_info, "a_00_lusher",myen );
+     struct fit_result fit_a_00=fit_data(argv,  paramsj ,gjack, muDE_00_lhs ,fit_info, "a_00_luscher",myen );
      
+     
+    
      printf("\n/////////////////////////////////     E2_01//////////////////\n");
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      // start fitting
@@ -180,6 +182,20 @@ int main(int argc, char **argv){
      
      struct fit_result fit_a_01=fit_data(argv,  paramsj ,gjack, muDE_01_lhs ,fit_info, "a_01_lusher",myen );
    
+     
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // start fitting
+     
+     fit_info.Npar=1;
+     fit_info.N=1;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=constant_fit;
+     
+     struct fit_result fit_a_01_const=fit_data(argv,  paramsj ,gjack, a_01_luescher_lhs ,fit_info, "a_01_lusher_const",myen );
+     
+     
      fit_info.Npar=1;
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
@@ -213,7 +229,7 @@ int main(int argc, char **argv){
      */
      
      printf("size=%ld\n",myen.size());
-     myen={4,5,6,7,8,9,10};
+//      myen={4,5,6,7,8,9,10};
      printf("size=%ld\n",myen.size());
      
      printf("\n/////////////////////////////////     a_00_BH//////////////////\n");
@@ -243,6 +259,21 @@ int main(int argc, char **argv){
      
      //lhs<53>  E4_03t16_shifted
      struct fit_result fit_a_01_BH_03t16=fit_data(argv,  paramsj ,gjack, lhs<53> ,fit_info, "a_01_BH_03t16_shifted" ,myen);
+     
+     
+     printf("\n/////////////////////////////////     a_01_BH_02t10//////////////////\n");
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // start fitting
+     
+     fit_info.Npar=1;
+     fit_info.N=1;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=constant_fit;
+     
+     //lhs<53>  E4_03t16_shifted
+     struct fit_result fit_a_01_BH_02t10=fit_data(argv,  paramsj ,gjack, lhs<73> ,fit_info, "a_01_BH_02t10_shifted" ,myen);
      
      
      printf("\n/////////////////////////////////     a_01_BH_04t16//////////////////\n");
