@@ -261,8 +261,11 @@ int main(int argc, char **argv){
     sprintf(option[1],"%s",save_option);// restore option
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
+    // 0
     double *mass=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,namefile_plateaux,outfile,1,"m_PS", M_eff_T,jack_file);
+    // 1
     double *massDs3=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,namefile_plateaux,outfile,6,"m_DS3", M_eff_T,jack_file);
+    // 2
     double *masss0=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,namefile_plateaux,outfile,4,"m_S0", M_eff_T,jack_file);
     
     
@@ -277,10 +280,11 @@ int main(int argc, char **argv){
     
     //file_head.k[2]=mu1;    file_head.k[3]=mu2;
     
-    //c++ 1 || r 2
+    //c++ 3 || r 2
     fit_result fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1phi", conf_jack ,namefile_plateaux, outfile, 
                                               r_AWI, "r_AWI",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
+    // 4
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1", conf_jack ,namefile_plateaux, outfile, 
                                               m_PCAC, "m_PCAC",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);

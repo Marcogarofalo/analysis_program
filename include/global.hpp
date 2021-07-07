@@ -218,7 +218,11 @@ struct  fit_type
   bool plateaux_scan=false;
   FILE *f_plateaux_scan=NULL;
   std::string name_plateaux_scan;
-  int guess_per_jack=0;
+  
+  std::string resampling;
+  double chi2_gap_jackboot=1;
+  int guess_per_jack=3;
+  int precision_sum=0;
   
   void restore_default(){
      custom=false; // 1 means default fit , 0 custom fit options
@@ -232,6 +236,9 @@ struct  fit_type
      
      plateaux_scan=false;
      guess_per_jack=0;
+     chi2_gap_jackboot=1;
+     
+     precision_sum=0;
 //      f_plateaux_scan=NULL;
 //      name_plateaux_scan="\0";
   };

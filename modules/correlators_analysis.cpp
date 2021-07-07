@@ -372,25 +372,34 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
         
     }
 //     if(fit_info.guess.size()==0)
-    guess=guess_for_non_linear_fit_Nf(N, en,x[Njack-1], y[Njack-1] , Nvar,  Npar, fit_info.function,guess ,fit_info.repeat_start);
-    
-   
+    guess=guess_for_non_linear_fit_Nf(N, en,x[Njack-1], y[Njack-1] , Nvar,  Npar, fit_info.function,guess ,fit_info.repeat_start,
+                                      fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder, 1,fit_info.precision_sum);
     //for (j=0;j<Njack;j++){
     for (j=Njack-1;j>=0;j--){    
         //tmp=linear_fit( (tmax-tmin)/sep +1, x, y[j],  1,constant_fit_to_try );
 
-        fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder );
-        chi2j[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+        fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder, 0,fit_info.precision_sum );
+        if (fit_info.precision_sum >0 )
+            chi2j[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+        else 
+            chi2j[j]=compute_chi_non_linear_Nf_kahan(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
         int max=0;
-        while (fabs(chi2j[j]-chi2j[Njack-1])/chi2j[Njack-1]>10 && max<fit_info.guess_per_jack){
+        
+        while (fabs(chi2j[j]-chi2j[Njack-1])/chi2j[Njack-1]>fit_info.chi2_gap_jackboot && max<fit_info.guess_per_jack){
             std::mt19937 mt_rand(max);
             printf("jack %d has a chi2= %g   while the mean has chi2=%g \n retry\n",j,chi2j[j],chi2j[Njack-1]);
             double *guess1=(double*) malloc(sizeof(double)*Npar);
             for (int i=0;i< Npar;i++) guess1[i]=guess[i]+guess[i]* mt_rand()/((double) 10*mt_rand.max() ) ;
-            guess1=guess_for_non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess1 ,fit_info.repeat_start);
+            guess1=guess_for_non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess1 ,fit_info.repeat_start,
+                                               fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder,1, fit_info.precision_sum);
             
-            double *tmp_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess1, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder );
-            double tmp_chi2=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp_fit , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+            double *tmp_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess1, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder,0, fit_info.precision_sum );
+            double tmp_chi2;
+            if (fit_info.precision_sum>0 )
+                tmp_chi2=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp_fit , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+            else 
+                tmp_chi2=compute_chi_non_linear_Nf_kahan(N, en,x[j], y[j],tmp_fit , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+//             double tmp_chi2=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp_fit , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
             
             if (tmp_chi2<chi2j[j]){
                 chi2j[j]=tmp_chi2;

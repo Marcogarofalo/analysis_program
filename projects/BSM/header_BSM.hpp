@@ -10,6 +10,9 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include "tower.hpp"
+
+using namespace std;
 
 
 struct  header_BSM
@@ -24,6 +27,7 @@ struct  header_BSM
     int confs;
     double Njack;
     double Nobs;
+    int size_header_bin;
     
 } ;
 
@@ -109,6 +113,133 @@ void read_header_BSM_bin(header_BSM &head, FILE *stream){
     fread(&head.mu03,sizeof(double),1,stream);
     fread(&head.m0,sizeof(double),1,stream);
     fread(&head.Njack,sizeof(double),1,stream);
+    head.size_header_bin= ftell(stream);
+    
+}
+
+
+
+struct data_BSM{
+    int Njack;
+    int Nobs;
+    double **jack;
+    
+};
+
+void read_Njack_Nobs( FILE *stream, header_BSM params, int Njack, int &Nobs ){
+    
+    long int tmp;
+    int header_size=params.size_header_bin;
+    int s=header_size;
+    
+    
+    
+    fseek(stream, 0, SEEK_END);
+    tmp = ftell(stream);
+    tmp-= header_size ;
+    
+    s=Njack;
+    
+    Nobs= (tmp)/ ((s)*sizeof(double) );
+    
+    fseek(stream, header_size, SEEK_SET);
+    
+    
+    
+}
+void read_dataj(FILE *stream,header_BSM  params, data_BSM &dj){
+    read_Njack_Nobs(stream, params, params.Njack, dj.Nobs );
+    dj.Njack=params.Njack;
+    printf("Nobs=%d   Njack=%d\n",dj.Nobs,dj.Njack);
+    dj.jack=double_malloc_2( dj.Nobs, dj.Njack);
+    size_t i=0;
+    for (int obs=0; obs<dj.Nobs; obs++ ){
+        i+=fread(dj.jack[obs], sizeof(double ), dj.Njack, stream );
+    }
+    
+}
+
+void emplace_back_par_data( char *namefile , vector<header_BSM> &paramsj, vector<data_BSM> &dataj){
+    printf(" emplace_back_par_data\n");
+    header_BSM params;
+    data_BSM  data;
+    FILE *f=open_file(namefile,"r");
+    read_header_BSM_bin(    params, f);
+    read_dataj(f,params,data );
+    fclose(f);
+    
+    paramsj.emplace_back(params);
+    dataj.emplace_back(data);
+    //printf("E1=%g    %g\n",dataj[0].jack[1][   dataj[0].Njack-1 ],    data.jack[1][data.Njack-1]);
+    
+}
+
+
+vector<data_BSM> create_generalised_resampling(  vector<data_BSM> &dataj ){
+    // if the length is the same return dataj
+    int same=0;
+    for( auto &d :dataj){
+        printf("jacks=%d\n",d.Njack);
+        if (d.Njack==dataj[0].Njack)
+            same++;
+    }
+    if (same==dataj.size()){
+        cout << "all the files have the same number of jack/boot , do nothing"<<endl;
+        return dataj;
+    }
+    else{
+        cout << "creating generalised jack"<<endl;
+        vector<data_BSM> gjack;
+        //gjack.resize(dataj.size());
+        //jac_tot is the summ of all jackknife +1 
+        //remember alle the dataj have one extra entry for the mean
+        int jack_tot=0;
+        for( int e=0 ; e<dataj.size();e++)
+            jack_tot+=dataj[e].Njack;
+        jack_tot=jack_tot-dataj.size()+1;
+        cout << "ensembles "<< dataj.size() << endl;
+        cout<< "jack tot= "<< jack_tot<< endl;
+        
+        //get Nobs the minimum number of observable between the diles
+        int Nobs=1000;
+        for( auto &d :dataj)
+            if(Nobs> d.Nobs )
+                Nobs=d.Nobs;
+            
+            
+            
+            
+        for(int e=0;e<dataj.size();e++){
+            data_BSM tmp;
+            tmp.Njack=jack_tot;
+            tmp.Nobs=Nobs;
+            cout<< Nobs<<" " <<jack_tot<< endl;
+            tmp.jack=double_malloc_2( Nobs, jack_tot);
+            int counter=0;
+            for(int e1=0;e1<dataj.size();e1++){
+                for(int j=0;j<(dataj[e1].Njack-1);j++){
+                    for(int o=0;o<Nobs;o++){ 
+                        if (e==e1){
+                            tmp.jack[o][j+counter]=dataj[e].jack[o][j];
+                        }
+                        else{
+                            tmp.jack[o][j+counter]=dataj[e].jack[o][ dataj[e].Njack-1  ];
+                        }
+                    }
+                }
+                counter+=dataj[e1].Njack-1 ;
+            }
+            for(int o=0;o<Nobs;o++)
+                tmp.jack[o][ jack_tot-1 ]=dataj[e].jack[o][ dataj[e].Njack-1  ];
+            
+            free_2(dataj[e].Nobs, dataj[e].jack);
+            gjack.emplace_back(tmp);
+        }
+        vector<data_BSM>().swap(dataj);
+        
+        return gjack;
+            
+    }
     
 }
 

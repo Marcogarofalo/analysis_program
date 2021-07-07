@@ -577,6 +577,49 @@ double compute_chi_non_linear_Nf(int N,int *ensemble,double **x, double **y, dou
             count++;
         } 
     }
+    double chi2_double=chi2;
+    return chi2;
+}
+
+
+double compute_chi_non_linear_Nf_long(int N,int *ensemble,double **x, double **y, double *P ,int Nvar, int Npar,  double fun(int,int,double*,int,double*)) {
+    long double chi2=0,f;
+    int e,n,count;
+    
+    count=0;
+    for (n=0;n<N;n++){
+        for (e=0;e<ensemble[n];e++){
+            f=fun(n,Nvar,x[count],Npar,P)-y[count][0];
+            //             printf("e=%d  n=%d   f=%g  y=%g err=%g    dchi= %g  \n ",e,n,f+y[count][0],y[count][0],y[count][1],f*f/(y[count][1]* y[count][1]));
+            f/=y[count][1];
+            chi2+=f*f;
+            count++;
+        } 
+    }
+    double chi2_double=chi2;
+    return chi2_double;
+}
+
+
+double compute_chi_non_linear_Nf_kahan(int N,int *ensemble,double **x, double **y, double *P ,int Nvar, int Npar,  double fun(int,int,double*,int,double*)) {
+    double chi2=0,f;
+    int e,n,count;
+    double c=0.0;
+    
+    count=0;
+    for (n=0;n<N;n++){
+        for (e=0;e<ensemble[n];e++){
+            f=fun(n,Nvar,x[count],Npar,P)-y[count][0];
+            //             printf("e=%d  n=%d   f=%g  y=%g err=%g    dchi= %g  \n ",e,n,f+y[count][0],y[count][0],y[count][1],f*f/(y[count][1]* y[count][1]));
+            f/=y[count][1];
+            double in=f*f-c;
+            double t=chi2+in;
+            c=t-chi2 -in;
+            chi2=t;
+           
+            count++;
+        } 
+    }
     return chi2;
 }
 
@@ -638,9 +681,20 @@ double  **covariance_non_linear_fit_Nf(int N, int *ensemble ,double **x, double 
  * the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 
  * devorder can be negative, in that case each parameter has is own h[i]=Parameter[i] *h
  ***********************************************************************************/
-double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar,  double fun(int, int, double*, int, double*) , double* guess, double lambda, double acc, double h, std::vector< double > Prange, int devorder, int verbosity )
+double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar,  double fun(int, int, double*, int, double*) , double* guess, double lambda, double acc, double h, std::vector< double > Prange, int devorder, int verbosity , int precision_sum )
 {
     double* (*der_fun_Nf_h)(int , int , double* ,int ,double*  , double (int,int,double*,int,double*), double );
+    double (*chi2_fun)(int N,int *ensemble,double **x, double **y, double *P ,int Nvar, int Npar,  double fun(int,int,double*,int,double*));
+    chi2_fun=compute_chi_non_linear_Nf;
+    
+    if (precision_sum==1){
+        chi2_fun=compute_chi_non_linear_Nf_kahan;
+    }
+    else if (precision_sum>1){
+        chi2_fun=compute_chi_non_linear_Nf_long;
+    }
+    
+    
     if(devorder==-2){
         der_fun_Nf_h=der_O2_fun_Nf_h_adaptive;
     }
@@ -679,7 +733,7 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
         alpha[j]=(double*) calloc(Npar,sizeof(double));
     }   
 
-    chi2=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun);//printf("chi2 in fit function=%g\n",chi2/(ensemble[0]*N-Npar));
+    chi2=chi2_fun(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun);//printf("chi2 in fit function=%g\n",chi2/(ensemble[0]*N-Npar));
 
     chi2_tmp=chi2+1;
    
@@ -772,7 +826,7 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
                 P_tmp[j]+=P[j];
             }
             
-            chi2_tmp=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun);
+            chi2_tmp=chi2_fun(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun);
 	        if (chi2_tmp!=chi2_tmp) chi2_tmp=chi2+1;
            
 
@@ -834,7 +888,7 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
 
 // x[ensemble][variable number] ,   y[ensemble][0=mean,1=error], fun(index_function,Nvariables,variables[], Nparameters,parameters[])
 //the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 
-double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess ,int repeat){
+double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess ,int repeat, double lambda, double acc, double h, std::vector< double > Prange, int devorder, int verbosity ,int precision_sum){
   
     int i,j,jmax,k,e,n;
     double en_tot=0;
@@ -847,7 +901,7 @@ double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **
        en_tot+=ensemble[n];
     //for(i=0;i<Npar;i++)
       //      guess[i]=((r/rm)-0.5)*2;
-    P=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess , 0.001, 0.001, 1e-5, {}, 4 , 0);
+    P=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess , 0.001, 0.001, 1e-5, {}, 4 , 0,  precision_sum);
     chi2=compute_chi_non_linear_Nf(N, ensemble,x, y, P ,Nvar,  Npar,  fun)/(en_tot-Npar);
     jmax=3+((int) (chi2*2));
     
@@ -866,7 +920,7 @@ double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **
             //  printf("%f\t",guess[i]);
             }
         // printf("\n");
-            P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess , 0.001, 0.001, 1e-5, {}, 4 , 0);
+            P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess , 0.001, 0.001, 1e-5, {}, 4 , 0, precision_sum);
             chi2_tmp=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun)/(en_tot-Npar);
             //printf("chi2=%.10f \tchi2_tmp=%.10f   dof=%f\n",chi2,chi2_tmp,en_tot-Npar);
             /*for(i=0;i<Npar;i++)
@@ -898,7 +952,7 @@ double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **
                 //  printf("%f\t",guess[i]);
                 }
             // printf("\n");
-                P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess , 0.001, 0.001, 1e-5, {}, 4 , 0);
+                P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess , 0.001, 0.001, 1e-5, {}, 4 , 0, precision_sum);
                 chi2_tmp=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun)/(en_tot-Npar);
                 //printf("chi2=%.10f \tchi2_tmp=%.10f\n",chi2,chi2_tmp);
                 /*for(i=0;i<Npar;i++)
@@ -930,7 +984,7 @@ double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **
                     //  printf("%f\t",guess[i]);
                 }
                 // printf("\n");
-                P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess , 0.001, 0.001, 1e-5, {}, 4 , 0);
+                P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess , 0.001, 0.001, 1e-5, {}, 4 , 0, precision_sum);
                 chi2_tmp=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun)/(en_tot-Npar);
             // printf("chi2=%.10f \tchi2_tmp=%.10f\n",chi2,chi2_tmp);
                 /*for(i=0;i<Npar;i++)

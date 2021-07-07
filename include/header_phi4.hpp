@@ -20,26 +20,7 @@ struct data_phi{
     int Njack;
     int Nobs;
     double **jack;
-    //char resampling[NAMESIZE];
-    /* 
-     *    data_phi(){ 
-     *        Njack=0; 
-     *        Nobs=0;
-};
-
-data_phi(int inobs, int injack){
-Nobs=inobs;
-Njack=injack;
-jack=double_malloc_2(Nobs,Njack);
-};
-
-~data_phi(){
-if (Nobs!=0 || Njack !=0){
-    free_2(Nobs,jack);
-    printf("destructing data_phi\n");
-}
-};
-*/
+   
 };
 
 
