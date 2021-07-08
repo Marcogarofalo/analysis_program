@@ -127,6 +127,95 @@ void print_fit_band_L_M(char **argv,vector<data_phi> gjack ,struct fit_type fit_
 
 
 
+void print_fit_band_E3_vs_L(char **argv,vector<data_phi> gjack , struct fit_type fit_info, struct fit_type fit_info_m0 , const char* label, struct fit_result fit_out, struct fit_result fit_out_m0,    vector<cluster::IO_params> params, std::vector<int> myen,  struct fit_type fit_info_E3_poly ,fit_result fit_E3_poly, std::vector<int> Lrange={16,50}){
+    int Npar=fit_info.Npar;
+    int Nvar=fit_info.Nvar+fit_info.n_ext_P;
+    int Njack=gjack[0].Njack;
+    int N=fit_info.N;
+    char namefile[NAMESIZE];
+    FILE *f;
+    
+    mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_k.txt",argv[3], label);
+    f=open_file(namefile,"w+");
+    double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
+    double **tif_m0=swap_indices(fit_info_m0.Npar,Njack,fit_out_m0.P);
+    double **tif_E3_poly=swap_indices(fit_info_E3_poly.Npar, Njack, fit_E3_poly.P);
+    double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
+    double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+    printf("writing: %s\n",namefile);
+    
+    for (int n=0;n< N; n++){
+        
+        mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_n%d_L.txt",argv[3], label,n);
+        f=open_file(namefile,"w+");
+        double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
+        double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+        printf("writing: %s\n",namefile);
+        
+        for (int i=Lrange[0] ; i<Lrange[1]; i++){
+            double finalL=i;
+            tmpx[0]=finalL;
+            double *E3_m=(double*) malloc(sizeof(double) *Njack);
+            for (int j=0;j<Njack;j++){
+                E3_m[j]=fit_info_E3_poly.function(n,fit_info_E3_poly.Nvar , tmpx, fit_info_E3_poly.Npar, tif_E3_poly[j]);
+            }
+            double E3_m_err=error_jackboot(argv[1], Njack, E3_m );
+            for (int j=0;j<Njack;j++){
+                tmpx[1]=fit_info_m0.function(0,fit_info_m0.Nvar,tmpx,fit_info_m0.Npar,tif_m0[j]); //m0   put for each n the mass of the last ensemble
+                
+                tmpx[2]=gjack[0].jack[2][j];//m1  //
+                tmpx[3]=gjack[0].jack[4][j];//E20
+                tmpx[4]=gjack[0].jack[5][j];//E21
+                tmpx[5]=(double) params[0].data.L[0];//T
+                tmpx[6]=1;//k
+                tmpx[7]=1;//MpiL
+                
+//                 double *x=(double*) malloc(sizeof(double)*myen.size());
+//                 double *y=(double*) malloc(sizeof(double)*myen.size());
+//                 for (int e=0; e<myen.size();e++){
+//                     y[e]= lhs_E3_m(n,myen[e],j,params,gjack,fit_info);// E3( \vec{n} )/mass
+//                     x[e]=params[myen[e]].data.L[1];
+//                 }
+//                 tmpx[8]=inter_spline( tmpx[0], myen.size(), x, y   ); // tmpx[0]=L 
+//                 free(x);free(y);
+                
+                tmpx[8]=E3_m[Njack-1];// E3( \vec{n} )/mass
+                
+                // as error on E3/m  we take the error on the ensemble=0
+                tmpx[9]=E3_m_err;
+                
+                
+                for(int i=fit_info.Nvar ; i<fit_info.Nvar+ fit_info.n_ext_P; i++)
+                    tmpx[i]=fit_info.ext_P[i-fit_info.Nvar][j];
+                
+                
+                
+                tmpy[j]=fit_info.function(n,Nvar,tmpx,Npar,tif[j]);
+                //                 tmpy[j]=tmpx[8];
+                //                 printf("L=%g  j=%d  E=%g\n",finalL,j,tmpx[8]);
+                //                 if (fabs(finalL-36)<1e-5  && n==2)
+                //                     printf("%g   j=%d \t k=%g  m=%g P0=%g  P1=%g\n",finalL,j,tmpy[j], tmpx[1], tif[j][0] ,tif[j][1]  );
+                //                 
+            }
+            /*if (fabs(finalL-36)<1e-5  && n==2){
+             *                printf("%g  \t %g  %g\n",finalL,tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
+        }*/
+            fprintf(f,"%g  \t %g  %g\n",finalL,tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
+            
+            free(E3_m);
+        }
+        
+        free(tmpy);free(tmpx);
+        fclose(f); 
+    }
+    free_2(Njack,tif);
+    free_2(Njack,tif_m0);
+    free_2(Njack,tif_E3_poly);
+}
+
+
+
+
 int main(int argc, char **argv){
      error(argc!=4,1,"main ",
          "usage:./fit_all_phi4  jack/boot   path_to_jack   output_dir");   
@@ -528,9 +617,35 @@ int main(int argc, char **argv){
      ///////////// end python init
      
      
+     printf("//////////////////// poly fit E3   ////////////////////////////////////\n");
+     fit_type fit_info_E3_poly;
+     fit_info_E3_poly.N=5;
+     fit_info_E3_poly.Npar=fit_info_E3_poly.N*3;
+     fit_info_E3_poly.Njack=gjack[0].Njack;
+     fit_info_E3_poly.n_ext_P=2;
+     fit_info_E3_poly.ext_P=(double**) malloc(sizeof(double*)*fit_info_E3_poly.n_ext_P);
+     
+     fit_info_E3_poly.ext_P[0]=deltaE2_m_quant_cond.P[0];
+     fit_info_E3_poly.ext_P[1]=deltaE2_m_quant_cond.P[1];
+     
+     fit_info_E3_poly.function=rhs_poly_E3_m;
+     
+     fit_info_E3_poly.lambda=0.001;
+     fit_info_E3_poly.acc=0.01;
+     fit_info_E3_poly.h=1e-3;
+     fit_info_E3_poly.Prange={1000,10000};
+     fit_info_E3_poly.devorder=2;
+     
+     mysprintf(namefile,NAMESIZE,"poly_QC3_N%d",fit_info_E3_poly.N );
+     struct fit_result fit_QC3_poly=fit_data(argv,  paramsj ,gjack, lhs_E3_m ,fit_info_E3_poly, namefile,myen   );
+     print_fit_band_L_M( argv, gjack , fit_info_E3_poly,fit_info_m0 ,  namefile,   fit_QC3_poly ,fit_m0,    paramsj,  myen, {26,40});
+//      free_fit_result(fit_info,fit_QC3_poly);
+//      fit_info_E3_poly.restore_default();
+     
+     
      printf("//////////////////// 1 parameter kiso   ////////////////////////////////////\n");
      fit_info.Npar=1;
-     fit_info.N=2;
+     fit_info.N=4;
      fit_info.Njack=gjack[0].Njack;
      fit_info.n_ext_P=2;
      fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
@@ -546,12 +661,42 @@ int main(int argc, char **argv){
      fit_info.Prange={1000,10000};
      fit_info.devorder=2;
      
-     fit_info.guess={6.42227};
-     mysprintf(namefile,NAMESIZE,"QC3_N%d_1par",fit_info.N );
-     struct fit_result fit_QC3_1par=fit_data(argv,  paramsj ,gjack, lhs_E3_m ,fit_info, namefile,myen   );
-     print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3_1par ,fit_m0,    paramsj,  myen, {26,40});
+     fit_info.guess={-140.};
+     mysprintf(namefile,NAMESIZE,"QC3_N%d_%dpar",fit_info.N, fit_info.Npar);
+      struct fit_result fit_QC3_1par=fit_data(argv,  paramsj ,gjack, lhs_E3_m ,fit_info, namefile,myen   );
+      print_fit_band_E3_vs_L( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3_1par ,fit_m0,    paramsj,  myen,  fit_info_E3_poly, fit_QC3_poly, {26,40});
      fit_info.restore_default();
     
+     
+     printf("//////////////////// 1 parameter kiso latt  ////////////////////////////////////\n");
+     fit_info.Npar=1;
+     fit_info.N=3;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=2;
+     fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     
+     fit_info.ext_P[0]=deltaE2_m_quant_cond.P[0];
+     fit_info.ext_P[1]=deltaE2_m_quant_cond.P[1];
+     
+     fit_info.function=rhs_E3_m_QC3_latt;
+     
+     fit_info.lambda=0.001;
+     fit_info.acc=0.01;
+     fit_info.h=1e-3;
+     fit_info.Prange={1000,10000};
+     fit_info.devorder=2;
+     
+     fit_info.guess={-140.};
+     if(fit_info.N==3 && fit_info.Npar==1){
+         fit_info.guess={-600.};
+    }
+     
+     mysprintf(namefile,NAMESIZE,"QC3_N%d_latt_%dpar",fit_info.N, fit_info.Npar);
+     
+//      struct fit_result fit_QC3_latt_1par=fit_data(argv,  paramsj ,gjack, lhs_E3_m_latt ,fit_info, namefile,myen   );
+//      print_fit_band_E3_vs_L( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3_latt_1par ,fit_m0,    paramsj,  myen,  fit_info_E3_poly, fit_QC3_poly, {26,40});
+     fit_info.restore_default();
+     
      printf("//////////////////// 2 parameter kiso   ////////////////////////////////////\n");
      fit_info.Npar=2;
      fit_info.N=2;
@@ -579,6 +724,8 @@ int main(int argc, char **argv){
      
      
      ///// close python
+     python_detQC_write_database();
+     python_detQC_free();
      if (Py_FinalizeEx() < 0) {
          exit(120);
      }

@@ -174,6 +174,7 @@ int main(int argc, char **argv){
     else 
         error(1==1,1,"main","argv[6]= %s is not jack or boot",argv[6]);
     
+    printf("configurations: %d , binning size: %d , resulting confs: %d ,  Njackboot: %d \n",header.confs, bin, Neff, header.Njack );
     // prepare jack file
     mysprintf(namefile,NAMESIZE,"%s/jackknife/%s_T%d_L%d_rho%.6f_eta%.6f_csw%.6f_mu03%.6f_m0%.6f",
               argv[3],option[4],

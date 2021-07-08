@@ -401,7 +401,7 @@ double rhs_E3_m_QC3(int n, int Nvar, double *x,int Npar,double  *P){
          
     double Pkiso[2];
         Pkiso[0]=P[0];
-        Pkiso[1]=P[1];
+    if (Npar>1)    Pkiso[1]=P[1];
     int Nkcot=2;
     int Nkiso=Npar;
     int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
@@ -410,7 +410,7 @@ double rhs_E3_m_QC3(int n, int Nvar, double *x,int Npar,double  *P){
     nnP[0]=(double) dvec[0]; nnP[1]=(double) dvec[1]; nnP[2]=(double) dvec[2];
     double mass=x[1];
     double L=x[0];
-    int steps=10;
+    int steps=4;
     double E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
     double E2f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
     double E3f=mass;
@@ -426,14 +426,76 @@ double rhs_E3_m_QC3(int n, int Nvar, double *x,int Npar,double  *P){
 //     double Eend=Estart+0.10;
     
     L=L*mass;
-    if (n==0){ Estart=x[8]-x[9];  Eend=x[8]+x[9];}
+    //if (n==0){ Estart=x[8]-x[9];  Eend=x[8]+x[9];}
+    Estart=x[8]-x[9];  Eend=x[8]+x[9];
     
-//  printf("E=[%g , %g]   E1f=%g   E2f=%g  m=%g\n",Estart,Eend,E1f,E2f,mass);
+//   printf("E=[%g , %g]   E1f=%g   E2f=%g  m=%g\n",Estart,Eend,E1f,E2f,mass);
     double r=python_detQC(Estart, Eend, steps,  L,  nnP, Nkcot,Pkcot,Nkiso, Pkiso);
-//     printf("res=%g\n",r);
+//    printf("res=%g\n",r);
+    return r;
+}
+
+
+double rhs_E3_m_QC3_latt(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Pkcot[2];
+    Pkcot[0]=x[Nvar-2];
+    Pkcot[1]=x[Nvar-1];
+    
+    double Pkiso[2];
+    Pkiso[0]=P[0];
+    if (Npar>1) Pkiso[1]=P[1];
+    
+    int Nkcot=2;
+    int Nkiso=Npar;
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    double nnP[3];
+    nnP[0]=(double) dvec[0]; nnP[1]=(double) dvec[1]; nnP[2]=(double) dvec[2];
+    double mass=x[1];
+    double L=x[0];
+    int steps=4;
+    
+    
+    double hatp2=4.*sin(dvec1[0]*pi_greco/L) *sin(dvec1[0]*pi_greco/L) ;
+    hatp2+=4.*sin(dvec1[1]*pi_greco/L) *sin(dvec1[1]*pi_greco/L) ;
+    hatp2+=4.*sin(dvec1[2]*pi_greco/L) *sin(dvec1[2]*pi_greco/L) ;
+    //     double E20=gjack[e].jack[4][j];
+    double E2fL=acosh(  cosh(mass) +0.5*( hatp2));
+    hatp2=4.*sin(dvec2[0]*pi_greco/L) *sin(dvec2[0]*pi_greco/L) ;
+    hatp2+=4.*sin(dvec2[1]*pi_greco/L) *sin(dvec2[1]*pi_greco/L) ;
+    hatp2+=4.*sin(dvec2[2]*pi_greco/L) *sin(dvec2[2]*pi_greco/L) ;
+    E2fL+=acosh(cosh(mass) +0.5*( + hatp2));
+    
+    double Ef1=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
+    double Ef2=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
+    double E2f=Ef1+Ef2;
+    
+    
+    
+    double dE=(-E2fL+E2f)/mass;
+    //if (n==0){ Estart=x[8]-x[9];  Eend=x[8]+x[9];}
+    double Estart=x[8]-x[9]+dE;
+    double Eend=x[8]+x[9]+dE;
+    
+    L=L*mass;
+    //   printf("E=[%g , %g]   E1f=%g   E2f=%g  m=%g\n",Estart,Eend,E1f,E2f,mass);
+    double r=python_detQC(Estart, Eend, steps,  L,  nnP, Nkcot,Pkcot,Nkiso, Pkiso);
+    //    printf("res=%g\n",r);
     return r;
 }
 #endif
+
+
+double rhs_poly_E3_m(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double L=x[0];
+    
+//     double r=P[2*n]+P[2*n+1]*L;
+    double r=P[3*n]+P[3*n+1]*L+P[3*n+2]*L*L;
+    
+    return r;
+}
 
 double to_invert_q_from_phase_shift(int n, int Nvar, double *x,int Npar,double  *P){
     double L_a0=P[0], r0L=P[1];//, P2=P[2];
@@ -676,6 +738,36 @@ double lhs_E3_m(int n, int e , int j , vector<cluster::IO_params> params,vector<
 //     return (E2-E2fL+E2f)/mass;
     return E3/mass;
 }
+
+
+
+
+double lhs_E3_m_latt(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    
+    double E3=lhs_E3_m( n,  e ,  j , params, gjack,   fit_info );
+    
+    double mass=gjack[e].jack[1][j];
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    
+    
+    double hatp2=4.*sin(dvec1[0]*pi_greco/params[e].data.L[1]) *sin(dvec1[0]*pi_greco/params[e].data.L[1]) ;
+    hatp2+=4.*sin(dvec1[1]*pi_greco/params[e].data.L[2]) *sin(dvec1[1]*pi_greco/params[e].data.L[2]) ;
+    hatp2+=4.*sin(dvec1[2]*pi_greco/params[e].data.L[3]) *sin(dvec1[2]*pi_greco/params[e].data.L[3]) ;
+
+    double E2fL=acosh(  cosh(mass) +0.5*( hatp2));
+    hatp2=4.*sin(dvec2[0]*pi_greco/params[e].data.L[1]) *sin(dvec2[0]*pi_greco/params[e].data.L[1]) ;
+    hatp2+=4.*sin(dvec2[1]*pi_greco/params[e].data.L[2]) *sin(dvec2[1]*pi_greco/params[e].data.L[2]) ;
+    hatp2+=4.*sin(dvec2[2]*pi_greco/params[e].data.L[3]) *sin(dvec2[2]*pi_greco/params[e].data.L[3]) ;
+    E2fL+=acosh(cosh(mass) +0.5*( + hatp2));
+    
+    double L=params[e].data.L[1];
+    double Ef1=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
+    double Ef2=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
+    double E2f=Ef1+Ef2;
+    return E3+(-E2fL+E2f)/mass;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////kcotd
@@ -985,13 +1077,18 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     fclose(f);
     
     double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
-    
 //     if (strcmp(label,"k_from_phase_shift")!=0 && strcmp(label,"k_from_phase_shift_n4")!=0 && strcmp(label,"k_from_phase_shift_n5")!=0 && strcmp(label,"k_from_phase_shift_acotZ")!=0 && strcmp(label,"QC3")!=0 && strcmp(label,"deltaE2_m_quant_cond")!=0 ){
-        if (strcmp(label,"M0_finite_vol")==0  || strcmp(label,"M1_finite_vol")==0  || strcmp(label,"a_00_luscher")==0  || strcmp(label,"kcotd")==0 
-            || strcmp(label,"kcotd_Elatt")==0 || strcmp(label,"a_00_lucsher_infm")==0 || strcmp(label,"a_01_lusher")==0 || strcmp(label,"a_01_lusher_div_shift")==0
-            || strcmp(label,"a_00_BH")==0 || strcmp(label,"a_01_BH_03t16_shifted")==0 || strcmp(label,"a_01_BH_04t16_shifted")==0 ,  strcmp(label,"a_01_BH_02t10_shifted")==0  || strcmp(label,"a_01_lusher_const")==0
-        ){    
-        
+    if (strcmp(label,"M0_finite_vol")==0 || strcmp(label,"M1_finite_vol")==0 || strcmp(label,"a_00_luscher")==0 
+        || strcmp(label,"kcotd")==0 || strcmp(label,"kcotd_Elatt")==0 || strcmp(label,"a_00_luscher_infm")==0 || strcmp(label,"a_01_luscher")==0
+        || strcmp(label,"a_01_luscher_div_shift")==0  || strcmp(label,"a_00_BH")==0 || strcmp(label,"a_01_BH_03t16_shifted")==0
+        || strcmp(label,"a_01_BH_04t16_shifted")==0 ||  strcmp(label,"a_01_BH_02t10_shifted")==0  || strcmp(label,"a_01_lusher_const")==0 
+        || strcmp(label,"a_01_luscher_const")==0
+    )
+//             || strcmp(label,"M1_finite_vol")==0  || strcmp(label,"a_00_luscher")==0  || strcmp(label,"kcotd")==0 
+//             || strcmp(label,"kcotd_Elatt")==0 || strcmp(label,"a_00_luscher_infm")==0 || strcmp(label,"a_01_luscher")==0 
+//             || strcmp(label,"a_01_luscher_div_shift")==0  || strcmp(label,"a_00_BH")==0 || strcmp(label,"a_01_BH_03t16_shifted")==0 || strcmp(label,"a_01_BH_04t16_shifted")==0 ,  strcmp(label,"a_01_BH_02t10_shifted")==0  || strcmp(label,"a_01_lusher_const")==0  )
+        {    
+            
         /////////fit band L
         print_fit_band_L( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
         print_fit_band_T( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
@@ -1079,6 +1176,7 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
     double *guess=(double*) malloc(sizeof(double)*Npar);
     double **fit=(double**) malloc(sizeof(double*)*Njack);//result of the fit, the other dimension is allocated by the function non_linear_fit_Nf()
 
+    printf("///// fit name:  %s \n",label);
     ////// allocation end
     /////////////// init
     std::mt19937 mt_rand(123);
@@ -1110,7 +1208,6 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
                 x[j][count][6]=compute_k(n,myen[e],j,params,gjack,fit_info);//k
                 x[j][count][7]=gjack[myen[e]].jack[1][j]*(double) params[myen[e]].data.L[1]/(2.*pi_greco);//mL_2pi
                 
-                x[j][count][8]=lhs_E3_m(n,myen[e],j,params,gjack,fit_info);// E3( \vec{n} )/mass
                 
                 
                 for(int i=0 ; i< fit_info.n_ext_P; i++){
@@ -1129,20 +1226,25 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
         for (int e=0;e<en[n];e++){
             double *E3_m=(double*) malloc(sizeof(double)*Njack);
             for (int j=0;j<Njack;j++)
-                E3_m[j]=x[j][count][8];
+                E3_m[j]=lhs_E3_m(n,myen[e],j,params,gjack,fit_info);//E3( \vec{n} )/mass
         
             
             double err=error_jackboot(argv[1], Njack,E3_m );
-            for (int j=0;j<Njack;j++)
+            for (int j=0;j<Njack;j++){
+                x[j][count][8]=E3_m[Njack-1];
                 x[j][count][9]=err;
+                
+            }
             free(E3_m);
             
+            printf("n=%d  e=%d E3=%g   %g\n",n,e, x[Njack-1][count][8],x[Njack-1][count][9] );
             count++;
+            
         }
     }
     
     
-    
+    ////////////////////////////////////////// y
     count=0;
     for (int n=0;n<N;n++){
         for (int e=0;e<en[n];e++){
@@ -1179,7 +1281,9 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
             
         }
         else if ( strcmp(label,"k_from_phase_shift_n5_3par")==0  || strcmp(label,"QC3_N1_1par")==0 || strcmp(label,"QC3_N2_1par")==0 || strcmp(label,"QC3_N3_1par")==0
-            || strcmp(label,"QC3_N4_1par")==0 || strcmp(label,"QC3_N5_1par")==0
+            || strcmp(label,"QC3_N4_1par")==0 || strcmp(label,"QC3_N5_1par")==0  
+            || strcmp(label,"QC3_N1_latt_1par")==0 || strcmp(label,"QC3_N2_latt_1par")==0 || strcmp(label,"QC3_N3_latt_1par")==0
+            || strcmp(label,"QC3_N4_latt_1par")==0 || strcmp(label,"QC3_N5_latt_1par")==0 
         ){
             double a=timestamp();
             fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function, guess, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder);

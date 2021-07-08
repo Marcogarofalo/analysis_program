@@ -1322,6 +1322,9 @@ int main(int argc, char **argv){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
+    
+    fit_info.repeat_start=10;
+    fit_info.acc=1e-5;
     //c++ 19 || r 20
     if (params.data.L[0]<100){
         fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  11,0/*reim*/ , "E2_01",  fit_info ,jack_file);
@@ -1386,7 +1389,7 @@ int main(int argc, char **argv){
     
     free_fit_result(fit_info,fit_out);
     fflush(outfile);
-    
+    fit_info.restore_default();
   
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //GEVP two particle
@@ -1439,7 +1442,8 @@ if(params.data.ncorr>15){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
-    fit_info.plateaux_scan=true;
+    if (strcmp(argv[4],"G2t_T96_L32_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")!=0  )
+        fit_info.plateaux_scan=true;
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, lhs_four_BH_03t16 , "E4_03t16",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     fit_info.restore_default();
@@ -2300,7 +2304,8 @@ if (params.data.ncorr>74){
     fit_info.function=constant_fit;
     
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
-    fit_info.plateaux_scan=true;
+    if (strcmp(argv[4],"G2t_T96_L32_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")!=0  )
+        fit_info.plateaux_scan=true;
     //c++ 99 || r 100
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,
                                    m_eff_of_sum<33,35,37>, "E1_0_p1",  fit_info, jack_file );
@@ -2319,8 +2324,8 @@ if (params.data.ncorr>74){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=E1_0_p1;
-    
-    fit_info.plateaux_scan=true;
+    if (strcmp(argv[4],"G2t_T96_L32_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")!=0  )
+        fit_info.plateaux_scan=true;
     
     //c++ 100 || r 101
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
@@ -2384,9 +2389,12 @@ if (params.data.ncorr>90){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=E1_0_p11;
+    fit_info.repeat_start=10;
     //c++ 102 || r 103
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    sum_corr_directions_shift<81,82,83>, "E2_0_p11",  fit_info, jack_file );
+    
+    fit_info.restore_default();
     int dvec[3]= {1,1,0};
     if (params.data.lambdaC0!=0) phase_shift(fit_out.P[0],mass[0],dvec, params.data.L[1], outfile,  Njack, option[4] );
     /*
@@ -2436,8 +2444,8 @@ if (params.data.ncorr>90){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=E1_0_p111;
-    
-    fit_info.plateaux_scan=true;
+    if (strcmp(argv[4],"G2t_T96_L32_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")!=0  )
+        fit_info.plateaux_scan=true;
       
     
     //c++ 104 || r 105
@@ -2640,7 +2648,8 @@ if (params.data.ncorr>90){
     file_head.k[2]=mu1;    file_head.k[3]=mu2;
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=E1_0_p1;
-    fit_info.plateaux_scan=true;
+    if (strcmp(argv[4],"G2t_T96_L32_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")!=0  )
+        fit_info.plateaux_scan=true;
     
     //c++ 113 || r 114
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
@@ -2680,7 +2689,8 @@ if (params.data.ncorr>90){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=E1_0_p111;
     
-    fit_info.plateaux_scan=true;
+    if (strcmp(argv[4],"G2t_T96_L32_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")!=0  )
+        fit_info.plateaux_scan=true;
     
     
     //c++ 115 || r 116
@@ -2743,24 +2753,22 @@ if (params.data.ncorr>122){
     if (strcmp(argv[4],"G2t_T32_L36_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")==0  ){
         fit_info.guess={0.482,    	-3.63061124075202e-05    ,    	-1.4396080515536e-05   ,    	3.46858622879724e-05    ,    	-2.66582380286655e-05   };
     }
-    fit_info.h=1e-3;
-    fit_info.devorder=-2;
+    fit_info.h=1e-4;
+    fit_info.devorder=4;
     fit_info.acc=1e-4;
     fit_info.lambda=1e-4;
-    fit_info.repeat_start=100;
+    fit_info.repeat_start=10;
+    fit_info.chi2_gap_jackboot=1;
     fit_info.guess_per_jack=3;
     
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  sum_corr_directions_shift<95,96,97>, "E3_0_p1_vev",  fit_info, jack_file );
+
     
-  
-    fit_info.restore_default();
-    /*fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  95,0 , "E3_0_p1",  fit_info, jack_file);
-     */ 
     int dvec_p1[3]={1,0,0};
     E3_print_extra(fit_out.P[0],mass[0], dvec_p1, params.data.L[1] ,outfile,  Njack, option[4]);
-    free_fit_result(fit_info,fit_out);
-    //fit_info.restore_default();
+    free_fit_result(fit_info,fit_out);    
+    fit_info.restore_default();
     
     //c++ 118 || r 119
     fit_info.ext_P[0]=mass[0];
@@ -2770,12 +2778,24 @@ if (params.data.ncorr>122){
     fit_info.ext_P[4]=E1_0_p11;
     fit_info.guess={0.5876,    661.1e-7,   0.00016,    0.00037,    46.3e-8 };
     fit_info.repeat_start=10;
+    fit_info.h=1e-4;
+    fit_info.devorder=-2;
+    fit_info.acc=1e-4;
+    fit_info.lambda=1e-4;
+    fit_info.repeat_start=100;
+//     fit_info.chi2_gap_jackboot=1;
+//     fit_info.guess_per_jack=3;
+    
     
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  sum_corr_directions_shift<104,105,106>, "E3_0_p11_vev",  fit_info, jack_file );
     int dvec_p11[3]={1,1,0};
     E3_print_extra(fit_out.P[0],mass[0], dvec_p11, params.data.L[1] ,outfile,  Njack, option[4]);
+    
     free_fit_result(fit_info,fit_out);
+    fit_info.restore_default();
+    
+        
     //     
     
     fit_info.ext_P[0]=mass[0];
@@ -2784,13 +2804,33 @@ if (params.data.ncorr>122){
     fit_info.ext_P[3]=E2_0_p111;
     fit_info.ext_P[4]=E1_0_p111;
     fit_info.guess={ 0.6449,    60.6e-6,    1.0e-4,    0.00077,    42.6e-6};
+    if (strcmp(argv[4],"G2t_T32_L32_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")==0){
+        fit_info.guess={0.626641,        4.71156e-05  ,   -0.000244154 ,   -6.25702e-05 ,   -1.59513e-05};
+        
+    }
+        
+    fit_info.h=1e-5;
+    fit_info.devorder=-2;
+    fit_info.acc=1e-7;
+    fit_info.lambda=1e-4;
     fit_info.repeat_start=10;
+    fit_info.precision_sum=2;
+    
     //c++ 119 || r 120
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  113,0/*reim*/ , "E3_0_p111_vev",  fit_info, jack_file);
     int dvec_p111[3]={1,1,1};
     E3_print_extra(fit_out.P[0],mass[0], dvec_p111, params.data.L[1] ,outfile,  Njack, option[4]);
+//          for (int j=0; j< Njack;j++){
+//              printf("%d  chi= %g  P=\t",j,   fit_out.chi2[j] );
+//              for (int i =0; i< fit_info.Npar;i++){
+//                  printf("%g\t",fit_out.P[i][j]);
+//              }
+//              printf("\n");
+//          }
+//     
     free_fit_result(fit_info,fit_out);
+    fit_info.restore_default();
     //  
     
     

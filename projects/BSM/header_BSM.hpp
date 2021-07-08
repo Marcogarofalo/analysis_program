@@ -25,8 +25,8 @@ struct  header_BSM
     double mu03;
     double m0;
     int confs;
-    double Njack;
-    double Nobs;
+    int Njack;
+    int Nobs;
     int size_header_bin;
     
 } ;
