@@ -378,7 +378,7 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
     for (j=Njack-1;j>=0;j--){    
         //tmp=linear_fit( (tmax-tmin)/sep +1, x, y[j],  1,constant_fit_to_try );
 
-        fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder, 0,fit_info.precision_sum );
+        fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder, fit_info.verbosity,fit_info.precision_sum );
         if (fit_info.precision_sum >0 )
             chi2j[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
         else 
@@ -393,7 +393,7 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
             guess1=guess_for_non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess1 ,fit_info.repeat_start,
                                                fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder,1, fit_info.precision_sum);
             
-            double *tmp_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess1, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder,0, fit_info.precision_sum );
+            double *tmp_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess1, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder,fit_info.verbosity, fit_info.precision_sum );
             double tmp_chi2;
             if (fit_info.precision_sum>0 )
                 tmp_chi2=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp_fit , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);

@@ -404,6 +404,7 @@ double *der_O4_fun_Nf_h(int n, int Nvar, double *x,int Npar,double  *P, double f
 }
 
 
+
 //https://en.wikipedia.org/wiki/Finite_difference_coefficient#Central_finite_difference 
 //derivative 1 accuracy 2
 double *der_O2_fun_Nf_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(int,int,double*,int,double*), double h){
@@ -577,7 +578,6 @@ double compute_chi_non_linear_Nf(int N,int *ensemble,double **x, double **y, dou
             count++;
         } 
     }
-    double chi2_double=chi2;
     return chi2;
 }
 
@@ -684,7 +684,7 @@ double  **covariance_non_linear_fit_Nf(int N, int *ensemble ,double **x, double 
 double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar,  double fun(int, int, double*, int, double*) , double* guess, double lambda, double acc, double h, std::vector< double > Prange, int devorder, int verbosity , int precision_sum )
 {
     double* (*der_fun_Nf_h)(int , int , double* ,int ,double*  , double (int,int,double*,int,double*), double );
-    double (*chi2_fun)(int N,int *ensemble,double **x, double **y, double *P ,int Nvar, int Npar,  double fun(int,int,double*,int,double*));
+    double (*chi2_fun)(int ,int *,double **, double **, double * ,int , int ,  double (int,int,double*,int,double*));
     chi2_fun=compute_chi_non_linear_Nf;
     
     if (precision_sum==1){
@@ -743,7 +743,7 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
         if(Niter>200){ if(verbosity>0) printf("Niter=%d of the Levenberg-Marquardt chi2 minimization: exeeds max number\n",Niter); break;}
         Niter++;
         nerror=0;
-    while (chi2_tmp-chi2>0) {  //do {} while()   , at least one time is done. if chi is too big chi_tmp=chi+1 = chi 
+    while (chi2_tmp>=chi2) {  //do {} while()   , at least one time is done. if chi is too big chi_tmp=chi+1 = chi 
         //printf("lambda=%g\n",lambda);
             count=0;
             for (n=0;n<N;n++){
@@ -830,7 +830,7 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
 	        if (chi2_tmp!=chi2_tmp) chi2_tmp=chi2+1;
            
 
-            if (chi2_tmp>chi2)
+            if (chi2_tmp>=chi2)
                 lambda*=10;
             
             for (j=0;j<Npar;j++){
@@ -867,15 +867,14 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
             
         } 
         res=chi2-chi2_tmp;
-        //error(res<0,2,"non_linear_fit","The Levenberg-Marquardt accepted a configuration when the chi2 increased");
-        chi2=chi2_tmp;
         lambda/=10;
         for (j=0;j<Npar;j++){
             P[j]=P_tmp[j];
-          //  printf("P[%d]= %f    tot_par=%d\t",j,P[j],Npar);
+//             printf("P[%d]= %f    \t",j,P[j]);
         }
-         //printf("chi2=%f   res=%.10f Bw=%f   fw=%f  P1=%f  P2=%f \n",chi2,res,P[0],P[1],P[2],P[3]);
-        //printf("check residue=%f\n",res);
+        if(verbosity>=1)  printf("\nres=%g  acc=%g  chi2=%g  \n",res,acc,chi2);
+         error(res<0,2,"non_linear_fit","The Levenberg-Marquardt accepted a configuration when the chi2 increased");
+         chi2=chi2_tmp;
     }
 
     for (j=0;j<Npar;j++){
@@ -885,6 +884,8 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
     free(alpha);free(beta);
     return P;
 }
+
+
 
 // x[ensemble][variable number] ,   y[ensemble][0=mean,1=error], fun(index_function,Nvariables,variables[], Nparameters,parameters[])
 //the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 

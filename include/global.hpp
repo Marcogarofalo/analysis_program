@@ -223,6 +223,7 @@ struct  fit_type
   double chi2_gap_jackboot=1;
   int guess_per_jack=3;
   int precision_sum=0;
+  int verbosity=0;
   
   void restore_default(){
      custom=false; // 1 means default fit , 0 custom fit options
@@ -239,6 +240,7 @@ struct  fit_type
      chi2_gap_jackboot=1;
      
      precision_sum=0;
+     verbosity=0;
 //      f_plateaux_scan=NULL;
 //      name_plateaux_scan="\0";
   };

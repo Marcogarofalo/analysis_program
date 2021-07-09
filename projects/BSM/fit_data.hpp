@@ -2,6 +2,7 @@
 #define fit_data_H
 
 #include "header_BSM.hpp"
+#include "resampling.hpp"
 #include <random>
 
 
