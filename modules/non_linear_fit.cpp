@@ -872,7 +872,7 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
             P[j]=P_tmp[j];
 //             printf("P[%d]= %f    \t",j,P[j]);
         }
-        if(verbosity>=1)  printf("\nres=%g  acc=%g  chi2=%g  \n",res,acc,chi2);
+        if(verbosity>=2)  printf("\nres=%g  acc=%g  chi2=%g  \n",res,acc,chi2);
          error(res<0,2,"non_linear_fit","The Levenberg-Marquardt accepted a configuration when the chi2 increased");
          chi2=chi2_tmp;
     }

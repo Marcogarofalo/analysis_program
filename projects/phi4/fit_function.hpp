@@ -1280,10 +1280,15 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
             printf("jack =%d  chi2/dof=%g   chi2=%g   time=%g    1/a0m0=%g   -a0m0=%g\n",j,fit_out.chi2[j],fit_out.chi2[j]*(en_tot-Npar) , timestamp( )-a, fit[j][0] ,-1./fit[j][0] );
             
         }
-        else if ( strcmp(label,"k_from_phase_shift_n5_3par")==0  || strcmp(label,"QC3_N1_1par")==0 || strcmp(label,"QC3_N2_1par")==0 || strcmp(label,"QC3_N3_1par")==0
+        else if ( strcmp(label,"k_from_phase_shift_n5_3par")==0  
+            || strcmp(label,"QC3_N1_1par")==0 || strcmp(label,"QC3_N2_1par")==0 || strcmp(label,"QC3_N3_1par")==0
             || strcmp(label,"QC3_N4_1par")==0 || strcmp(label,"QC3_N5_1par")==0  
+            || strcmp(label,"QC3_N1_2par")==0 || strcmp(label,"QC3_N2_2par")==0 || strcmp(label,"QC3_N3_2par")==0
+            || strcmp(label,"QC3_N4_2par")==0 || strcmp(label,"QC3_N5_2par")==0  
             || strcmp(label,"QC3_N1_latt_1par")==0 || strcmp(label,"QC3_N2_latt_1par")==0 || strcmp(label,"QC3_N3_latt_1par")==0
-            || strcmp(label,"QC3_N4_latt_1par")==0 || strcmp(label,"QC3_N5_latt_1par")==0 
+            || strcmp(label,"QC3_N4_latt_1par")==0 || strcmp(label,"QC3_N5_latt_1par")==0  
+            || strcmp(label,"QC3_N1_latt_2par")==0 || strcmp(label,"QC3_N2_latt_2par")==0 || strcmp(label,"QC3_N3_latt_2par")==0
+            || strcmp(label,"QC3_N4_latt_2par")==0 || strcmp(label,"QC3_N5_latt_2par")==0  
         ){
             double a=timestamp();
             fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function, guess, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder);

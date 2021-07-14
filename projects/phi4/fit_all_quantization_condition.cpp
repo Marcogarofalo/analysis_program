@@ -39,6 +39,7 @@
 using namespace std;
 int Ne=0;
 
+
 void print_fit_band_L_M(char **argv,vector<data_phi> gjack ,struct fit_type fit_info,struct fit_type fit_info_m0 , const char* label, struct fit_result fit_out, struct fit_result fit_out_m0,    vector<cluster::IO_params> params, std::vector<int> myen, std::vector<int> Lrange={16,50}){
     int Npar=fit_info.Npar;
     int Nvar=fit_info.Nvar+fit_info.n_ext_P;
@@ -123,6 +124,7 @@ void print_fit_band_L_M(char **argv,vector<data_phi> gjack ,struct fit_type fit_
     free_2(Njack,tif_m0);
     
 }
+
 
 
 
@@ -214,6 +216,167 @@ void print_fit_band_E3_vs_L(char **argv,vector<data_phi> gjack , struct fit_type
 }
 
 
+
+
+
+void print_kiso_P0_inf_L_M(char **argv,vector<data_phi> gjack , struct fit_type fit_info, struct fit_type fit_info_m0 , const char* label, struct fit_result fit_out, struct fit_result fit_out_m0,    vector<cluster::IO_params> params, std::vector<int> myen,  struct fit_type fit_info_E3_poly ,fit_result fit_E3_poly, std::vector<int> Lrange={16,50}){
+    int Npar=fit_info.Npar;
+    int Nvar=fit_info.Nvar+fit_info.n_ext_P;
+    int Njack=gjack[0].Njack;
+    int N=fit_info.N;
+    char namefile[NAMESIZE];
+    FILE *f;
+    
+    mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_k.txt",argv[3], label);
+    f=open_file(namefile,"w+");
+    double **tif=double_malloc_2( Njack,Npar);
+    for (int i=0;i<Npar; i++)
+        for (int j=0;j<Njack;j++)
+            tif[j][i]=0;
+    double **tif_m0=swap_indices(fit_info_m0.Npar,Njack,fit_out_m0.P);
+    double **tif_E3_poly=swap_indices(fit_info_E3_poly.Npar, Njack, fit_E3_poly.P);
+    double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
+    double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+    printf("writing: %s\n",namefile);
+    
+    for (int n=0;n< N; n++){
+        
+        mysprintf(namefile,NAMESIZE,"%s/kiso_P0_n%d_L.txt",argv[3],n);
+        f=open_file(namefile,"w+");
+        double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
+        double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+        printf("writing: %s\n",namefile);
+        
+        for (int i=Lrange[0] ; i<Lrange[1]; i++){
+            double finalL=i;
+            tmpx[0]=finalL;
+            double *E3_m=(double*) malloc(sizeof(double) *Njack);
+            for (int j=0;j<Njack;j++){
+                E3_m[j]=fit_info_E3_poly.function(n,fit_info_E3_poly.Nvar , tmpx, fit_info_E3_poly.Npar, tif_E3_poly[j]);
+            }
+            double E3_m_err=error_jackboot(argv[1], Njack, E3_m );
+            for (int j=0;j<Njack;j++){
+                tmpx[1]=fit_info_m0.function(0,fit_info_m0.Nvar,tmpx,fit_info_m0.Npar,tif_m0[j]); //m0   put for each n the mass of the last ensemble
+                
+                tmpx[2]=gjack[0].jack[2][j];//m1  //
+                tmpx[3]=gjack[0].jack[4][j];//E20
+                tmpx[4]=gjack[0].jack[5][j];//E21
+                tmpx[5]=(double) params[0].data.L[0];//T
+                tmpx[6]=1;//k
+                tmpx[7]=1;//MpiL
+                
+                    
+                tmpx[8]=E3_m[Njack-1];// E3( \vec{n} )/mass
+                
+                tmpx[9]=E3_m_err;
+                
+                
+                for(int i=fit_info.Nvar ; i<fit_info.Nvar+ fit_info.n_ext_P; i++)
+                    tmpx[i]=fit_info.ext_P[i-fit_info.Nvar][j];
+                
+                
+                
+                tmpy[j]=fit_info.function(n,Nvar,tmpx,Npar,tif[j]);
+                              
+            }
+            
+            fprintf(f,"%g  \t %g  %g\n",finalL,tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
+            
+            free(E3_m);
+        }
+        
+        free(tmpy);free(tmpx);
+        fclose(f); 
+    }
+    for (int i=0;i<Npar; i++)
+        for (int j=0;j<Njack;j++)
+            tif[j][i]=1e+3;
+    for (int n=0;n< N; n++){
+        
+        mysprintf(namefile,NAMESIZE,"%s/kiso_P1e+3_n%d_L.txt",argv[3],n);
+        f=open_file(namefile,"w+");
+        double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
+        double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+        printf("writing: %s\n",namefile);
+        
+        for (int i=Lrange[0] ; i<Lrange[1]; i++){
+            double finalL=i;
+            tmpx[0]=finalL;
+            double *E3_m=(double*) malloc(sizeof(double) *Njack);
+            for (int j=0;j<Njack;j++){
+                E3_m[j]=fit_info_E3_poly.function(n,fit_info_E3_poly.Nvar , tmpx, fit_info_E3_poly.Npar, tif_E3_poly[j]);
+            }
+            double E3_m_err=error_jackboot(argv[1], Njack, E3_m );
+            for (int j=0;j<Njack;j++){
+                tmpx[1]=fit_info_m0.function(0,fit_info_m0.Nvar,tmpx,fit_info_m0.Npar,tif_m0[j]); //m0   put for each n the mass of the last ensemble
+                
+                tmpx[2]=gjack[0].jack[2][j];//m1  //
+                tmpx[3]=gjack[0].jack[4][j];//E20
+                tmpx[4]=gjack[0].jack[5][j];//E21
+                tmpx[5]=(double) params[0].data.L[0];//T
+                tmpx[6]=1;//k
+                tmpx[7]=1;//MpiL
+                
+                
+                tmpx[8]=E3_m[Njack-1];// E3( \vec{n} )/mass
+                
+                tmpx[9]=E3_m_err;
+                
+                
+                for(int i=fit_info.Nvar ; i<fit_info.Nvar+ fit_info.n_ext_P; i++)
+                    tmpx[i]=fit_info.ext_P[i-fit_info.Nvar][j];
+                
+                
+                
+                tmpy[j]=fit_info.function(n,Nvar,tmpx,Npar,tif[j]);
+                
+            }
+            
+            fprintf(f,"%g  \t %g  %g\n",finalL,tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
+            
+            free(E3_m);
+        }
+        
+        free(tmpy);free(tmpx);
+        fclose(f); 
+    }
+    
+    free_2(Njack,tif);
+    free_2(Njack,tif_m0);
+    free_2(Njack,tif_E3_poly);
+}
+
+void print_phase_shift(char **argv,vector<data_phi> gjack , struct fit_type fit_info , const char* label, struct fit_result fit_out){
+    
+    char namefile[NAMESIZE];
+    mysprintf(namefile,NAMESIZE,"%s/%s_fit_phase_shift.txt",argv[3], label);
+    FILE *f=open_file(namefile,"w+");
+    int Npar=fit_info.Npar;
+    int Njack=gjack[0].Njack;
+    
+    int ikmax=100;
+    double dk=0.03;
+    double *delta=(double* ) malloc(sizeof(double)*Njack);
+    for (int ik=0;ik<ikmax;ik++){
+    
+        double k_m=ik*dk;
+        for (int j=0; j<Njack;j++){
+        
+            double a0m0=fit_out.P[0][j];
+            double r0m0=fit_out.P[1][j];
+            
+            double kcotdelta_m=1.0/a0m0+ + r0m0*k_m*k_m/2.;  //   (k cot(d) )/ mass
+            if (Npar>=3){
+                kcotdelta_m+=fit_out.P[2][j]*r0m0*r0m0*r0m0*k_m*k_m*k_m*k_m;
+            }
+            delta[j]=std::atan( k_m/kcotdelta_m);
+            
+        }
+        fprintf(f,"%g    %g   %g\n",k_m,delta[Njack-1], error_jackboot( argv[1] , Njack, delta) );
+    }
+    free(delta);
+    fclose(f);
+}
 
 
 int main(int argc, char **argv){
@@ -598,6 +761,7 @@ int main(int argc, char **argv){
      struct fit_result deltaE2_m_quant_cond=fit_data(argv,  paramsj ,gjack, lhs_deltaE2_m_latt ,fit_info, "deltaE2_m_quant_cond",myen );
      print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "deltaE2_m_quant_cond",   deltaE2_m_quant_cond ,fit_m0,    paramsj,  myen);
      
+     print_phase_shift(argv, gjack ,  fit_info , "deltaE2_m_quant_cond", deltaE2_m_quant_cond);
      fit_info.restore_default();
      
      
@@ -645,7 +809,7 @@ int main(int argc, char **argv){
      
      printf("//////////////////// 1 parameter kiso   ////////////////////////////////////\n");
      fit_info.Npar=1;
-     fit_info.N=4;
+     fit_info.N=5;
      fit_info.Njack=gjack[0].Njack;
      fit_info.n_ext_P=2;
      fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
@@ -663,8 +827,8 @@ int main(int argc, char **argv){
      
      fit_info.guess={-140.};
      mysprintf(namefile,NAMESIZE,"QC3_N%d_%dpar",fit_info.N, fit_info.Npar);
-      struct fit_result fit_QC3_1par=fit_data(argv,  paramsj ,gjack, lhs_E3_m ,fit_info, namefile,myen   );
-      print_fit_band_E3_vs_L( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3_1par ,fit_m0,    paramsj,  myen,  fit_info_E3_poly, fit_QC3_poly, {26,40});
+//       struct fit_result fit_QC3_1par=fit_data(argv,  paramsj ,gjack, lhs_E3_m ,fit_info, namefile,myen   );
+//       print_fit_band_E3_vs_L( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3_1par ,fit_m0,    paramsj,  myen,  fit_info_E3_poly, fit_QC3_poly, {26,40});
      fit_info.restore_default();
     
      
@@ -687,14 +851,15 @@ int main(int argc, char **argv){
      fit_info.devorder=2;
      
      fit_info.guess={-140.};
-     if(fit_info.N==3 && fit_info.Npar==1){
-         fit_info.guess={-600.};
-    }
+     
      
      mysprintf(namefile,NAMESIZE,"QC3_N%d_latt_%dpar",fit_info.N, fit_info.Npar);
      
-//      struct fit_result fit_QC3_latt_1par=fit_data(argv,  paramsj ,gjack, lhs_E3_m_latt ,fit_info, namefile,myen   );
-//      print_fit_band_E3_vs_L( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3_latt_1par ,fit_m0,    paramsj,  myen,  fit_info_E3_poly, fit_QC3_poly, {26,40});
+     struct fit_result fit_QC3_latt_1par=fit_data(argv,  paramsj ,gjack, lhs_E3_m_latt ,fit_info, namefile,myen   );
+     print_fit_band_E3_vs_L( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3_latt_1par ,fit_m0,    paramsj,  myen,  fit_info_E3_poly, fit_QC3_poly, {26,40});
+     print_kiso_P0_inf_L_M( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3_latt_1par ,fit_m0,    paramsj,  myen,  fit_info_E3_poly, fit_QC3_poly, {26,40});
+          
+         
      fit_info.restore_default();
      
      printf("//////////////////// 2 parameter kiso   ////////////////////////////////////\n");
