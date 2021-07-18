@@ -82,6 +82,25 @@ double C3_vev(int n, int Nvar, double *x,int Npar,double  *P){
     
 }
 
+double C3_vev_2par(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double C3;
+    
+    double E3=P[0];
+    double A3=P[1];
+    double A10=P[2];
+    double t= x[0];
+    double M=x[1];
+    
+    //check if file_head.l0 arrives here
+    double T=(double)file_head.l0;
+    C3=A3*A3 *  exp(-E3*T/2.) * cosh( E3 *(t -T/2.));
+    C3+=A10*A10 *  exp(-(M)*T/2.) * cosh( (M) *(t -T/2.));
+    
+    return C3;
+    
+}
+
 double C3p(int n, int Nvar, double *x,int Npar,double  *P){
     
     double C3;
@@ -161,6 +180,35 @@ double C3_A1(int n, int Nvar, double *x,int Npar,double  *P){
  
 //     C3+=A10_20*A10_20 *  exp(-(E2+E1)*T/2.) * cosh( (DE) *(t -T/2.));
 //        printf(" E3=%g   E1=%g   E1p=%g   E2=%g   E2p=%g   E2_A1=%g  E2-E1=%g\n", E3,E1,E1p,E2,E2p,E2A1,  E2-E1);  
+    return C3;
+    
+}
+
+
+double C3_A1_4par(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double C3;
+    
+    double E3=P[0];
+    double A3=P[1];
+    double A10_2p=P[2];
+    double A1p_20=P[3];
+    double A10_20=P[4];
+    //     double DE=P[5];
+    double t= x[0];
+    double E1=x[1];
+    double E2p=x[2];
+    double E1p=x[3];
+    double E2A1=x[4];
+    double E2=x[5];
+    
+    //check if file_head.l0 arrives here
+    double T=(double)file_head.l0;
+    C3=A3*A3 *  exp(-E3*T/2.) * cosh( E3 *(t -T/2.));
+    //C3+=A10_2p*A10_2p *  exp(-(E2A1+E1)*T/2.) * cosh( (E2A1-E1) *(t -T/2.));
+    C3+=A1p_20*A1p_20 *  exp(-(E2p+E1p)*T/2.) * cosh( (E2p-E1p) *(t -T/2.));
+    C3+=A10_20*A10_20 *  exp(-(E1)*T/2.) *cosh( (E1) *(t -T/2.));
+    
     return C3;
     
 }
@@ -2721,11 +2769,35 @@ if (params.data.ncorr>122){
     fit_info.ext_P[1]=E2[0];
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_info.guess={0.3961,    0.00018161,    0.000337   , 0.00022318};
+    
     fit_info.h=0.0001;
     fit_info.acc=1e-6;
+    fit_info.repeat_start=10;
+    fit_info.precision_sum=2;
+    
+    if (strcmp(argv[4],"G2t_T32_L24_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")==0  ){
+        fit_info.guess={0.41,    0.0018161,    0.00337 , 0.00022318  };
+        fit_info.acc=1e-9;
+        
+        
+//         fit_info.Nvar=3;
+//         fit_info.Npar=3;
+//         fit_info.function=C3_vev_2par;
+//         fit_info.n_ext_P=1;
+//         fit_info.ext_P[0]=mass[0];
+    }
+    
     
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  5,0/*reim*/ , "E3_0_vev",  fit_info, jack_file);
     free(E3_0);
+//                   for (int j=0; j< Njack;j++){
+//                       printf("%d  chi= %g  P=\t",j,   fit_out.chi2[j] );
+//                       for (int i =0; i< fit_info.Npar;i++){
+//                           printf("%g\t",fit_out.P[i][j]);
+//                       }
+//                      printf("\n");
+//                  }
+//     exit(1);
     E3_0=malloc_copy_jackboot(Njack,fit_out.P[0]);
     me_3phi=malloc_copy_jackboot(Njack,fit_out.P[1]);
     for(int j=0;j<Njack;j++){me_3phi[j]=sqrt(fabs(me_3phi[j])*2*E3_0[j]);  }
@@ -2796,13 +2868,6 @@ if (params.data.ncorr>122){
     E3_print_extra(fit_out.P[0],mass[0], dvec_p11, params.data.L[1] ,outfile,  Njack, option[4]);
     
     
-//              for (int j=0; j< Njack;j++){
-//                  printf("%d  chi= %g  P=\t",j,   fit_out.chi2[j] );
-//                  for (int i =0; i< fit_info.Npar;i++){
-//                      printf("%g\t",fit_out.P[i][j]);
-//                  }
-//                  printf("\n");
-//              }
     free_fit_result(fit_info,fit_out);
     fit_info.restore_default();
         
@@ -2861,28 +2926,33 @@ if (params.data.ncorr>122){
     if (strcmp(argv[4],"G2t_T32_L32_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")==0  ){
         fit_info.guess={0.606593,        -3.0613e-05,     2.83579e-05 ,    3.23623e-09,    5.28766e-05};
     }
+    if (strcmp(argv[4],"G2t_T32_L24_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")==0  ){
+        fit_info.guess={ 0.733441,      8.83205e-05,     0.000101335,    1.75938e-08,     0.000152796   };
+//         fit_info.Npar=4;
+//         fit_info.function=C3_A1_4par;
+
+    }
     fit_info.h=1e-5;
     fit_info.devorder=4;
-    fit_info.acc=1e-9;
+    fit_info.acc=1e-10;
     fit_info.lambda=1e-4;
-    fit_info.repeat_start=10;
-    fit_info.guess_per_jack=3;
+    fit_info.repeat_start=15;
+    fit_info.guess_per_jack=4;
     fit_info.chi2_gap_jackboot=1;
     fit_info.precision_sum=2;
     
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  116,0/*reim*/ , "E3_0_A1_vev",  fit_info, jack_file);
     int dvec_A1[3]={0,0,0};
     E3_print_extra(fit_out.P[0],mass[0], dvec_A1, params.data.L[1] ,outfile,  Njack, option[4]);
-    
-  /*               for (int j=0; j< Njack;j++){
+  /*  
+                 for (int j=0; j< Njack;j++){
                      printf("%d  chi= %g  P=\t",j,   fit_out.chi2[j] );
                      for (int i =0; i< fit_info.Npar;i++){
                          printf("%g\t",fit_out.P[i][j]);
                      }
                      printf("\n");
-                 }
- */   
-
+                 }*/
+    
     free_fit_result(fit_info,fit_out);
     fit_info.restore_default();
     

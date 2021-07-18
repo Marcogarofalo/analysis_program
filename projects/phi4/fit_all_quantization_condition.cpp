@@ -290,10 +290,10 @@ void print_kiso_P0_inf_L_M(char **argv,vector<data_phi> gjack , struct fit_type 
     }
     for (int i=0;i<Npar; i++)
         for (int j=0;j<Njack;j++)
-            tif[j][i]=1e+3;
+            tif[j][i]=-1e+3;
     for (int n=0;n< N; n++){
         
-        mysprintf(namefile,NAMESIZE,"%s/kiso_P1e+3_n%d_L.txt",argv[3],n);
+        mysprintf(namefile,NAMESIZE,"%s/kiso_P-1e+3_n%d_L.txt",argv[3],n);
         f=open_file(namefile,"w+");
         double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
         double *tmpy=(double*) malloc(sizeof(double*)* Njack);
@@ -413,15 +413,18 @@ int main(int argc, char **argv){
      //emplace_back_par_data(namefile,paramsj,dataj);
     
      //0
-     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L28_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L24_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      //1
-     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L30_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L28_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      //2
-     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L32_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L30_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      //3
+     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L32_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+     emplace_back_par_data(namefile,paramsj,dataj);
+     //4
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T32_L36_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      
@@ -568,7 +571,101 @@ int main(int argc, char **argv){
      
      struct fit_result fit_kcotd_Elatt=fit_data(argv,  paramsj ,gjack, lhs_kcotd_Elatt ,fit_info, "kcotd_Elatt",myen );
      
+     printf("\n/////////////////////////////////     k cot delta 2par   //////////////////\n");
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // kcot
+     //////////////////////////////////////////////////////////////////////////////////////////////////
      
+     
+     fit_info.Npar=2;
+     fit_info.N=5;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=rhs_kcotd;
+     
+     struct fit_result fit_kcotd_2par=fit_data(argv,  paramsj ,gjack, lhs_kcotd ,fit_info, "kcotd_2par",myen );
+     free_fit_result(fit_info,fit_kcotd_2par);
+     
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // kcot Elatt
+     //////////////////////////////////////////////////////////////////////////////////////////////////
+     printf("\n/////////////////////////////////     k cot delta  E_latt  2par //////////////////\n");
+     
+     
+     fit_info.Npar=2;
+     fit_info.N=5;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=rhs_kcotd;
+     
+     struct fit_result fit_kcotd_Elatt_2par=fit_data(argv,  paramsj ,gjack, lhs_kcotd_Elatt ,fit_info, "kcotd_Elatt_2par",myen );
+     free_fit_result(fit_info,fit_kcotd_Elatt_2par);
+     
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // kcot Elatt
+     //////////////////////////////////////////////////////////////////////////////////////////////////
+     printf("\n/////////////////////////////////     k cot delta  ECM_latt  2par //////////////////\n");
+     
+     
+     fit_info.Npar=2;
+     fit_info.N=5;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=rhs_kcotd;
+     
+     struct fit_result fit_kcotd_ECM_latt_2par=fit_data(argv,  paramsj ,gjack, lhs_kcotd_ECM_latt ,fit_info, "kcotd_ECM_latt_2par",myen );
+     free_fit_result(fit_info,fit_kcotd_ECM_latt_2par);
+     
+     
+     printf("\n/////////////////////////////////     delta 2par   //////////////////\n");
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // kcot
+     //////////////////////////////////////////////////////////////////////////////////////////////////
+     
+     
+     fit_info.Npar=2;
+     fit_info.N=5;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=rhs_delta;
+     
+     struct fit_result fit_delta_2par=fit_data(argv,  paramsj ,gjack, lhs_delta ,fit_info, "delta_2par",myen );
+     free_fit_result(fit_info,fit_delta_2par);
+     
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // kcot Elatt
+     //////////////////////////////////////////////////////////////////////////////////////////////////
+     printf("\n/////////////////////////////////      delta  E_latt  2par //////////////////\n");
+     
+     
+     fit_info.Npar=2;
+     fit_info.N=5;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=rhs_delta;
+     
+     struct fit_result fit_delta_Elatt_2par=fit_data(argv,  paramsj ,gjack, lhs_delta_Elatt ,fit_info, "delta_Elatt_2par",myen );
+     free_fit_result(fit_info,fit_delta_Elatt_2par);
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // 
+     //////////////////////////////////////////////////////////////////////////////////////////////////
+     printf("\n/////////////////////////////////     delta  ECM_latt  2par //////////////////\n");
+     
+     
+     fit_info.Npar=2;
+     fit_info.N=5;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=rhs_delta;
+     
+     struct fit_result fit_delta_ECM_latt_2par=fit_data(argv,  paramsj ,gjack, lhs_delta_ECM_latt ,fit_info, "delta_ECM_latt_2par",myen );
+     free_fit_result(fit_info,fit_delta_ECM_latt_2par);
      
      
      ///////////////////////////////////////////////
@@ -734,8 +831,8 @@ int main(int argc, char **argv){
      fit_info.guess={-0.120802,  -17.3748,  -0.000372984};
      //{-0.124389,-10.9868, 0.000300135};
      
-     struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen );
-     print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "k_from_phase_shift_n5_3par",   k_from_phase_shift_3par ,fit_m0,    paramsj,  myen);
+//      struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen );
+//      print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "k_from_phase_shift_n5_3par",   k_from_phase_shift_3par ,fit_m0,    paramsj,  myen);
      
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      printf("\n/////////////////////////////////   fit  deltaE2_m_quant_cond  //////////////////\n");
@@ -802,7 +899,7 @@ int main(int argc, char **argv){
      
      mysprintf(namefile,NAMESIZE,"poly_QC3_N%d",fit_info_E3_poly.N );
      struct fit_result fit_QC3_poly=fit_data(argv,  paramsj ,gjack, lhs_E3_m ,fit_info_E3_poly, namefile,myen   );
-     print_fit_band_L_M( argv, gjack , fit_info_E3_poly,fit_info_m0 ,  namefile,   fit_QC3_poly ,fit_m0,    paramsj,  myen, {26,40});
+     print_fit_band_L_M( argv, gjack , fit_info_E3_poly,fit_info_m0 ,  namefile,   fit_QC3_poly ,fit_m0,    paramsj,  myen, {23,40});
 //      free_fit_result(fit_info,fit_QC3_poly);
 //      fit_info_E3_poly.restore_default();
      
@@ -834,7 +931,7 @@ int main(int argc, char **argv){
      
      printf("//////////////////// 1 parameter kiso latt  ////////////////////////////////////\n");
      fit_info.Npar=1;
-     fit_info.N=3;
+     fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
      fit_info.n_ext_P=2;
      fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
@@ -856,8 +953,8 @@ int main(int argc, char **argv){
      mysprintf(namefile,NAMESIZE,"QC3_N%d_latt_%dpar",fit_info.N, fit_info.Npar);
      
      struct fit_result fit_QC3_latt_1par=fit_data(argv,  paramsj ,gjack, lhs_E3_m_latt ,fit_info, namefile,myen   );
-     print_fit_band_E3_vs_L( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3_latt_1par ,fit_m0,    paramsj,  myen,  fit_info_E3_poly, fit_QC3_poly, {26,40});
-     print_kiso_P0_inf_L_M( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3_latt_1par ,fit_m0,    paramsj,  myen,  fit_info_E3_poly, fit_QC3_poly, {26,40});
+     print_fit_band_E3_vs_L( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3_latt_1par ,fit_m0,    paramsj,  myen,  fit_info_E3_poly, fit_QC3_poly, {23,40});
+//      print_kiso_P0_inf_L_M( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3_latt_1par ,fit_m0,    paramsj,  myen,  fit_info_E3_poly, fit_QC3_poly, {23,40});
           
          
      fit_info.restore_default();

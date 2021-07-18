@@ -6,6 +6,14 @@
 #include <time.h>
 #include <string.h>
 #include <complex.h>
+#include <cstring> 
+#include <string>
+#include <fstream>
+#include <memory>
+#include <random>
+
+
+
 #include "global.hpp"
 
 #include "resampling.hpp"
@@ -21,10 +29,7 @@
 #include "eigensystem.hpp"
 #include "lhs_functions.hpp"
 #include "header_BSM.hpp"
-#include <cstring> 
-#include <string>
-#include <fstream>
-#include <memory>
+
 using namespace std;
 
 struct  kinematic kinematic_2pt;
@@ -167,6 +172,7 @@ int main(int argc, char **argv){
     int bin=atoi(argv[5]);
     int Neff=header.confs/bin;
     int confs=header.confs;
+    error(confs<=0,1, "main","nconf<0");
     if( strcmp(argv[6],"jack")==0)
         header.Njack=Neff+1;
     else if( strcmp(argv[6],"boot")==0)
@@ -220,18 +226,54 @@ int main(int argc, char **argv){
     
     
     ///resampling
-    double ****data_bin=binning(confs, var, file_head.l0 ,data, bin);
+    double ****data_bin=binning(confs, var, header.T ,data, bin);
     //if you want to do the gamma analysis you need to do before freeing the raw data
     //effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data_bin,  Neff ,namefile_plateaux,out_gamma,0,"M_{PS}^{ll}");
     //effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,namefile_plateaux,out_gamma,3,"M_{PS}^{ll}");
     
-    free_corr(confs, var, file_head.l0 ,data);
+    free_corr(confs, var, header.T ,data);
+    
+    printf("before =%g\n", data_bin[0][0][0][0]);
+    if(Neff==1){
+        int Nfake=9;
+        printf("only one conf found: generating a second one \n");
+        Neff+=Nfake;
+        double ****data_x2=calloc_corr(Neff, var,  header.T );
+        std::mt19937 mt_rand(123);
+            for(int k=0;k<var;k++)
+                for (int i=0;i<header.T;i++)
+                    for (int l=0;l<2;l++){
+                        double r=mt_rand()/((double)mt_rand.max() );
+                        r=r/10.+0.9;
+                        for(int j=0;j<Neff;j++){
+                            data_x2[j][k][i][l]=data_bin[0][k][i][l]*(1+ (j- Neff*(Neff-1)/(2.0*Neff))*r*0.1);
+                        }
+                        double sum=0;
+                        for(int j=0;j<Neff;j++)
+                            sum+=(j- Neff*(Neff-1)/(2.0*Neff))*r*0.1;
+//                             data_x2[j][k][i][l]=data_bin[0][k][i][l]*(1+(j*2*Neff-Neff)/Neff*r*0.5);
+                    }
+        if( strcmp(argv[6],"jack")==0)
+            header.Njack=Neff+1;
+        else if( strcmp(argv[6],"boot")==0)
+            header.Njack=Nbootstrap+1;
+        else 
+            error(1==1,1,"main","argv[6]= %s is not jack or boot",argv[6]);
+        free_corr(Neff-10, var, header.T ,data_bin);// Neff-1 because Neff changed
+        data_bin=data_x2;
+    }
     
     double ****conf_jack=create_resampling(option[4],Neff, var, header.T, data_bin);
+    free_corr(Neff, var, header.T ,data_bin);
+    
+    
     double *zeros=(double*) calloc(header.Njack,sizeof(double));
+    printf("Neff=%d\n",Neff);
     
+    double *tmp1=(double*) malloc(header.Njack);
     
-    printf("  %g  \n",conf_jack[0][1][1][0]);
+//     error_jackboot(argv[6],header.Njack,conf_jack[0][1][1]) );
+    
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     //print all the effective masses correlators
     //set the option to not read for a plateaux

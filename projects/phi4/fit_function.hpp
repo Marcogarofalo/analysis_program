@@ -150,34 +150,13 @@ double lhs_kcotd(int n, int e , int j , vector<cluster::IO_params> params,vector
     }
     
     return r;
-    
 }
 double lhs_kcotd_Elatt(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
     int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
     init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
     double E2;
     double mass=gjack[e].jack[1][j];
-    /*if(n==0){//E2_0
-        E2=gjack[e].jack[4][j];
-        //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
-    }
-    else if(n==1){//E2_0_p1
-        E2=gjack[e].jack[100][j];
-        //         dvec[0]=1; dvec[1]=0; dvec[2]=0;
-    }
-    else if(n==2){//E2_0_p11
-        E2=gjack[e].jack[102][j];
-        //         dvec[0]=1; dvec[1]=1; dvec[2]=0;
-    }
-    else if(n==4){//E2_0_p111
-        E2=gjack[e].jack[104][j];
-        //         dvec[0]=1; dvec[1]=1; dvec[2]=1;
-    }
-    else if(n==3){//E2_0_A1
-        E2=gjack[e].jack[80][j];
-        //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
-    }
-    else{ E2=0 ; dvec[0]=0; dvec[1]=0; dvec[2]=0; exit(1);}*/
+    
     E2=get_E2_n( n,  e ,  j ,  gjack  );
     //     double E20=gjack[e].jack[4][j];
     double hatp2=4.*sin(dvec1[0]*pi_greco/params[e].data.L[1]) *sin(dvec1[0]*pi_greco/params[e].data.L[1]) ;
@@ -212,6 +191,129 @@ double lhs_kcotd_Elatt(int n, int e , int j , vector<cluster::IO_params> params,
 }
 
 
+double lhs_delta(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    double E2;
+    double mass=gjack[e].jack[1][j];
+    
+    E2=get_E2_n( n,  e ,  j ,  gjack  );
+
+    double L=params[e].data.L[1];
+    //     printf("%g  %g  %g \n",E2,E2fL,E2f);
+    double E2_CM=energy_CM(E2,dvec,L);
+    double k=sqrt(E2_CM*E2_CM/4. -mass*mass);
+    
+    double q=k*L/(2.*pi_greco);
+    double gamma=E2/E2_CM;
+    double A=1.;
+    double z[2];
+    dzeta_function(z,  q*q,0 , 0, dvec, gamma, A, 1.e-3, 1.e6 ,3);
+    
+    return  atan( (pow(pi_greco,3./2.)  *gamma*L*k)/z[0] *2*pi_greco);
+    
+    
+}
+
+double lhs_delta_Elatt(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    double E2;
+    double mass=gjack[e].jack[1][j];
+    
+    E2=get_E2_n( n,  e ,  j ,  gjack  );
+    //     double E20=gjack[e].jack[4][j];
+    double hatp2=4.*sin(dvec1[0]*pi_greco/params[e].data.L[1]) *sin(dvec1[0]*pi_greco/params[e].data.L[1]) ;
+    hatp2+=4.*sin(dvec1[1]*pi_greco/params[e].data.L[2]) *sin(dvec1[1]*pi_greco/params[e].data.L[2]) ;
+    hatp2+=4.*sin(dvec1[2]*pi_greco/params[e].data.L[3]) *sin(dvec1[2]*pi_greco/params[e].data.L[3]) ;
+    //     double E20=gjack[e].jack[4][j];
+    double E2fL=acosh(  cosh(mass) +0.5*( hatp2));
+    hatp2=4.*sin(dvec2[0]*pi_greco/params[e].data.L[1]) *sin(dvec2[0]*pi_greco/params[e].data.L[1]) ;
+    hatp2+=4.*sin(dvec2[1]*pi_greco/params[e].data.L[2]) *sin(dvec2[1]*pi_greco/params[e].data.L[2]) ;
+    hatp2+=4.*sin(dvec2[2]*pi_greco/params[e].data.L[3]) *sin(dvec2[2]*pi_greco/params[e].data.L[3]) ;
+    E2fL+=acosh(cosh(mass) +0.5*( + hatp2));
+    
+    double L=params[e].data.L[1];
+    double Ef1=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
+    double Ef2=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
+    double E2f=Ef1+Ef2;
+    
+    E2=E2-E2fL+E2f;
+    //     printf("%g  %g  %g \n",E2,E2fL,E2f);
+    double E2_CM=energy_CM(E2,dvec,L);
+    double k=sqrt(E2_CM*E2_CM/4. -mass*mass);
+    
+    double q=k*L/(2.*pi_greco);
+    double gamma=E2/E2_CM;
+    double A=1.;
+    double z[2];
+    dzeta_function(z,  q*q,0 , 0, dvec, gamma, A, 1.e-3, 1.e6 ,3);
+    
+    return  atan( (pow(pi_greco,3./2.)  *gamma*L*k)/z[0] *2*pi_greco);
+    
+    
+}
+
+double compute_hatp2(int *dvec, double L ){
+    double hatp2=sin(dvec[0]*pi_greco/L) *sin(dvec[0]*pi_greco/L) ;
+    hatp2+=sin(dvec[1]*pi_greco/L) *sin(dvec[1]*pi_greco/L) ;
+    hatp2+=sin(dvec[2]*pi_greco/L) *sin(dvec[2]*pi_greco/L) ;
+    hatp2*=4.;
+    return hatp2;
+}
+
+
+double lhs_kcotd_ECM_latt(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    double E2;
+    double mass=gjack[e].jack[1][j];
+    double L=params[e].data.L[1];
+    
+    
+    E2=get_E2_n( n,  e ,  j ,  gjack  );
+    double normp=compute_hatp2(dvec,L);
+    double E2_CM=acosh(cosh(E2) -0.5*(  normp));
+    
+    double k=sqrt(E2_CM*E2_CM/4. -mass*mass);
+//     double k=    acos(-cosh(E2_CM/2.) + cosh(mass)  +1) ;
+    
+    double q=k*L/(2.*pi_greco);
+    double gamma=E2/E2_CM;
+    double A=1.;
+    double z[2];
+    dzeta_function(z,  q*q,0 , 0, dvec, gamma, A, 1.e-3, 1.e6 ,3);
+    
+    return  z[0] *2*pi_greco/(pow(pi_greco,3./2.)  *gamma*L);
+    
+    
+}
+
+double lhs_delta_ECM_latt(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    double E2;
+    double mass=gjack[e].jack[1][j];
+    double L=params[e].data.L[1];
+    
+    
+    E2=get_E2_n( n,  e ,  j ,  gjack  );
+    double normp=compute_hatp2(dvec,L);
+    double E2_CM=acosh(cosh(E2) -0.5*(  normp));
+    
+//     double k=sqrt(E2_CM*E2_CM/4. -mass*mass);
+       double k=    acos(-cosh(E2_CM/2.) + cosh(mass)  +1) ;
+    
+    double q=k*L/(2.*pi_greco);
+    double gamma=E2/E2_CM;
+    double A=1.;
+    double z[2];
+    dzeta_function(z,  q*q,0 , 0, dvec, gamma, A, 1.e-3, 1.e6 ,3);
+    
+    return  atan( (pow(pi_greco,3./2.)  *gamma*L*k)/z[0] *2*pi_greco);
+    
+    
+}
 double compute_k(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
     double L=params[e].data.L[1];
     double mass=gjack[e].jack[1][j];
@@ -247,15 +349,30 @@ double compute_k(int n, int e , int j , vector<cluster::IO_params> params,vector
     return sqrt(E2_CM*E2_CM/4. -mass*mass);
     
 }
-double rhs_kcotd(int n, int Nvar, double *x,int Npar,double  *P){
-    double a0=P[0], r0=P[1], P2=P[2];
+double rhs_delta(int n, int Nvar, double *x,int Npar,double  *P){
+    double a0=P[0], r0=P[1];
     double k=x[6];
+    double kcot=1.0/a0  + r0*k*k/2.;
     
-
-    return 1.0/a0  + r0*k*k/2. - P2*r0*r0*r0*k*k*k*k;
+    if (Npar>2){
+        kcot=- P[2]*r0*r0*r0*k*k*k*k;
+    }
+    
+    return  atan(k/ kcot);
 
 }
-
+double rhs_kcotd(int n, int Nvar, double *x,int Npar,double  *P){
+    double a0=P[0], r0=P[1];
+    double k=x[6];
+    double kcot=1.0/a0  + r0*k*k/2.;
+    
+    if (Npar>2){
+        kcot=- P[2]*r0*r0*r0*k*k*k*k;
+    }
+    
+    return  kcot;
+    
+}
 
 
 double to_invert_k_from_phase_shift(int n, int Nvar, double *x,int Npar,double  *P){
@@ -1079,7 +1196,10 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
 //     if (strcmp(label,"k_from_phase_shift")!=0 && strcmp(label,"k_from_phase_shift_n4")!=0 && strcmp(label,"k_from_phase_shift_n5")!=0 && strcmp(label,"k_from_phase_shift_acotZ")!=0 && strcmp(label,"QC3")!=0 && strcmp(label,"deltaE2_m_quant_cond")!=0 ){
     if (strcmp(label,"M0_finite_vol")==0 || strcmp(label,"M1_finite_vol")==0 || strcmp(label,"a_00_luscher")==0 
-        || strcmp(label,"kcotd")==0 || strcmp(label,"kcotd_Elatt")==0 || strcmp(label,"a_00_luscher_infm")==0 || strcmp(label,"a_01_luscher")==0
+        || strcmp(label,"kcotd")==0 || strcmp(label,"kcotd_Elatt")==0 
+        || strcmp(label,"kcotd_2par")==0 || strcmp(label,"kcotd_Elatt_2par")==0 || strcmp(label,"kcotd_ECM_latt_2par")==0 
+        || strcmp(label,"delta_2par")==0 || strcmp(label,"delta_Elatt_2par")==0 || strcmp(label,"delta_ECM_latt_2par")==0 
+        || strcmp(label,"a_00_luscher_infm")==0 || strcmp(label,"a_01_luscher")==0
         || strcmp(label,"a_01_luscher_div_shift")==0  || strcmp(label,"a_00_BH")==0 || strcmp(label,"a_01_BH_03t16_shifted")==0
         || strcmp(label,"a_01_BH_04t16_shifted")==0 ||  strcmp(label,"a_01_BH_02t10_shifted")==0  || strcmp(label,"a_01_lusher_const")==0 
         || strcmp(label,"a_01_luscher_const")==0
