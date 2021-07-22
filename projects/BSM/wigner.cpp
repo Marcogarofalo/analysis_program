@@ -248,10 +248,7 @@ int main(int argc, char **argv){
                         for(int j=0;j<Neff;j++){
                             data_x2[j][k][i][l]=data_bin[0][k][i][l]*(1+ (j- Neff*(Neff-1)/(2.0*Neff))*r*0.1);
                         }
-                        double sum=0;
-                        for(int j=0;j<Neff;j++)
-                            sum+=(j- Neff*(Neff-1)/(2.0*Neff))*r*0.1;
-//                             data_x2[j][k][i][l]=data_bin[0][k][i][l]*(1+(j*2*Neff-Neff)/Neff*r*0.5);
+                        
                     }
         if( strcmp(argv[6],"jack")==0)
             header.Njack=Neff+1;

@@ -93,22 +93,24 @@ int main(int argc, char **argv){
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T96_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      //7
+     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T128_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
+     emplace_back_par_data(namefile,paramsj,dataj);
+     
+     
+     //8
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T96_L22_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
-     //8
+     //9
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T96_L24_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
-     //9
+     //10
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T96_L26_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
-     //10
+     //11
      mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T96_L32_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      
      
-     //11
-     mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T128_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0",argv[2],argv[1]);
-     emplace_back_par_data(namefile,paramsj,dataj);
      
      
      printf("E1_0 =%f   %f\n", dataj[0].jack[1][dataj[0].Njack-1], error_jackboot(argv[1],dataj[0].Njack, dataj[0].jack[1]  ) );
@@ -128,7 +130,7 @@ int main(int argc, char **argv){
      int Njack=gjack[0].Njack;
      struct fit_type fit_info;
      struct fit_result  fit_m1, fit_m0;
-     fit_info.Nvar=10;
+     fit_info.Nvar=11;
      fit_info.Npar=2;
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;

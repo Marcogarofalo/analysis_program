@@ -350,15 +350,15 @@ double compute_k(int n, int e , int j , vector<cluster::IO_params> params,vector
     
 }
 double rhs_delta(int n, int Nvar, double *x,int Npar,double  *P){
-    double a0=P[0], r0=P[1];
-    double k=x[6];
-    double kcot=1.0/a0  + r0*k*k/2.;
+    double a0m=P[0], r0m=P[1];
+    double k_m=x[10];
+    double kcot=1.0/(a0m)  + r0m*k_m*k_m/(2.);
     
     if (Npar>2){
-        kcot=- P[2]*r0*r0*r0*k*k*k*k;
+        kcot=- P[2]*r0m*r0m*r0m*k_m*k_m*k_m*k_m;
     }
     
-    return  atan(k/ kcot);
+    return  atan(k_m/ kcot);
 
 }
 double rhs_kcotd(int n, int Nvar, double *x,int Npar,double  *P){
@@ -614,6 +614,26 @@ double rhs_poly_E3_m(int n, int Nvar, double *x,int Npar,double  *P){
     return r;
 }
 
+
+double rhs_poly2_E3_m(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double L=x[0];
+    
+    //     double r=P[2*n]+P[2*n+1]*L;
+    double r=P[2*n]+P[2*n+1]*L;
+    
+    return r;
+}
+
+double rhs_const_E3_m(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double L=x[0];
+    
+    //     double r=P[2*n]+P[2*n+1]*L;
+    double r=P[n];
+    
+    return r;
+}
 double to_invert_q_from_phase_shift(int n, int Nvar, double *x,int Npar,double  *P){
     double L_a0=P[0], r0L=P[1];//, P2=P[2];
 
@@ -967,7 +987,9 @@ double M_finite_volume(int n, int Nvar, double *x,int Npar,double  *P){
     double L=x[0];
     //int K1=dbesk1(M*L);
     double K1=exp(-M*L)/sqrt(M*L);
-    double r=M+P[1]*K1/(M*L) ;
+    double r=M ;
+    if (Npar>1)
+        r+=P[1]*K1/(M*L);
     return r;
 }
 
@@ -1126,7 +1148,55 @@ void print_fit_band_k(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
             tmpy[j]=fit_info.function(0,Nvar,tmpx,Npar,tif[j]);//N, Nvar, x ,Npar,P
             
         }
-        fprintf(f,"%g  \t %g  %g\n",tmpx[6],tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
+        fprintf(f,"%g  \t %g  %g   \n",tmpx[6],tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy )  );
+        
+    }
+    
+    free(tmpy);free(tmpx);
+    fclose(f);  
+    ////////// end fit band k
+    free_2(Njack,tif);
+}
+
+
+void print_fit_band_k_m(char **argv,vector<data_phi> gjack ,struct fit_type fit_info, const char* label, struct fit_result fit_out, int *en, double ***x, double ***y,  vector<cluster::IO_params> params, std::vector<int> myen){
+    
+    int Npar=fit_info.Npar;
+    int Nvar=fit_info.Nvar+fit_info.n_ext_P;
+    int Njack=gjack[0].Njack;
+    int N=fit_info.N;
+    char namefile[NAMESIZE];
+    FILE *f;
+    
+    mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_k_m.txt",argv[3], label);
+    f=open_file(namefile,"w+");
+    double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
+    double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
+    double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+    printf("writing: %s\n",namefile);
+    for (int i=0 ; i<100; i++){
+        
+        for (int j=0;j<Njack;j++){
+            tmpx[0]=(double) params[0].data.L[1];//L
+            tmpx[1]=gjack[0].jack[1][j];//m0
+            tmpx[2]=gjack[0].jack[2][j];//m1
+            tmpx[3]=gjack[0].jack[4][j];//E20
+            tmpx[4]=gjack[0].jack[5][j];//E21
+            tmpx[5]=params[0].data.L[1];//T
+            tmpx[6]=0+i*0.004;//k
+            tmpx[7]=x[j][0][7];
+            tmpx[8]=x[j][0][8];
+            tmpx[9]=x[j][0][9];
+            
+            tmpx[10]=0+i*sqrt(3)/100;//k/m
+            
+            for(int i=fit_info.Nvar ; i<fit_info.Nvar+ fit_info.n_ext_P; i++)
+                tmpx[i]=fit_info.ext_P[i-fit_info.Nvar][j];
+            
+            tmpy[j]=fit_info.function(0,Nvar,tmpx,Npar,tif[j]);//N, Nvar, x ,Npar,P
+            
+        }
+        fprintf(f,"%g  \t %g  %g   \n",tmpx[10],tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy )  );
         
     }
     
@@ -1155,7 +1225,8 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
         for (int e=0;e<en[n];e++){
             fprintf(f," %g   %g   %g   %d\t ",x[Njack-1][e+count][0], y[Njack-1][e+count][0], y[Njack-1][e+count][1] , params[myen[e]].data.L[0]);
             fprintf(f," %g   \t ",x[Njack-1][e+count][6]);
-            fprintf(f," %d   \n ",n);
+            fprintf(f," %d   \t ",n);
+            fprintf(f," %g   \n ",x[Njack-1][e+count][10]);
         }
         count+=en[n];
         fprintf(f,"\n\n");
@@ -1213,6 +1284,7 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
         print_fit_band_L( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
         print_fit_band_T( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
         print_fit_band_k( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
+        print_fit_band_k_m( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
         
     }
 //     if (strcmp(label,"k_from_phase_shift")==0 || strcmp(label,"k_from_phase_shift_n4")==0 || strcmp(label,"k_from_phase_shift_n5")==0 || strcmp(label,"k_from_phase_shift_acotZ")==0) {
@@ -1328,7 +1400,7 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
                 x[j][count][6]=compute_k(n,myen[e],j,params,gjack,fit_info);//k
                 x[j][count][7]=gjack[myen[e]].jack[1][j]*(double) params[myen[e]].data.L[1]/(2.*pi_greco);//mL_2pi
                 
-                
+                x[j][count][10]=x[j][count][6]/x[j][count][1]; //k/m
                 
                 for(int i=0 ; i< fit_info.n_ext_P; i++){
                     x[j][count][i+fit_info.Nvar]=fit_info.ext_P[i][j];

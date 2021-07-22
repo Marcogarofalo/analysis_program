@@ -510,7 +510,7 @@ int main(int argc, char **argv){
      struct fit_type fit_info, fit_info_m0;
      
      struct fit_result  fit_m1, fit_m0;
-     fit_info.Nvar=10;                   fit_info_m0.Nvar=10;            
+     fit_info.Nvar=11;                   fit_info_m0.Nvar=11;            
      fit_info.Npar=2;                   fit_info_m0.Npar=2;           
      fit_info.N=1;                      fit_info_m0.N=1;
      fit_info.Njack=gjack[0].Njack;     fit_info_m0.Njack=gjack[0].Njack;

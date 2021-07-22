@@ -2778,15 +2778,16 @@ if (params.data.ncorr>122){
     if (strcmp(argv[4],"G2t_T32_L24_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")==0  ){
         fit_info.guess={0.41,    0.0018161,    0.00337 , 0.00022318  };
         fit_info.acc=1e-9;
-        
-        
-//         fit_info.Nvar=3;
-//         fit_info.Npar=3;
-//         fit_info.function=C3_vev_2par;
-//         fit_info.n_ext_P=1;
-//         fit_info.ext_P[0]=mass[0];
     }
-    
+    if (strcmp(argv[4],"G2t_T32_L28_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.025000_rep0_bin100_merged_bin1000")==0  ){
+         fit_info.guess={0.38,    0.0018161,    0.00337 , 0.00022318  };
+        fit_info.acc=1e-9;
+        fit_info.h=1e-5;
+        fit_info.chi2_gap_jackboot=1;
+        fit_info.repeat_start=15;
+        fit_info.guess_per_jack=5;
+        
+    }
     
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  5,0/*reim*/ , "E3_0_vev",  fit_info, jack_file);
     free(E3_0);
