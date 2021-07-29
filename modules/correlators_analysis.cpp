@@ -15,6 +15,7 @@
 #include "global.hpp"
 #include "correlators_analysis.hpp"
 #include "tower.hpp"
+#include "read.hpp"
 //#include "eigensystem.hpp"
 
 #include <iostream>
@@ -315,61 +316,64 @@ int   line_read_plateaux(char **option, const char *corr , int &tmin, int &tmax,
 
 
 struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **corr_ave, double **corr_J,int Njack ,double **chi2, struct fit_type fit_info){
-    
-   double ***y,***x,*r,**tmp; 
-   int i,j;  
-   double *chi2j;
-   int Npar=fit_info.Npar;  //parameters
-   int Nvar=fit_info.Nvar;
-   int N=fit_info.N; //functions to fit
-   int *en=(int*) malloc(sizeof(int)*fit_info.N); // data to fit for each function
-   for (i=0;i< fit_info.N; i++)
-       en[0]=(tmax-tmin)/sep +1;
-   int en_tot=0;  // total data to fit
-   for ( int n=0;n<N;n++)   {  en_tot+=en[n];   }
-   
-   
-   double *guess=(double*) malloc(sizeof(double)*fit_info.Npar);// initial guess for the parameter
-   for (i=0;i< fit_info.Npar; i++)
-       guess[i]=1.;
-   
-   if(fit_info.guess.size()>0){
-       error(fit_info.guess.size()>Npar,1,"try_fit", " more guess than parametes");
-       for (int i=0;i<fit_info.guess.size();i++)
-           guess[i]=fit_info.guess[i];
-       for (int i=fit_info.guess.size();i<Npar;i++)
-           guess[i]=1;
-   }
-   
-   
-   chi2j=(double*) malloc(sizeof(double)*Njack);
-   
-   y=double_malloc_3(Njack, tmax-tmin+1, 2);
-   x=double_malloc_3(Njack,en_tot,Nvar);
-   
-   for (j=0;j<Njack;j++){
-       int count=0;
-       for (int n=0;n<N;n++){
-            for (int e=0;e<en[n];e++){
-                x[j][count][0]=e+tmin;
-                for(int i=0 ; i< fit_info.n_ext_P; i++){
-                    x[j][count][i+1]=fit_info.ext_P[i][j];
-                }
-
-                count++;
-            }
-       }
-   }
-
-   
-   double **fit=(double**) malloc(sizeof(double*)*Njack);//result of the fit, the other dimension is allocated by the function non_linear_fit_Nf()
-
-   for (i=tmin;i<=tmax;i+=sep){
-        for (j=0;j<Njack;j++){
-            y[j][(i-tmin)/sep][0]=corr_J[i][j];
-            y[j][(i-tmin)/sep][1]= error_jackboot(option[4], Njack, corr_J[i]);   ;//corr_ave[i][1];
-        }
         
+    double ***y,***x,*r,**tmp; 
+    int i,j;  
+    double *chi2j;
+    int Npar=fit_info.Npar;  //parameters
+    int Nvar=fit_info.Nvar;
+    int N=fit_info.N; //functions to fit
+    int *en=(int*) malloc(sizeof(int)*fit_info.N); // data to fit for each function
+    for (i=0;i< fit_info.N; i++)
+        en[0]=(tmax-tmin)/sep +1;
+    int en_tot=0;  // total data to fit
+    for ( int n=0;n<N;n++)   {  en_tot+=en[n];   }
+    
+    
+    double *guess=(double*) malloc(sizeof(double)*fit_info.Npar);// initial guess for the parameter
+    for (i=0;i< fit_info.Npar; i++)
+        guess[i]=1.;
+    
+    if(fit_info.guess.size()>0){
+        error(fit_info.guess.size()>Npar,1,"try_fit", " more guess than parametes");
+        for (int i=0;i<fit_info.guess.size();i++)
+            guess[i]=fit_info.guess[i];
+        for (int i=fit_info.guess.size();i<Npar;i++)
+            guess[i]=1;
+    }
+    
+    
+    chi2j=(double*) malloc(sizeof(double)*Njack);
+    
+    y=double_malloc_3(Njack, tmax-tmin+1, 2);
+    x=double_malloc_3(Njack,en_tot,Nvar);
+    
+    for (j=0;j<Njack;j++){
+        int count=0;
+        for (int n=0;n<N;n++){
+                for (int e=0;e<en[n];e++){
+                    x[j][count][0]=e+tmin;
+                    for(int i=0 ; i< fit_info.n_ext_P; i++){
+                        x[j][count][i+1]=fit_info.ext_P[i][j];
+                    }
+
+                    count++;
+                }
+        }
+    }
+
+   
+    double **fit=(double**) malloc(sizeof(double*)*Njack);//result of the fit, the other dimension is allocated by the function non_linear_fit_Nf()
+
+    int count=0;
+    for (int n=0;n<N;n++){
+        for (i=tmin;i<=tmax;i+=sep){
+            for (j=0;j<Njack;j++){
+                y[j][count][0]=corr_J[i][j];
+                y[j][count][1]= error_jackboot(option[4], Njack, corr_J[i]);   ;//corr_ave[i][1];
+            }
+            count++;
+        }
     }
 //     if(fit_info.guess.size()==0)
     guess=guess_for_non_linear_fit_Nf(N, en,x[Njack-1], y[Njack-1] , Nvar,  Npar, fit_info.function,guess ,fit_info.repeat_start,
@@ -415,12 +419,12 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
        
     } 
     
-    
-   struct fit_result fit_out=malloc_fit(fit_info);
-   for(i=0;i<Npar;i++){
-       for (j=0;j<Njack;j++){
-           fit_out.P[i][j]=fit[j][i];
-       }
+        
+    struct fit_result fit_out=malloc_fit(fit_info);
+    for(i=0;i<Npar;i++){
+        for (j=0;j<Njack;j++){
+            fit_out.P[i][j]=fit[j][i];
+        }
        
        /*fit_out.C[i]=(double**) malloc(sizeof(double*)*Npar);
        for(n=0;n<Npar;n++){     
@@ -429,11 +433,11 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
                 fit_out.C[i][n][j]=(*C)[j][i][n];
            }
        }*/
-   }
-   for (j=0;j<Njack;j++){
-       fit_out.chi2[j]=chi2j[j];
-   }
-  
+    }
+    for (j=0;j<Njack;j++){
+        fit_out.chi2[j]=chi2j[j];
+    }
+    
 
     free_2(Njack,fit);
     
@@ -726,6 +730,8 @@ int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    int Njack=fit_info.Njack;
    double **r,*m,**mt,*fit;
    int i,j,yn;
+   
+   error(fit_info.N!=1,1,"fit_fun_to_fun_of_corr", "multiple correlator fit not implemented");
     
    r=(double**) malloc(sizeof(double*)*file_head.l0);
    for(i=0;i<file_head.l0;i++)
@@ -775,3 +781,34 @@ int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
     return fit_out;   
     
 } 
+
+
+void add_correlators(char **option , int& ncorr_conf_jack, double ****&conf_jack , double fun_of_corr(int, double****,int, struct fit_type ) ,  struct fit_type fit_info ){
+    
+    int correlators_out=ncorr_conf_jack+fit_info.N;
+    int Njack=fit_info.Njack;
+    
+    double ****corr_out=calloc_corr(Njack, correlators_out, file_head.l0 );
+    //copy the first part
+    for(int j=0; j<Njack; j++){
+        for (int v=0; v<ncorr_conf_jack; v++){
+            for(int t=0; t<file_head.l0; t++){
+                corr_out[j][v][t][0]=conf_jack[j][v][t][0];
+                corr_out[j][v][t][1]=conf_jack[j][v][t][1];
+            }
+        }
+    }
+    
+    for(int n=0; n<fit_info.N; n++){
+        fit_info.n=n;
+        for(int j=0; j<Njack; j++){
+            for(int t=0; t<file_head.l0; t++){
+                corr_out[j][ncorr_conf_jack+ n][t][0]=fun_of_corr(j,conf_jack,t,fit_info);
+            }
+        }
+    }
+    
+    free_corr(Njack, ncorr_conf_jack, file_head.l0 ,conf_jack);
+    conf_jack=corr_out;
+    ncorr_conf_jack=correlators_out;
+}

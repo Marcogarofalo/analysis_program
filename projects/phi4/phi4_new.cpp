@@ -1077,6 +1077,8 @@ int main(int argc, char **argv){
     free_corr(confs, var, file_head.l0 ,data);
     
     conf_jack=create_resampling(option[4],Neff, var, file_head.l0, data_bin);
+    free_corr(Neff, var, file_head.l0 ,data_bin);
+    
     double *zeros=(double*) calloc(Njack,sizeof(double));
     
     double **mass=(double**) malloc(sizeof(double*)*3);
@@ -3088,7 +3090,32 @@ free(tmpj); free(tmp_muj);
 free_fit_result(fit_info,fit_out);
 fflush(outfile);
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+printf("ncorr %d\n",params.data.ncorr);
+if (params.data.ncorr>148){    
+    
 
+    fit_info.N=3;
+    fit_info.corr_id={0, 129, 127,   5, 128,    1 };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
+    //fit_info.corr_id={1,2};
+
+    add_correlators(option , params.data.ncorr , conf_jack ,GEVP_matrix ,   fit_info );
+    printf(" ncorr after GEVP %d\n",params.data.ncorr);
+    fit_info.restore_default();
+
+    //c++ 128 || r 129
+    double *l0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-3,"GEVP_phi0_phi03_phi1_l0", M_eff_T,jack_file);
+
+    //c++ 129 || r 130
+    double *l1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-2,"GEVP_phi0_phi03_phi1_l1", M_eff_T,jack_file);
+    
+    //c++ 130 || r 131
+    double *l2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-1,"GEVP_phi0_phi03_phi1_l2", M_eff_T,jack_file);
+    
+    free(l0_GEVP);free(l1_GEVP);free(l2_GEVP);
+    
+
+
+}else { for(int i=127;i < 127;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 // free(E1_0_p1);
 // free(E1_0_p11);
@@ -3099,8 +3126,7 @@ fflush(outfile);
 // free(E2_0_A1);
 //////////////////////////////////////
     free_2(3,mass);free_2(3,E2);
-    free_corr(Neff, var, file_head.l0 ,data_bin);
-    free_jack(Njack,var , file_head.l0, conf_jack);
+    free_jack(Njack,params.data.ncorr , file_head.l0, conf_jack);
  
     fclose(out_gamma);
     free(fit_info.ext_P);

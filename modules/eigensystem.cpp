@@ -74,14 +74,14 @@ void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalu
   }  
   Eigen::MatrixXcd c(N,N);
   c  = b.inverse()*a;
- /* 
-  std::cout<< "matrix c(t)\n" << a <<std::endl;
-  std::cout<< "matrix c(t0)\n" << b <<std::endl;
-  std::cout<< "matrix c(t0)^-1\n" << b.inverse() <<std::endl;
-  std::cout<< "matrix I\n" << b.inverse()*b <<std::endl;
-  std::cout<< "matrix I\n" << b*b.inverse() <<std::endl;
-  std::cout<< "matrix c(t0)^{-1}*c(t)\n" << c <<std::endl;
-*/
+  
+//   std::cout<< "matrix c(t)\n" << a <<std::endl;
+//   std::cout<< "matrix c(t0)\n" << b <<std::endl;
+//   std::cout<< "matrix c(t0)^-1\n" << b.inverse() <<std::endl;
+//   std::cout<< "matrix I\n" << b.inverse()*b <<std::endl;
+//   std::cout<< "matrix I\n" << b*b.inverse() <<std::endl;
+//   std::cout<< "matrix c(t0)^{-1}*c(t)\n" << c <<std::endl;
+
   Eigen::ComplexEigenSolver<Eigen::MatrixXcd> ces;
   ces.compute(c);
 
@@ -101,7 +101,7 @@ void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalu
       }
       /* the eigenvalues are lambda_n ~ exp(-En(t-t0))+exp(-En(T-(t-t0)))
        * I am interesting in E0 which is smaller the the others E0 < En
-       * then i want the biggest lambda lambda_0 > lambda_1 */
+       * So I want the biggest lambda lambda_0 > lambda_1 */
       if ((*eigenvalues)[0][0] < (*eigenvalues)[i][0]){ 
   	    (*eigenvalues)[i][0]=(*eigenvalues)[0][0];
   	    (*eigenvalues)[i][1]=(*eigenvalues)[0][1];

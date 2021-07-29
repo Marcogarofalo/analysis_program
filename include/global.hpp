@@ -202,6 +202,7 @@ struct  fit_type
 {
   double (*function)(int,int,double*,int,double*);//N, Nvar, x ,Npar,P
   int N,Npar,Nvar,Njack;  
+  int n;// an index to be passed to (*function)( iN ,int,double*,int,double*)
   double (*f1)(int,int,double*,int,double*);
   double (*f2)(int,int,double*,int,double*);
   int n_ext_P; //number of external parameter that will no be fitted
@@ -210,8 +211,10 @@ struct  fit_type
   double lambda=0.001;
   double acc=0.001; 
   double h=1e-5; 
+  std::vector<int> corr_id={};
   std::vector<double>  Prange={};
   std::vector<double>  guess={};
+  int t0_GEVP=3;
   int devorder=4;
   int repeat_start=1;
   
@@ -232,6 +235,8 @@ struct  fit_type
      h=1e-5; 
      Prange=std::vector<double>();
      guess=std::vector<double>();
+     corr_id=std::vector<int>();
+     t0_GEVP=3;
      devorder=4; 
      repeat_start=1;
      

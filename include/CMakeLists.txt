@@ -242,6 +242,7 @@ add_library(
     correlators_analysis.hpp
     ../modules/correlators_analysis.cpp
 ) 
+target_link_libraries(correlators_analysis PUBLIC read)
 target_link_libraries(correlators_analysis PUBLIC non_linear_fit)
 target_include_directories(correlators_analysis PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 

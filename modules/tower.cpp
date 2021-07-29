@@ -138,6 +138,10 @@ T   **malloc_2(int size1,int size2){
     }
     return p;    
 }
+
+template double  **malloc_2<double>(int ,int );
+template int  **malloc_2<int>(int ,int );
+
 template<typename T>
 T  **calloc_2(int size1,int size2){
     int i;
@@ -149,6 +153,9 @@ T  **calloc_2(int size1,int size2){
     }
     return p;    
 }
+template double  **calloc_2<double>(int ,int );
+template int  **calloc_2<int>(int ,int );
+
 
 template<typename T>
 T  ***malloc_3(int size1,int size2, int size3){
@@ -165,3 +172,6 @@ T  ***malloc_3(int size1,int size2, int size3){
     
     return p;    
 }
+template double  ***malloc_3<double>(int ,int,int );
+template int  ***malloc_3<int>(int ,int ,int);
+
