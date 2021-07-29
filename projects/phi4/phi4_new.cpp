@@ -3103,17 +3103,25 @@ if (params.data.ncorr>148){
     fit_info.restore_default();
 
     //c++ 128 || r 129
-    double *l0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-3,"GEVP_phi0_phi03_phi1_l0", M_eff_T,jack_file);
+    double *l0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-3,"GEVP_phi0_phi03_phi1_l0", identity,jack_file);
 
     //c++ 129 || r 130
-    double *l1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-2,"GEVP_phi0_phi03_phi1_l1", M_eff_T,jack_file);
+    double *l1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-2,"GEVP_phi0_phi03_phi1_l1", identity,jack_file);
     
     //c++ 130 || r 131
-    double *l2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-1,"GEVP_phi0_phi03_phi1_l2", M_eff_T,jack_file);
+    double *l2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-1,"GEVP_phi0_phi03_phi1_l2", identity,jack_file);
     
     free(l0_GEVP);free(l1_GEVP);free(l2_GEVP);
     
-
+    //c++ 131 || r 122
+    double *ml0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-3,"GEVP_phi0_phi03_phi1_meffl0", M_eff_T,jack_file);
+    
+    //c++ 132 || r 133
+    double *ml1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-2,"GEVP_phi0_phi03_phi1_meffl1", M_eff_T,jack_file);
+    
+    //c++ 133 || r 134
+    double *ml2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-1,"GEVP_phi0_phi03_phi1_meffl2", M_eff_T,jack_file);
+    
 
 }else { for(int i=127;i < 127;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    

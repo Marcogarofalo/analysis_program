@@ -637,7 +637,7 @@ fflush(petros);
                 }
                 else{ 
                     //r[t][j]=M_eff_in_inp(t, lambda0[j][1][t][0], lambda0[j][1][t+1][0]);
-                    r[t][j]=M_eff(t, lambda0[j][0]);
+                    r[t][j]=M_eff(t, lambda0[j][1]);
                 }
            }
            if( strcmp(option[4],"jack")==0)

@@ -510,37 +510,27 @@ double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
             M[ik][0]  = in[j][corr_ik][t][0];
             Mt0[ik][0]= in[j][corr_ik][t0][0];
             M[ki][0]=M[ik][0];
-            M[ki][0]=M[ik][0];
+            Mt0[ki][0]=Mt0[ik][0];
             count++;
         }
         
     }
     
     generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec); 
-    
-    
-//     //t+1
-//     double **lambdatp1=double_malloc_2(N,2);// [N] [reim]
-//     count=0;
-//     for (int i=0;i<N;i++){
-//         for (int k=i;k<N;k++){
-//             M[i][k]  = in[j][count][(t+1)%t][0];
-//             count++;
-//         }
-//         for (int k=i;k<N;k++){
-//             M[k][i]=M[i][k];
-//         }
-//     }
-//     
-//     
-//     generalysed_Eigenproblem(M,Mt0,2,&lambdatp1,&vec); 
-//     
-//     if((t-t0)>=0)
-//         r=M_eff_sinh_T_ct_ctp(t-t0,T, lambdat[n][0], lambdatp1[n][0]);
-//     else 
-//         r=M_eff_sinh_T_ct_ctp( t-t0, T,  lambdat[N-n][0], lambdatp1[N-n][0]);
-
-    
+    if (t==t0){
+        for (int i=0;i<N;i++)
+            for (int j=0;j<N;j++)
+                printf("%.15f\t",M[i+j*N][0]);
+        printf("\n");
+        for (int i=0;i<N;i++)
+            for (int j=0;j<N;j++)
+                printf("%.15f\t",Mt0[i+j*N][0]);
+            printf("\n");
+        
+    for (int i=0;i<N;i++)
+        printf("%g\t",lambdat[i][0]);
+    printf("\n");
+    }
     int n=fit_info.n;
     if((t-t0)>=0)
         r=lambdat[n][0];
