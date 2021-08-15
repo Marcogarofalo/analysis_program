@@ -225,7 +225,7 @@ struct  fit_type
   std::string resampling;
   double chi2_gap_jackboot=1;
   int guess_per_jack=3;
-  int precision_sum=0;
+  int precision_sum=0;// 0 float, 1 float kahan,  >1 long double
   int verbosity=0;
   
   void restore_default(){

@@ -331,5 +331,7 @@ int main(int argc, char **argv){
       
     
     
+    double *mass1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,namefile_plateaux,outfile,8,"m_num", M_eff_T,jack_file);
+    double *mass2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,namefile_plateaux,outfile,9,"m_den", M_eff_T,jack_file);
     
 }

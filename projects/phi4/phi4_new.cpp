@@ -61,6 +61,31 @@ double C3(int n, int Nvar, double *x,int Npar,double  *P){
     
 }
 
+double fun_l1_GEVP(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double C3;
+    
+    double E3=P[0];
+    double A3=P[1];
+    double A12=P[2];
+    double E2=P[3];
+//     double A10=P[3];
+    double t= x[0];
+    double M=x[1];
+    
+    if (t==3) return 1.0;
+
+    double T=(double)file_head.l0;
+    C3=  exp(-E3*(t-3.)) +exp(-E3*(T-t-3.)) ;
+    C3=  exp(-E3*(t-3.)) +exp(-E3*(T-t-3.)) ;
+    C3+=  exp(-(E2+M)*T/2.) * cosh( (E2-M) *(t-3 -T/2.));
+//     C3+=A10*A10 *  exp(-(M)*T/2.) * cosh( (M) *(t -T/2.));
+    
+    return C3;
+    
+}
+
+
 double C3_vev(int n, int Nvar, double *x,int Npar,double  *P){
     
     double C3;
@@ -2947,15 +2972,7 @@ if (params.data.ncorr>122){
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  116,0/*reim*/ , "E3_0_A1_vev",  fit_info, jack_file);
     int dvec_A1[3]={0,0,0};
     E3_print_extra(fit_out.P[0],mass[0], dvec_A1, params.data.L[1] ,outfile,  Njack, option[4]);
-  /*  
-                 for (int j=0; j< Njack;j++){
-                     printf("%d  chi= %g  P=\t",j,   fit_out.chi2[j] );
-                     for (int i =0; i< fit_info.Npar;i++){
-                         printf("%g\t",fit_out.P[i][j]);
-                     }
-                     printf("\n");
-                 }*/
-    
+      
     free_fit_result(fit_info,fit_out);
     fit_info.restore_default();
     
@@ -3010,7 +3027,7 @@ if (params.data.ncorr>126){
     // c++ 122|| r123
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_info.guess={2.2e-15,   10.4e-12,    0.1e-10};
-    fit_info.repeat_start=100;
+    fit_info.repeat_start=10;
     fit_info.acc=1e-6;
     fit_info.h=1e-3;
     fit_info.devorder=4;
@@ -3102,28 +3119,61 @@ if (params.data.ncorr>148){
     printf(" ncorr after GEVP %d\n",params.data.ncorr);
     fit_info.restore_default();
 
-    //c++ 128 || r 129
+    //c++ 127 || r 128
     double *l0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-3,"GEVP_phi0_phi03_phi1_l0", identity,jack_file);
 
-    //c++ 129 || r 130
+    //c++ 128 || r 129
     double *l1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-2,"GEVP_phi0_phi03_phi1_l1", identity,jack_file);
     
-    //c++ 130 || r 131
+    //c++ 129 || r 130
     double *l2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-1,"GEVP_phi0_phi03_phi1_l2", identity,jack_file);
     
     free(l0_GEVP);free(l1_GEVP);free(l2_GEVP);
     
-    //c++ 131 || r 122
+    //c++ 130 || r 131
     double *ml0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-3,"GEVP_phi0_phi03_phi1_meffl0", M_eff_T,jack_file);
     
-    //c++ 132 || r 133
+    //c++ 131 || r 132
     double *ml1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-2,"GEVP_phi0_phi03_phi1_meffl1", M_eff_T,jack_file);
     
-    //c++ 133 || r 134
+    //c++ 132 || r 133
     double *ml2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, params.data.ncorr-1,"GEVP_phi0_phi03_phi1_meffl2", M_eff_T,jack_file);
     
+    
+    
+    //c++ 133 || r 134
+    fit_info.Nvar=2;
+    fit_info.Npar=2;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.function=fun_l1_GEVP;
+    fit_info.n_ext_P=1;
+    fit_info.ext_P=(double**) malloc(sizeof(double*)*2);
+    
+    fit_info.ext_P[0]=ml0_GEVP;
+    
+    fit_info.repeat_start=10;
+    fit_info.acc=1e-6;
+    fit_info.h=1e-3;
+    fit_info.devorder=4;
+    fit_info.lambda=1e-5;
+    fit_info.chi2_gap_jackboot=1;
+    fit_info.guess_per_jack=10;
+    fit_info.precision_sum=2;
+    fit_info.guess={0.4,0.01,0.01,0.22};
+    
+    fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  params.data.ncorr-2 ,0/*reim*/ , "fun_l1_GEVP",  fit_info, jack_file);
+      
+    for (int j=0; j< Njack;j++){
+        printf("%d  chi= %g  P=\t",j,   fit_out.chi2[j] );
+        for (int i =0; i< fit_info.Npar;i++){
+            printf("%g\t",fit_out.P[i][j]);
+        }
+    printf("\n");
+    }
+    
 
-}else { for(int i=127;i < 127;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+}else { for(int i=127;i < 133;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 // free(E1_0_p1);
 // free(E1_0_p11);
