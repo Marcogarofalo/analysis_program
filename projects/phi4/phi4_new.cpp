@@ -6,8 +6,8 @@
 #include <time.h>
 #include <string.h>
 #include <complex.h>
-#include "global.hpp"
 
+#include "global.hpp"
 #include "resampling.hpp"
 #include "read.hpp"
 #include "m_eff.hpp"
@@ -16,13 +16,13 @@
 #include "linear_fit.hpp"
 #include "various_fits.hpp"
 #include "mutils.hpp"
-#include <string>
 #include "mass_phi4.hpp"
 #include "header_phi4.hpp"
 #include "correlators_analysis.hpp"
 #include "eigensystem.hpp"
 #include "lhs_functions.hpp"
 
+#include <string>
 #include <cstring> 
 #include <string>
 #include <fstream>
@@ -66,19 +66,16 @@ double fun_l1_GEVP(int n, int Nvar, double *x,int Npar,double  *P){
     double C3;
     
     double E3=P[0];
-    double A3=P[1];
-    double A12=P[2];
-    double E2=P[3];
+    double E2=P[1];
 //     double A10=P[3];
     double t= x[0];
     double M=x[1];
     
-    if (t==3) return 1.0;
+    if (x[0]==3) return 1.0;
 
     double T=(double)file_head.l0;
     C3=  exp(-E3*(t-3.)) +exp(-E3*(T-t-3.)) ;
-    C3=  exp(-E3*(t-3.)) +exp(-E3*(T-t-3.)) ;
-    C3+=  exp(-(E2+M)*T/2.) * cosh( (E2-M) *(t-3 -T/2.));
+    C3+=  exp(-(E2-M)*(t-3.)) +exp(-(E2-M)*(T-t-3.)) ;
 //     C3+=A10*A10 *  exp(-(M)*T/2.) * cosh( (M) *(t -T/2.));
     
     return C3;
@@ -216,9 +213,8 @@ double C3_A1_4par(int n, int Nvar, double *x,int Npar,double  *P){
     
     double E3=P[0];
     double A3=P[1];
-    double A10_2p=P[2];
-    double A1p_20=P[3];
-    double A10_20=P[4];
+    double A1p_20=P[2];
+    double A10_20=P[3];
     //     double DE=P[5];
     double t= x[0];
     double E1=x[1];
@@ -230,7 +226,6 @@ double C3_A1_4par(int n, int Nvar, double *x,int Npar,double  *P){
     //check if file_head.l0 arrives here
     double T=(double)file_head.l0;
     C3=A3*A3 *  exp(-E3*T/2.) * cosh( E3 *(t -T/2.));
-    //C3+=A10_2p*A10_2p *  exp(-(E2A1+E1)*T/2.) * cosh( (E2A1-E1) *(t -T/2.));
     C3+=A1p_20*A1p_20 *  exp(-(E2p+E1p)*T/2.) * cosh( (E2p-E1p) *(t -T/2.));
     C3+=A10_20*A10_20 *  exp(-(E1)*T/2.) *cosh( (E1) *(t -T/2.));
     
@@ -238,6 +233,30 @@ double C3_A1_4par(int n, int Nvar, double *x,int Npar,double  *P){
     
 }
 
+
+double C3_A1_3par(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double C3;
+    
+    double E3=P[0];
+    double A3=P[1];
+    double A10_20=P[2];
+    //     double DE=P[5];
+    double t= x[0];
+    double E1=x[1];
+    double E2p=x[2];
+    double E1p=x[3];
+    double E2A1=x[4];
+    double E2=x[5];
+    
+    //check if file_head.l0 arrives here
+    double T=(double)file_head.l0;
+    C3=A3*A3 *  exp(-E3*T/2.) * cosh( E3 *(t -T/2.));
+    C3+=A10_20*A10_20 *  exp(-(E1)*T/2.) *cosh( (E1) *(t -T/2.));
+    
+    return C3;
+    
+}
 
 
 double C3_A1_old(int n, int Nvar, double *x,int Npar,double  *P){
@@ -734,12 +753,15 @@ static void  print_file_head(FILE *stream)
 int read_nconfs( FILE *stream, cluster::IO_params params){
 
    long int tmp;
-   int s=params.data.header_size;
+   int s;
    
 
-  
+   std::cout<<  "header size=" << params.data.header_size << std::endl;
    fseek(stream, 0, SEEK_END);
    tmp = ftell(stream);
+   error(tmp=-1,1, "read_nconfs", "ftell returned -1");
+   std::cout<<  "ftell= " << ftell(stream)<<std::endl;
+   std::cout<< "stored= " << tmp <<std::endl;
    tmp-= params.data.header_size ;
    
    s=params.data.size;
@@ -1013,8 +1035,10 @@ int main(int argc, char **argv){
                 Njack=Neff+1;
    else if( strcmp(argv[7],"boot")==0)
                 Njack=Nbootstrap+1;
-   else
+   else{
+       Njack=0;
        error(1==1,1,"main","argv[7]= %s is not jack or boot",argv[7]);
+   }
    fwrite(&Njack,sizeof(int),1,jack_file );
    
    int var=params.data.ncorr;
@@ -1217,7 +1241,7 @@ int main(int argc, char **argv){
     
     
     int dvec[3]= {0,0,0};
-    if (params.data.lambdaC0!=0) phase_shift(E2[0],mass[0],dvec, params.data.L[1], outfile,  Njack, option[4] );
+    if (params.data.lambdaC0!=0 && E2[0][Njack-1]>2*mass[0][Njack-1]) phase_shift(E2[0],mass[0],dvec, params.data.L[1], outfile,  Njack, option[4] );
     
     /*
     double *delta=(double*) malloc(sizeof(double)*Njack);
@@ -2406,7 +2430,12 @@ if (params.data.ncorr>74){
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    sum_corr_directions_shift<66,67,68>, "E2_0_p1",  fit_info, jack_file );
     int dvec[3]= {1,0,0};
-    if (params.data.lambdaC0!=0) phase_shift(fit_out.P[0],mass[0],dvec, params.data.L[1], outfile,  Njack, option[4] );
+    if (params.data.lambdaC0!=0 && 
+        strcmp(argv[4],"G2t_T8_L4_msq0-4.850000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0")!=0
+        &&  strcmp(argv[4],"G2t_T16_L4_msq0-4.850000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0")!=0
+        &&  strcmp(argv[4],"G2t_T16_L8_msq0-4.850000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0")!=0){
+        phase_shift(fit_out.P[0],mass[0],dvec, params.data.L[1], outfile,  Njack, option[4] );
+    }
     fit_info.restore_default();
     
     /*
@@ -2471,7 +2500,11 @@ if (params.data.ncorr>90){
     
     fit_info.restore_default();
     int dvec[3]= {1,1,0};
-    if (params.data.lambdaC0!=0) phase_shift(fit_out.P[0],mass[0],dvec, params.data.L[1], outfile,  Njack, option[4] );
+    if (params.data.lambdaC0!=0 && 
+        strcmp(argv[4],"G2t_T8_L4_msq0-4.850000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0")!=0
+        && strcmp(argv[4],"G2t_T16_L4_msq0-4.850000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0")!=0
+        &&  strcmp(argv[4],"G2t_T16_L8_msq0-4.850000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0")!=0) 
+        phase_shift(fit_out.P[0],mass[0],dvec, params.data.L[1], outfile,  Njack, option[4] );
     /*
     fprintf(outfile,"#E2_CM   err  E2_CM/M   err re(delta)   err\n " );
     double *E2_CM=(double*) malloc(sizeof(double)*Njack);
@@ -2526,7 +2559,11 @@ if (params.data.ncorr>90){
     //c++ 104 || r 105
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  92,0/*reim*/ , "E2_0_p111",  fit_info ,jack_file);
     int dvec[3]= {1,1,1};
-    if (params.data.lambdaC0!=0) phase_shift(fit_out.P[0],mass[0],dvec, params.data.L[1], outfile,  Njack, option[4] );
+    if (params.data.lambdaC0!=0 && 
+        strcmp(argv[4],"G2t_T8_L4_msq0-4.850000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0")!=0
+        && strcmp(argv[4],"G2t_T16_L4_msq0-4.850000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0")!=0
+        &&  strcmp(argv[4],"G2t_T16_L8_msq0-4.850000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0")!=0)
+        phase_shift(fit_out.P[0],mass[0],dvec, params.data.L[1], outfile,  Njack, option[4] );
     /*
     fprintf(outfile,"#E2_CM   err  E2_CM/M   err   re(delta)   err\n " );
     double *E2_CM=(double*) malloc(sizeof(double)*Njack);
@@ -2951,10 +2988,18 @@ if (params.data.ncorr>122){
     if (strcmp(argv[4],"G2t_T32_L28_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")==0  ){
         fit_info.guess={0.66352764,    	5.01012e-05,    	6.49650e-05,    	0.000541073 ,    	8.649137e-05   };
     }    
-    if (strcmp(argv[4],"G2t_T32_L32_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")==0  ){
+    else if (strcmp(argv[4],"G2t_T32_L32_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")==0  ){
         fit_info.guess={0.606593,        -3.0613e-05,     2.83579e-05 ,    3.23623e-09,    5.28766e-05};
     }
-    if (strcmp(argv[4],"G2t_T32_L24_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")==0  ){
+    else if (strcmp(argv[4],"G2t_T32_L28_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.025000_rep0_bin100_merged_bin1000")==0  ){
+        fit_info.guess={0.646593,        -3.0613e-05,     2.83579e-05 ,    3.23623e-09,    5.28766e-05};
+        fit_info.Npar=3;
+        fit_info.function=C3_A1_3par;
+        fit_info.guess={0.653481415329485,        -3.0613e-05,     2.83579e-05  };
+        
+        printf("we are here\n");
+    }
+    else if (strcmp(argv[4],"G2t_T32_L24_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")==0  ){
         fit_info.guess={ 0.733441,      8.83205e-05,     0.000101335,    1.75938e-08,     0.000152796   };
 //         fit_info.Npar=4;
 //         fit_info.function=C3_A1_4par;
@@ -2970,6 +3015,16 @@ if (params.data.ncorr>122){
     fit_info.precision_sum=2;
     
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  116,0/*reim*/ , "E3_0_A1_vev",  fit_info, jack_file);
+    
+//         for (int j=0; j< Njack;j++){
+//              printf("%d  chi= %g  P=\t",j,   fit_out.chi2[j] );
+//              for (int i =0; i< fit_info.Npar;i++){
+//                  printf("%g\t",fit_out.P[i][j]);
+//              }
+//             printf("\n");
+//         }
+//         exit(1);
+    
     int dvec_A1[3]={0,0,0};
     E3_print_extra(fit_out.P[0],mass[0], dvec_A1, params.data.L[1] ,outfile,  Njack, option[4]);
       
@@ -3160,20 +3215,76 @@ if (params.data.ncorr>148){
     fit_info.chi2_gap_jackboot=1;
     fit_info.guess_per_jack=10;
     fit_info.precision_sum=2;
-    fit_info.guess={0.4,0.01,0.01,0.22};
+    fit_info.guess={0.4,0.22};
     
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  params.data.ncorr-2 ,0/*reim*/ , "fun_l1_GEVP",  fit_info, jack_file);
-      
-    for (int j=0; j< Njack;j++){
-        printf("%d  chi= %g  P=\t",j,   fit_out.chi2[j] );
-        for (int i =0; i< fit_info.Npar;i++){
-            printf("%g\t",fit_out.P[i][j]);
-        }
-    printf("\n");
-    }
+    fit_info.restore_default();
     
+    if (params.data.ncorr>154){   
+        //c++ 134 || r 135
+        double *sE1_0=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, 149,"sE1_0", M_eff_T,jack_file);
+        //c++ 135  || r 136
+        double *sE2_0=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, 153,"sE2_0", shift_and_M_eff_sinh_T,jack_file);
+        
+        fit_info.Nvar=3;
+        fit_info.Npar=4;
+        fit_info.N=1;
+        fit_info.Njack=Njack;
+        fit_info.function=C3_vev;
+        fit_info.n_ext_P=2;
+        fit_info.ext_P=(double**) malloc(sizeof(double*)*2);
+        
+        //c++ 136|| r 137
+        fit_info.ext_P[0]=mass[0];
+        fit_info.ext_P[1]=E2[0];
+        file_head.k[2]=mu1;    file_head.k[3]=mu1;
+        fit_info.guess={0.3961,    0.00018161,    0.000337   , 0.00022318};
+        
+        fit_info.h=0.0001;
+        fit_info.acc=1e-5;
+        fit_info.repeat_start=10;
+        fit_info.precision_sum=2;
+        
+        fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  154,0/*reim*/ , "sE3_0_vev",  fit_info, jack_file);
+        free_fit_result(fit_info, fit_out);
+        fit_info.restore_default();
+    }else { for(int i=134;i < 137;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+    
+    fit_info.Nvar=1;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.function=constant_fit;
+    fit_info.n_ext_P=1;
+    
+    // c++ 137|| r138
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  two_to_two_con<2,0>, "E2_0_con",  fit_info, jack_file );
+    free_fit_result(fit_info,fit_out);
+    
+    fit_info.Nvar=1;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.function=constant_fit;
+    fit_info.n_ext_P=1;
+    
+    // c++ 137|| r138
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  one_to_one_sq<0>, "E1_0_sq",  fit_info, jack_file );
+    free_fit_result(fit_info,fit_out);
+    
+    if (params.data.ncorr>154){   
+        //c++ 138 || r 137
+        double *sE1_0_p1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, 159,"sE1_0_p1", M_eff_T,jack_file);
+    }else { for(int i=138;i < 139;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+    
+    if (params.data.ncorr>160){   
+        //c++ 139 || r 138
+        double *sE1_0_p1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, 160,"E2_0_p0", shift_and_M_eff_sinh_T,jack_file);
+    }else { for(int i=139;i < 140;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
+    
+    
+}else { for(int i=127;i < 140;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
 
-}else { for(int i=127;i < 133;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 // free(E1_0_p1);
 // free(E1_0_p11);

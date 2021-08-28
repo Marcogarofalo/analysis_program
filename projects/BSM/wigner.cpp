@@ -111,14 +111,14 @@ int main(int argc, char **argv){
     mysprintf(option[6],NAMESIZE,"plateau"); // infile
     
     std::vector<std::string>  correlators;
-    correlators.emplace_back("JTILDEA1P1TRIVIAL");
-    correlators.emplace_back("P1P1TRIVIAL");
-    correlators.emplace_back("P2P2TRIVIAL");
-    correlators.emplace_back("P3P3TRIVIAL");
-    correlators.emplace_back("S0S0TRIVIAL");
-    correlators.emplace_back("P1DP1NONSMEAREDNONTRIVIAL");
-    correlators.emplace_back("VECTORDENSITY3DENSITY3NONTRIVIAL");
-    correlators.emplace_back("phit");
+    correlators.emplace_back("JTILDEA1P1TRIVIAL");//0
+    correlators.emplace_back("P1P1TRIVIAL");//1
+    correlators.emplace_back("P2P2TRIVIAL");//2
+    correlators.emplace_back("P3P3TRIVIAL");//3
+    correlators.emplace_back("S0S0TRIVIAL");//4
+    correlators.emplace_back("P1DP1NONSMEAREDNONTRIVIAL");//5
+    correlators.emplace_back("VECTORDENSITY3DENSITY3NONTRIVIAL");//6
+    correlators.emplace_back("phit");//7
     std::vector<FILE*>  f_correlators(correlators.size());
     header_BSM header;
     for (int i =0;i<correlators.size();i++){

@@ -22,6 +22,32 @@
 using namespace std;
 
 
+template<int id, int idc>
+double two_to_two_con(int j, double ****in,int t ,struct fit_type fit_info){
+    int T=file_head.l0;
+    double **ct=double_malloc_2(T, 1);
+    for (int i =t; i< t+3;i++){
+        ct[i][0]=in[j][id][i][0]- in[j][idc][i][0]*in[j][idc][i][0];
+    }
+    
+    double r=shift_and_M_eff_sinh_T(  t,  T, ct);
+    free_2(T,ct);
+    return r;
+}
+
+template< int idc>
+double one_to_one_sq(int j, double ****in,int t ,struct fit_type fit_info){
+    int T=file_head.l0;
+    double **ct=double_malloc_2(T, 1);
+    for (int i =t; i< t+3;i++){
+        ct[i][0]=in[j][idc][i][0]*in[j][idc][i][0];
+    }
+    
+    double r=shift_and_M_eff_sinh_T(  t,  T, ct);
+    free_2(T,ct);
+    return r;
+}
+
 template<int id>
 double me_oPp(int j, double ****in,int t ,struct fit_type fit_info){
     

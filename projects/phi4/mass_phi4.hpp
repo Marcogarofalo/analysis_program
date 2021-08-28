@@ -37,7 +37,7 @@ double phase_shift(double E2,double mass, int  *dvec,int L ){
     double A=1.;
 // printf("k=%g gamma=%g  mass=%g L=%d\n",k,gamma,mass,L);
     //dzeta_function(z,  q*q,0 , 0, dvec, gamma, A, 0.000001, 1.e10,5);
-    //printf("q=%g   dvec=(%d,%d,%d)    gamma=%g   E2=%.8g  ECM=%.8g  k=%g L=%d  mass=%.8g\n",q,dvec[0] ,dvec[1] ,dvec[2], gamma,E2,ECM,k,L,mass);
+    printf("q=%g   dvec=(%d,%d,%d)    gamma=%g   E2=%.8g  ECM=%.8g  k=%g L=%d  mass=%.8g\n",q,dvec[0] ,dvec[1] ,dvec[2], gamma,E2,ECM,k,L,mass);
     dzeta_function(z,  q*q,0 , 0, dvec, gamma, A, 1.e-3, 1.e6 ,3);
     std::complex<double>  zc(z[0],z[1]);
     delta=real(  std::atan(  (pow(pi_greco,3./2.) *q*gamma )/zc   ));
