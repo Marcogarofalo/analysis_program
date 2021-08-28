@@ -759,7 +759,7 @@ int read_nconfs( FILE *stream, cluster::IO_params params){
    std::cout<<  "header size=" << params.data.header_size << std::endl;
    fseek(stream, 0, SEEK_END);
    tmp = ftell(stream);
-   error(tmp=-1,1, "read_nconfs", "ftell returned -1");
+   error(tmp==-1 || tmp==0 ,1, "read_nconfs", "ftell returned -1");
    std::cout<<  "ftell= " << ftell(stream)<<std::endl;
    std::cout<< "stored= " << tmp <<std::endl;
    tmp-= params.data.header_size ;
