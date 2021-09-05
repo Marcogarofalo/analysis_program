@@ -922,6 +922,11 @@ double M0_finite_volume_lhs(int n, int e , int j , vector<cluster::IO_params> pa
 double M1_finite_volume_lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
     return gjack[e].jack[2][j];
 }
+template<int id>
+double M1_p_finite_volume_lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    return gjack[e].jack[id][j];
+}
+
 
 double DE_00_lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack , struct fit_type fit_info){
     return gjack[e].jack[4][j]-2*gjack[e].jack[1][j];
@@ -1266,14 +1271,14 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     
     double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
 //     if (strcmp(label,"k_from_phase_shift")!=0 && strcmp(label,"k_from_phase_shift_n4")!=0 && strcmp(label,"k_from_phase_shift_n5")!=0 && strcmp(label,"k_from_phase_shift_acotZ")!=0 && strcmp(label,"QC3")!=0 && strcmp(label,"deltaE2_m_quant_cond")!=0 ){
-    if (strcmp(label,"M0_finite_vol")==0 || strcmp(label,"M1_finite_vol")==0 || strcmp(label,"a_00_luscher")==0 
+    if (strcmp(label,"M0_finite_vol")==0 || strcmp(label,"M1_finite_vol")==0 || strcmp(label,"M1_p1_finite_vol")==0 || strcmp(label,"a_00_luscher")==0 
         || strcmp(label,"kcotd")==0 || strcmp(label,"kcotd_Elatt")==0 
         || strcmp(label,"kcotd_2par")==0 || strcmp(label,"kcotd_Elatt_2par")==0 || strcmp(label,"kcotd_ECM_latt_2par")==0 
         || strcmp(label,"delta_2par")==0 || strcmp(label,"delta_Elatt_2par")==0 || strcmp(label,"delta_ECM_latt_2par")==0 
         || strcmp(label,"a_00_luscher_infm")==0 || strcmp(label,"a_01_luscher")==0
         || strcmp(label,"a_01_luscher_div_shift")==0  || strcmp(label,"a_00_BH")==0 || strcmp(label,"a_01_BH_03t16_shifted")==0
         || strcmp(label,"a_01_BH_04t16_shifted")==0 ||  strcmp(label,"a_01_BH_02t10_shifted")==0  || strcmp(label,"a_01_lusher_const")==0 
-        || strcmp(label,"a_01_luscher_const")==0
+        || strcmp(label,"a_01_luscher_const")==0 
     )
 //             || strcmp(label,"M1_finite_vol")==0  || strcmp(label,"a_00_luscher")==0  || strcmp(label,"kcotd")==0 
 //             || strcmp(label,"kcotd_Elatt")==0 || strcmp(label,"a_00_luscher_infm")==0 || strcmp(label,"a_01_luscher")==0 

@@ -392,6 +392,7 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
         while (fabs(chi2j[j]-chi2j[Njack-1])/chi2j[Njack-1]>fit_info.chi2_gap_jackboot && max<fit_info.guess_per_jack){
             std::mt19937 mt_rand(max);
             printf("jack %d has a chi2= %g   while the mean has chi2=%g \n retry\n",j,chi2j[j],chi2j[Njack-1]);
+            
             double *guess1=(double*) malloc(sizeof(double)*Npar);
             for (int i=0;i< Npar;i++) guess1[i]=guess[i]+guess[i]* mt_rand()/((double) 10*mt_rand.max() ) ;
             guess1=guess_for_non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess1 ,fit_info.repeat_start,
@@ -408,6 +409,13 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
             if (tmp_chi2<chi2j[j]){
                 chi2j[j]=tmp_chi2;
                 for (int i=0;i< Npar;i++) fit[j][i]=tmp_fit[i];
+            }
+             for (int j=0; j< Njack;j++){
+                        printf("%d  chi= %g  P=\t",j,   chi2j[j] );
+                        for (int i =0; i< fit_info.Npar;i++){
+                            printf("%g\t",fit[i]);
+                        }
+                       printf("\n");
             }
                 
             free(tmp_fit);

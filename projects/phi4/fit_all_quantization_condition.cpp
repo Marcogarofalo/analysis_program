@@ -523,7 +523,9 @@ int main(int argc, char **argv){
      
      fit_m1=fit_data(argv,  paramsj ,gjack, M1_finite_volume_lhs ,fit_info, "M1_finite_vol" ,myen);
      
-     
+     // corr 75 =E1_1_px
+     fit_result fit_m1_p1=fit_data(argv,  paramsj ,gjack, M1_p_finite_volume_lhs<75> ,fit_info, "M1_p1_finite_vol" ,myen);
+     free_fit_result(fit_info,fit_m1_p1);
      printf("\n/////////////////////////////////     E2_0//////////////////\n");
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      // E20
@@ -931,7 +933,7 @@ int main(int argc, char **argv){
      
      printf("//////////////////// 1 parameter kiso latt  ////////////////////////////////////\n");
      fit_info.Npar=1;
-     fit_info.N=1;
+     fit_info.N=2;
      fit_info.Njack=gjack[0].Njack;
      fit_info.n_ext_P=2;
      fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
