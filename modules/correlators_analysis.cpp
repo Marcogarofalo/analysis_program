@@ -376,13 +376,12 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
         }
     }
 //     if(fit_info.guess.size()==0)
-    guess=guess_for_non_linear_fit_Nf(N, en,x[Njack-1], y[Njack-1] , Nvar,  Npar, fit_info.function,guess ,fit_info.repeat_start,
-                                      fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder, 1,fit_info.precision_sum);
+    guess=guess_for_non_linear_fit_Nf(N, en,x[Njack-1], y[Njack-1] , Nvar,  Npar, fit_info.function,guess ,fit_info);
     //for (j=0;j<Njack;j++){
     for (j=Njack-1;j>=0;j--){    
         //tmp=linear_fit( (tmax-tmin)/sep +1, x, y[j],  1,constant_fit_to_try );
 
-        fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder, fit_info.verbosity,fit_info.precision_sum );
+        fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess, fit_info );
         if (fit_info.precision_sum >0 )
             chi2j[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
         else 
@@ -395,10 +394,9 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
             
             double *guess1=(double*) malloc(sizeof(double)*Npar);
             for (int i=0;i< Npar;i++) guess1[i]=guess[i]+guess[i]* mt_rand()/((double) 10*mt_rand.max() ) ;
-            guess1=guess_for_non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess1 ,fit_info.repeat_start,
-                                               fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder,1, fit_info.precision_sum);
+            guess1=guess_for_non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess1 ,fit_info);
             
-            double *tmp_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess1, fit_info.lambda, fit_info.acc, fit_info.h, fit_info.Prange,fit_info.devorder,fit_info.verbosity, fit_info.precision_sum );
+            double *tmp_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess1, fit_info );
             double tmp_chi2;
             if (fit_info.precision_sum>0 )
                 tmp_chi2=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp_fit , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
@@ -410,13 +408,13 @@ struct fit_result try_fit(char **option,int tmin, int tmax, int sep ,double **co
                 chi2j[j]=tmp_chi2;
                 for (int i=0;i< Npar;i++) fit[j][i]=tmp_fit[i];
             }
-             for (int j=0; j< Njack;j++){
-                        printf("%d  chi= %g  P=\t",j,   chi2j[j] );
-                        for (int i =0; i< fit_info.Npar;i++){
-                            printf("%g\t",fit[i]);
-                        }
-                       printf("\n");
+             
+            printf("%d  chi= %g  P=\t",j,   chi2j[j] );
+            for (int i =0; i< fit_info.Npar;i++){
+                printf("%g\t",fit[j][i]);
             }
+            printf("\n");
+            
                 
             free(tmp_fit);
             free(guess1);
@@ -594,6 +592,8 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
    /*if ( strcmp(option[5],"pdf")==0 ){
            plotting_fit_pdf(option,description,file_head.l1, file_head.l0,file_head.beta,file_head.ksea,file_head.musea, mt , tmin,tmax,m,name, kinematic_2pt );
    }*/
+   
+   corr_counter++;
     
    return fit_out;
 }
@@ -819,4 +819,10 @@ void add_correlators(char **option , int& ncorr_conf_jack, double ****&conf_jack
     free_corr(Njack, ncorr_conf_jack, file_head.l0 ,conf_jack);
     conf_jack=corr_out;
     ncorr_conf_jack=correlators_out;
+}
+
+
+void zero_corr(double *zeros, int Njack, FILE *jack_file){
+    fwrite(zeros,sizeof(double),Njack, jack_file );
+    corr_counter++;
 }

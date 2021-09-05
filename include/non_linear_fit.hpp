@@ -9,7 +9,7 @@
 #include <string.h>
 #include <complex.h>
 #include <vector>
-
+#include "global.hpp"
 
 struct fit_result malloc_fit( struct  fit_type  fit_info);
 void free_fit_result( struct  fit_type  fit_info,struct fit_result  out);
@@ -23,7 +23,9 @@ double  *non_linear_fit(int ensemble,double **x, double **y ,int Nvar, int Npar,
 double compute_chi_non_linear(int ensemble,double **x, double **y, double *P ,int Nvar, int Npar, double fun(int,double*,int,double*));
 
 
-double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess , double lambda=0.001, double acc=0.001, double h=1e-5, std::vector<double>  Prange={},  int devorder=4 , int verbosity=1, int precision_sum=0);
+//double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess , double lambda=0.001, double acc=0.001, double h=1e-5, std::vector<double>  Prange={},  int devorder=4 , int verbosity=1, int precision_sum=0);
+
+double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess , fit_type fit_info=default_fit_info);
 
 
 
@@ -31,7 +33,8 @@ double compute_chi_non_linear_Nf(int N,int *ensemble,double **x, double **y, dou
 double compute_chi_non_linear_Nf_kahan(int N,int *ensemble,double **x, double **y, double *P ,int Nvar, int Npar,  double fun(int,int,double*,int,double*)) ;
 double  **covariance_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y,double *P ,int Nvar, int Npar,  double fun(int,int,double*,int,double*)  );
 
-double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess , int repeat=1, double lambda=0.001, double acc=0.001, double h=1e-5, std::vector<double>  Prange={},  int devorder=4 , int verbosity=1, int precision_sum=0);
+//double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess , int repeat=1, double lambda=0.001, double acc=0.001, double h=1e-5, std::vector<double>  Prange={},  int devorder=4 , int verbosity=1, int precision_sum=0);
+double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess ,fit_type fit_info=default_fit_info);
 double  *guess_for_non_linear_fit_Nf_covariance(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess );
 
 double  *non_linear_fit_Nf_sigmax(int N, int *ensemble ,double **x, double **sigmax, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess );

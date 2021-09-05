@@ -1187,6 +1187,7 @@ int main(int argc, char **argv){
      
     }
     sprintf(option[1],"%s",save_option);// restore option
+    corr_counter=0;
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     file_head.k[2]=mu1;
@@ -3361,12 +3362,14 @@ if (params.data.ncorr>163){
     
     //c++ 146 || r 147
     double *ml2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-2,"GEVP_0_3_1_A1_meffl2", M_eff_T,jack_file);
-    
+    error(corr_counter!=146,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
+
     //c++ 147 || r 148
     double *ml3_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-1,"GEVP_0_3_1_A1_meffl3", M_eff_T,jack_file);
     free(ml0_GEVP);free(ml1_GEVP);free(ml2_GEVP);free(ml3_GEVP);
+    error(corr_counter!=147,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
     
-}else { for(int i=144;i < 148;i++ )  fwrite(zeros,sizeof(double),Njack, jack_file );} 
+}else { for(int i=144;i < 148;i++ )  zero_corr(zeros,Njack, jack_file );} 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 // free(E1_0_p1);

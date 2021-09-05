@@ -318,4 +318,6 @@ EXTERN struct database_file_jack file_jack;//used to save the jack
 EXTERN struct data_jack *dataJ,*gjack;
 EXTERN struct result_jack result;
 EXTERN int **index_a;
+EXTERN int corr_counter;
+EXTERN fit_type default_fit_info;
 #endif
