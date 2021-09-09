@@ -600,7 +600,8 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
 
 
 
-double   *plateau_correlator_function(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, int Njack ,const char  *plateaux_masses,FILE *outfile,  int index , const char *description , double (*fun)(int ,int  , double ** ),  FILE * file_jack){
+ double   *plateau_correlator_function(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, int Njack ,const char  *plateaux_masses,FILE *outfile,  int index , const char *description , double (*fun)(int ,int  , double ** ),  FILE * file_jack, struct fit_type fit_info){
+// jackknife plateau_correlator_function(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, int Njack ,const char  *plateaux_masses,FILE *outfile,  int index , const char *description , double (*fun)(int ,int  , double ** ),  FILE * file_jack){    
    /*int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    if ( strcmp(option[1],"read_plateaux")==0 )
    	go_to_line(*plateaux_masses,line);
@@ -629,7 +630,7 @@ double   *plateau_correlator_function(char **option ,struct kinematic kinematic_
 
    }
 
-   struct fit_type fit_info;
+   //struct fit_type fit_info;
    fit_info.Nvar=1;
    fit_info.Npar=1;
    fit_info.N=1;
@@ -661,7 +662,10 @@ double   *plateau_correlator_function(char **option ,struct kinematic kinematic_
      *plateaux_masses=open_file(kinematic_2pt.plateau_m_ll,"r");
 
     }*/
-    return fit;    
+//    jackknife tmp(option[4], Njack, fit);
+//    free(fit);
+//    return tmp;
+   return fit;    
     
 }
 
@@ -808,7 +812,7 @@ void add_correlators(char **option , int& ncorr_conf_jack, double ****&conf_jack
     }
     
     for(int n=0; n<fit_info.N; n++){
-        fit_info.n=n;
+        fit_info.n=n; // this goes in to fun_of_corr
         for(int j=0; j<Njack; j++){
             for(int t=0; t<file_head.l0; t++){
                 corr_out[j][ncorr_conf_jack+ n][t][0]=fun_of_corr(j,conf_jack,t,fit_info);

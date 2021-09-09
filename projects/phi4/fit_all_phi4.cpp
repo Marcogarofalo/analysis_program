@@ -312,5 +312,34 @@ int main(int argc, char **argv){
 
      free(tmp);
      
+     
+     
+     printf("\n/////////////////////////////////     fit_diff_L_BH02t16//////////////////\n");
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // start fitting
+     
+     fit_info.Npar=1;
+     fit_info.N=1;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=constant_fit;
+     //lhs<53>  E4_04t16_shifted
+     struct fit_result fit_diff_L_BH02t16=fit_data(argv,  paramsj ,gjack, lhs_LminusBH<73> ,fit_info, "fit_diff_L_BH02t16" ,myen);
+     
+     printf("\n/////////////////////////////////     fit_diff_L_BH03t16//////////////////\n");
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // start fitting
+     
+     fit_info.Npar=1;
+     fit_info.N=1;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=constant_fit;
+     //lhs<53>  E4_04t16_shifted
+     struct fit_result fit_diff_L_BH03t16=fit_data(argv,  paramsj ,gjack, lhs_LminusBH<53> ,fit_info, "fit_diff_L_BH03t16" ,myen);
+     
+     
      return 0;
 }

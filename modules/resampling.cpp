@@ -12,6 +12,9 @@
 #include "global.hpp"
 #include "tower.hpp"
 
+
+
+
 void free_jack(int N,int var , int t, double ****in){
     int i,j,k,l;
     

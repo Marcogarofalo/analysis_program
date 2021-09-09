@@ -543,20 +543,20 @@ double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     }
     
     generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec); 
-    if (t==t0){
-        for (int i=0;i<N;i++)
-            for (int j=0;j<N;j++)
-                printf("%.15f\t",M[i+j*N][0]);
-        printf("\n");
-        for (int i=0;i<N;i++)
-            for (int j=0;j<N;j++)
-                printf("%.15f\t",Mt0[i+j*N][0]);
-        printf("\n");
-        
-    for (int i=0;i<N;i++)
-        printf("%g\t",lambdat[i][0]);
-    printf("\n");
-    }
+//     if (t==t0){
+//         for (int i=0;i<N;i++)
+//             for (int j=0;j<N;j++)
+//                 printf("%.15f\t",M[i+j*N][0]);
+//         printf("\n");
+//         for (int i=0;i<N;i++)
+//             for (int j=0;j<N;j++)
+//                 printf("%.15f\t",Mt0[i+j*N][0]);
+//         printf("\n");
+//         
+//     for (int i=0;i<N;i++)
+//         printf("%g\t",lambdat[i][0]);
+//     printf("\n");
+//     }
     int n=fit_info.n;
     if((t-t0)>=0)
         r=lambdat[n][0];
