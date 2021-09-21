@@ -43,5 +43,5 @@ double  *linear_fit_Nf(int Nfunc, int *Npoints, double **x, double **y,  int Nva
 double compute_chi_linear_Nf(int N,int *ensemble,double **x, double **y, double *P ,int Nvar, int Npar,  double *fun(int,int,double*,int)) ;
 
 int is_it_positive(double **a, int n);
-
+bool is_it_positive_lex_reim(double **a, int n);
 #endif

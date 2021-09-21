@@ -106,6 +106,35 @@ for (i=0;i<n;i++) {
 return 0;
 }
 
+bool is_it_positive_lex_reim(double **a, int n)
+{
+int i,j,k;
+double sum;
+double **L=( double**) malloc(sizeof( double*)*n);
+for (i=0;i<n;i++)
+    L[i]=( double*) calloc(n,sizeof( double));
+
+for (i=0;i<n;i++) {
+    for (j=i;j<n;j++) {
+        sum=a[i+j*n][0];
+
+        for (k=i-1;k>=0;k--) sum -= L[i][k]*L[j][k];
+        if (i == j) {
+            if (sum <= 0.0){
+               
+                return false;
+                
+            }
+            L[i][i]=sqrt(sum);
+        }
+        else L[j][i]=sum/L[i][i];
+    }
+}
+
+    
+return true;
+}
+
 /*Solves the set of n linear equations A · x = b, where a is a positive-definite symmetric matrix.
 a[1..n][1..n] and p[1..n] are input as the output of the routine choldc . Only the lower
 subdiagonal portion of a is accessed. b[1..n] is input as the right-hand side vector. The

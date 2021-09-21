@@ -816,6 +816,7 @@ void add_correlators(char **option , int& ncorr_conf_jack, double ****&conf_jack
         for(int j=0; j<Njack; j++){
             for(int t=0; t<file_head.l0; t++){
                 corr_out[j][ncorr_conf_jack+ n][t][0]=fun_of_corr(j,conf_jack,t,fit_info);
+                corr_out[j][ncorr_conf_jack+ n][t][1]=0;
             }
         }
     }

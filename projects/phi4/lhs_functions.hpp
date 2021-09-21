@@ -22,6 +22,27 @@
 using namespace std;
 
 
+template<int id>
+double single_corr(int j, double ****in,int t ,struct fit_type fit_info){
+    
+    return in[j][id][t][0];
+}
+
+template<int id6, int id4, int id2>
+double subtracted_phi3(int j, double ****in,int t ,struct fit_type fit_info){
+    
+    double phi2=fit_info.ext_P[0][j];
+    return in[j][id6][t][0] - 2*in[j][id4][t][0]*phi2 + in[j][id2][t][0] * phi2*phi2;
+}
+
+template<int id4, int id2>
+double subtracted_phi(int j, double ****in,int t ,struct fit_type fit_info){
+    
+    double phi2=fit_info.ext_P[0][j];
+    return in[j][id4][t][0]-in[j][id2][t][0]*phi2;
+}
+
+
 template<int id, int idc>
 double two_to_two_con(int j, double ****in,int t ,struct fit_type fit_info){
     int T=file_head.l0;
@@ -541,21 +562,20 @@ double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
         }
         
     }
-    
+    if (t==0 && j==0 && fit_info.n==0){
+        for (int i=0;i<N;i++){
+            for (int j=0;j<N;j++)
+                printf("%.5e\t",Mt0[i+j*N][0]);
+            printf("\n");
+        }
+        
+    }
+    error(!is_it_positive_lex_reim(Mt0, N) , 1, "GEVP_matrix:", "GEVP_matrix M(t0) not positive defined"  ) ;
     generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec); 
 //     if (t==t0){
 //         for (int i=0;i<N;i++)
-//             for (int j=0;j<N;j++)
-//                 printf("%.15f\t",M[i+j*N][0]);
+//             printf("%g\t",lambdat[i][0]);
 //         printf("\n");
-//         for (int i=0;i<N;i++)
-//             for (int j=0;j<N;j++)
-//                 printf("%.15f\t",Mt0[i+j*N][0]);
-//         printf("\n");
-//         
-//     for (int i=0;i<N;i++)
-//         printf("%g\t",lambdat[i][0]);
-//     printf("\n");
 //     }
     int n=fit_info.n;
     if((t-t0)>=0)
