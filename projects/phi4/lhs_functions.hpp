@@ -620,7 +620,7 @@ double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
 double GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
     double ct,ctp;
     int N=fit_info.N;
-    int ncorr=fit_info.corr_id.size()/3;
+    int ncorr=fit_info.corr_id.size();
 //     error(fit_info.corr_id.size()!=12,1,"GEVP_matrix_p1" ," careful populating the GEVP, we to do manually the sum on the directions xyz");
     error(ncorr!=(N*N+N)/2 ,1,"GEVP_matrix_p1",
           "you need to provide (N^2+N)/2 to populate the top triangular matrix NxN:\n  N=%d    ncorr=%d\n",N,ncorr  );
