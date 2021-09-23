@@ -122,6 +122,27 @@ double C3_vev(int n, int Nvar, double *x,int Npar,double  *P){
     
 }
 
+
+double C3_2exp(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double C3;
+    
+    double E3=P[0];
+    double A3=P[1];
+    double M=P[2];
+    double A10=P[3];
+    double t= x[0];
+    
+    
+    //check if file_head.l0 arrives here
+    double T=(double)file_head.l0;
+    C3=A3*A3 *  exp(-E3*T/2.) * cosh( E3 *(t -T/2.));
+    C3+=A10*A10 *  exp(-(M)*T/2.) * cosh( (M) *(t -T/2.));
+    
+    return C3;
+    
+}
+
 double C3_vev_2par(int n, int Nvar, double *x,int Npar,double  *P){
     
     double C3;
@@ -3381,7 +3402,7 @@ if (params.data.ncorr>=130){
     fit_info.corr_id={33, 136, 130,   95, 133,    34   };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
     printf("GEVP_phi0_phi03_phi1_p1\n");
 
-    add_correlators(option , params.data.ncorr , conf_jack ,GEVP_matrix ,   fit_info );
+    add_correlators(option , params.data.ncorr , conf_jack ,GEVP_matrix_p1 ,   fit_info );
     printf(" ncorr after GEVP %d\n",ncorr_new);
     fit_info.restore_default();
 
@@ -3406,7 +3427,7 @@ if (params.data.ncorr>163){
     
 
     fit_info.N=4;
-    fit_info.t0_GEVP=2;
+    fit_info.t0_GEVP=3;
     //fit_info.corr_id={0, 129, 127,   5, 128,    1 };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
     fit_info.corr_id={0, 129, 127, 163,    5, 128, 165,     1, 164,    116};//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1, A1A1 }
     //fit_info.corr_id={1,2};
@@ -3472,133 +3493,31 @@ if (params.data.ncorr>166+1e+6){
 }else { for(int i=148;i < 152;i++ )  zero_corr(zeros,Njack, jack_file );} 
 
 
-
-///////////////////
-if (params.data.ncorr>166){   
-    
-    fit_info.Nvar=1;
-    fit_info.Npar=3;
-    fit_info.N=1;
-    fit_info.Njack=Njack;
-    fit_info.function=C2;
-    fit_info.n_ext_P=0;
-    
-    // c++ 152|| r153
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  single_corr<2>, "E2_0_3par",  fit_info, jack_file );
+ {
+    double *E1_1_p1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, 34,"E1_1_p1", M_eff_T,jack_file);
     error(corr_counter!=152,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
-    
-    double *me_o_phi02_o=malloc_copy_jackboot(Njack,fit_out.P[2]);
-    printf("matrix emelement <0|phi_0^2|0> = %g  %g\n",me_o_phi02_o[Njack-1], error_jackboot(option[4], Njack, me_o_phi02_o) );
-    free_fit_result(fit_info,fit_out);
-    
-    fit_info.N=1;
-    fit_info.n_ext_P=1;
-    fit_info.ext_P[0]=me_o_phi02_o;
-     //fit_info.corr_id={0, 129, 127, 163,    5, 128, 165,     1, 164,    116}
-    add_correlators(option , ncorr_new , conf_jack ,subtracted_phi3<5, 129, 0> ,   fit_info );
-    printf("phi3phi3 subtracted id= %d\n",ncorr_new-1);
-    fit_info.restore_default();
-    
-    fit_info.N=1;
-    fit_info.n_ext_P=1;
-    fit_info.ext_P[0]=me_o_phi02_o;
-     //fit_info.corr_id={0, 129, 127, 163,    5, 128, 165,     1, 164,    116}
-    add_correlators(option , ncorr_new , conf_jack ,subtracted_phi<129, 0> ,   fit_info );
-    printf("phi1phi3 subtracted id= %d\n",ncorr_new-1);
-    fit_info.restore_default();
-    
-    fit_info.N=1;
-    fit_info.n_ext_P=1;
-    fit_info.ext_P[0]=me_o_phi02_o;
-     //fit_info.corr_id={0, 129, 127, 163,    5, 128, 165,     1, 164,    116}
-    add_correlators(option , ncorr_new , conf_jack ,subtracted_phi<128, 127> ,   fit_info );
-    printf("phi1phi3 subtracted id= %d\n",ncorr_new-1);
-    fit_info.restore_default();
-    
-    
-    fit_info.N=3;
-    fit_info.corr_id={0, ncorr_new-2, 127,   ncorr_new-3, ncorr_new-1,    1 };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
-    //fit_info.corr_id={1,2};
-    printf("GEVP_phi0_phi03sub_sub_phi1\n");
-    add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix ,   fit_info );
-    printf(" ncorr after GEVP %d\n",ncorr_new);
-    fit_info.restore_default();
 
-        
-    //c++ 153 || r 131
-    double *ml0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-3,"GEVP_phi0_phi03sub_phi1_meffl0", M_eff_T,jack_file);
+    free(E1_1_p1);
+ }  
+ 
+///////////////////
+if (params.data.ncorr>95){   
+    
+    
+    //c++ 153
+    double *phi03_meff=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, 5,"phi03_meff", M_eff_T,jack_file);
+    free(phi03_meff);
     error(corr_counter!=153,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
-
-    //c++ 154 || r 132
-    double *ml1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-2,"GEVP_phi0_phi03sub_phi1_meffl1", M_eff_T,jack_file);
+    
+    
+    //c++ 154
+    double *phi03_p1_meff=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, 95,"phi03_p1_meff", M_eff_T,jack_file);
+    free(phi03_p1_meff);
     error(corr_counter!=154,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
-
-    //c++ 155 || r 133
-    double *ml2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-1,"GEVP_phi0_phi03sub_phi1_meffl2", M_eff_T,jack_file);
-    free(ml0_GEVP);free(ml1_GEVP);free(ml2_GEVP);
-    error(corr_counter!=155,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
-
-    /////////////////////////////////////////////////////////////////////////////////
-    printf("///////////////////  //////////////\n");
-    /////////////////////////////////////////////////////////////////////////////////
     
-    
-    fit_info.N=1;
-    fit_info.n_ext_P=1;
-    fit_info.ext_P[0]=me_o_phi02_o;
-    //fit_info.corr_id={33, 136, 130,   95, 133,    34   };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
-    add_correlators(option , ncorr_new , conf_jack ,subtracted_phi3<95, 136, 33> ,   fit_info );
-    printf("phi3phi3_p1 subtracted id= %d\n",ncorr_new-1);
-    fit_info.restore_default();
-    
-    fit_info.N=1;
-    fit_info.n_ext_P=1;
-    fit_info.ext_P[0]=me_o_phi02_o;
-    add_correlators(option , ncorr_new , conf_jack ,subtracted_phi<136, 33> ,   fit_info );
-    printf("phi0phi3_p1 subtracted id= %d\n",ncorr_new-1);
-    fit_info.restore_default();
-    
-    fit_info.N=1;
-    fit_info.n_ext_P=1;
-    fit_info.ext_P[0]=me_o_phi02_o;
-    add_correlators(option , ncorr_new , conf_jack ,subtracted_phi<133, 130> ,   fit_info );
-    printf("phi1phi3_p1 subtracted id= %d\n",ncorr_new-1);
-    fit_info.restore_default();
-    
-    
-    fit_info.N=3;
-    fit_info.corr_id={33, ncorr_new-2, 130,   ncorr_new-3, ncorr_new-1,    34 };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
-    //fit_info.corr_id={1,2};
-    printf("GEVP_phi0_phi03sub_sub_phi1_p1\n");
-    add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix ,   fit_info );
-    printf(" ncorr after GEVP %d\n",ncorr_new);
-    fit_info.restore_default();
 
-        
-    //c++ 156 || r 131
-    double *ml0p1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-3,"GEVP_phi0_phi03sub_phi1_p1_meffl0", M_eff_T,jack_file);
-    error(corr_counter!=156,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
 
-    //c++ 157 || r 132
-    double *ml1p1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-2,"GEVP_phi0_phi03sub_phi1_p1_meffl1", M_eff_T,jack_file);
-    error(corr_counter!=157,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
-
-    //c++ 158 || r 133
-    double *ml2p1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-1,"GEVP_phi0_phi03sub_phi1_p1_meffl2", M_eff_T,jack_file);
-    free(ml0p1_GEVP);free(ml1p1_GEVP);free(ml2p1_GEVP);
-    error(corr_counter!=158,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
-
-    //c++ 159
-    double *tmp=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-6,"phi03sub_p1", M_eff_T,jack_file);
-    free(tmp);
-    error(corr_counter!=159,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
-
-    //c++ 160
-    tmp=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, 33,"phi03_p1", M_eff_T,jack_file);
-    free(tmp);
-    error(corr_counter!=160,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
-
-}else { for(int i=152;i < 161;i++ )  zero_corr(zeros,Njack, jack_file );} 
+}else { for(int i=153;i < 154;i++ )  zero_corr(zeros,Njack, jack_file );} 
     
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    

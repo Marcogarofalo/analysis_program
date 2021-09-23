@@ -21,6 +21,21 @@
 #include "header_phi4.hpp"
 using namespace std;
 
+template<int id, int ids>
+double remove_exp_and_meff(int j, double ****in,int t ,struct fit_type fit_info){
+    
+    double E2=fit_info.ext_P[0][j];
+    double A01=fit_info.ext_P[1][j];
+    int T=file_head.l0;
+    double cs=in[j][id][t][0]-A01*A01* in[j][ids][t][0]/2.0;
+    double csp1=in[j][id][t+1][0]-A01*A01 * in[j][ids][t+1][0]/2.0;
+    
+    double mass=M_eff_in_inp(t, cs, csp1) ;
+    
+    return  mass;
+ 
+}
+
 
 template<int id>
 double single_corr(int j, double ****in,int t ,struct fit_type fit_info){
@@ -605,8 +620,8 @@ double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
 double GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
     double ct,ctp;
     int N=fit_info.N;
-    int ncorr=fit_info.corr_id.size()-6;
-    error(fit_info.corr_id.size()!=12,1,"GEVP_matrix_p1" ," careful populating the GEVP, we to do manually the sum on the directions xyz");
+    int ncorr=fit_info.corr_id.size()/3;
+//     error(fit_info.corr_id.size()!=12,1,"GEVP_matrix_p1" ," careful populating the GEVP, we to do manually the sum on the directions xyz");
     error(ncorr!=(N*N+N)/2 ,1,"GEVP_matrix_p1",
           "you need to provide (N^2+N)/2 to populate the top triangular matrix NxN:\n  N=%d    ncorr=%d\n",N,ncorr  );
     
@@ -640,15 +655,22 @@ double GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
         }
     }
     auto v= fit_info.corr_id;
-    M[0][0]+=in[j][ v[6] ][t][0]+in[j][ v[7] ][t][0];
-    Mt0[0][0]+=in[j][ v[6] ][t0][0]+in[j][ v[7] ][t0][0];
+    M[0][0]/=2.0;
+    Mt0[0][0]/=2.0;
     
-    M[4][0]+=in[j][ v[8] ][t][0]+in[j][ v[9] ][t][0];
-    Mt0[4][0]+=in[j][ v[8] ][t0][0]+in[j][ v[9] ][t0][0];
+    M[8][0]/=2.0;
+    Mt0[8][0]/=2.0;
     
-    M[8][0]+=in[j][ v[10] ][t][0]+in[j][ v[11] ][t][0];
-    Mt0[8][0]+=in[j][ v[10] ][t0][0]+in[j][ v[11] ][t0][0];
-    
+    error(!is_it_positive_lex_reim(Mt0, N) , 1, "GEVP_matrix:", "GEVP_matrix M(t0) not positive defined"  ) ;
+//     M[0][0]+=in[j][ v[6] ][t][0]+in[j][ v[7] ][t][0];
+//     Mt0[0][0]+=in[j][ v[6] ][t0][0]+in[j][ v[7] ][t0][0];
+//     
+//     M[4][0]+=in[j][ v[8] ][t][0]+in[j][ v[9] ][t][0];
+//     Mt0[4][0]+=in[j][ v[8] ][t0][0]+in[j][ v[9] ][t0][0];
+//     
+//     M[8][0]+=in[j][ v[10] ][t][0]+in[j][ v[11] ][t][0];
+//     Mt0[8][0]+=in[j][ v[10] ][t0][0]+in[j][ v[11] ][t0][0];
+//     
     generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec); 
 //     if (t==t0){
 //         for (int i=0;i<N;i++)
