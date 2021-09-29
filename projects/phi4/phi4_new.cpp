@@ -2643,6 +2643,8 @@ if (params.data.ncorr>90){
     
 }else {    for(int i=103;i < 105;i++ )  zero_corr(zeros,Njack, jack_file );}
 
+error(corr_counter!=104,-1,"correlator counter wrong","corr_counter=%d     expected=104",corr_counter);
+
 if (params.data.ncorr>122){
     fit_info.Nvar=5;
     fit_info.Npar=4;
@@ -2794,8 +2796,9 @@ if (params.data.ncorr>122){
     
     
     fit_info.restore_default();
-}else { for(int i=106;i < 113;i++ )  zero_corr(zeros,Njack, jack_file );}
+}else { for(int i=105;i < 113;i++ )  zero_corr(zeros,Njack, jack_file );}
 
+ error(corr_counter!=112,-1,"correlator counter wrong","corr_counter=%d     expected=112",corr_counter);
 
 fit_info.restore_default();
 
@@ -2869,6 +2872,7 @@ if (params.data.ncorr>90){
     
 }else {    for(int i=113;i < 116;i++ )  zero_corr(zeros,Njack, jack_file );}
 
+error(corr_counter!=115,-1,"correlator counter wrong","corr_counter=%d     expected=115",corr_counter);
 
 double *me_3phi;
 if (params.data.ncorr>122){
@@ -3016,6 +3020,7 @@ if (params.data.ncorr>122){
 
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  sum_corr_directions_shift<95,96,97>, "E3_0_p1_vev",  fit_info, jack_file );
+    error(corr_counter!=117,-1,"correlator counter wrong","corr_counter=%d     expected=117",corr_counter);
 
     int dvec_p1[3]={1,0,0};
     E3_print_extra(fit_out.P[0],mass[0], dvec_p1, params.data.L[1] ,outfile,  Njack, option[4]);
@@ -3151,6 +3156,7 @@ if (params.data.ncorr>122){
 
 
 double *me_phi1;
+error(corr_counter!=120,-1,"correlator counter wrong","corr_counter=%d     expected=120",corr_counter);
 
 if (params.data.ncorr>126){    
     
@@ -3217,9 +3223,10 @@ if (params.data.ncorr>126){
      fit_info.function=me_3pik_rhs<16>;
     // c++ 125|| r126
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  126,0, "me_3pik_t16",  fit_info, jack_file );
-    
+     error(corr_counter!=125,-1,"correlator counter wrong","corr_counter=%d     expected=125",corr_counter);
+
     fit_info.restore_default();
-}else { for(int i=122;i < 126;i++ )  zero_corr(zeros,Njack, jack_file );}
+}else { for(int i=121;i < 126;i++ )  zero_corr(zeros,Njack, jack_file );}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////   E2_01 ws
@@ -3236,6 +3243,8 @@ fit_info.ext_P[0]=mass[0];
 fit_info.ext_P[1]=mass[1];
 //c++ 126 || r 127
 fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, sum_corr_weight_shift<11,11,11> /*reim*/ , "E2_01_ws",  fit_info ,jack_file);
+
+ error(corr_counter!=126,-1,"correlator counter wrong","corr_counter=%d     expected=126",corr_counter);
 
 double *E2_01_ws=malloc_copy_jackboot( Njack,fit_out.P[0]);
 double *a_01_ws=scattering_len_luscher(  Njack,  mass[0], mass[1], fit_out.P[0] ,params.data.L[1]);
@@ -3376,7 +3385,7 @@ if (params.data.ncorr>148){
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.function=constant_fit;
-    fit_info.n_ext_P=1;
+    fit_info.n_ext_P=0;
     
     // c++ 137|| r138
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  two_to_two_con<2,0>, "E2_0_con",  fit_info, jack_file );
@@ -3387,7 +3396,7 @@ if (params.data.ncorr>148){
     fit_info.N=1;
     fit_info.Njack=Njack;
     fit_info.function=constant_fit;
-    fit_info.n_ext_P=1;
+    fit_info.n_ext_P=0;
     
     // c++ 138|| r139
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  one_to_one_sq<0>, "E1_0_sq",  fit_info, jack_file );
@@ -3399,8 +3408,10 @@ if (params.data.ncorr>160){
         double *sE1_0_p1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, 161,"sE1_0_p1", M_eff_T,jack_file);
         error(corr_counter!=139,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
 
-}else { for(int i=138;i < 139;i++ )  zero_corr(zeros,Njack, jack_file );}
-    
+}else { for(int i=139;i < 140;i++ )  zero_corr(zeros,Njack, jack_file );}
+
+error(corr_counter!=139,-1,"correlator counter wrong","corr_counter=%d     expected=139",corr_counter);
+
 if (params.data.ncorr>161){   
         //c++ 140 || r 141
         double *sE1_0_p1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, 162,"E2_0_p0", shift_and_M_eff_sinh_T,jack_file);
@@ -3408,10 +3419,10 @@ if (params.data.ncorr>161){
 
 }else { for(int i=140;i < 141;i++ )  zero_corr(zeros,Njack, jack_file );}
     
-    
+check_correlatro_counter(140);
 
 
-if (params.data.ncorr>=130){ 
+if (params.data.ncorr>=135){ 
     fit_info.N=3;
 //      fit_info.corr_id={33, 136, 130,   95, 133,    34,      35,37,  96,97, 36,38  };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
 //      add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix_p1 ,   fit_info );
@@ -3436,11 +3447,11 @@ if (params.data.ncorr>=130){
     //c++ 143 || r 144
     double *ml2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-1,"GEVP_phi0_phi03_phi1_p1_meffl2", M_eff_T,jack_file);
     free(ml0_GEVP);free(ml1_GEVP);free(ml2_GEVP);
-    error(corr_counter!=143,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
-
+    check_correlatro_counter(143);
     
 }else { for(int i=141;i < 144;i++ )  zero_corr(zeros,Njack, jack_file );}
 
+check_correlatro_counter(143);
 
 
 ///////////////////
@@ -3514,12 +3525,14 @@ if (params.data.ncorr>166+1e+6){
 }else { for(int i=148;i < 152;i++ )  zero_corr(zeros,Njack, jack_file );} 
 
 
-{
+if (params.data.ncorr>=34){
+    //c++ 152
     double *E1_1_p1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, 34,"E1_1_p1", M_eff_T,jack_file);
-    error(corr_counter!=152,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
+    
 
     free(E1_1_p1);
-}  
+} else { for(int i=152;i < 153;i++ )  zero_corr(zeros,Njack, jack_file );}  
+check_correlatro_counter(152);
  
 ///////////////////
 if (params.data.ncorr>95){   

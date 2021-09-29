@@ -14,6 +14,7 @@ double M_eff_t0_sinh_T(  int t,int t0, int T, double **in);
 double M_eff_sinh_T_ct_ctp(  int t, int T, double ct,double ctp);
 
 
+void check_correlatro_counter(int i);
 
 double constant_fit(int n, int Nvar, double *x,int Npar,double  *P);
 

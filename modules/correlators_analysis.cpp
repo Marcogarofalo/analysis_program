@@ -27,6 +27,13 @@
 #include <iterator>
 #include <random>
 
+void check_correlatro_counter(int i){
+    if( corr_counter!=i){
+        printf("correlator counter wrong\n");
+        printf("corr_counter=%d     expected=%d\n",corr_counter,i);
+        exit(-1);
+    }
+}
 
 double constant_fit(int n, int Nvar, double *x,int Npar,double  *P){
     
