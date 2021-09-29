@@ -50,9 +50,10 @@ void print_fit_band_eta(char **argv,vector<data_BSM> gjack ,struct fit_type fit_
     double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
     double *tmpy=(double*) malloc(sizeof(double*)* Njack);
     
+    for (int e :myen){
     for (int n=0;n< N; n++){
         
-        mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_n%d_eta.txt",argv[3], label,n);
+        mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_n%d_en%d_eta.txt",argv[3], label,n,e);
         f=open_file(namefile,"w+");
         double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
         double *tmpy=(double*) malloc(sizeof(double*)* Njack);
@@ -62,13 +63,13 @@ void print_fit_band_eta(char **argv,vector<data_BSM> gjack ,struct fit_type fit_
             for (int j=0;j<Njack;j++){
                 double finalL=i;
                 
-                tmpx[0]=(double) params[myen[0]].L;
-                tmpx[1]=(double) params[myen[0]].T;
-                tmpx[2]=(double) params[myen[0]].rho;
-                tmpx[3]=-1.5+ i/100.0;
-                tmpx[4]=(double) params[myen[0]].csw;
-                tmpx[5]=(double) params[myen[0]].mu03;
-                tmpx[6]=(double) params[myen[0]].m0;
+                tmpx[0]=(double) params[e].L;
+                tmpx[1]=(double) params[e].T;
+                tmpx[2]=(double) params[e].rho;
+                tmpx[3]=-1.55+ i/100.0;
+                tmpx[4]=(double) params[e].csw;
+                tmpx[5]=(double) params[e].mu03;
+                tmpx[6]=(double) params[e].m0;
                 //m0   put for each n the mass of the last ensemble
                 
                     
@@ -84,7 +85,7 @@ void print_fit_band_eta(char **argv,vector<data_BSM> gjack ,struct fit_type fit_
         fclose(f); 
             
     }
-    
+    }
     free_2(Njack,tif);
     
 }
