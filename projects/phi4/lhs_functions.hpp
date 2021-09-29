@@ -620,7 +620,7 @@ double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
 double GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
     double ct,ctp;
     int N=fit_info.N;
-    int ncorr=fit_info.corr_id.size();
+    int ncorr=fit_info.corr_id.size()/3;
 //     error(fit_info.corr_id.size()!=12,1,"GEVP_matrix_p1" ," careful populating the GEVP, we to do manually the sum on the directions xyz");
     error(ncorr!=(N*N+N)/2 ,1,"GEVP_matrix_p1",
           "you need to provide (N^2+N)/2 to populate the top triangular matrix NxN:\n  N=%d    ncorr=%d\n",N,ncorr  );
@@ -641,17 +641,19 @@ double GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
     
      //t
     int count=0;
-    for (int i=0;i<N;i++){
-        for (int k=i;k<N;k++){
-            int corr_ik= fit_info.corr_id[count];
-            int ik=i+k*N;
-            int ki=k+i*N;
-            //printf("%d  %g\n",ik,in[j][corr_ik][t][0]);
-            M[ik][0]  = in[j][corr_ik][t][0];
-            Mt0[ik][0]= in[j][corr_ik][t0][0];
-            M[ki][0]=M[ik][0];
-            Mt0[ki][0]=Mt0[ik][0];
-            count++;
+    for (int dir=0; dir<3;dir++){
+        for (int i=0;i<N;i++){
+            for (int k=i;k<N;k++){
+                int corr_ik= fit_info.corr_id[count];
+                int ik=i+k*N;
+                int ki=k+i*N;
+                //printf("%d  %g\n",ik,in[j][corr_ik][t][0]);
+                M[ik][0]  = in[j][corr_ik][t][0];
+                Mt0[ik][0]= in[j][corr_ik][t0][0];
+                M[ki][0]=M[ik][0];
+                Mt0[ki][0]=Mt0[ik][0];
+                count++;
+            }
         }
     }
     auto v= fit_info.corr_id;

@@ -2992,12 +2992,23 @@ if (params.data.ncorr>122){
         fit_info.lambda=1e-6;
     }
     
-    if (strcmp(argv[4],"G2t_T64_L36_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.025000_rep0_bin100_merged_bin1000")==0  || strcmp(argv[4],"G2t_T64_L40_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.025000_rep0_bin100_merged_bin1000")==0){
+    if (strcmp(argv[4],"G2t_T64_L36_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.025000_rep0_bin100_merged_bin1000")==0  ||                   strcmp(argv[4],"G2t_T64_L40_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.025000_rep0_bin100_merged_bin1000")==0
+    ){
         
         fit_info.acc=1e-6;
         fit_info.h=1e-5;
         fit_info.devorder=-2;
         fit_info.chi2_gap_jackboot=1;
+        fit_info.repeat_start=15;
+        fit_info.guess_per_jack=5;
+        fit_info.precision_sum=2;
+    }
+    if (    strcmp(argv[4],"G2t_T32_L30_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")==0
+    ){
+        fit_info.acc=1e-4;
+        fit_info.h=1e-5;
+        fit_info.devorder=-2;
+        fit_info.chi2_gap_jackboot=0.5;
         fit_info.repeat_start=15;
         fit_info.guess_per_jack=5;
         fit_info.precision_sum=2;
@@ -3281,7 +3292,7 @@ if (params.data.ncorr>148){
 
     //c++ 127 || r 128
     double *l0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-3,"GEVP_phi0_phi03_phi1_l0", identity,jack_file);
-
+    
     //c++ 128 || r 129
     double *l1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-2,"GEVP_phi0_phi03_phi1_l1", identity,jack_file);
     
@@ -3292,12 +3303,13 @@ if (params.data.ncorr>148){
     
     //c++ 130 || r 131
     double *ml0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-3,"GEVP_phi0_phi03_phi1_meffl0", M_eff_T,jack_file);
-    
+   
     //c++ 131 || r 132
     double *ml1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-2,"GEVP_phi0_phi03_phi1_meffl1", M_eff_T,jack_file);
     
     //c++ 132 || r 133
-    double *ml2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-1,"GEVP_phi0_phi03_phi1_meffl2", M_eff_T,jack_file);
+    double *ml2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-1,"GEVP_phi0_phi03_phi1_meffl2", M_eff_T,jack_file,fit_info);
+
     free(ml0_GEVP);free(ml1_GEVP);free(ml2_GEVP);
 
     
@@ -3380,16 +3392,21 @@ if (params.data.ncorr>148){
     // c++ 138|| r139
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  one_to_one_sq<0>, "E1_0_sq",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
-    
-    if (params.data.ncorr>160){   
+    error(corr_counter!=138,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
+
+if (params.data.ncorr>160){   
         //c++ 139 || r 140
         double *sE1_0_p1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, 161,"sE1_0_p1", M_eff_T,jack_file);
-    }else { for(int i=138;i < 139;i++ )  zero_corr(zeros,Njack, jack_file );}
+        error(corr_counter!=139,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
+
+}else { for(int i=138;i < 139;i++ )  zero_corr(zeros,Njack, jack_file );}
     
-    if (params.data.ncorr>161){   
+if (params.data.ncorr>161){   
         //c++ 140 || r 141
         double *sE1_0_p1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, 162,"E2_0_p0", shift_and_M_eff_sinh_T,jack_file);
-    }else { for(int i=139;i < 140;i++ )  zero_corr(zeros,Njack, jack_file );}
+        error(corr_counter!=140,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
+
+}else { for(int i=140;i < 141;i++ )  zero_corr(zeros,Njack, jack_file );}
     
     
 
@@ -3399,7 +3416,10 @@ if (params.data.ncorr>=130){
 //      fit_info.corr_id={33, 136, 130,   95, 133,    34,      35,37,  96,97, 36,38  };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
 //      add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix_p1 ,   fit_info );
     
-    fit_info.corr_id={33, 136, 130,   95, 133,    34   };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
+    //fit_info.corr_id={33, 136, 130,   95, 133,    34   };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
+    fit_info.corr_id={33, 136, 130,   95, 133,    34,
+                      35, 137, 131,   96, 134,    36,
+                      37, 138, 132,   97, 135,    38    };
     printf("GEVP_phi0_phi03_phi1_p1\n");
 
     add_correlators(option , params.data.ncorr , conf_jack ,GEVP_matrix_p1 ,   fit_info );
@@ -3416,14 +3436,15 @@ if (params.data.ncorr>=130){
     //c++ 143 || r 144
     double *ml2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-1,"GEVP_phi0_phi03_phi1_p1_meffl2", M_eff_T,jack_file);
     free(ml0_GEVP);free(ml1_GEVP);free(ml2_GEVP);
+    error(corr_counter!=143,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
+
     
-    
-}else { for(int i=127;i < 140;i++ )  zero_corr(zeros,Njack, jack_file );}
+}else { for(int i=141;i < 144;i++ )  zero_corr(zeros,Njack, jack_file );}
 
 
 
 ///////////////////
-if (params.data.ncorr>163){    
+if (params.data.ncorr>165){    
     
 
     fit_info.N=4;
@@ -3493,12 +3514,12 @@ if (params.data.ncorr>166+1e+6){
 }else { for(int i=148;i < 152;i++ )  zero_corr(zeros,Njack, jack_file );} 
 
 
- {
+{
     double *E1_1_p1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, 34,"E1_1_p1", M_eff_T,jack_file);
     error(corr_counter!=152,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
 
     free(E1_1_p1);
- }  
+}  
  
 ///////////////////
 if (params.data.ncorr>95){   
