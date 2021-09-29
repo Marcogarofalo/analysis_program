@@ -3213,8 +3213,8 @@ if (params.data.ncorr>126){
     fit_info.function=me_3pik_rhs<10>;
      
     // c++ 123|| r124
-     
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  124,0 , "me_3pik_t10",  fit_info, jack_file );
+    check_correlatro_counter(123);
     
     fit_info.function=me_3pik_rhs<12>;
     // c++ 124|| r125
@@ -3553,6 +3553,8 @@ if (params.data.ncorr>95){
 
 }else { for(int i=153;i < 154;i++ )  zero_corr(zeros,Njack, jack_file );} 
     
+    
+check_correlatro_counter(153);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 // free(E1_0_p1);
