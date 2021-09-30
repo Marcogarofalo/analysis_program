@@ -40,6 +40,25 @@ double rhs_critical_eta_mu_m0_shifted(int n, int Nvar, double *x,int Npar,double
     
 }
 
+
+double rhs_critical_eta_mu_m0_simple(int n, int Nvar, double *x,int Npar,double  *P){
+    double a0=P[0], r0=P[1], P2=P[2];
+    double eta=x[3], mu=x[5], m0=x[6];
+    double r;
+    double eta_cr=P[0];
+    double m0_cr=P[1];
+    double eta_sub=eta-eta_cr;
+    double m0_sub=m0-m0_cr;
+    if (n==0) //r_AWI
+        r= P[2]*eta_sub+P[3]*m0_sub;
+    else if (n==1) //m_pcac
+        r= P[4]*m0_sub+P[5]*mu;
+    else{ r=0; exit(1);}
+        
+    return r;
+    
+}
+
 double lhs_critical_eta_mu_m0(int n, int e , int j , vector<header_BSM> params,vector<data_BSM> gjack, struct fit_type fit_info ){
     double r;
     if(n==0)

@@ -137,6 +137,10 @@ int main(int argc, char **argv){
      mysprintf(namefile,NAMESIZE,"%s/b5.85/L20T40/eta_m1.2944_M02_-0.040000_mu03_0.0120_csw_1.0_rho1.96/jackknife/%s_T40_L20_rho1.960000_eta-1.294400_csw1.000000_mu030.012000_m0-0.040000",argv[2],argv[1]);
      emplace_back_par_data(namefile,paramsj,dataj);
      
+     mysprintf(namefile,NAMESIZE,"%s/b5.85/L20T40/eta_m1.4063_M02_-0.040000_mu03_0.0224_csw_1.0_rho1.96/jackknife/%s_T40_L20_rho1.960000_eta-1.406300_csw1.000000_mu030.022400_m0-0.040000",argv[2],argv[1]);
+     emplace_back_par_data(namefile,paramsj,dataj);
+     
+     
      
      printf("%g   %g\n",dataj[0].jack[3][dataj[0].Njack-3] , error_jackboot(argv[1], dataj[0].Njack, dataj[0].jack[3]));
     /* for (int j=0; j<dataj[0].Njack; j++)
@@ -192,6 +196,24 @@ int main(int argc, char **argv){
      printf("eta_cr=%g  +-  %g\n", fit_critical.P[0][Njack-1], error_jackboot(argv[1] ,Njack, fit_critical.P[0]) );
      printf("m0_cr =%g  +-  %g\n", fit_critical.P[1][Njack-1], error_jackboot(argv[1] ,Njack, fit_critical.P[1]) );
 
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // start fitting
+     //////////////////////////////////////////////////////////////////////////////////////////////////
+     
+     fit_info.Nvar=7;
+     fit_info.Npar=6;
+     fit_info.N=2;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     fit_info.function=rhs_critical_eta_mu_m0_simple;
+     
+     
+     mysprintf(namefit,NAMESIZE,"eta_m0_critical_b585_simple" );
+     fit_critical=fit_data(argv,  paramsj ,gjack, lhs_critical_eta_mu_m0 ,fit_info, namefit, myen);
+     print_fit_band_eta( argv, gjack , fit_info ,  namefit,   fit_critical ,    paramsj,  myen);
+     
+     printf("eta_cr=%g  +-  %g\n", fit_critical.P[0][Njack-1], error_jackboot(argv[1] ,Njack, fit_critical.P[0]) );
+     printf("m0_cr =%g  +-  %g\n", fit_critical.P[1][Njack-1], error_jackboot(argv[1] ,Njack, fit_critical.P[1]) );
      
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      // E20
