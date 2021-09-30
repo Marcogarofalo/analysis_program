@@ -3551,10 +3551,10 @@ if (params.data.ncorr>95){
     
 
 
-}else { for(int i=153;i < 154;i++ )  zero_corr(zeros,Njack, jack_file );} 
+}else { for(int i=153;i < 155;i++ )  zero_corr(zeros,Njack, jack_file );} 
     
     
-check_correlatro_counter(153);
+check_correlatro_counter(154);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 // free(E1_0_p1);
