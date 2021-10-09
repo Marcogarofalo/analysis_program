@@ -1309,7 +1309,6 @@ int main(int argc, char **argv){
     
     ///////////////////////////////////////////////////////////////////////////////////////
     
-    
     //c++ 5 || r 6
     file_head.k[2]=mu2;    file_head.k[3]=mu2;
     E2[1]=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,3,"E2_1", shift_and_M_eff_sinh_T, jack_file);
@@ -3117,14 +3116,12 @@ if (params.data.ncorr>122){
         fit_info.function=C3_A1_3par;
         fit_info.guess={0.653481415329485,        -3.0613e-05,     2.83579e-05  };
         
-        printf("we are here\n");
     }
     else if (strcmp(argv[4],"G2t_T32_L24_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")==0  ){
         fit_info.guess={ 0.733441,      8.83205e-05,     0.000101335,    1.75938e-08,     0.000152796   };
-//         fit_info.Npar=4;
-//         fit_info.function=C3_A1_4par;
 
     }
+    
     fit_info.h=1e-5;
     fit_info.devorder=4;
     fit_info.acc=1e-10;
@@ -3133,6 +3130,35 @@ if (params.data.ncorr>122){
     fit_info.guess_per_jack=4;
     fit_info.chi2_gap_jackboot=1;
     fit_info.precision_sum=2;
+    
+    if (strcmp(argv[4],"G2t_T32_L38_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin100_merged_bin1000")==0  ){
+        fit_info.guess={ 0.533441,      8.83205e-05,     0.000101335,    1.75938e-08,     0.000152796   };
+        fit_info.acc=1e-7;
+        fit_info.devorder=-2;
+        fit_info.precision_sum=2;
+                
+    }
+    if (strcmp(argv[4],"G2t_T64_L24_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.025000_rep0_bin100_merged_bin1000")==0  ){
+        fit_info.guess={ 0.533441,      8.83205e-05,     0.000101335,    1.75938e-08,     0.000152796   };
+        fit_info.acc=1e-7;
+        fit_info.devorder=-2;
+        fit_info.precision_sum=2;
+                
+    }
+    if (strcmp(argv[4],"G2t_T64_L34_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.025000_rep0_bin100_merged_bin1000")==0  ){
+        fit_info.guess={ 0.533441,      8.83205e-05,     0.000101335,    1.75938e-08,     0.000152796   };
+        fit_info.acc=1e-7;
+        fit_info.devorder=-2;
+        fit_info.precision_sum=2;
+                
+    }
+    if (strcmp(argv[4],"G2t_T64_L38_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.025000_rep0_bin100_merged_bin1000")==0  ){
+        fit_info.guess={ 0.533441,      8.83205e-05,     0.000101335,    1.75938e-08,     0.000152796   };
+        fit_info.acc=1e-7;
+        fit_info.devorder=-2;
+        fit_info.precision_sum=2;
+                
+    }
     
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  116,0/*reim*/ , "E3_0_A1_vev",  fit_info, jack_file);
     
@@ -3433,7 +3459,7 @@ if (params.data.ncorr>=135){
                       37, 138, 132,   97, 135,    38    };
     printf("GEVP_phi0_phi03_phi1_p1\n");
 
-    add_correlators(option , params.data.ncorr , conf_jack ,GEVP_matrix_p1 ,   fit_info );
+    add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix_p1 ,   fit_info );
     printf(" ncorr after GEVP %d\n",ncorr_new);
     fit_info.restore_default();
 
@@ -3455,7 +3481,8 @@ check_correlatro_counter(143);
 
 
 ///////////////////
-if (params.data.ncorr>165){    
+printf("%g\n",params.data.gC);
+if (params.data.ncorr>165 && fabs(params.data.gC-0.025)>1e-4 ){    
     
 
     fit_info.N=4;
@@ -3556,6 +3583,53 @@ if (params.data.ncorr>95){
     
 check_correlatro_counter(154);
 
+
+
+
+
+if (params.data.ncorr>=144 && params.data.gC!=0.025 ){ 
+    fit_info.N=3;
+//      fit_info.corr_id={33, 136, 130,   95, 133,    34,      35,37,  96,97, 36,38  };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
+//      add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix_p1 ,   fit_info );
+    
+//     fit_info.corr_id={75, 145, 139,   104, 142,    76 };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
+     fit_info.corr_id={75, 145, 139,   104, 142,    76,
+                       77, 146, 140,   105, 143,    78,
+                       79, 147, 141,   106, 144,    80    };
+
+    printf("GEVP_phi0_phi03_phi1_p11\n");
+
+    add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix_p11 ,   fit_info );
+//     add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix ,   fit_info );
+    printf(" ncorr after GEVP %d\n",ncorr_new);
+    fit_info.restore_default();
+
+        
+    //c++ 155 || r 142
+    double *ml0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-3,"GEVP_phi0_phi03_phi1_p11_meffl0", M_eff_T,jack_file);
+    check_correlatro_counter(155);
+    
+    //c++ 156 || r 143
+    double *ml1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-2,"GEVP_phi0_phi03_phi1_p11_meffl1", M_eff_T,jack_file);
+    check_correlatro_counter(156);
+    
+    //c++ 157 || r 144
+    double *ml2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-1,"GEVP_phi0_phi03_phi1_p11_meffl2", M_eff_T,jack_file);
+    free(ml0_GEVP);free(ml1_GEVP);free(ml2_GEVP);
+    check_correlatro_counter(157);
+    
+}else { for(int i=155;i < 158;i++ )  zero_corr(zeros,Njack, jack_file );}
+
+check_correlatro_counter(157);
+
+if (params.data.ncorr>=76){ 
+
+    double *E1_1_pxy=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,76,"E1_1_pxy", M_eff_T,jack_file);
+    free(E1_1_pxy);
+    check_correlatro_counter(158);
+
+ 
+}else { for(int i=158;i < 159;i++ )  zero_corr(zeros,Njack, jack_file );}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 // free(E1_0_p1);
 // free(E1_0_p11);

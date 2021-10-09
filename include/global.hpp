@@ -215,7 +215,7 @@ struct  fit_type
   std::vector<double>  Prange={};
   std::vector<double>  guess={};
   int t0_GEVP=3;
-  int devorder=4;
+  int devorder=4;  // 2 , 4 , -2 adaptive h=h*parameter
   int repeat_start=1;
   
   bool plateaux_scan=false;
