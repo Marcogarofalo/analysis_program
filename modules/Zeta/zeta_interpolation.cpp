@@ -547,8 +547,8 @@ zeta_interpolation::~zeta_interpolation(){
 } ;*/
 
     
-void zeta_interpolation::write(){
-    FILE *f=open_file("zeta_interpolation.dat","w+");
+void zeta_interpolation::write(std::string filename){
+    FILE *f=open_file(filename.c_str(),"w+");
     double a=timestamp();
     size_t ir;
     double z[2];
@@ -585,15 +585,16 @@ void zeta_interpolation::write(){
         }
         
     }
+    fclose(f);
     double b=timestamp();
     printf("time to write zeta_interpolation=%g s\n",b-a);
 }
     
 
     
-void zeta_interpolation::read(){
+void zeta_interpolation::read(std::string filename){
     error(allocated==0,1,"zeta_interpolation::read", "zeta grid already allocated");
-    FILE *f=open_file("zeta_interpolation.dat","r+");
+    FILE *f=open_file(filename.c_str(),"r+");
     double a=timestamp();
     size_t ir;
     ir=fread(&etot,sizeof(int),1,f );
@@ -636,6 +637,7 @@ void zeta_interpolation::read(){
             }
         }
     }
+    fclose(f);
     double b=timestamp();
     printf("time to read zeta_interpolation=%g s\n",b-a);
     allocated=0;

@@ -75,7 +75,33 @@ void init_dvec(int n,int *dvec,int *dvec1, int *dvec2, int *dmax1, int *dmax2 ){
         dmax2[0]=0; dmax2[1]=0; dmax2[2]=0;
     }
     else {
-        exit(1);
+        printf("init_dvec n=%d not implemented\n",n); exit(1);
+    }
+}
+
+
+void init_dvec_QC3_pole(int n,int *dvec ){
+    if(n==0){//E2_0
+        dvec[0]=0; dvec[1]=0; dvec[2]=0;
+    }
+    else if(n==1){//E2_0_p1
+        dvec[0]=0; dvec[1]=0; dvec[2]=0;
+    }
+    else if(n==2){//E2_0_p11
+        dvec[0]=1; dvec[1]=0; dvec[2]=0;
+    }
+    else if(n==3){//E2_0_p1
+        dvec[0]=1; dvec[1]=0; dvec[2]=0;
+    }
+    else if(n==4){//E2_0_p1
+        dvec[0]=1; dvec[1]=1; dvec[2]=0;
+    }
+    else if(n==5){//E2_0_p1
+        dvec[0]=1; dvec[1]=1; dvec[2]=0;
+    }
+    
+    else {
+        printf("init_dvec n=%d not implemented\n",n); exit(1);
     }
 }
 
@@ -101,7 +127,7 @@ double get_E2_n(int n, int e , int j , vector<data_phi> gjack  ){
         E2=gjack[e].jack[80][j];
         //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
     }
-    else{ E2=0 ;  exit(1);}
+    else{ E2=0 ;printf("%s n=%d not implemented\n",__func__,n);  exit(1);}
     return E2;
     
 }
@@ -344,7 +370,7 @@ double compute_k(int n, int e , int j , vector<cluster::IO_params> params,vector
         E2_CM=energy_CM(E2_0_A1,dvec,L);
     }
     else {
-        exit(1);
+        printf("%s n=%d not implemented\n",__func__,n); 
     }
     return sqrt(E2_CM*E2_CM/4. -mass*mass);
     
@@ -492,7 +518,6 @@ double rhs_deltaE2_m_quant_cond(int n, int Nvar, double *x,int Npar,double  *P){
     double xmax=kf1-1e-6;//- (kf1-kf)/1e+3;
 //     printf("L=%g  n=%d      P0=%g  P1=%g  kmin=%g  kmax=%g   d=(%d,%d,%d)=(%d,%d,%d)+(%d,%d,%d)\n",L,n,P[0],P[1],xmin,xmax,
 //            dvec[0],dvec[1],dvec[2], dvec1[0],dvec1[1],dvec1[2], dvec2[0],dvec2[1],dvec2[2]    );
-    
     double k=rtsafe( to_invert_k_from_phase_shift , n,  3, xx, Npar, P, 2/*ivar*/,0. /*input*/,    xmin, xmax,  1e-5, 100, 1e-4);
     double E2=sqrt( (k*k+mass*mass)*4.+ (2*pi_greco/L)*(2*pi_greco/L)*( dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]   )  );
     
@@ -510,6 +535,39 @@ double rhs_deltaE2_m_quant_cond(int n, int Nvar, double *x,int Npar,double  *P){
 
 
 #ifdef PYTHON
+double rhs_E3_m_QC3_pole(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Pkcot[2];
+        Pkcot[0]=x[Nvar-2];
+        Pkcot[1]=x[Nvar-1];
+         
+    double Pkiso[2];
+        Pkiso[0]=P[0];
+        Pkiso[1]=P[1];
+
+    int Nkcot=2;
+    int Nkiso=Npar;
+    int dvec[3];//,dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec_QC3_pole(n,dvec);
+    //init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    double nnP[3];
+    nnP[0]=(double) dvec[0]; nnP[1]=(double) dvec[1]; nnP[2]=(double) dvec[2];
+    double mass=x[1];
+    double L=x[0];
+    int steps=4;
+    
+    
+    L=L*mass;
+
+    double Estart=x[11]-x[12];
+    double Eend=x[11]+x[12];
+    
+//    printf("E=[%g , %g]   E1f=%g   E2f=%g  m=%g\n",Estart,Eend,Estart,Eend,mass);
+    double r=python_detQC_call(Estart, Eend, steps,  L,  nnP, Nkcot,Pkcot,Nkiso, Pkiso);
+//     printf("res=%g\n",r);
+    return r;
+}
+
 double rhs_E3_m_QC3(int n, int Nvar, double *x,int Npar,double  *P){
     
     double Pkcot[2];
@@ -603,6 +661,23 @@ double rhs_E3_m_QC3_latt(int n, int Nvar, double *x,int Npar,double  *P){
 }
 #endif
 
+
+template<int order>
+double rhs_poly_order_E3_m(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double L=x[0];
+    int on=order*n;
+    double r=0;
+    double oL=1;
+    for (int o=0 ; o<order;o++) {
+        r+=P[on+o]*oL;
+        oL*=L;
+    }
+
+    //double r=P[on]+P[on+1]*L+P[3*n+2]*L*L;
+    
+    return r;
+}
 
 double rhs_poly_E3_m(int n, int Nvar, double *x,int Npar,double  *P){
     
@@ -830,6 +905,39 @@ double lhs_q(int n, int e , int j , vector<cluster::IO_params> params,vector<dat
 //////////////////////////////////////////////////////////////////////////////////////////
 
 
+double lhs_E3orE1_m(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    double E3;
+    double mass=gjack[e].jack[1][j];
+   
+    
+    if(n==0){//GEVP 1
+        E3=gjack[e].jack[131][j];
+        //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
+    }
+    else if(n==1){//GEVP 2
+        E3=gjack[e].jack[132][j];
+        //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
+    }
+    else if(n==2){//GEVP 1 p1
+        E3=gjack[e].jack[142][j];
+        //         dvec[0]=1; dvec[1]=0; dvec[2]=0;
+    }
+    else if(n==3){//GEVP 1 p1
+        E3=gjack[e].jack[143][j];
+        //         dvec[0]=1; dvec[1]=0; dvec[2]=0;
+    }
+    else if(n==4){//GEVP 1 p11
+        E3=gjack[e].jack[156][j];
+        //         dvec[0]=1; dvec[1]=1; dvec[2]=0;
+    }
+    else if(n==5){//GEVP 1 p11
+        E3=gjack[e].jack[157][j];
+        //         dvec[0]=1; dvec[1]=1; dvec[2]=0;
+    }
+    else{ E3=0 ; printf("lhs_E3orE1_m n=%d not implemented\n",n); exit(1);}
+  return E3/mass;
+}
+
 double lhs_E3_m(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
     double E3;
     double mass=gjack[e].jack[1][j];
@@ -856,7 +964,7 @@ double lhs_E3_m(int n, int e , int j , vector<cluster::IO_params> params,vector<
         E3=gjack[e].jack[120][j];
         //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
     }
-    else{ E3=0 ; dvec[0]=0; dvec[1]=0; dvec[2]=0; exit(1);}
+    else{ E3=0 ; printf("%s n=%d not implemented\n",__func__,n); }
 
 //     double hatp2=4.*sin(dvec1[0]*pi_greco/params[e].data.L[1]) *sin(dvec1[0]*pi_greco/params[e].data.L[1]) ;
 //     hatp2+=4.*sin(dvec1[1]*pi_greco/params[e].data.L[2]) *sin(dvec1[1]*pi_greco/params[e].data.L[2]) ;
@@ -1447,9 +1555,20 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
                 x[j][count][9]=err;
                 
             }
-            free(E3_m);
             
-            printf("n=%d  e=%d E3=%g   %g\n",n,e, x[Njack-1][count][8],x[Njack-1][count][9] );
+            for (int j=0;j<Njack;j++)
+                E3_m[j]=lhs_E3orE1_m(n,myen[e],j,params,gjack,fit_info);//E3( \vec{n} )/mass
+        
+            
+            err=error_jackboot(argv[1], Njack,E3_m );
+            for (int j=0;j<Njack;j++){
+                x[j][count][11]=E3_m[Njack-1];
+                x[j][count][12]=err;
+                
+            }
+            free(E3_m);
+
+        
             count++;
             
         }
@@ -1500,7 +1619,7 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
             || strcmp(label,"QC3_N1_latt_1par")==0 || strcmp(label,"QC3_N2_latt_1par")==0 || strcmp(label,"QC3_N3_latt_1par")==0
             || strcmp(label,"QC3_N4_latt_1par")==0 || strcmp(label,"QC3_N5_latt_1par")==0  
             || strcmp(label,"QC3_N1_latt_2par")==0 || strcmp(label,"QC3_N2_latt_2par")==0 || strcmp(label,"QC3_N3_latt_2par")==0
-            || strcmp(label,"QC3_N4_latt_2par")==0 || strcmp(label,"QC3_N5_latt_2par")==0  
+            || strcmp(label,"QC3_N4_latt_2par")==0 || strcmp(label,"QC3_N5_latt_2par")==0 
         ){
             double a=timestamp();
             fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function, guess, fit_info);
@@ -1515,6 +1634,7 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
         
         
         else {
+        double a=timestamp();
             //fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
         fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function, guess, fit_info);
         //tmp=non_linear_fit_Nf_sigmax( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess );
@@ -1524,6 +1644,15 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
        
         
         fit_out.chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+        
+        if (fit_info.verbosity>0){
+            printf("jack =%d  chi2/dof=%g   chi2=%g   time=%g   \n",j,fit_out.chi2[j],fit_out.chi2[j]*(en_tot-Npar) , timestamp( )-a); 
+            if (fit_info.verbosity>1){
+                for (int i =0;i< Npar;i++)
+                    printf("P[%d]=%g \t",i,fit[j][i]);
+                printf("\n");
+           }
+        }
         
         // we do not need the covariance of the fit, it will be computed with jackboot
         //double **C=covariance_non_linear_fit_Nf(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function );            

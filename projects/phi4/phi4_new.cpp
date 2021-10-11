@@ -3341,6 +3341,7 @@ if (params.data.ncorr>148){
    
     //c++ 131 || r 132
     double *ml1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-2,"GEVP_phi0_phi03_phi1_meffl1", M_eff_T,jack_file);
+    check_correlatro_counter(131);
     
     //c++ 132 || r 133
     double *ml2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-1,"GEVP_phi0_phi03_phi1_meffl2", M_eff_T,jack_file,fit_info);
@@ -3372,7 +3373,8 @@ if (params.data.ncorr>148){
     
     fit_out=fit_function_to_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  ncorr_new-2 ,0/*reim*/ , "fun_l1_GEVP",  fit_info, jack_file);
     fit_info.restore_default();
-    
+    check_correlatro_counter(133);
+
     if (params.data.ncorr>151){   
         //c++ 134 || r 135
         double *sE1_0=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, 151,"sE1_0", M_eff_T,jack_file);

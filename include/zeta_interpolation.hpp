@@ -31,8 +31,8 @@ public:
     void Init(char *resampling, std::vector<int>  myen,  std::vector<cluster::IO_params> paramsj, std::vector<data_phi> gjack );
     void Init_Lmq( std::vector<int>  Ls,  std::vector<double> masses, std::vector<double> err_mass );
     double compute(double inL, int n, double mass,  double k );
-    void write();
-    void read();
+    void write(std::string filename="zeta_interpolation.dat");
+    void read(std::string filename="zeta_interpolation.dat");
     
     double mass(int i,int j){return m[i][j];};
     int Ls(int i){return L[i];};
