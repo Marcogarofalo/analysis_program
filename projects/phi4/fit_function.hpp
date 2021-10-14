@@ -1354,7 +1354,8 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
             fprintf(f," %g   %g   %g   %d\t ",x[Njack-1][e+count][0], y[Njack-1][e+count][0], y[Njack-1][e+count][1] , params[myen[e]].data.L[0]);
             fprintf(f," %g   \t ",x[Njack-1][e+count][6]);
             fprintf(f," %d   \t ",n);
-            fprintf(f," %g   \n ",x[Njack-1][e+count][10]);
+            fprintf(f," %g   \t ",x[Njack-1][e+count][10]);
+            fprintf(f," %g   \n ",x[Njack-1][e+count][1]);
         }
         count+=en[n];
         fprintf(f,"\n\n");

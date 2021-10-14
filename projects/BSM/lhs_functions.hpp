@@ -31,6 +31,7 @@ double r_AWI(int j, double ****in,int t ,struct fit_type fit_info){
 }
 
 
+
 double m_PCAC(int j, double ****in,int t ,struct fit_type fit_info){
     int T=file_head.l0;
     double num= (in[j][0][(t+1)%T][0]-in[j][0][t][0]);

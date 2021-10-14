@@ -208,6 +208,7 @@ int main(int argc, char **argv){
             data[iconf][8][t][1]=0;
             data[iconf][9][t][0]= data[iconf][5][t][0]*data[iconf][7][tptau][0];
             data[iconf][9][t][1]=0;
+            
         }
         for(int i =8 ; i<var_to_read ; i++){//var_to_read
             for (int t =0; t< header.T;t++)
@@ -333,5 +334,8 @@ int main(int argc, char **argv){
     
     double *mass1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,namefile_plateaux,outfile,8,"m_num", M_eff_T,jack_file);
     double *mass2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,namefile_plateaux,outfile,9,"m_den", M_eff_T,jack_file);
+    
+    
+    free_fit_result(fit_info,fit_out);
     
 }

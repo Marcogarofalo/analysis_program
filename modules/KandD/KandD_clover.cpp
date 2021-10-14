@@ -893,6 +893,138 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
      
 } 
 
+void interpolate_at_fixed_a(fit_type fit_info, int nk, int Npar, int Nvar, int Njack, double **MK, const char *resampling, double *mref, struct result_jack *r1, store_fit_clover mud, double *w0){
+    
+    ////////////////////////////////////////////////last interpolation 
+    int N=fit_info.N;
+    
+    int *en=(int*) malloc(sizeof(int)*N);
+    
+    
+    int en_tot=0;
+    for (int n=0;n<N;n++){
+        en[n]=nk;
+        en_tot+=en[n];
+    }
+    
+    
+    double *guess=(double*) malloc(sizeof(double*)*Npar);
+    for(int i=0;i<Npar;i++)
+        guess[i]=1.;
+   
+    //x=(double**) malloc(sizeof(double*)*(en_tot));
+    double *rm=(double*) malloc(sizeof(double)*Njack);
+    
+    double **fit=(double**) malloc(sizeof(double*)*(en_tot));
+    
+    double ***y=(double***) malloc(sizeof(double**)*Njack);
+    for (int j=0;j<Njack;j++){
+        y[j]=(double**) malloc(sizeof(double*)*(en_tot));
+        for (int n=0;n<N;n++){
+            for (int ms=0;ms<nk;ms++){
+                y[j][ms+n*nk]=(double*) malloc(sizeof(double)*2);
+                
+            }
+        }
+    }
+    
+    y=double_malloc_3(Njack,en_tot,2);
+    
+    double ***x=double_malloc_3(Njack,en_tot,Nvar);
+    double **sigmax=double_malloc_2(en_tot,Nvar);
+    
+    //the last one is the chi2
+    double **out=double_malloc_2(N+1,Njack);
+    
+    for (int n=0;n<N;n++){
+        for (int ms=0;ms<nk;ms++){
+            
+            if (n==0){
+                for (int j=0;j<Njack;j++){
+                    rm[j]= MK[ms][j];
+                    //  rm[j]*=rm[j];
+                }
+                fit[ms]=mean_and_error(resampling,Njack, rm);
+            }
+            if (n==1){
+                for (int j=0;j<Njack;j++){
+                    rm[j]= MK[ms+1*nk][j];
+                }
+                fit[ms+n*nk]=mean_and_error(resampling,Njack, rm);
+            }
+            
+            for (int j=0;j<Njack;j++){
+                y[j][ms+n*nk][0]=rm[j];
+                y[j][ms+n*nk][1]=fit[ms+n*nk][1];
+            }
+            
+            //x[ms+n*nk]=(double*) malloc(sizeof(double)*Nvar);
+            //x[ms+n*nk][0]=mref[ms];//ml*w0
+            
+        }
+        
+    } 
+    for (int j=0;j<Njack;j++){
+        for (int n=0;n<N;n++){
+            for (int ms=0;ms<nk;ms++){
+                x[j][ms+n*nk][0]=mref[ms];//ml*w0
+            }
+        }
+    }
+    
+    for (int n=0;n<N;n++){
+        for (int ms=0;ms<nk;ms++){
+            for(int v=0 ;v<Nvar;v++){
+                for (int j=0;j<Njack;j++)
+                    rm[j]=x[j][ms+n*nk][v];
+                double *tmp=mean_and_error(resampling,Njack, rm);
+                if (fabs(tmp[1])<1e-6) {
+                    //printf("e=%d    v=%d   %g +- %g\n", e,v,tmp[0],tmp[1] );
+                    tmp[1]=tmp[0]/1.0e+8;
+                    
+                }
+                sigmax[ms+n*nk][v]=tmp[1];
+                free(tmp);
+            }
+        }
+    }
+    
+    
+    double in;
+    for (int j=0;j<Njack;j++){
+        double *tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+        
+        //  chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, two_lines  );
+        //in=r1->MKMeV[j]*(mud.w0[j]/197.326963)*r1->MKMeV[j]*mud.w0[j]/197.326963;
+        in=r1->MKMeV[j]*(mud.w0[j]/197.326963)*w0[j];
+        in=in*in;
+        out[0][j]=(in-tmp[0])/tmp[1];
+        //printf("%g  %g  %g  %g  \n",tmp[0],tmp[1],out[0][j],in);
+        if (N>1)
+            out[1][j]=tmp[2]+tmp[3]*out[0][j];
+        
+        
+        free(tmp);
+        
+    }  
+    printf("ms at fixed a=%g   +-  %g",out[0][Njack-1],error_jackboot(resampling,Njack,out[0]) );
+    
+    for (int ms=0;ms<en_tot;ms++){
+        free(fit[ms]);
+    }
+    
+    free_3(Njack,en_tot,x);
+    free_2(en_tot,sigmax);
+    
+    
+    free(fit);     
+                
+    free_3(Njack,en_tot,y);
+    free(guess);
+    
+}
+
+
 
 double **fit_MK_fK_chiral_FVE_clover(struct database_file_jack  *jack_files,  struct header *head ,int Njack,int ***mass_index, struct data_jack *gJ ,struct fit_type fit_info , struct result_jack *r1, const char *prefix,char **argv, store_fit_clover mud,  std::vector<int> myen){
     
@@ -1070,6 +1202,7 @@ double **fit_MK_fK_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
     for(i=0;i<nk*N;i++){
         MK[i]=(double*) malloc(sizeof(double)*Njack);
     }
+    double ***MK_a=double_malloc_3(3,nk*N, Njack);
     
     double **xphys=double_malloc_2(Njack,Nvar);
     
@@ -1225,8 +1358,25 @@ double **fit_MK_fK_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
             for (i=0;i<Npar;i++){
                 tmp1[i][j]=tmp[i];
             }
-            
-            
+            // interpolate MK at given lattice spacing to the physical value
+            for (int a =0; a<3;a++){
+                double *w0;
+                if (a==0)       w0=gJ[0].w0;
+                if (a==1)       w0=gJ[4].w0;
+                if (a==2)       w0=gJ[7].w0;
+                
+                xphys[j][0]=mud.jack_m[j] *( mud.w0[j]/197.326963)*w0[j];
+                xphys[j][1]=w0[j];  //w0
+                xphys[j][2]=r1->MpiMeV[j]*r1->MpiMeV[j]*(mud.w0[j]/197.326963)*(mud.w0[j]/197.326963)*w0[j]*w0[j];
+                xphys[j][3]=r1->fpiw[j];
+                xphys[j][4]=1e+10;  // L such that L/w0=1e+6
+                xphys[j][5]=mref[ms];
+                xphys[j][6]=r1->MKMeV[j]*(mud.w0[j]/197.326963)*w0[j]*r1->MKMeV[j]*(mud.w0[j]/197.326963)*w0[j];//MKw2
+                xphys[j][7]=0;//fkw
+                xphys[j][8]=mud.jack_B[j]*(mud.w0[j]/197.326963)*w0[j];
+                xphys[j][9]=mud.jack_f[j]*(mud.w0[j]/197.326963)*w0[j];
+                MK_a[a][ms][j]=fit_info.function(0,  Nvar, xphys[j],Npar,tmp);
+            }
             free(tmp);
         } 
         struct fit_result  fit_out=close_fit(N,  head , Njack, gJ,Npar,&en,&en_tot, &x, &sigmax, &chi2m, &rm,&tmp1, &fit, &y,&chi2,&C);
@@ -1263,6 +1413,10 @@ double **fit_MK_fK_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
     else if (N==2)    
         Npar=4;
     Nvar=1;//m_l, w0,M_PS^2,f_PS
+    
+    interpolate_at_fixed_a( fit_info,  nk,  Npar,  Nvar,  Njack, MK_a[0], jack_files[0].sampling, mref, r1, mud, gJ[0].w0);
+    interpolate_at_fixed_a( fit_info,  nk,  Npar,  Nvar,  Njack, MK_a[1], jack_files[0].sampling, mref, r1, mud, gJ[4].w0);
+    interpolate_at_fixed_a( fit_info,  nk,  Npar,  Nvar,  Njack, MK_a[2], jack_files[0].sampling, mref, r1, mud, gJ[7].w0);
     
     guess=(double*) malloc(sizeof(double*)*Npar);
     for(i=0;i<Npar;i++)
@@ -1376,6 +1530,8 @@ double **fit_MK_fK_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
     free(guess);
     free(tmp_chi);
     
+    free_2(nk*N, MK);
+    free_3(3, nk*N, MK_a);
     
     
     free(rm);   

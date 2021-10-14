@@ -215,6 +215,7 @@ struct  fit_type
   std::vector<double>  Prange={};
   std::vector<double>  guess={};
   int t0_GEVP=3;
+  int value_or_vector=0;  // eigenvalues=0 or eigenvalues =1
   int devorder=4;  // 2 , 4 , -2 adaptive h=h*parameter
   int repeat_start=1;
   
@@ -236,7 +237,6 @@ struct  fit_type
      Prange=std::vector<double>();
      guess=std::vector<double>();
      corr_id=std::vector<int>();
-     t0_GEVP=3;
      devorder=4; 
      repeat_start=1;
      
@@ -246,6 +246,11 @@ struct  fit_type
      
      precision_sum=0;
      verbosity=0;
+     
+     
+     t0_GEVP=3;
+     value_or_vector=0;
+     
 //      f_plateaux_scan=NULL;
 //      name_plateaux_scan="\0";
   };

@@ -533,6 +533,38 @@ double GEVP_shift_matrix(int j, double ****in,int t,struct fit_type fit_info ){
 }
 
 
+void r_equal_value_or_vector(double &r, double **lambdat, double **vec, fit_type fit_info, int t ){
+    int t0=fit_info.t0_GEVP;
+    int n=fit_info.n;
+    int N=fit_info.N; //if eigenvector N= component+ id_eigenvector * components
+    if (fit_info.value_or_vector==0){
+        if((t-t0)>=0)
+            r=lambdat[n][0];
+        else 
+            r=lambdat[N-1-n][0];
+    }       
+    else if (fit_info.value_or_vector==1){
+        
+        if((t-t0)>=0){
+            r=vec[n][0];
+        }
+        else{ 
+            int comps=sqrt(N);
+            int id=n/comps;
+            int comp=n%comps;
+            id = comp + (comps-1-id) *comps;
+            r=vec[id][0];
+        }
+    }
+    else{
+        printf("you need to specify if you want the:\n\
+                - eigenvalues (fit_info.value_or_vector=0) \n\
+                - eigenvectors (fit_info.value_or_vector=1)");
+        exit(1);
+    }
+}
+
+
 /**********************************
  * you need to fill
  * std::vector<int> fit_info.corr_id
@@ -619,9 +651,14 @@ double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
 **********************************/
 double GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
     double ct,ctp;
+    
     int N=fit_info.N;
+    if (fit_info.value_or_vector==1){
+        N=sqrt(fit_info.N);
+        error(fit_info.N!=(N*N) ,1,"GEVP_matrix_p1",
+          "when you want the eigenvector N must be the quare of the size of the matrix: fit_info.N=%d ", fit_info.N );
+    }
     int ncorr=fit_info.corr_id.size()/3;
-//     error(fit_info.corr_id.size()!=12,1,"GEVP_matrix_p1" ," careful populating the GEVP, we to do manually the sum on the directions xyz");
     error(ncorr!=(N*N+N)/2 ,1,"GEVP_matrix_p1",
           "you need to provide (N^2+N)/2 to populate the top triangular matrix NxN:\n  N=%d    ncorr=%d\n",N,ncorr  );
     
@@ -664,15 +701,8 @@ double GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
     Mt0[8][0]/=2.0;
     
     error(!is_it_positive_lex_reim(Mt0, N) , 1, "GEVP_matrix:", "GEVP_matrix M(t0) not positive defined"  ) ;
-//     M[0][0]+=in[j][ v[6] ][t][0]+in[j][ v[7] ][t][0];
-//     Mt0[0][0]+=in[j][ v[6] ][t0][0]+in[j][ v[7] ][t0][0];
-//     
-//     M[4][0]+=in[j][ v[8] ][t][0]+in[j][ v[9] ][t][0];
-//     Mt0[4][0]+=in[j][ v[8] ][t0][0]+in[j][ v[9] ][t0][0];
-//     
-//     M[8][0]+=in[j][ v[10] ][t][0]+in[j][ v[11] ][t][0];
-//     Mt0[8][0]+=in[j][ v[10] ][t0][0]+in[j][ v[11] ][t0][0];
-//     
+//   
+    printf("t=%d\n", t);
     generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec); 
 //     if (t==t0){
 //         for (int i=0;i<N;i++)
@@ -689,6 +719,88 @@ double GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
 //     printf("\n");
 //     }
     int n=fit_info.n;
+    r_equal_value_or_vector(r,  lambdat, vec, fit_info,  t);
+    
+    free_2(N*N,M);
+    free_2(N*N,Mt0);
+    free_2(N,lambdat);
+    free_2(N*N,vec);
+    
+    return r;
+}
+
+
+/**********************************
+ * you need to fill
+ * std::vector<int> fit_info.corr_id
+ * with the id of the correlators in the order:
+ * [first row], [second row], ...
+ * M_00, M_01, ..., M_0N, M_11, ... + M_00(py), M_00(pz), M_22(py), M_22(pz),
+**********************************/
+double GEVP_matrix_4_p1(int j, double ****in,int t,struct fit_type fit_info ){
+    double ct,ctp;
+    int N=fit_info.N;
+    int ncorr=fit_info.corr_id.size()/3;
+//     error(fit_info.corr_id.size()!=12,1,"GEVP_matrix_p1" ," careful populating the GEVP, we to do manually the sum on the directions xyz");
+    error(ncorr!=(N*N+N)/2 ,1,"GEVP_matrix_p1",
+          "you need to provide (N^2+N)/2 to populate the top triangular matrix NxN:\n  N=%d    ncorr=%d\n",N,ncorr  );
+    
+    int T=file_head.l0;
+    double **M=double_calloc_2(N*N,2);// [NxN] [reim ]
+    double **Mt0=double_calloc_2(N*N,2);
+    
+    double **lambdat=double_malloc_2(N,2);// [N] [reim]
+    double **vec=double_malloc_2(N*N,2);
+    int t0=fit_info.t0_GEVP%T;
+    double r;
+    
+    double *s=(double*) malloc(sizeof(double)*N);
+    double *s0=(double*) malloc(sizeof(double)*N);
+    
+    
+    
+     //t
+    int count=0;
+    for (int dir=0; dir<3;dir++){
+        for (int i=0;i<N;i++){
+            for (int k=i;k<N;k++){
+                int corr_ik= fit_info.corr_id[count];
+                int ik=i+k*N;
+                int ki=k+i*N;
+                //printf("%d  %g\n",ik,in[j][corr_ik][t][0]);
+                M[ik][0]  = in[j][corr_ik][t][0];
+                Mt0[ik][0]= in[j][corr_ik][t0][0];
+                M[ki][0]=M[ik][0];
+                Mt0[ki][0]=Mt0[ik][0];
+                count++;
+            }
+        }
+    }
+    auto v= fit_info.corr_id;
+    M[0][0]/=2.0;
+    Mt0[0][0]/=2.0;
+    
+    M[10][0]/=2.0;
+    Mt0[10][0]/=2.0;
+    
+    M[3][0]/=3.0;
+    Mt0[3][0]/=3.0;
+    
+    M[7][0]/=3.0;
+    Mt0[7][0]/=3.0;
+    
+    M[11][0]/=3.0;
+    Mt0[11][0]/=3.0;
+    
+    M[15][0]/=3.0;
+    Mt0[15][0]/=3.0;
+    
+    
+    error(!is_it_positive_lex_reim(Mt0, N) , 1, "GEVP_matrix:", "GEVP_matrix M(t0) not positive defined"  ) ;
+//     
+    generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec); 
+
+    int n=fit_info.n;
     if((t-t0)>=0)
         r=lambdat[n][0];
     else 
@@ -703,7 +815,6 @@ double GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
     
     return r;
 }
-
 
 
 /**********************************

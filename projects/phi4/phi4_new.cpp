@@ -29,6 +29,8 @@
 #include <memory>
 using namespace std;
 
+int id_GEVP_031_p1;
+
 struct  kinematic kinematic_2pt;
 
 int r_value(int r)
@@ -3452,10 +3454,6 @@ check_correlatro_counter(140);
 
 if (params.data.ncorr>=135){ 
     fit_info.N=3;
-//      fit_info.corr_id={33, 136, 130,   95, 133,    34,      35,37,  96,97, 36,38  };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
-//      add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix_p1 ,   fit_info );
-    
-    //fit_info.corr_id={33, 136, 130,   95, 133,    34   };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
     fit_info.corr_id={33, 136, 130,   95, 133,    34,
                       35, 137, 131,   96, 134,    36,
                       37, 138, 132,   97, 135,    38    };
@@ -3463,6 +3461,7 @@ if (params.data.ncorr>=135){
 
     add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix_p1 ,   fit_info );
     printf(" ncorr after GEVP %d\n",ncorr_new);
+    id_GEVP_031_p1=ncorr_new;
     fit_info.restore_default();
 
         
@@ -3530,8 +3529,15 @@ if (params.data.ncorr>166+1e+6){
     fit_info.corr_id={33, 136, 130, 167,   95, 133, 169,    34, 168,    166};//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1, A1A1 }
     //fit_info.corr_id={1,2};
 
+    fit_info.corr_id={33, 136, 130, 167,   95, 133,  169,   34, 168,    166,
+                      35, 137, 131, 167,   96, 134,  169,   36, 168,    166,
+                      37, 138, 132, 167,   97, 135,  169,   38,  168,    166  };
+    printf("GEVP_phi0_phi03_phi1_p1\n");
+
+    add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix_4_p1 ,   fit_info );
+    
     printf("GEVP_0_3_1_A1_p1\n");
-    add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix ,   fit_info );
+    
     printf(" ncorr after GEVP %d\n",ncorr_new);
     fit_info.restore_default();
 
@@ -3544,12 +3550,15 @@ if (params.data.ncorr>166+1e+6){
     
     //c++ 150 || r 151
     double *ml2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-2,"GEVP_0_3_1_A1_p1_meffl2", M_eff_T,jack_file);
-    error(corr_counter!=150,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
+    check_correlatro_counter(150);
 
     //c++ 151 || r 152
     double *ml3_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-1,"GEVP_0_3_1_A1_p1_meffl3", M_eff_T,jack_file);
+    check_correlatro_counter(151);
+    
     free(ml0_GEVP);free(ml1_GEVP);free(ml2_GEVP);free(ml3_GEVP);
-    error(corr_counter!=151,-1,"correlator counter wrong","corr_counter=%d",corr_counter);
+    
+    
     
 }else { for(int i=148;i < 152;i++ )  zero_corr(zeros,Njack, jack_file );} 
 
@@ -3632,6 +3641,60 @@ if (params.data.ncorr>=76){
 
  
 }else { for(int i=158;i < 159;i++ )  zero_corr(zeros,Njack, jack_file );}
+
+check_correlatro_counter(158);
+
+
+if (params.data.ncorr>=135){ 
+    //id_GEVP_031_p1  should be 173 !
+ 
+    double *l0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, id_GEVP_031_p1-3,"GEVP_phi0_phi03_phi1_p1_l0", identity,jack_file);
+    check_correlatro_counter(159);
+
+    
+    double *l1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, id_GEVP_031_p1-2,"GEVP_phi0_phi03_phi1_p1_l1", identity,jack_file);
+    check_correlatro_counter(160);
+
+    
+    double *l2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, id_GEVP_031_p1-1,"GEVP_phi0_phi03_phi1_p1_l2", identity,jack_file);
+    check_correlatro_counter(161);
+
+    free(l0_GEVP);free(l1_GEVP);free(l2_GEVP);
+    
+    
+}else { for(int i=159;i < 161;i++ )  zero_corr(zeros,Njack, jack_file );}
+
+check_correlatro_counter(161);
+
+if (params.data.ncorr>=135){ 
+    int sqrtN=3;
+    fit_info.t0_GEVP=6;
+    fit_info.N=sqrtN*sqrtN;
+    
+    fit_info.corr_id={33, 136, 130,   95, 133,    34,
+                      35, 137, 131,   96, 134,    36,
+                      37, 138, 132,   97, 135,    38    };
+    printf("GEVP_vectors_phi0_phi03_phi1_p1\n");
+    fit_info.value_or_vector=1;
+    add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix_p1 ,   fit_info );
+    printf(" ncorr after GEVP vectors %d\n",ncorr_new);
+    id_GEVP_031_p1=ncorr_new;
+    fit_info.restore_default();
+    char name_v[NAMESIZE];
+    
+    for (int i=0; i< fit_info.N; i++){
+        int comp=i%sqrtN;
+        int id=i/sqrtN;
+        mysprintf(name_v,NAMESIZE,"GEVP_phi0_phi03_phi1_p1_v%d_%d",id,comp   );
+        double *l0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-fit_info.N+i, name_v, identity,jack_file);
+        free(l0_GEVP);
+        
+    }
+    check_correlatro_counter(170);
+    
+    
+}else { for(int i=161;i < 171;i++ )  zero_corr(zeros,Njack, jack_file );}
+check_correlatro_counter(170);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 // free(E1_0_p1);
 // free(E1_0_p11);

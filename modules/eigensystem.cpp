@@ -143,7 +143,7 @@ void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalu
   double *lambda=(double*) malloc(sizeof(double)*N);
   int *order=(int*) malloc(sizeof(int)*N);
   for(int i=0;i<N;i++){
-      lambda[i]=real(ces.eigenvalues()(i));
+      lambda[i]=real(ces.eigenvalues()[i]);
       order[i]=i;
   }
   quickSort(order, lambda, 0,N-1);
@@ -152,10 +152,18 @@ void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalu
       int ii=order[N-1-i];
       (*eigenvalues)[i][0]=lambda[ii];
       (*eigenvalues)[i][1]=0;
-      v=ces.eigenvectors().col(i);
-      norm=v.transpose()*a*v;
-      //std::cout<< norm<<std::endl;
-      norm=sqrt(norm);
+      v=ces.eigenvectors().col(ii);
+      
+//       std::cout<< ces.eigenvectors()<<std::endl;
+     /* 
+      Eigen::VectorXcd cv=c*v;
+      Eigen::VectorXcd lv=lambda[ii]*v;
+      Eigen::VectorXcd  res=cv-lv;
+      
+      norm=res.transpose()*res;
+      std::cout<<"norm"<< norm<<std::endl;
+      */
+      //norm=sqrt(norm);
       for(j=0;j<N;j++){
           
           (*eigenvectors)[j+ii*N][0]=real(v(j));

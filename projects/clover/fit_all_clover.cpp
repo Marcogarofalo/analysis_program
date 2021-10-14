@@ -4127,6 +4127,7 @@ int main(int argc, char **argv){
             fit_info.Npar=7;
             fit_info.N=2;
             fit_info.function=fit_Fpi_and_Mpi_GL_NL0_am_fonly;
+            
             //double ***scale=double_malloc_3(4,3,jack_tot);
             std::vector<int> myen={0,1,2,3,   8,4,5,6,   7,9};
             mysprintf(nameout,NAMESIZE,"fit_Mpi_Fpi_GL_NLO_am_fonly_%s_%s",GF.c_str(),M.c_str() );
