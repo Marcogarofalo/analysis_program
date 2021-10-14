@@ -3693,7 +3693,7 @@ if (params.data.ncorr>=135){
     check_correlatro_counter(170);
     
     
-}else { for(int i=161;i < 171;i++ )  zero_corr(zeros,Njack, jack_file );}
+}else { for(int i=162;i < 171;i++ )  zero_corr(zeros,Njack, jack_file );}
 check_correlatro_counter(170);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 // free(E1_0_p1);
