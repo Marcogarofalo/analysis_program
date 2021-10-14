@@ -3662,7 +3662,7 @@ if (params.data.ncorr>=135){
     free(l0_GEVP);free(l1_GEVP);free(l2_GEVP);
     
     
-}else { for(int i=159;i < 161;i++ )  zero_corr(zeros,Njack, jack_file );}
+}else { for(int i=159;i < 162;i++ )  zero_corr(zeros,Njack, jack_file );}
 
 check_correlatro_counter(161);
 
