@@ -702,7 +702,7 @@ double GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
     
     error(!is_it_positive_lex_reim(Mt0, N) , 1, "GEVP_matrix:", "GEVP_matrix M(t0) not positive defined"  ) ;
 //   
-    printf("t=%d\n", t);
+    //printf("t=%d\n", t);
     generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec); 
 //     if (t==t0){
 //         for (int i=0;i<N;i++)
@@ -796,7 +796,7 @@ double GEVP_matrix_4_p1(int j, double ****in,int t,struct fit_type fit_info ){
     Mt0[15][0]/=3.0;
     
     
-    error(!is_it_positive_lex_reim(Mt0, N) , 1, "GEVP_matrix:", "GEVP_matrix M(t0) not positive defined"  ) ;
+//     error(!is_it_positive_lex_reim(Mt0, N) , 1, "GEVP_matrix:", "GEVP_matrix M(t0) not positive defined"  ) ;
 //     
     generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec); 
 

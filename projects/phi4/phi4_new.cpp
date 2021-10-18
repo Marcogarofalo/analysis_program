@@ -1553,9 +1553,12 @@ int main(int argc, char **argv){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
         //c++ 20 || r 21
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, GEVP_shift_matrix , "GEVP_E2_01",  fit_info, jack_file);
-    free_fit_result(fit_info,fit_out);
-       
+    if (params.data.muC>0){
+        fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, GEVP_shift_matrix , "GEVP_E2_01",  fit_info, jack_file);
+        free_fit_result(fit_info,fit_out);
+    }
+    else {zero_corr(zeros,Njack, jack_file );}
+    check_correlatro_counter(20);
     
     
     
@@ -3454,6 +3457,7 @@ check_correlatro_counter(140);
 
 if (params.data.ncorr>=135){ 
     fit_info.N=3;
+//     fit_info.t0_GEVP=10;
     fit_info.corr_id={33, 136, 130,   95, 133,    34,
                       35, 137, 131,   96, 134,    36,
                       37, 138, 132,   97, 135,    38    };
@@ -3532,7 +3536,6 @@ if (params.data.ncorr>166+1e+6){
     fit_info.corr_id={33, 136, 130, 167,   95, 133,  169,   34, 168,    166,
                       35, 137, 131, 167,   96, 134,  169,   36, 168,    166,
                       37, 138, 132, 167,   97, 135,  169,   38,  168,    166  };
-    printf("GEVP_phi0_phi03_phi1_p1\n");
 
     add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix_4_p1 ,   fit_info );
     
