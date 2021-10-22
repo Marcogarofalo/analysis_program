@@ -164,7 +164,7 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
    
    double *guess=(double*) malloc(sizeof(double)*Npar);
    for (i=0;i<Npar;i++)
-        guess[i]=rand();
+        guess[i]=rand()/(double) RAND_MAX;
 
  /*   guess[0]=2.05478;
     guess[1]=0.113021;
@@ -292,6 +292,16 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
    }  
    double **cov1=symmetric_matrix_inverse(en_tot, cov  );
 
+   printf("x=%g\n",x[Njack-1][0][0] );
+   printf("x=%g\n",x[Njack-1][0][1] );
+   printf("x=%g\n",x[Njack-1][0][2] );
+   printf("x=%g\n",x[Njack-1][0][3] );
+   printf("x=%g\n",x[Njack-1][0][4] );
+printf("g=%g\n",guess[0] );
+printf("g=%g\n",guess[1] );
+
+   printf("f=%g\n", fit_info.function(0,Nvar,x[Njack-1][0],Npar,guess)); 
+   
    guess=guess_for_non_linear_fit_Nf(N, en,x[Njack-1], y[Njack-1] , Nvar,  Npar, fit_info.function,guess );
   
    
@@ -449,7 +459,7 @@ struct fit_result fit_Mpiw0s0_fwMpi4_chiral_FVE_clover(struct database_file_jack
     
     double *guess=(double*) malloc(sizeof(double)*Npar);
     for (i=0;i<Npar;i++)
-        guess[i]=rand();
+        guess[i]=rand()/(double) RAND_MAX;
     
     /*   guess[0]=2.05478;
      *  guess[1]=0.113021;

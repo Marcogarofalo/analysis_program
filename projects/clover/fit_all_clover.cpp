@@ -387,7 +387,6 @@ double fit_Fpi_and_Mpi_GL_NL0_am_fonly(int n, int Nvar, double *x,int Npar,doubl
         Mw2=(1+Delta);  //Kf   M(inf)=M(L)/Kf
         
     }
-    
     return Mw2;
     
 }

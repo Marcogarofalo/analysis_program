@@ -3523,7 +3523,7 @@ if (params.data.ncorr>165 && fabs(params.data.gC-0.025)>1e-4 ){
 
 
 ///////////////////
-if (params.data.ncorr>166+1e+6){    
+if (params.data.ncorr>166){    
     
 
     fit_info.N=4;
@@ -3671,7 +3671,7 @@ check_correlatro_counter(161);
 
 if (params.data.ncorr>=135){ 
     int sqrtN=3;
-    fit_info.t0_GEVP=6;
+    fit_info.t0_GEVP=3;
     fit_info.N=sqrtN*sqrtN;
     
     fit_info.corr_id={33, 136, 130,   95, 133,    34,
@@ -3698,6 +3698,84 @@ if (params.data.ncorr>=135){
     
 }else { for(int i=162;i < 171;i++ )  zero_corr(zeros,Njack, jack_file );}
 check_correlatro_counter(170);
+
+
+
+
+if (params.data.ncorr>=135+1e+6){ 
+    fit_info.N=3;
+    fit_info.GEVP_tpt0=true;
+    fit_info.corr_id={33, 136, 130,   95, 133,    34,
+                      35, 137, 131,   96, 134,    36,
+                      37, 138, 132,   97, 135,    38    };
+    printf("GEVP_tpt0_phi0_phi03_phi1_p1\n");
+
+    add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix_p1 ,   fit_info );
+    printf(" ncorr after GEVP %d\n",ncorr_new);
+    id_GEVP_031_p1=ncorr_new;
+    fit_info.restore_default();
+
+        
+     double *l0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, id_GEVP_031_p1-3,"GEVP_tpt0_phi0_phi03_phi1_p1_l0", identity,jack_file);
+    check_correlatro_counter(171);
+
+    
+    double *l1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, id_GEVP_031_p1-2,"GEVP_tpt0_phi0_phi03_phi1_p1_l1", identity,jack_file);
+    check_correlatro_counter(172);
+
+    
+    double *l2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, id_GEVP_031_p1-1,"GEVP_tpt0_phi0_phi03_phi1_p1_l2", identity,jack_file);
+    check_correlatro_counter(173);
+
+    free(l0_GEVP);free(l1_GEVP);free(l2_GEVP);
+    
+    
+    double *ml0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-3,"GEVP_tpt0_phi0_phi03_phi1_p1_meffl0", M_eff_T,jack_file);
+    check_correlatro_counter(174);
+
+    
+    double *ml1_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-2,"GEVP_tpt0_phi0_phi03_phi1_p1_meffl1", M_eff_T,jack_file);
+    check_correlatro_counter(175);
+
+    //c++ 143 || r 144
+    double *ml2_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-1,"GEVP_tpt0_phi0_phi03_phi1_p1_meffl2", M_eff_T,jack_file);
+    free(ml0_GEVP);free(ml1_GEVP);free(ml2_GEVP);
+    check_correlatro_counter(176);
+    
+    
+    int sqrtN=3;
+    fit_info.t0_GEVP=6;
+    fit_info.N=sqrtN*sqrtN;
+    fit_info.GEVP_tpt0=true;
+    fit_info.corr_id={33, 136, 130,   95, 133,    34,
+                      35, 137, 131,   96, 134,    36,
+                      37, 138, 132,   97, 135,    38    };
+    printf("GEVP_tpt0_vectors_phi0_phi03_phi1_p1\n");
+    fit_info.value_or_vector=1;
+    add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix_p1 ,   fit_info );
+    printf(" ncorr after GEVP vectors %d\n",ncorr_new);
+    id_GEVP_031_p1=ncorr_new;
+    fit_info.restore_default();
+    char name_v[NAMESIZE];
+    
+    for (int i=0; i< fit_info.N; i++){
+        int comp=i%sqrtN;
+        int id=i/sqrtN;
+        mysprintf(name_v,NAMESIZE,"GEVP_tpt0_phi0_phi03_phi1_p1_v%d_%d",id,comp   );
+        double *l0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-fit_info.N+i, name_v, identity,jack_file);
+        free(l0_GEVP);
+        
+    }
+    check_correlatro_counter(185);
+    
+}else { for(int i=171;i < 186;i++ )  zero_corr(zeros,Njack, jack_file );}
+
+check_correlatro_counter(185);
+
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 // free(E1_0_p1);
 // free(E1_0_p11);

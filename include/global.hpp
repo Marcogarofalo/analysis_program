@@ -216,6 +216,9 @@ struct  fit_type
   std::vector<double>  guess={};
   int t0_GEVP=3;
   int value_or_vector=0;  // eigenvalues=0 or eigenvalues =1
+  bool GEVP_tpt0=false;
+  bool GEVP_swap_t_t0=false;
+  
   int devorder=4;  // 2 , 4 , -2 adaptive h=h*parameter
   int repeat_start=1;
   
@@ -250,7 +253,8 @@ struct  fit_type
      
      t0_GEVP=3;
      value_or_vector=0;
-     
+     GEVP_tpt0=false;
+     GEVP_swap_t_t0=false;
 //      f_plateaux_scan=NULL;
 //      name_plateaux_scan="\0";
   };

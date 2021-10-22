@@ -893,7 +893,7 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
      
 } 
 
-void interpolate_at_fixed_a(fit_type fit_info, int nk, int Npar, int Nvar, int Njack, double **MK, const char *resampling, double *mref, struct result_jack *r1, store_fit_clover mud, double *w0){
+void interpolate_at_fixed_a(fit_type fit_info, int nk, int Npar, int Nvar, int Njack, double **MK, const char *resampling, double *mref, struct result_jack *r1, store_fit_clover mud, double *w0, double *Zp){
     
     ////////////////////////////////////////////////last interpolation 
     int N=fit_info.N;
@@ -996,18 +996,18 @@ void interpolate_at_fixed_a(fit_type fit_info, int nk, int Npar, int Nvar, int N
         
         //  chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, two_lines  );
         //in=r1->MKMeV[j]*(mud.w0[j]/197.326963)*r1->MKMeV[j]*mud.w0[j]/197.326963;
-        in=r1->MKMeV[j]*(mud.w0[j]/197.326963)*w0[j];
+        in=r1->MKMeV[j]*(mud.w0[j]/197.326963);
         in=in*in;
-        out[0][j]=(in-tmp[0])/tmp[1];
+        out[0][j]=((in-tmp[0])/tmp[1])*Zp[j]/w0[j];
         //printf("%g  %g  %g  %g  \n",tmp[0],tmp[1],out[0][j],in);
         if (N>1)
-            out[1][j]=tmp[2]+tmp[3]*out[0][j];
+            out[1][j]=(tmp[2]+tmp[3]*out[0][j]);
         
         
         free(tmp);
         
     }  
-    printf("ms at fixed a=%g   +-  %g",out[0][Njack-1],error_jackboot(resampling,Njack,out[0]) );
+    printf("ms at fixed a=%g   +-  %g\n",out[0][Njack-1],error_jackboot(resampling,Njack,out[0]) );
     
     for (int ms=0;ms<en_tot;ms++){
         free(fit[ms]);
@@ -1365,16 +1365,16 @@ double **fit_MK_fK_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
                 if (a==1)       w0=gJ[4].w0;
                 if (a==2)       w0=gJ[7].w0;
                 
-                xphys[j][0]=mud.jack_m[j] *( mud.w0[j]/197.326963)*w0[j];
+                xphys[j][0]=mud.jack_m[j] *( mud.w0[j]/197.326963);//*w0[j];
                 xphys[j][1]=w0[j];  //w0
-                xphys[j][2]=r1->MpiMeV[j]*r1->MpiMeV[j]*(mud.w0[j]/197.326963)*(mud.w0[j]/197.326963)*w0[j]*w0[j];
+                xphys[j][2]=r1->MpiMeV[j]*r1->MpiMeV[j]*(mud.w0[j]/197.326963)*(mud.w0[j]/197.326963);//*w0[j]*w0[j];
                 xphys[j][3]=r1->fpiw[j];
                 xphys[j][4]=1e+10;  // L such that L/w0=1e+6
                 xphys[j][5]=mref[ms];
-                xphys[j][6]=r1->MKMeV[j]*(mud.w0[j]/197.326963)*w0[j]*r1->MKMeV[j]*(mud.w0[j]/197.326963)*w0[j];//MKw2
+                xphys[j][6]=r1->MKMeV[j]*(mud.w0[j]/197.326963)*r1->MKMeV[j]*(mud.w0[j]/197.326963);//*w0[j]*w0[j];//MKw2
                 xphys[j][7]=0;//fkw
-                xphys[j][8]=mud.jack_B[j]*(mud.w0[j]/197.326963)*w0[j];
-                xphys[j][9]=mud.jack_f[j]*(mud.w0[j]/197.326963)*w0[j];
+                xphys[j][8]=mud.jack_B[j]*(mud.w0[j]/197.326963);//*w0[j];
+                xphys[j][9]=mud.jack_f[j]*(mud.w0[j]/197.326963);//*w0[j];
                 MK_a[a][ms][j]=fit_info.function(0,  Nvar, xphys[j],Npar,tmp);
             }
             free(tmp);
@@ -1414,9 +1414,9 @@ double **fit_MK_fK_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
         Npar=4;
     Nvar=1;//m_l, w0,M_PS^2,f_PS
     
-    interpolate_at_fixed_a( fit_info,  nk,  Npar,  Nvar,  Njack, MK_a[0], jack_files[0].sampling, mref, r1, mud, gJ[0].w0);
-    interpolate_at_fixed_a( fit_info,  nk,  Npar,  Nvar,  Njack, MK_a[1], jack_files[0].sampling, mref, r1, mud, gJ[4].w0);
-    interpolate_at_fixed_a( fit_info,  nk,  Npar,  Nvar,  Njack, MK_a[2], jack_files[0].sampling, mref, r1, mud, gJ[7].w0);
+    interpolate_at_fixed_a( fit_info,  nk,  Npar,  Nvar,  Njack, MK_a[0], jack_files[0].sampling, mref, r1, mud, gJ[0].w0, gJ[0].Zp);
+    interpolate_at_fixed_a( fit_info,  nk,  Npar,  Nvar,  Njack, MK_a[1], jack_files[0].sampling, mref, r1, mud, gJ[4].w0, gJ[4].Zp);
+    interpolate_at_fixed_a( fit_info,  nk,  Npar,  Nvar,  Njack, MK_a[2], jack_files[0].sampling, mref, r1, mud, gJ[7].w0, gJ[7].Zp);
     
     guess=(double*) malloc(sizeof(double*)*Npar);
     for(i=0;i<Npar;i++)

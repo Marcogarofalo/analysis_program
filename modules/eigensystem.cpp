@@ -127,12 +127,13 @@ void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalu
   Eigen::MatrixXcd c(N,N);
   c  = b.inverse()*a;
   
- /* 
+  
   Eigen::LLT<Eigen::MatrixXcd> lltOfA(c); // compute the Cholesky decomposition of A
   if(lltOfA.info() == Eigen::NumericalIssue){
-       throw std::runtime_error("Possibly non semi-positive definitie matrix!");
+       std::cout<<"non semi-positive definitie matrix!"<<std::endl;
+       //throw std::runtime_error("Possibly non semi-positive definitie matrix!");
   }    
- */ 
+  
   Eigen::ComplexEigenSolver<Eigen::MatrixXcd> ces;
   ces.compute(c);
 
