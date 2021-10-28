@@ -95,6 +95,37 @@ double me_oPp(int j, double ****in,int t ,struct fit_type fit_info){
     return sqrt(ct);
 }
 
+double diff_meff(int j, double ****in,int t ,struct fit_type fit_info){
+    int id1=fit_info.corr_id[0];
+    int id2=fit_info.corr_id[1];
+    if(fit_info.corr_id.size()!=2){printf("ratio_meff: corr_id must be a vector of the two masses you want to subtract\n");exit(1);}
+    int T=file_head.l0;
+    double ct= in[j][id1][t][0];
+    double ctp= in[j][id1][(t+1)%T][0];
+    double m1= M_eff_in_inp(t,ct,ctp);
+     ct= in[j][id2][t][0];
+     ctp= in[j][id2][(t+1)%T][0];
+    double  m2= M_eff_in_inp(t,ct,ctp);
+
+    return m1-m2;
+}
+
+double ratio_meff(int j, double ****in,int t ,struct fit_type fit_info){
+    int id1=fit_info.corr_id[0];
+    int id2=fit_info.corr_id[1];
+    if(fit_info.corr_id.size()!=2){printf("ratio_meff: corr_id must be a vector of the two masses you want to subtract\n");exit(1);}
+    
+    int T=file_head.l0;
+    double ct= in[j][id1][t][0];
+    double ctp= in[j][id1][(t+1)%T][0];
+    double m1= M_eff_in_inp(t,ct,ctp);
+     ct= in[j][id2][t][0];
+     ctp= in[j][id2][(t+1)%T][0];
+    double m2= M_eff_in_inp(t,ct,ctp);
+
+    return m1/m2;
+}
+
 template<int ix,int iy,int iz>
 double m_eff_of_sum(int j, double ****in,int t ,struct fit_type fit_info){
     
