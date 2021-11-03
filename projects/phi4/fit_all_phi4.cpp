@@ -130,7 +130,7 @@ int main(int argc, char **argv){
      int Njack=gjack[0].Njack;
      struct fit_type fit_info;
      struct fit_result  fit_m1, fit_m0;
-     fit_info.Nvar=11;
+     fit_info.Nvar=13;
      fit_info.Npar=2;
      fit_info.N=1;
      fit_info.Njack=gjack[0].Njack;
@@ -341,5 +341,92 @@ int main(int argc, char **argv){
      struct fit_result fit_diff_L_BH03t16=fit_data(argv,  paramsj ,gjack, lhs_LminusBH<53> ,fit_info, "fit_diff_L_BH03t16" ,myen);
      
      
+     
+     
+     
+     printf("\n/////////////////////////////////     fit_diff_Luescher_C2_C2shift//////////////////\n");
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // start fitting
+     
+     fit_info.Npar=1;
+     fit_info.N=1;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     fit_info.function=constant_fit;
+     struct fit_result fit_diff_Luescher_C2_C2shift=fit_data(argv,  paramsj ,gjack, lhs_L_C2_m_C2shifted<19,126> ,fit_info, "fit_diff_L_C2_m_C2shifted" ,myen);
+     
+     
+     printf("\n/////////////////////////////////     fit_Luescher_C2//////////////////\n");
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // start fitting
+     
+     fit_info.Npar=1;
+     fit_info.N=1;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     fit_info.function=constant_fit;
+     struct fit_result fit_L_C2=fit_data(argv,  paramsj ,gjack, lhs_Luescher_C<19> ,fit_info, "fit_L_C2" ,myen);
+     printf("\n/////////////////////////////////     fit_Luescher_C2//////////////////\n");
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // start fitting
+     
+     fit_info.Npar=1;
+     fit_info.N=1;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     fit_info.function=constant_fit;
+     struct fit_result fit_L_C2shifted=fit_data(argv,  paramsj ,gjack, lhs_Luescher_C<126> ,fit_info, "fit_L_C2shifted" ,myen);
+     
+     
+     
+     printf("\n/////////////////////////////////     covariance  L_div_shift   BH_03t16//////////////////\n");
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     {
+     printf("L  T   a_L_C2  a_BH_03t16_shifted      cov  diff\n");
+     double ***x=double_malloc_3( myen.size() , 2, gjack[0].Njack);
+     for (int e =0; e< myen.size(); e++){
+        double *a=scattering_len_luscher(  fit_info.Njack, gjack[e].jack[1], gjack[e].jack[2], gjack[e].jack[19] ,paramsj[e].data.L[1]);
+        for (int j=0;j<gjack[0].Njack; j++){
+            x[e][0][j]=a[j];
+            x[e][1][j]=gjack[e].jack[53][j];//a_BH_02t16_shifted
+        }
+        free(a);
+        double **cov=covariance(argv[1], 2, gjack[0].Njack, x[e]);
+        printf("%d   %d   (%g+-%g)  (%g+-%g)      %g  \n",paramsj[e].data.L[1], paramsj[e].data.L[0],
+               x[e][0][Njack-1], sqrt(cov[0][0]),
+               x[e][1][Njack-1], sqrt(cov[1][1]),
+                cov[1][0]/sqrt(cov[0][0]*cov[1][1])
+               );
+        free_2(2,cov);
+        
+     }
+     
+     free_3(myen.size(), 2, x);
+     }
+     printf("\n/////////////////////////////////     covariance  L_div_shift   BH_02t16//////////////////\n");
+     ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // start fitting
+     {
+     printf("L  T   a_L_C2  a_BH_02t16_shifted      cov  diff\n");
+     double ***x=double_malloc_3( myen.size() , 2, gjack[0].Njack);
+     for (int e =0; e< myen.size(); e++){
+        double *a=scattering_len_luscher(  fit_info.Njack, gjack[e].jack[1], gjack[e].jack[2], gjack[e].jack[19] ,paramsj[e].data.L[1]);
+        for (int j=0;j<gjack[0].Njack; j++){
+            x[e][0][j]=a[j];
+            x[e][1][j]=gjack[e].jack[73][j];//a_BH_02t16_shifted
+        }
+        free(a);
+        double **cov=covariance(argv[1], 2, gjack[0].Njack, x[e]);
+        printf("%d   %d   (%g+-%g)  (%g+-%g)      %g  \n",paramsj[e].data.L[1], paramsj[e].data.L[0],
+               x[e][0][Njack-1], sqrt(cov[0][0]),
+               x[e][1][Njack-1], sqrt(cov[1][1]),
+                cov[0][1]/sqrt(cov[0][0]*cov[1][1])
+               );
+        free_2(2,cov);
+        
+     }
+     
+     free_3(myen.size(), 2, x);
+     }
      return 0;
 }

@@ -2478,6 +2478,22 @@ if (params.data.ncorr>74){
     if (params.data.L[0]<50  )
         fit_info.plateaux_scan=true;
     
+    if (      strcmp(argv[4],"G2t_T64_L26_msq0-4.755000_msq1-4.800000_l02.500000_l12.500000_mu5.000000_g0.500000_rep0_bin100_merged_bin1000")==0){
+        fit_info.repeat_start=5;
+        fit_info.acc=1e-5;
+        fit_info.precision_sum=4;
+        fit_info.devorder=-2;
+        fit_info.h=1e-2;
+        fit_info.lambda=1e-2;
+        fit_info.chi2_gap_jackboot=0.1;
+        fit_info.guess_per_jack=5;
+        fit_info.guess={0.434124998962052,    	0.00119524254838347,   	0.00853111018750956 };
+//         fit_info.verbosity=2;
+        printf("%g  %g \n",fit_info.ext_P[0][Njack-1],fit_info.ext_P[1][Njack-1]);
+        
+    }
+    
+    
     //c++ 100 || r 101
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    sum_corr_directions_shift<66,67,68>, "E2_0_p1",  fit_info, jack_file );
@@ -2487,7 +2503,9 @@ if (params.data.ncorr>74){
         &&  strcmp(argv[4],"G2t_T16_L4_msq0-4.850000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0")!=0
         &&  strcmp(argv[4],"G2t_T16_L8_msq0-4.850000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0")!=0
         &&  strcmp(argv[4],"G2t_T16_L8_msq0-4.900000_msq1-4.650000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0")!=0
+        &&  strcmp(argv[4],"G2t_T64_L26_msq0-4.755000_msq1-4.800000_l02.500000_l12.500000_mu5.000000_g0.500000_rep0_bin100_merged_bin1000")!=0
     ){
+        printf("here\n");
         phase_shift(fit_out.P[0],mass[0],dvec, params.data.L[1], outfile,  Njack, option[4] );
     }
     fit_info.restore_default();

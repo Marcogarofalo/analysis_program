@@ -336,6 +336,5 @@ int main(int argc, char **argv){
     double *mass2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,namefile_plateaux,outfile,9,"m_den", M_eff_T,jack_file);
     
     
-    free_fit_result(fit_info,fit_out);
     
 }

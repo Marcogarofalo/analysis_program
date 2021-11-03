@@ -1071,7 +1071,7 @@ double a_01_luescher_lhs(int n, int e , int j , vector<cluster::IO_params> param
     double *a=scattering_len_luscher(  fit_info.Njack, gjack[e].jack[1], gjack[e].jack[2], gjack[e].jack[19] ,params[e].data.L[1]);
     double r=a[j];
     free(a);
-    return r;//   03t16_shifted1
+    return r;//  
 }
 
 
@@ -1093,6 +1093,27 @@ double lhs_LminusBH(int n, int e , int j , vector<cluster::IO_params> params,vec
     free(a);
     return r-gjack[e].jack[idBH][j];
 }    
+template<int id1, int id2>
+double lhs_L_C2_m_C2shifted(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    
+    double *a=scattering_len_luscher(  fit_info.Njack, gjack[e].jack[1], gjack[e].jack[2], gjack[e].jack[id1] ,params[e].data.L[1]);
+    double r=a[j];
+    free(a);
+    
+    double *a1=scattering_len_luscher(  fit_info.Njack, gjack[e].jack[1], gjack[e].jack[2], gjack[e].jack[id2] ,params[e].data.L[1]);
+    double r1=a1[j];
+    free(a1);
+    
+    return r-r1;
+}    
+
+template<int id>
+double lhs_Luescher_C(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    double *a=scattering_len_luscher(  fit_info.Njack, gjack[e].jack[1], gjack[e].jack[2], gjack[e].jack[id] ,params[e].data.L[1]);
+    double r=a[j];
+    free(a);
+    return r;
+}
 
     
 double a_01_BH_lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
@@ -1402,7 +1423,8 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
         || strcmp(label,"a_00_luscher_infm")==0 || strcmp(label,"a_01_luscher")==0
         || strcmp(label,"a_01_luscher_div_shift")==0  || strcmp(label,"a_00_BH")==0 || strcmp(label,"a_01_BH_03t16_shifted")==0
         || strcmp(label,"a_01_BH_04t16_shifted")==0 ||  strcmp(label,"a_01_BH_02t10_shifted")==0  || strcmp(label,"a_01_lusher_const")==0  || strcmp(label,"fit_diff_L_BH02t16")==0 || strcmp(label,"fit_diff_L_BH03t16")==0 
-        || strcmp(label,"a_01_luscher_const")==0 
+        || strcmp(label,"a_01_luscher_const")==0  
+        || strcmp(label,"fit_diff_L_C2_m_C2shifted")==0 || strcmp(label,"fit_L_C2")==0 || strcmp(label,"fit_L_C2shifted")==0 
     )
 //             || strcmp(label,"M1_finite_vol")==0  || strcmp(label,"a_00_luscher")==0  || strcmp(label,"kcotd")==0 
 //             || strcmp(label,"kcotd_Elatt")==0 || strcmp(label,"a_00_luscher_infm")==0 || strcmp(label,"a_01_luscher")==0 
