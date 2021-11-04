@@ -280,25 +280,29 @@ int main(int argc, char **argv){
     sprintf(option[1],"blind");
     FILE *dev_null=open_file("/dev/null","w");
     get_kinematic( 0,0,  1, 0,0,  0 );
-    
+    struct fit_type fit_info_silent;
+    fit_info_silent.verbosity=-1;
     for(int icorr=0; icorr<correlators.size(); icorr++ ){
         //log effective mass
         double *tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  header.Njack
-        ,namefile_plateaux,outfile_meff_corr,icorr,(char*) correlators[icorr].c_str(), M_eff_log,dev_null);
+        ,namefile_plateaux,outfile_meff_corr,icorr,(char*) correlators[icorr].c_str(), M_eff_log,dev_null,fit_info_silent);
         free(tmp_meff_corr);
         //raw correlator
         tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,
-                                                      namefile_plateaux,outfile_raw_corr,icorr,(char*) correlators[icorr].c_str(), identity,dev_null);
+                                                      namefile_plateaux,outfile_raw_corr,icorr,(char*) correlators[icorr].c_str(), identity,dev_null,fit_info_silent);
         free(tmp_meff_corr);
         // shifted correlator
         tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,
-                                                      namefile_plateaux,outfile_shifted_corr,icorr,(char*) correlators[icorr].c_str(), shift_corr,dev_null);
+                                                      namefile_plateaux,outfile_shifted_corr,icorr,(char*) correlators[icorr].c_str(), shift_corr,dev_null,
+                                                    fit_info_silent);
         free(tmp_meff_corr);
         // log_meff shifted correlator
         tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack
-        ,namefile_plateaux,outfile_log_meff_shifted,icorr,(char*) correlators[icorr].c_str(), M_eff_log_shift,dev_null);
+        ,namefile_plateaux,outfile_log_meff_shifted,icorr,(char*) correlators[icorr].c_str(), M_eff_log_shift,dev_null,
+                                                    fit_info_silent);
         free(tmp_meff_corr);
     }
+    fit_info_silent.restore_default();
     sprintf(option[1],"%s",save_option);// restore option
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
