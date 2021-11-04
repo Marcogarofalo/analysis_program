@@ -585,20 +585,15 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
        fprintf(outfile,"%.15g    %.15g    \t",m[0],m[1]);
        if (fit_info.plateaux_scan) fprintf(fit_info.f_plateaux_scan,"%.15g    %.15g    \t",m[0],m[1]);
        if (i==0){
-           printf("#%s (mu_h=%.4f, mu_l=%.4f) fit in [%d,%d]:  %.15g    %.15g\n",description,kinematic_2pt.k2,kinematic_2pt.k1 ,tmin,tmax,m[0],m[1]);
+           if (fit_info.verbosity>=0)
+               printf("#%s  fit in [%d,%d]:  %.15g    %.15g\n",description,tmin,tmax,m[0],m[1]);
        }
        free(m);
 
    }
    fprintf(outfile,"\n");
    if (fit_info.plateaux_scan) fprintf(fit_info.f_plateaux_scan,"\n");
-   //fprintf(outfile,"%d   %d   \n\n\n",tmin,tmax);
-
    
-   
-   /*if ( strcmp(option[5],"pdf")==0 ){
-           plotting_fit_pdf(option,description,file_head.l1, file_head.l0,file_head.beta,file_head.ksea,file_head.musea, mt , tmin,tmax,m,name, kinematic_2pt );
-   }*/
    
    corr_counter++;
     

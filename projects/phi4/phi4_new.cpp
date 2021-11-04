@@ -1204,27 +1204,30 @@ int main(int argc, char **argv){
     sprintf(option[1],"blind");
     
     FILE *dev_null=open_file("/dev/null","w");
+    struct fit_type fit_info_silent;
+    fit_info_silent.verbosity=-1;
     for(int icorr=0; icorr<params.data.ncorr; icorr++ ){
      //log effective mass
      double *tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack
-                                                           ,namefile_plateaux,outfile_meff_corr,icorr,"meff_corr", M_eff_log,dev_null);
+                                                           ,namefile_plateaux,outfile_meff_corr,icorr,"meff_corr", M_eff_log,dev_null,fit_info_silent);
      free(tmp_meff_corr);
      //raw correlator
      tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,
-                                                   namefile_plateaux,outfile_raw_corr,icorr,"raw_corr", identity,dev_null);
+                                                   namefile_plateaux,outfile_raw_corr,icorr,"raw_corr", identity,dev_null,fit_info_silent);
      free(tmp_meff_corr);
      // shifted correlator
      tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,
-                                                   namefile_plateaux,outfile_shifted_corr,icorr,"shifted_corr", shift_corr,dev_null);
+                                                   namefile_plateaux,outfile_shifted_corr,icorr,"shifted_corr", shift_corr,dev_null,fit_info_silent);
      free(tmp_meff_corr);
      // log_meff shifted correlator
      tmp_meff_corr  =plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack
-                                                  ,namefile_plateaux,outfile_log_meff_shifted,icorr,"log_meff_shifted", M_eff_log_shift,dev_null);
+                                                  ,namefile_plateaux,outfile_log_meff_shifted,icorr,"log_meff_shifted", M_eff_log_shift,dev_null,fit_info_silent);
      free(tmp_meff_corr);
      
      
      
     }
+    fit_info_silent.restore_default();
     sprintf(option[1],"%s",save_option);// restore option
     corr_counter=0;
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3343,6 +3346,7 @@ if (params.data.ncorr>148){
 
     fit_info.N=3;
     fit_info.corr_id={0, 129, 127,   5, 128,    1 };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
+    fit_info.value_or_vector=0; // 0= values
     //fit_info.corr_id={1,2};
     printf("GEVP_phi0_phi03_phi1\n");
     add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix ,   fit_info );
