@@ -605,6 +605,11 @@ void r_equal_value_or_vector(double &r, double **lambdat, double **vec, fit_type
 double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     double ct,ctp;
     int N=fit_info.N;
+    if (fit_info.value_or_vector==1){
+        N=sqrt(fit_info.N);
+        error(fit_info.N!=(N*N) ,1,"GEVP_matrix_p1",
+          "when you want the eigenvector N must be the quare of the size of the matrix: fit_info.N=%d ", fit_info.N );
+    }
     int ncorr=fit_info.corr_id.size();
     error(ncorr!=(N*N+N)/2 ,1,"GEVP_matrix",
           "you need to provide (N^2+N)/2 to populate the top triangular matrix NxN:\n  N=%d    ncorr=%d\n",N,ncorr  );
@@ -653,19 +658,22 @@ double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
         }
         
     }
-    error(!is_it_positive_lex_reim(Mt0, N) , 1, "GEVP_matrix:", "GEVP_matrix M(t0) not positive defined"  ) ;
+//     error(!is_it_positive_lex_reim(Mt0, N) , 1, "GEVP_matrix:", "GEVP_matrix M(t0) not positive defined"  ) ;
     generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec); 
 //     if (t==t0){
 //         for (int i=0;i<N;i++)
 //             printf("%g\t",lambdat[i][0]);
 //         printf("\n");
 //     }
-    int n=fit_info.n;
-    if((t-t0)>=0)
-        r=lambdat[n][0];
-    else 
-        r=lambdat[N-1-n][0];
+    
+//     int n=fit_info.n;
+//     if((t-t0)>=0)
+//         r=lambdat[n][0];
+//     else 
+//         r=lambdat[N-1-n][0];
             
+    int n=fit_info.n;
+    r_equal_value_or_vector(r,  lambdat, vec, fit_info,  t, t0);
     
     free_2(N*N,M);
     free_2(N*N,Mt0);
@@ -926,7 +934,7 @@ double GEVP_matrix_p11(int j, double ****in,int t,struct fit_type fit_info ){
     auto v= fit_info.corr_id;
    
     
-    error(!is_it_positive_lex_reim(Mt0, N) , 1, "GEVP_matrix:", "GEVP_matrix M(t0) not positive defined"  ) ;
+//     error(!is_it_positive_lex_reim(Mt0, N) , 1, "GEVP_matrix:", "GEVP_matrix M(t0) not positive defined"  ) ;
     generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec); 
     int n=fit_info.n;
     if((t-t0)>=0)

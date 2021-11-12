@@ -1489,7 +1489,7 @@ int main(int argc, char **argv){
         fit_out.chi2=(double*) malloc(sizeof(double)*Njack);
         fit_out.C=double_malloc_3(Njack,fit_info.Npar,fit_info.Npar);
     }
-    
+{
     E2_01=malloc_copy_jackboot( Njack,fit_out.P[0]);
     double *a=scattering_len_luscher(  Njack,  mass[0], mass[1], fit_out.P[0] ,params.data.L[1]);
     tmpj=(double*) malloc(sizeof(double)*Njack);
@@ -1535,9 +1535,9 @@ int main(int argc, char **argv){
         tmp_muj[j]=a[j]*pi_greco*(mass[0][j]+mass[1][j])/(mass[0][j]*mass[1][j]) ;
     fprintf(outfile,"%g   %g\n", tmp_muj[Njack-1], error_jackboot(option[4],Njack,tmp_muj)  );
     
-    
+    free(a);
     free(tmpj); free(tmp_muj);
-    
+}
     free_fit_result(fit_info,fit_out);
     fflush(outfile);
     fit_info.restore_default();
@@ -1556,7 +1556,7 @@ int main(int argc, char **argv){
     fit_info.ext_P[0]=mass[0];
     fit_info.ext_P[1]=mass[1];
         //c++ 20 || r 21
-    if (params.data.muC>0){
+    if (params.data.muC>0   ){
         fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, GEVP_shift_matrix , "GEVP_E2_01",  fit_info, jack_file);
         free_fit_result(fit_info,fit_out);
     }
@@ -2210,7 +2210,7 @@ if(params.data.ncorr>33){
     file_head.k[2]=mu1;    file_head.k[3]=mu1;
     E2_0_A1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,39,"E2_0_A1", shift_and_M_eff_sinh_T,jack_file);
     int dvec[3]= {0,0,0};
-    if (params.data.lambdaC0!=0) phase_shift(E2_0_A1,mass[0],dvec, params.data.L[1], outfile,  Njack, option[4] );
+    if (params.data.lambdaC0!=0 ) phase_shift(E2_0_A1,mass[0],dvec, params.data.L[1], outfile,  Njack, option[4] );
     
 //     fprintf(outfile,"#E2_CM   err  E2_CM/M   err   re(delta)   err\n " );
 //         double *E2_CM=(double*) malloc(sizeof(double)*Njack);
@@ -2322,9 +2322,8 @@ else {    for(int i=21;i < 89;i++ )  zero_corr(zeros,Njack, jack_file );}
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile, 
                                    lhs_E2_div_shift<11>, "E2_01_div_shift",  fit_info, jack_file );
     
-    free(a);
     //a=scattering_len_luscher(  Njack,  mass[0], mass[1], fit_out.P[0] ,params.data.L[1]);
-    a=(double*) calloc(Njack,sizeof(double));
+    double * a=(double*) calloc(Njack,sizeof(double));
     tmpj=(double*) malloc(sizeof(double)*Njack);
     tmp_muj=(double*) malloc(sizeof(double)*Njack);
     sub_jackboot(Njack,  tmpj, fit_out.P[0], mass[0] );
@@ -3347,6 +3346,7 @@ if (params.data.ncorr>148){
     fit_info.N=3;
     fit_info.corr_id={0, 129, 127,   5, 128,    1 };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
     fit_info.value_or_vector=0; // 0= values
+    fit_info.t0_GEVP=15;
     //fit_info.corr_id={1,2};
     printf("GEVP_phi0_phi03_phi1\n");
     add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix ,   fit_info );
@@ -3817,25 +3817,6 @@ if (params.data.ncorr>148){
     
     fit_info.restore_default();
     
-}else if (params.data.ncorr>=5){
-    int T=params.data.L[0];
-    fit_info.Nvar=1;
-    fit_info.Npar=1;
-    fit_info.N=1;
-    fit_info.Njack=Njack;
-    fit_info.corr_id={5,1};
-    fit_info.function=constant_fit ;
-    
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  diff_meff, "diff_GEVP_031_m2-m1",  fit_info, jack_file );
-    check_correlatro_counter(186);
-    free_fit_result(fit_info,fit_out);
-    
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  ratio_meff, "ratio_GEVP_031_m2-m1",  fit_info, jack_file );
-    check_correlatro_counter(187);
-    free_fit_result(fit_info,fit_out);
-    
-    fit_info.restore_default();
-    
 }else { for(int i=186;i < 188;i++ ) zero_corr(zeros,Njack, jack_file );}
 
 check_correlatro_counter(187);
@@ -3861,32 +3842,87 @@ if (params.data.ncorr>=135){
     free_fit_result(fit_info,fit_out);
     fit_info.restore_default();
     
-}else if (params.data.ncorr>=95){ 
-    
-    int T=params.data.L[0];
-    fit_info.Nvar=1;
-    fit_info.Npar=1;
-    fit_info.N=1;
-    fit_info.Njack=Njack;
-    fit_info.corr_id={95,34};
-    fit_info.function=constant_fit ;
-    
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  diff_meff, "diff_GEVP_031_p1_m2-m1",  fit_info, jack_file );
-    check_correlatro_counter(188);
-    free_fit_result(fit_info,fit_out);
-    
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  ratio_meff, "ratio_GEVP_031_p1_m2-m1",  fit_info, jack_file );
-    check_correlatro_counter(189);
-    free_fit_result(fit_info,fit_out);
-    
-    fit_info.restore_default();
-    
 }else { for(int i=188;i < 190;i++ )  zero_corr(zeros,Njack, jack_file );}
 
 check_correlatro_counter(189);
 
 
 printf("id_GEVP_031=%d\n",id_GEVP_031);
+
+
+
+
+
+if (params.data.ncorr>=148){ 
+    
+    int sqrtN=3;
+    int N=sqrtN*sqrtN;
+    fit_info.N=N;
+    fit_info.corr_id={0, 129, 127,   5, 128,    1 };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
+    fit_info.value_or_vector=1; // 0= values
+    fit_info.t0_GEVP=10;
+    //fit_info.corr_id={1,2};
+    printf("GEVP_phi0_phi03_phi1_v\n");
+    add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix ,   fit_info );
+    printf(" ncorr after GEVP %d\n",ncorr_new);
+    
+    
+    fit_info.restore_default();
+    //id_GEVP_031_p1=ncorr_new;
+    char name_v[NAMESIZE];
+    for (int i=0; i< N; i++){
+        int comp=i%sqrtN;
+        int id=i/sqrtN;
+        mysprintf(name_v,NAMESIZE,"GEVP_phi0_phi03_phi1_v%d_%d",id,comp   );
+        double *l0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-N+i, name_v, identity,jack_file);
+        free(l0_GEVP);
+        
+    }
+    check_correlatro_counter(198);
+    
+    FILE *ftmp=open_file("jackknife_phi0phi0.txt","w+");
+    for (int t=0; t< params.data.L[0];t++ ){
+        fprintf(ftmp,"%d\t",t );
+        for (int j=0; j<Njack; j++){
+            fprintf(ftmp,"%.15f\t ", conf_jack[j][0][t][0]);
+        }
+        fprintf(ftmp,"\n");
+    }
+    fclose(ftmp);
+    ftmp=open_file("jackknife_phi1phi1.txt","w+");
+    for (int t=0; t< params.data.L[0];t++ ){
+        fprintf(ftmp,"%d\t",t );
+        for (int j=0; j<Njack; j++){
+            fprintf(ftmp,"%.15f\t ", conf_jack[j][1][t][0]);
+        }
+        fprintf(ftmp,"\n");
+    }
+    fclose(ftmp);
+    ftmp=open_file("jackknife_phi0pphi0-pphi0.txt","w+");
+    for (int t=0; t< params.data.L[0];t++ ){
+        fprintf(ftmp,"%d\t",t );
+        for (int j=0; j<Njack; j++){
+            fprintf(ftmp,"%.15f\t ", conf_jack[j][116][t][0]);
+        }
+        fprintf(ftmp,"\n");
+    }
+    fclose(ftmp);
+    ftmp=open_file("jackknife_phi0phi0phi0.txt","w+");
+    for (int t=0; t< params.data.L[0];t++ ){
+        fprintf(ftmp,"%d\t",t );
+        for (int j=0; j<Njack; j++){
+            fprintf(ftmp,"%.15f\t ", conf_jack[j][5][t][0]);
+        }
+        fprintf(ftmp,"\n");
+    }
+    fclose(ftmp);
+    
+}else { for(int i=189;i < 199;i++ )  zero_corr(zeros,Njack, jack_file );}
+check_correlatro_counter(198);
+
+ double *E3_0_meff=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile,5,"E3_0_meff", M_eff_T,jack_file,fit_info);
+ free(E3_0_meff);
+ check_correlatro_counter(199);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 // free(E1_0_p1);
