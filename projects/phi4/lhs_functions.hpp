@@ -125,6 +125,18 @@ double ratio_meff(int j, double ****in,int t ,struct fit_type fit_info){
 
     return m1/m2;
 }
+double ratio_corr(int j, double ****in,int t ,struct fit_type fit_info){
+    int id1=fit_info.corr_id[0];
+    int id2=fit_info.corr_id[1];
+    if(fit_info.corr_id.size()!=2){printf("ratio_meff: corr_id must be a vector of the two masses you want to subtract\n");exit(1);}
+    
+    int T=file_head.l0;
+    double ctn= in[j][id1][t][0];
+    double ctd= in[j][id2][t][0];
+    
+
+    return ctn/ctd;
+}
 
 template<int ix,int iy,int iz>
 double m_eff_of_sum(int j, double ****in,int t ,struct fit_type fit_info){
@@ -607,7 +619,7 @@ double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     int N=fit_info.N;
     if (fit_info.value_or_vector==1){
         N=sqrt(fit_info.N);
-        error(fit_info.N!=(N*N) ,1,"GEVP_matrix_p1",
+        error(fit_info.N!=(N*N) ,1,"GEVP_matrix",
           "when you want the eigenvector N must be the quare of the size of the matrix: fit_info.N=%d ", fit_info.N );
     }
     int ncorr=fit_info.corr_id.size();
@@ -653,7 +665,7 @@ double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     if (t==0 && j==0 && fit_info.n==0){
         for (int i=0;i<N;i++){
             for (int j=0;j<N;j++)
-                printf("%.5e\t",Mt0[i+j*N][0]);
+                printf("%.15f\t",Mt0[i+j*N][0]);
             printf("\n");
         }
         

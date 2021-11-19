@@ -128,14 +128,19 @@ void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalu
   c  = b.inverse()*a;
   
   
-  Eigen::LLT<Eigen::MatrixXcd> lltOfA(c); // compute the Cholesky decomposition of A
-  if(lltOfA.info() == Eigen::NumericalIssue){
-       std::cout<<"non semi-positive definitie matrix!"<<std::endl;
-       //throw std::runtime_error("Possibly non semi-positive definitie matrix!");
-  }    
+  
   
   Eigen::ComplexEigenSolver<Eigen::MatrixXcd> ces;
   ces.compute(c);
+  
+  Eigen::LLT<Eigen::MatrixXcd> lltOfA(c); // compute the Cholesky decomposition of A
+  if(lltOfA.info() == Eigen::NumericalIssue){
+       std::cout<<"non semi-positive definitie matrix!"<<std::endl;
+       std::cout<< lltOfA.info() << std::endl;
+       std::cout<< c<< std::endl;
+       for(int i=0;i<N;i++)
+           std::cout<< ces.eigenvalues()[i]<< std::endl;
+  }    
 
   Eigen::VectorXcd v;
   std::complex<double> norm;
@@ -153,11 +158,43 @@ void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalu
       (*eigenvalues)[i][0]=lambda[ii];
       (*eigenvalues)[i][1]=0;
       v=ces.eigenvectors().col(ii);
-
+      
+      Eigen::VectorXcd res=c*v-ces.eigenvalues()[ii]*v;
+      double sum=0;
+      for (int i =0; i<N;i++)
+          sum+=real(res(i));
+      if ( sum > 1e-6 ){
+          printf("error eigenvalues\n");
+          std::cout <<c*v<< std::endl;
+          std::cout <<  "   l=" <<ces.eigenvalues()[ii]<< std::endl;
+          std::cout <<ces.eigenvalues()[ii]*v<< std::endl;
+          exit(1);
+      }
+//       Eigen::VectorXcd v1=ces.eigenvectors().col(order[(N-1-i+1)%N]);
+//       Eigen::VectorXcd v2=ces.eigenvectors().col(order[(N-1-i+2)%N]);
+//       if ( v1.adjoint()*(v) > 1e-6 ){
+//             printf("error eigevectors not ortogonal\n");
+//             
+//       }
+     /* if (N==3){
+        std::cout<< lambda[order[(N-1-i+2)%N]] << "\n";  
+        std::cout<< v2 << "\n\n";
+        
+        std::cout<< lambda[order[(N-1-i+1)%N]] << "\n";  
+        std::cout<< v1 << "\n\n";
+        std::cout<< lambda[order[ii]] << "\n";  
+        std::cout<< v << "\n\n";
+        std::cout<< v1.adjoint()*(v) << std::endl;
+      }        */  
+      int sing =1;
+      double vmax=fabs(real(v(0)));
+      for(j=1;j<N;j++){
+        if (fabs(vmax) < fabs(real(v(j))) ) vmax=(real(v(j)));
+      }
+      if (vmax <0) sing=-1;
       for(j=0;j<N;j++){
-          
-          (*eigenvectors)[j+ii*N][0]=real(v(j));
-          (*eigenvectors)[j+ii*N][1]=imag(v(j));
+          (*eigenvectors)[j+ii*N][0]=sing*real(v(j));
+          (*eigenvectors)[j+ii*N][1]=sing*imag(v(j));
       }
   }
   free(lambda);free(order);

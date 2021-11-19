@@ -30,7 +30,7 @@
 void check_correlatro_counter(int i){
     if( corr_counter!=i){
         printf("correlator counter wrong\n");
-        printf("corr_counter=%d     expected=%d\n",corr_counter,i);
+        printf("corr_counter=%d     expected=%d\n",i,corr_counter);
         exit(-1);
     }
 }
