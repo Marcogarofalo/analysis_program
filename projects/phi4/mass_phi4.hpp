@@ -62,6 +62,7 @@ void phase_shift(double *E2,double *mass, int  *dvec,int L,FILE *outfile, int Nj
     double *k=(double*) malloc(sizeof(double)*Njack);
     for (int j=0;j< Njack;j++){
         E2_CM[j]=energy_CM(E2[j],dvec,L);
+        if (E2_CM[j] != E2_CM[j]) return;
         k[j]=sqrt(E2_CM[j]*E2_CM[j]/4. -mass[j]*mass[j]);
     }
     fprintf(outfile,"%.12g  %.12g  \t ", E2_CM[Njack-1],error_jackboot(jackboot,Njack,E2_CM ) );
