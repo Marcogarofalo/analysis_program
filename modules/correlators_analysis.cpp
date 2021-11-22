@@ -77,6 +77,52 @@ double shift_and_M_eff_acosh(int t,int T , double **in){
     
 }
 
+inline double second_der_time(  int t, int T, double **in){
+    return (6*in[t][0]-4*in[(t+1)%T][0]+in[(t+2)%T][0]-4*in[(t-1+T)%T][0]+in[(t-2+T)%T][0]);
+}
+
+
+double laplacian_M_eff_T(  int t, int T, double **in){
+    double mass;
+    double ct[1],ctp[1],res,tmp_mass, u,d ;
+    int i,L0;
+    ct[0]=second_der_time( t,  T, in);
+    ctp[0]=second_der_time( (t+1)%T,  T, in);
+    mass=log(ct[0]/ctp[0]);
+    res=1;
+    i=t;
+    while(res>1e-12){
+             u=1.+exp(-mass*(T-2.*i-2.));
+             d=1.+exp(-mass*(T-2.*i));
+             tmp_mass=log( (ct[0]/ctp[0]) * (u/d)) ;
+             res=fabs(tmp_mass - mass);
+             mass=tmp_mass;
+    }
+    return mass;
+}
+
+
+inline double der2sym(  int t, int T, double **in){
+    return (in[(t+1)%T][0]-2*in[(t)][0]+in[(t-1+T)%T][0]);
+}
+double der2corr_M_eff_T(  int t, int T, double **in){
+    double mass;
+    double ct[1],ctp[1],res,tmp_mass, u,d ;
+    int i,L0;
+    ct[0]=der2sym( t,  T, in);
+    ctp[0]=der2sym( (t+1)%T,  T, in);
+    mass=log(ct[0]/ctp[0]);
+    res=1;
+    i=t;
+    while(res>1e-12){
+             u=1.+exp(-mass*(T-2.*i-2.));
+             d=1.+exp(-mass*(T-2.*i));
+             tmp_mass=log( (ct[0]/ctp[0]) * (u/d)) ;
+             res=fabs(tmp_mass - mass);
+             mass=tmp_mass;
+    }
+    return mass;
+}
 
 double M_eff_T(  int t, int T, double **in){
     double mass;

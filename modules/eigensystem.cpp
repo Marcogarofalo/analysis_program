@@ -114,69 +114,79 @@ void quickSort(int *order, double *arr, int low, int high)
 
 void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalues, double ***eigenvectors )
 {
-  int i,j;
-  Eigen::MatrixXcd a(N, N);
-  Eigen::MatrixXcd b(N, N);
-  typedef std::complex<double> C;
-  for(i=0;i<N;i++){
-      for(j=0;j<N;j++){
-          a(i,j)= C(A[i+j*N][0],0*A[i+j*N][1]);   
-          b(i,j)= C(B[i+j*N][0],0*B[i+j*N][1]);   
-      }
-  }  
-  Eigen::MatrixXcd c(N,N);
-  c  = b.inverse()*a;
-  
-  
-  
-  
-  Eigen::ComplexEigenSolver<Eigen::MatrixXcd> ces;
-  ces.compute(c);
-  
-  Eigen::LLT<Eigen::MatrixXcd> lltOfA(c); // compute the Cholesky decomposition of A
-  if(lltOfA.info() == Eigen::NumericalIssue){
-       std::cout<<"non semi-positive definitie matrix!"<<std::endl;
-       std::cout<< lltOfA.info() << std::endl;
-       std::cout<< c<< std::endl;
-       for(int i=0;i<N;i++)
-           std::cout<< ces.eigenvalues()[i]<< std::endl;
-  }    
+    int i,j;
+    Eigen::MatrixXcd a(N, N);
+    Eigen::MatrixXcd b(N, N);
+    typedef std::complex<double> C;
+    for(i=0;i<N;i++){
+        for(j=0;j<N;j++){
+            a(i,j)= C(A[i+j*N][0],0*A[i+j*N][1]);   
+            b(i,j)= C(B[i+j*N][0],0*B[i+j*N][1]);   
+        }
+    }  
+    Eigen::MatrixXcd c(N,N);
+    c  = b.inverse()*a;
 
-  Eigen::VectorXcd v;
-  std::complex<double> norm;
-  
-  double *lambda=(double*) malloc(sizeof(double)*N);
-  int *order=(int*) malloc(sizeof(int)*N);
-  for(int i=0;i<N;i++){
-      lambda[i]=real(ces.eigenvalues()[i]);
-      order[i]=i;
-  }
-  quickSort(order, lambda, 0,N-1);
-  
-  for(i=0;i<N;i++){
-      int ii=order[N-1-i];
-      (*eigenvalues)[i][0]=lambda[ii];
-      (*eigenvalues)[i][1]=0;
-      v=ces.eigenvectors().col(ii);
-      
-      Eigen::VectorXcd res=c*v-ces.eigenvalues()[ii]*v;
-      double sum=0;
-      for (int i =0; i<N;i++)
-          sum+=real(res(i));
-      if ( sum > 1e-6 ){
-          printf("error eigenvalues\n");
-          std::cout <<c*v<< std::endl;
-          std::cout <<  "   l=" <<ces.eigenvalues()[ii]<< std::endl;
-          std::cout <<ces.eigenvalues()[ii]*v<< std::endl;
-          exit(1);
-      }
-//       Eigen::VectorXcd v1=ces.eigenvectors().col(order[(N-1-i+1)%N]);
-//       Eigen::VectorXcd v2=ces.eigenvectors().col(order[(N-1-i+2)%N]);
-//       if ( v1.adjoint()*(v) > 1e-6 ){
-//             printf("error eigevectors not ortogonal\n");
-//             
-//       }
-     /* if (N==3){
+    Eigen::ComplexEigenSolver<Eigen::MatrixXcd> ces;
+    ces.compute(c);
+
+    //   Eigen::LLT<Eigen::MatrixXcd> lltOfA(c); // compute the Cholesky decomposition of A
+    //   if(lltOfA.info() == Eigen::NumericalIssue){
+    //        std::cout<<"non semi-positive definitie matrix!"<<std::endl;
+    //        std::cout<< lltOfA.info() << std::endl;
+    //        std::cout<< c<< std::endl;
+    //        for(int i=0;i<N;i++)
+    //            std::cout<< ces.eigenvalues()[i]<< std::endl;
+    //   }    
+    int err=0;
+    for(int i=0;i<N;i++){
+        if ( imag(ces.eigenvalues()[i])>1e-8 || real(ces.eigenvalues()[i])<0 ){
+            err=1;
+        }
+    }
+    if (err==1){
+        std::cout<<"non semi-positive definitie matrix!"<<std::endl;
+        std::cout<< c<< std::endl;
+        for(int i=0;i<N;i++){
+            std::cout<< ces.eigenvalues()[i]<< std::endl;
+        }
+    }
+
+    Eigen::VectorXcd v;
+    std::complex<double> norm;
+
+    double *lambda=(double*) malloc(sizeof(double)*N);
+    int *order=(int*) malloc(sizeof(int)*N);
+    for(int i=0;i<N;i++){
+        lambda[i]=real(ces.eigenvalues()[i]);
+        order[i]=i;
+    }
+    quickSort(order, lambda, 0,N-1);
+
+    for(i=0;i<N;i++){
+        int ii=order[N-1-i];
+        (*eigenvalues)[i][0]=lambda[ii];
+        (*eigenvalues)[i][1]=0;
+        v=ces.eigenvectors().col(ii);
+        
+        Eigen::VectorXcd res=c*v-ces.eigenvalues()[ii]*v;
+        double sum=0;
+        for (int i =0; i<N;i++)
+            sum+=real(res(i));
+        if ( sum > 1e-6 ){
+            printf("error eigenvalues\n");
+            std::cout <<c*v<< std::endl;
+            std::cout <<  "   l=" <<ces.eigenvalues()[ii]<< std::endl;
+            std::cout <<ces.eigenvalues()[ii]*v<< std::endl;
+            exit(1);
+        }
+    //       Eigen::VectorXcd v1=ces.eigenvectors().col(order[(N-1-i+1)%N]);
+    //       Eigen::VectorXcd v2=ces.eigenvectors().col(order[(N-1-i+2)%N]);
+    //       if ( v1.adjoint()*(v) > 1e-6 ){
+    //             printf("error eigevectors not ortogonal\n");
+    //             
+    //       }
+        /* if (N==3){
         std::cout<< lambda[order[(N-1-i+2)%N]] << "\n";  
         std::cout<< v2 << "\n\n";
         
@@ -185,21 +195,19 @@ void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalu
         std::cout<< lambda[order[ii]] << "\n";  
         std::cout<< v << "\n\n";
         std::cout<< v1.adjoint()*(v) << std::endl;
-      }        */  
-      int sing =1;
-      double vmax=fabs(real(v(0)));
-      for(j=1;j<N;j++){
+        }        */  
+        int sing =1;
+        double vmax=real(v(0));
+        for(j=1;j<N;j++){
         if (fabs(vmax) < fabs(real(v(j))) ) vmax=(real(v(j)));
-      }
-      if (vmax <0) sing=-1;
-      for(j=0;j<N;j++){
-          (*eigenvectors)[j+ii*N][0]=sing*real(v(j));
-          (*eigenvectors)[j+ii*N][1]=sing*imag(v(j));
-      }
-  }
-  free(lambda);free(order);
-  
-  
+        }
+        if (vmax <0) sing=-1;
+        for(j=0;j<N;j++){
+            (*eigenvectors)[j+ii*N][0]=sing*real(v(j));
+            (*eigenvectors)[j+ii*N][1]=sing*imag(v(j));
+        }
+    }
+    free(lambda);free(order);
 }
 
 
