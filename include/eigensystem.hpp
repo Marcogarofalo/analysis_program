@@ -12,5 +12,7 @@ void complexEigenproblem(double **A, int N, double **eigenvalues, double **eigen
 /*
 void real_generalysed_Eigenproblem(double ***A, double ***B, int N, double **eigenvalues, double ***eigenvectors );
  */
-void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalues, double ***eigenvectors );
+void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalues, double ***eigenvectors,int verbosity=0 );
+void GEVP_real(double **A, double **B, int N, double ***eigenvalues, double ***eigenvectors , int verbosity=0);
+
 #endif

@@ -660,6 +660,7 @@ void r_equal_value_or_vector(double &r, double **lambdat, double **vec, fit_type
         }
         else{ 
             int comps=sqrt(N);
+            error(comps*comps!=N,1, "r_equal_value_or_vector:","N not a square!");
             int id=n/comps;
             int comp=n%comps;
             id = comp + (comps-1-id) *comps;
@@ -725,9 +726,7 @@ double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     
     double *s=(double*) malloc(sizeof(double)*N);
     double *s0=(double*) malloc(sizeof(double)*N);
-    
-    
-    
+      
      //t
     int count=0;
     for (int i=0;i<N;i++){
@@ -744,16 +743,13 @@ double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
         }
         
     }
-    if (t==0 && j==0 && fit_info.n==0){
-        for (int i=0;i<N;i++){
-            for (int j=0;j<N;j++)
-                printf("%.15f\t",Mt0[i+j*N][0]);
-            printf("\n");
-        }
-        
-    }
+    
 //     error(!is_it_positive_lex_reim(Mt0, N) , 1, "GEVP_matrix:", "GEVP_matrix M(t0) not positive defined"  ) ;
-    generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec); 
+    int verbosity=0;
+    if (t>2*T/5 || j!=0) verbosity=-1;
+    if(t==1){printf("t=1\n"); verbosity=3;}
+    //GEVP_real(M,Mt0,N,&lambdat,&vec,verbosity);
+    generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec,verbosity); 
            
     int n=fit_info.n;
     r_equal_value_or_vector(r,  lambdat, vec, fit_info,  t, t0);

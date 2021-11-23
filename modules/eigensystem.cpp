@@ -112,7 +112,7 @@ void quickSort(int *order, double *arr, int low, int high)
     }
 }
 
-void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalues, double ***eigenvectors )
+void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalues, double ***eigenvectors , int verbosity )
 {
     int i,j;
     Eigen::MatrixXcd a(N, N);
@@ -139,16 +139,44 @@ void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalu
     //            std::cout<< ces.eigenvalues()[i]<< std::endl;
     //   }    
     int err=0;
-    for(int i=0;i<N;i++){
-        if ( imag(ces.eigenvalues()[i])>1e-8 || real(ces.eigenvalues()[i])<0 ){
-            err=1;
-        }
-    }
-    if (err==1){
-        std::cout<<"non semi-positive definitie matrix!"<<std::endl;
-        std::cout<< c<< std::endl;
+    if(verbosity>=0){
         for(int i=0;i<N;i++){
-            std::cout<< ces.eigenvalues()[i]<< std::endl;
+            if ( imag(ces.eigenvalues()[i])>1e-8 || real(ces.eigenvalues()[i])<0 ){
+                err=1;
+            }
+        }
+        for(int i=0;i<N;i++){
+            for(int j=0;j<N;j++){
+                if ( imag(ces.eigenvectors().col(i)[j])>1e-8  ){
+                    err=2;
+                }
+            }
+        }
+        if (err>=1){
+            std::cout<<"non semi-positive definitie matrix!"<<std::endl;
+            std::cout<< c<< std::endl;
+            for(int i=0;i<N;i++){
+                std::cout<< ces.eigenvalues()[i]<< std::endl;
+            }
+        }
+        if (err>=2){
+            std::cout<<"eigenvectors (columns) are coplex!"<<std::endl;
+            std::cout<< ces.eigenvectors()<< std::endl;
+        }
+        if(verbosity>=3){
+            printf("the GEVP\n");
+            printf("{");
+            for (int i=0;i<N;i++){
+                printf("{");
+                for (int j=0;j<N;j++)
+                    printf("%.15f,\t",real( c(i,j) ) );
+                printf("},\n");
+            }
+            printf("}\n");
+            for(int i=0;i<N;i++){
+                std::cout<< ces.eigenvalues()[i]<< std::endl;
+            }
+            std::cout<< ces.eigenvectors()<< std::endl;
         }
     }
 
@@ -172,7 +200,7 @@ void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalu
         Eigen::VectorXcd res=c*v-ces.eigenvalues()[ii]*v;
         double sum=0;
         for (int i =0; i<N;i++)
-            sum+=real(res(i));
+            sum+=real(res(i)*conj(res(i)));
         if ( sum > 1e-6 ){
             printf("error eigenvalues\n");
             std::cout <<c*v<< std::endl;
@@ -199,12 +227,86 @@ void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalu
         int sing =1;
         double vmax=real(v(0));
         for(j=1;j<N;j++){
-        if (fabs(vmax) < fabs(real(v(j))) ) vmax=(real(v(j)));
+            if (fabs(vmax) < fabs(real(v(j))) ) vmax=(real(v(j)));
         }
         if (vmax <0) sing=-1;
         for(j=0;j<N;j++){
-            (*eigenvectors)[j+ii*N][0]=sing*real(v(j));
-            (*eigenvectors)[j+ii*N][1]=sing*imag(v(j));
+            (*eigenvectors)[j+i*N][0]=sing*real(v(j));
+            (*eigenvectors)[j+i*N][1]=sing*imag(v(j));
+        }
+    }
+    free(lambda);free(order);
+}
+
+
+void GEVP_real(double **A, double **B, int N, double ***eigenvalues, double ***eigenvectors , int verbosity )
+{
+    int i,j;
+    Eigen::MatrixXd a(N, N);
+    Eigen::MatrixXd b(N, N);
+    for(i=0;i<N;i++){
+        for(j=0;j<N;j++){
+            a(i,j)= A[i+j*N][0];   
+            b(i,j)= B[i+j*N][0];   
+        }
+    }  
+    Eigen::GeneralizedEigenSolver<Eigen::MatrixXd> ges;
+    ges.compute(a,b);
+
+    int err=0;
+    if(verbosity>=0){
+        for(int i=0;i<N;i++){
+            if ( imag(ges.eigenvalues()[i])>1e-8 || real(ges.eigenvalues()[i])<0 ){
+                err=1;
+            }
+        }
+        for(int i=0;i<N;i++){
+            for(int j=0;j<N;j++){
+                if ( imag(ges.eigenvectors().col(i)[j])>1e-8  ){
+                    err=2;
+                }
+            }
+        }
+        if (err>=1){
+            std::cout<<"non semi-positive definitie matrix!"<<std::endl;
+            std::cout<< a<< std::endl;
+            for(int i=0;i<N;i++){
+                std::cout<< ges.eigenvalues()[i]<< std::endl;
+            }
+        }
+        if (err>=2){
+            std::cout<<"eigenvectors (columns) are coplex!"<<std::endl;
+            std::cout<< ges.eigenvectors()<< std::endl;
+        }
+        
+    }
+
+    Eigen::VectorXcd v;
+    std::complex<double> norm;
+
+    double *lambda=(double*) malloc(sizeof(double)*N);
+    int *order=(int*) malloc(sizeof(int)*N);
+    for(int i=0;i<N;i++){
+        lambda[i]=real(ges.eigenvalues()[i]);
+        order[i]=i;
+    }
+    quickSort(order, lambda, 0,N-1);
+
+    for(i=0;i<N;i++){
+        int ii=order[N-1-i];
+        (*eigenvalues)[i][0]=lambda[ii];
+        (*eigenvalues)[i][1]=0;
+        v=ges.eigenvectors().col(ii);
+        
+        int sing =1;
+        double vmax=real(v(0));
+        for(j=1;j<N;j++){
+            if (fabs(vmax) < fabs(real(v(j))) ) vmax=(real(v(j)));
+        }
+        if (vmax <0) sing=-1;
+        for(j=0;j<N;j++){
+            (*eigenvectors)[j+i*N][0]=sing*real(v(j));
+            (*eigenvectors)[j+i*N][1]=sing*imag(v(j));
         }
     }
     free(lambda);free(order);
@@ -248,8 +350,8 @@ void complexeigenSolver(double **A, int N, double ***eigenvalues, double ***eige
  
       for(j=0;j<N;j++){
           
-          (*eigenvectors)[j+ii*N][0]=real(v(j));
-          (*eigenvectors)[j+ii*N][1]=imag(v(j));
+          (*eigenvectors)[j+i*N][0]=real(v(j));
+          (*eigenvectors)[j+i*N][1]=imag(v(j));
       }
   }
   free(lambda);free(order);
