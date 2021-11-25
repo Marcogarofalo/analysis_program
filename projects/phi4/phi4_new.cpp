@@ -4427,7 +4427,6 @@ if (params.data.ncorr>148){
     printf("GEVP_0_d0_1\n");
     add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix ,   fit_info );
     printf(" ncorr after GEVP %d\n",ncorr_new);
-    id_GEVP_031=ncorr_new;
     
     fit_info.restore_default();
     
@@ -4492,7 +4491,6 @@ if (params.data.ncorr>175){
     printf("GEVP_0_3_5\n");
     add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix ,   fit_info );
     printf(" ncorr after GEVP %d\n",ncorr_new);
-    id_GEVP_031=ncorr_new;
     
     fit_info.restore_default();
     
@@ -4554,7 +4552,6 @@ if (params.data.ncorr>175){
     printf("GEVP_0_3\n");
     add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix ,   fit_info );
     printf(" ncorr after GEVP %d\n",ncorr_new);
-    id_GEVP_031=ncorr_new;
     
     fit_info.restore_default();
     
@@ -4612,7 +4609,6 @@ if (params.data.ncorr>175){
     printf("GEVP_3_1\n");
     add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix ,   fit_info );
     printf(" ncorr after GEVP %d\n",ncorr_new);
-    id_GEVP_031=ncorr_new;
     
     fit_info.restore_default();
     
@@ -4670,7 +4666,6 @@ if (params.data.ncorr>175){
     printf("GEVP_0_1\n");
     add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix ,   fit_info );
     printf(" ncorr after GEVP %d\n",ncorr_new);
-    id_GEVP_031=ncorr_new;
     
     fit_info.restore_default();
     
@@ -4717,6 +4712,28 @@ check_correlatro_counter(367);
 
 
 
+if (params.data.ncorr>=170){ 
+
+    fit_info.Nvar=1;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.HENKEL_size=2;
+    fit_info.t0_GEVP=2;
+    fit_info.function=constant_fit ;
+    fit_info.corr_id={id_GEVP_031-3};
+    char name_h[NAMESIZE];
+    for (int i =0 ; i < 3; i++){
+        fit_info.corr_id[0]=id_GEVP_031-3+i;
+        mysprintf(name_h,NAMESIZE,"henkel_GEVP_0_3_1_meffl%d",i);
+        fit_result henkel_GEVP_0_3_1_meffl=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,namefile_plateaux, outfile,  hankel, name_h,  fit_info, jack_file );
+        free_fit_result(fit_info,henkel_GEVP_0_3_1_meffl);
+        check_correlatro_counter(368+i);
+    }
+
+    fit_info.restore_default();
+}else { for (int i =0 ; i < 3; i++) zero_corr(zeros,Njack, jack_file );}
+check_correlatro_counter(370);
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    

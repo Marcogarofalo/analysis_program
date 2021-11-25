@@ -843,7 +843,7 @@ int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
 } 
 
 
-void add_correlators(char **option , int& ncorr_conf_jack, double ****&conf_jack , double fun_of_corr(int, double****,int, struct fit_type ) ,  struct fit_type fit_info ){
+void add_correlators(char **option , int& ncorr_conf_jack, double ****&conf_jack , double **fun_of_corr(int, double****,int, struct fit_type ) ,  struct fit_type fit_info ){
     
     int correlators_out=ncorr_conf_jack+fit_info.N;
     int Njack=fit_info.Njack;
@@ -859,12 +859,24 @@ void add_correlators(char **option , int& ncorr_conf_jack, double ****&conf_jack
         }
     }
     
-    for(int n=0; n<fit_info.N; n++){
-        fit_info.n=n; // this goes in to fun_of_corr
-        for(int j=0; j<Njack; j++){
-            for(int t=0; t<file_head.l0; t++){
-                corr_out[j][ncorr_conf_jack+ n][t][0]=fun_of_corr(j,conf_jack,t,fit_info);
-                corr_out[j][ncorr_conf_jack+ n][t][1]=0;
+    // for(int n=0; n<fit_info.N; n++){
+    //     fit_info.n=n; // this goes in to fun_of_corr
+    //     for(int j=0; j<Njack; j++){
+    //         for(int t=0; t<file_head.l0; t++){
+    //             corr_out[j][ncorr_conf_jack+ n][t][0]=fun_of_corr(j,conf_jack,t,fit_info);
+    //             corr_out[j][ncorr_conf_jack+ n][t][1]=0;
+    //         }
+    //     }
+    // }
+    
+    
+    for(int j=0; j<Njack; j++){
+        for(int t=0; t<file_head.l0; t++){
+            for(int n=0; n<fit_info.N; n++){
+                double **r=fun_of_corr(j,conf_jack,t,fit_info);
+                corr_out[j][ncorr_conf_jack+ n][t][0]=r[n][0];
+                corr_out[j][ncorr_conf_jack+ n][t][1]=r[n][1];
+                free(r);
             }
         }
     }

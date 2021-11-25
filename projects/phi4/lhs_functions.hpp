@@ -644,27 +644,38 @@ double GEVP_shift_matrix(int j, double ****in,int t,struct fit_type fit_info ){
 }
 
 
-void r_equal_value_or_vector(double &r, double **lambdat, double **vec, fit_type fit_info, int t, int t0 ){
+double **r_equal_value_or_vector( double **lambdat, double **vec, fit_type fit_info, int t, int t0 ){
     int n=fit_info.n;
     int N=fit_info.N; //if eigenvector N= component+ id_eigenvector * components
+    double **r=double_malloc_2(N,2);
+    
     if (fit_info.value_or_vector==0){
-        if((t-t0)>=0)
-            r=lambdat[n][0];
-        else 
-            r=lambdat[N-1-n][0];
+        for(int n=0; n<N;n++){
+            if((t-t0)>=0){
+                r[n][0]=lambdat[n][0];
+                r[n][1]=lambdat[n][1];
+            }
+            else {
+                r[n][0]=lambdat[N-1-n][0];
+                r[n][1]=lambdat[N-1-n][1];
+            }
+        }
     }       
     else if (fit_info.value_or_vector==1){
-        
-        if((t-t0)>=0){
-            r=vec[n][0];
-        }
-        else{ 
-            int comps=sqrt(N);
-            error(comps*comps!=N,1, "r_equal_value_or_vector:","N not a square!");
-            int id=n/comps;
-            int comp=n%comps;
-            id = comp + (comps-1-id) *comps;
-            r=vec[id][0];
+        for(int n=0; n<N;n++){
+            if((t-t0)>=0){
+                r[n][0]=vec[n][0];
+                r[n][1]=vec[n][1];
+            }
+            else{ 
+                int comps=sqrt(N);
+                error(comps*comps!=N,1, "r_equal_value_or_vector:","N not a square!");
+                int id=n/comps;
+                int comp=n%comps;
+                id = comp + (comps-1-id) *comps;
+                r[n][0]=vec[id][0];
+                r[n][1]=vec[id][1];
+            }
         }
     }
     else{
@@ -673,20 +684,29 @@ void r_equal_value_or_vector(double &r, double **lambdat, double **vec, fit_type
                 - eigenvectors (fit_info.value_or_vector=1)");
         exit(1);
     }
+    return r;
 }
 
 
-double der2_der2_corr(int j, double ****in,int t,struct fit_type fit_info ){
+double **der2_der2_corr(int j, double ****in,int t,struct fit_type fit_info ){
     int n=fit_info.n;
     int id=fit_info.corr_id[n];
     int T=fit_info.T;
-    return in[j][n][(t+2)%T][0]-4*in[j][n][(t+1)%T][0]+6*in[j][n][t][0]-4*in[j][n][(t-1+T)%T][0]+in[j][n][(t-2+T)%T][0];
+    error(fit_info.N!=1,1,"der2_der2_corr","works only with one corr");
+    double **r=double_malloc_2(fit_info.N,2);
+    r[0][0]=in[j][n][(t+2)%T][0]-4*in[j][n][(t+1)%T][0]+6*in[j][n][t][0]-4*in[j][n][(t-1+T)%T][0]+in[j][n][(t-2+T)%T][0];
+    r[0][1]=in[j][n][(t+2)%T][1]-4*in[j][n][(t+1)%T][1]+6*in[j][n][t][1]-4*in[j][n][(t-1+T)%T][1]+in[j][n][(t-2+T)%T][1];
+    return r;
 }
-double der2_corr(int j, double ****in,int t,struct fit_type fit_info ){
+double **der2_corr(int j, double ****in,int t,struct fit_type fit_info ){
     int n=fit_info.n;
     int id=fit_info.corr_id[n];
     int T=fit_info.T;
-    return in[j][n][(t+1)%T][0]-2*in[j][n][t][0]+in[j][n][(t-1+T)%T][0];
+    error(fit_info.N!=1,1,"der2_der2_corr","works only with one corr");
+    double **r=double_malloc_2(fit_info.N,2);
+    r[0][0]=in[j][n][(t+1)%T][0]-2*in[j][n][t][0]+in[j][n][(t-1+T)%T][0];
+    r[0][1]=in[j][n][(t+1)%T][1]-2*in[j][n][t][1]+in[j][n][(t-1+T)%T][1];
+    return r; 
 }
 
 
@@ -697,7 +717,7 @@ double der2_corr(int j, double ****in,int t,struct fit_type fit_info ){
  * [first row], [second row], ...
  * M_00, M_01, ..., M_0N, M_11, ...
 **********************************/
-double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
+double **GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     double ct,ctp;
     int N=fit_info.N;
     if (fit_info.value_or_vector==1){
@@ -722,7 +742,6 @@ double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     }
     else if (fit_info.GEVP_tpt0)
         t0= (fit_info.t0_GEVP+t)%T ; 
-    double r;
     
     double *s=(double*) malloc(sizeof(double)*N);
     double *s0=(double*) malloc(sizeof(double)*N);
@@ -743,16 +762,19 @@ double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
         }
         
     }
-    
+
 //     error(!is_it_positive_lex_reim(Mt0, N) , 1, "GEVP_matrix:", "GEVP_matrix M(t0) not positive defined"  ) ;
     int verbosity=0;
     if (t>2*T/5 || j!=0) verbosity=-1;
-    if(t==1){printf("t=1\n"); verbosity=3;}
+//    if(t==1){printf("t=1\n"); verbosity=3;}
+//        printf("t= %d\n",t);verbosity=3;
+
     //GEVP_real(M,Mt0,N,&lambdat,&vec,verbosity);
     generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec,verbosity); 
            
     int n=fit_info.n;
-    r_equal_value_or_vector(r,  lambdat, vec, fit_info,  t, t0);
+    double **r;
+    r=r_equal_value_or_vector(  lambdat, vec, fit_info,  t, t0);
     
     free_2(N*N,M);
     free_2(N*N,Mt0);
@@ -763,7 +785,9 @@ double GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     return r;
 }
 
-double GEVP_matrix_scaling(int j, double ****in,int t,struct fit_type fit_info ){
+
+
+double **GEVP_matrix_scaling(int j, double ****in,int t,struct fit_type fit_info ){
     double ct,ctp;
     int N=fit_info.N;
     if (fit_info.value_or_vector==1){
@@ -788,7 +812,6 @@ double GEVP_matrix_scaling(int j, double ****in,int t,struct fit_type fit_info )
     }
     else if (fit_info.GEVP_tpt0)
         t0= (fit_info.t0_GEVP+t)%T ; 
-    double r;
     
     double *s=(double*) malloc(sizeof(double)*N);
     double *s0=(double*) malloc(sizeof(double)*N);
@@ -833,8 +856,9 @@ double GEVP_matrix_scaling(int j, double ****in,int t,struct fit_type fit_info )
     generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec); 
             
     int n=fit_info.n;
-    r_equal_value_or_vector(r,  lambdat, vec, fit_info,  t, t0);
-    
+    double **r;
+    r=r_equal_value_or_vector(  lambdat, vec, fit_info,  t, t0);
+        
     free_2(N*N,M);
     free_2(N*N,Mt0);
     free_2(N,lambdat);
@@ -853,7 +877,7 @@ double GEVP_matrix_scaling(int j, double ****in,int t,struct fit_type fit_info )
  * [first row], [second row], ...
  * M_00, M_01, ..., M_0N, M_11, ... + M_00(py), M_00(pz), M_22(py), M_22(pz),
 **********************************/
-double GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
+double **GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
     double ct,ctp;
     
     int N=fit_info.N;
@@ -882,7 +906,6 @@ double GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
     else if (fit_info.GEVP_tpt0)
         t0= (fit_info.t0_GEVP+t)%T ; 
     
-    double r;
     
     double *s=(double*) malloc(sizeof(double)*N);
     double *s0=(double*) malloc(sizeof(double)*N);
@@ -932,7 +955,9 @@ double GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
 //     printf("\n");
 //     }
     int n=fit_info.n;
-    r_equal_value_or_vector(r,  lambdat, vec, fit_info,  t, t0);
+    double **r;
+    r=r_equal_value_or_vector(  lambdat, vec, fit_info,  t, t0);
+    
     
     free_2(N*N,M);
     free_2(N*N,Mt0);
@@ -951,7 +976,7 @@ double GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
  * [first row], [second row], ...
  * M_00, M_01, ..., M_0N, M_11, ... + M_00(py), M_00(pz), M_22(py), M_22(pz),
 **********************************/
-double GEVP_matrix_4_p1(int j, double ****in,int t,struct fit_type fit_info ){
+double **GEVP_matrix_4_p1(int j, double ****in,int t,struct fit_type fit_info ){
     double ct,ctp;
     int N=fit_info.N;
     int ncorr=fit_info.corr_id.size()/3;
@@ -973,7 +998,6 @@ double GEVP_matrix_4_p1(int j, double ****in,int t,struct fit_type fit_info ){
     else if (fit_info.GEVP_tpt0)
         t0= (fit_info.t0_GEVP+t)%T ; 
      
-    double r;
     
     double *s=(double*) malloc(sizeof(double)*N);
     double *s0=(double*) malloc(sizeof(double)*N);
@@ -1021,12 +1045,14 @@ double GEVP_matrix_4_p1(int j, double ****in,int t,struct fit_type fit_info ){
 //     
     generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec); 
 
-    int n=fit_info.n;
-    if((t-t0)>=0)
-        r=lambdat[n][0];
-    else 
-        r=lambdat[N-1-n][0];
-            
+    // int n=fit_info.n;
+    // if((t-t0)>=0)
+    //     r=lambdat[n][0];
+    // else 
+    //     r=lambdat[N-1-n][0];
+    double **r;
+    r=r_equal_value_or_vector(  lambdat, vec, fit_info,  t, t0);
+           
     
     free_2(N*N,M);
     free_2(N*N,Mt0);
@@ -1045,7 +1071,7 @@ double GEVP_matrix_4_p1(int j, double ****in,int t,struct fit_type fit_info ){
  * [first row], [second row], ...
  * M_00, M_01, ..., M_0N, M_11, ... + M_00(py), M_00(pz), M_22(py), M_22(pz),
 **********************************/
-double GEVP_matrix_p11(int j, double ****in,int t,struct fit_type fit_info ){
+double **GEVP_matrix_p11(int j, double ****in,int t,struct fit_type fit_info ){
     double ct,ctp;
     int N=fit_info.N;
     int ncorr=fit_info.corr_id.size()/3;
@@ -1067,7 +1093,6 @@ double GEVP_matrix_p11(int j, double ****in,int t,struct fit_type fit_info ){
     else if (fit_info.GEVP_tpt0)
         t0= (fit_info.t0_GEVP+t)%T ; 
     
-    double r;
     
     double *s=(double*) malloc(sizeof(double)*N);
     double *s0=(double*) malloc(sizeof(double)*N);
@@ -1096,11 +1121,13 @@ double GEVP_matrix_p11(int j, double ****in,int t,struct fit_type fit_info ){
     
 //     error(!is_it_positive_lex_reim(Mt0, N) , 1, "GEVP_matrix:", "GEVP_matrix M(t0) not positive defined"  ) ;
     generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec); 
-    int n=fit_info.n;
-    if((t-t0)>=0)
-        r=lambdat[n][0];
-    else 
-        r=lambdat[N-1-n][0];
+    // int n=fit_info.n;
+    // if((t-t0)>=0)
+    //     r=lambdat[n][0];
+    // else 
+    //     r=lambdat[N-1-n][0];
+    double **r;
+    r=r_equal_value_or_vector(  lambdat, vec, fit_info,  t, t0);
             
     
     free_2(N*N,M);
@@ -1113,3 +1140,47 @@ double GEVP_matrix_p11(int j, double ****in,int t,struct fit_type fit_info ){
 
 #endif
 
+double hankel(int j, double ****in,int t,struct fit_type fit_info ){
+    int N=fit_info.HENKEL_size;
+    double **M=double_calloc_2(N*N,2);// [NxN] [reim ]
+    double **Mt0=double_calloc_2(N*N,2);// [NxN] [reim ]
+    int T=file_head.l0;
+    int t0=fit_info.t0_GEVP;
+
+    double **lambdat=double_malloc_2(N,2);// [N] [reim]
+    double **vec=double_malloc_2(N*N,2);
+    for (int i=0;i<N;i++){
+        for (int k=i;k<N;k++){
+            int corr_id= fit_info.corr_id[0];
+            int ik=i+k*N;
+            int ki=k+i*N;
+            //printf("%d  %g\n",ik,in[j][corr_ik][t][0]);
+            M[ik][0]  = in[j][corr_id][(t+t0+i+k)%T][0];
+            Mt0[ik][0]= in[j][corr_id][(t+i+k)%T][0];
+            M[ki][0]=M[ik][0];
+            Mt0[ki][0]=Mt0[ik][0];
+        } 
+    }
+    int verbosity=0;
+    if (t>1*T/4 || j!=0) verbosity=-1;
+    generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec,verbosity); 
+    // error(fit_info.value_or_vector!=0, 1, "henkel", "henkel works only with eigenvalues");
+    // error(fit_info.n!=0, 1, "henkel", "henkel works only with eigenvalues");
+    // r_equal_value_or_vector(r,  lambdat, vec, fit_info,  t, t0);
+    int n=0;
+    double r=lambdat[N-1-n][0];
+    // if (fit_info.value_or_vector==0){
+    //     if((t-t0)>=0)
+    //         r=lambdat[n][0];
+    //     else 
+    //         r=lambdat[N-1-n][0];
+    // }    
+
+    r=-log(r)/((double) t0);
+    free_2(N*N,M);
+    free_2(N*N,Mt0);
+    free_2(N,lambdat);
+    free_2(N*N,vec);
+    return r;
+
+}

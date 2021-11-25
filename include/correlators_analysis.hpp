@@ -30,7 +30,7 @@ struct fit_result fit_function_to_corr(char **option ,struct kinematic kinematic
 struct fit_result fit_fun_to_fun_of_corr(char **option ,struct kinematic kinematic_2pt ,  char* name, double ****conf_jack ,const char  *plateaux_masses,FILE *outfile,  double fun_of_corr(int,double****,int,struct fit_type ) , const char *description , struct fit_type fit_info,  FILE * file_jack );
 
 
-void add_correlators(char **option , int& ncorr_conf_jack, double ****&conf_jack , double fun_of_corr(int, double****,int, struct fit_type ) ,  struct fit_type fit_info );
+void add_correlators(char **option , int& ncorr_conf_jack, double ****&conf_jack , double **fun_of_corr(int, double****,int, struct fit_type ) ,  struct fit_type fit_info );
 
 void zero_corr(double *zeros, int Njack, FILE *jack_file);
 #endif

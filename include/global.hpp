@@ -211,28 +211,33 @@ struct  fit_type
   double lambda=0.001;
   double acc=0.001; 
   double h=1e-5; 
+  int devorder=4;  // 2 , 4 , -2 adaptive h=h*parameter
+  int repeat_start=1;
+  double chi2_gap_jackboot=1;
+  int guess_per_jack=3;
+  int precision_sum=0;// 0 float, 1 float kahan,  >1 long double
+  
+  
   std::vector<int> corr_id={};
   std::vector<double>  Prange={};
   std::vector<double>  guess={};
+
+  // GEVP
   int t0_GEVP=3;
   int value_or_vector=0;  // eigenvalues=0 or eigenvalues =1
   bool GEVP_tpt0=false;
   bool GEVP_swap_t_t0=false;
+  
+  // HANKEL
+  int HENKEL_size=3;
 
   int T;
   int L;
-  
-  int devorder=4;  // 2 , 4 , -2 adaptive h=h*parameter
-  int repeat_start=1;
-  
   bool plateaux_scan=false;
   FILE *f_plateaux_scan=NULL;
   std::string name_plateaux_scan;
   
   std::string resampling;
-  double chi2_gap_jackboot=1;
-  int guess_per_jack=3;
-  int precision_sum=0;// 0 float, 1 float kahan,  >1 long double
   int verbosity=0;
   
   void restore_default(){
@@ -259,6 +264,8 @@ struct  fit_type
      GEVP_tpt0=false;
      GEVP_swap_t_t0=false;
 
+
+     HENKEL_size=3;
 //      f_plateaux_scan=NULL;
 //      name_plateaux_scan="\0";
   };
