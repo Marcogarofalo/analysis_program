@@ -154,6 +154,7 @@ void write_jack_corr(int N, int t,double **jack, char *outname);
 //returns the jacknife configuration from the data ****in
 //the last entry of [#conf] is the average
 double ****create_jack(int  N, int var, int t, double ****in);
+void symmetrise_jackboot(int  Np1, int var, int T, double ****in );
 double *mean_jack(int N,int var,int t, int call, double ****jack, double function_jack(int,int,int,double ***) );
 //mean_and_error_jack
 //returns the mean and error from set of N  jacknife called *in  and the average stored in in[N]

@@ -10,6 +10,7 @@ double identity(  int t, int T, double **in);
 double shift_corr(  int t, int T, double **in);
 double M_eff_log_shift(  int t, int T, double **in);
 double shift_and_M_eff_sinh_T(  int t, int T, double **in);
+double log_corr(int t, int T, double ** in);
 
 
 double M_eff_t0_sinh_T(  int t,int t0, int T, double **in);

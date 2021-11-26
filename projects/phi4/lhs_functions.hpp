@@ -646,7 +646,7 @@ double GEVP_shift_matrix(int j, double ****in,int t,struct fit_type fit_info ){
 
 double **r_equal_value_or_vector( double **lambdat, double **vec, fit_type fit_info, int t, int t0 ){
     int n=fit_info.n;
-    int N=fit_info.N; //if eigenvector N= component+ id_eigenvector * components
+    int N=fit_info.N*fit_info.HENKEL_size; //if eigenvector N= component+ id_eigenvector * components
     double **r=double_malloc_2(N,2);
     
     if (fit_info.value_or_vector==0){
@@ -709,6 +709,36 @@ double **der2_corr(int j, double ****in,int t,struct fit_type fit_info ){
     return r; 
 }
 
+double **der1_der1_corr(int j, double ****in,int t,struct fit_type fit_info ){
+    int n=fit_info.n;
+    int id=fit_info.corr_id[n];
+    int T=fit_info.T;
+    error(fit_info.N!=1,1,"der2_der2_corr","works only with one corr");
+    double **r=double_malloc_2(fit_info.N,2);
+    r[0][0]=-in[j][n][(t+1)%T][0]+2*in[j][n][t][0]-in[j][n][(t-1+T)%T][0];
+    r[0][1]=-in[j][n][(t+1)%T][1]+2*in[j][n][t][1]-in[j][n][(t-1+T)%T][1];
+    return r;
+}
+double **der1_corr(int j, double ****in,int t,struct fit_type fit_info ){
+    int n=fit_info.n;
+    int id=fit_info.corr_id[n];
+    int T=fit_info.T;
+    error(fit_info.N!=1,1,"der2_der2_corr","works only with one corr");
+    double **r=double_malloc_2(fit_info.N,2);
+    r[0][0]=in[j][n][(t+1)%T][0]-in[j][n][t][0];
+    r[0][1]=in[j][n][(t+1)%T][1]-in[j][n][t][1];
+    return r; 
+}
+double **der1dag_corr(int j, double ****in,int t,struct fit_type fit_info ){
+    int n=fit_info.n;
+    int id=fit_info.corr_id[n];
+    int T=fit_info.T;
+    error(fit_info.N!=1,1,"der2_der2_corr","works only with one corr");
+    double **r=double_malloc_2(fit_info.N,2);
+    r[0][0]=in[j][n][(t-1+T)%T][0]-in[j][n][t][0];
+    r[0][1]=in[j][n][(t-1+T)%T][1]-in[j][n][t][1];
+    return r; 
+}
 
 /**********************************
  * you need to fill
@@ -729,6 +759,7 @@ double **GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     error(ncorr!=(N*N+N)/2 ,1,"GEVP_matrix",
           "you need to provide (N^2+N)/2 to populate the top triangular matrix NxN:\n  N=%d    ncorr=%d\n",N,ncorr  );
     
+    error(fit_info.HENKEL_size!=1,1,__func__,"HENKEL_size need to be 1");
     int T=file_head.l0;
     double **M=double_calloc_2(N*N,2);// [NxN] [reim ]
     double **Mt0=double_calloc_2(N*N,2);
@@ -743,9 +774,6 @@ double **GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     else if (fit_info.GEVP_tpt0)
         t0= (fit_info.t0_GEVP+t)%T ; 
     
-    double *s=(double*) malloc(sizeof(double)*N);
-    double *s0=(double*) malloc(sizeof(double)*N);
-      
      //t
     int count=0;
     for (int i=0;i<N;i++){
@@ -798,7 +826,7 @@ double **GEVP_matrix_scaling(int j, double ****in,int t,struct fit_type fit_info
     int ncorr=fit_info.corr_id.size();
     error(ncorr!=(N*N+N)/2 ,1,"GEVP_matrix",
           "you need to provide (N^2+N)/2 to populate the top triangular matrix NxN:\n  N=%d    ncorr=%d\n",N,ncorr  );
-    
+    error(fit_info.HENKEL_size!=1,1,__func__,"HENKEL_size need to be 1");
     int T=file_head.l0;
     double **M=double_calloc_2(N*N,2);// [NxN] [reim ]
     double **Mt0=double_calloc_2(N*N,2);
@@ -812,9 +840,6 @@ double **GEVP_matrix_scaling(int j, double ****in,int t,struct fit_type fit_info
     }
     else if (fit_info.GEVP_tpt0)
         t0= (fit_info.t0_GEVP+t)%T ; 
-    
-    double *s=(double*) malloc(sizeof(double)*N);
-    double *s0=(double*) malloc(sizeof(double)*N);
     
     
     
@@ -889,7 +914,7 @@ double **GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
     int ncorr=fit_info.corr_id.size()/3;
     error(ncorr!=(N*N+N)/2 ,1,"GEVP_matrix_p1",
           "you need to provide (N^2+N)/2 to populate the top triangular matrix NxN:\n  N=%d    ncorr=%d\n",N,ncorr  );
-    
+    error(fit_info.HENKEL_size!=1,1,__func__,"HENKEL_size need to be 1");
     int T=file_head.l0;
     double **M=double_calloc_2(N*N,2);// [NxN] [reim ]
     double **Mt0=double_calloc_2(N*N,2);
@@ -905,10 +930,6 @@ double **GEVP_matrix_p1(int j, double ****in,int t,struct fit_type fit_info ){
     }
     else if (fit_info.GEVP_tpt0)
         t0= (fit_info.t0_GEVP+t)%T ; 
-    
-    
-    double *s=(double*) malloc(sizeof(double)*N);
-    double *s0=(double*) malloc(sizeof(double)*N);
     
     
     
@@ -983,7 +1004,7 @@ double **GEVP_matrix_4_p1(int j, double ****in,int t,struct fit_type fit_info ){
 //     error(fit_info.corr_id.size()!=12,1,"GEVP_matrix_p1" ," careful populating the GEVP, we to do manually the sum on the directions xyz");
     error(ncorr!=(N*N+N)/2 ,1,"GEVP_matrix_p1",
           "you need to provide (N^2+N)/2 to populate the top triangular matrix NxN:\n  N=%d    ncorr=%d\n",N,ncorr  );
-    
+    error(fit_info.HENKEL_size!=1,1,__func__,"HENKEL_size need to be 1");
     int T=file_head.l0;
     double **M=double_calloc_2(N*N,2);// [NxN] [reim ]
     double **Mt0=double_calloc_2(N*N,2);
@@ -998,10 +1019,6 @@ double **GEVP_matrix_4_p1(int j, double ****in,int t,struct fit_type fit_info ){
     else if (fit_info.GEVP_tpt0)
         t0= (fit_info.t0_GEVP+t)%T ; 
      
-    
-    double *s=(double*) malloc(sizeof(double)*N);
-    double *s0=(double*) malloc(sizeof(double)*N);
-    
     
     
      //t
@@ -1094,10 +1111,6 @@ double **GEVP_matrix_p11(int j, double ****in,int t,struct fit_type fit_info ){
         t0= (fit_info.t0_GEVP+t)%T ; 
     
     
-    double *s=(double*) malloc(sizeof(double)*N);
-    double *s0=(double*) malloc(sizeof(double)*N);
-    
-    
     
      //t
     int count=0;
@@ -1183,4 +1196,101 @@ double hankel(int j, double ****in,int t,struct fit_type fit_info ){
     free_2(N*N,vec);
     return r;
 
+}
+
+
+
+/**********************************
+ * you need to fill
+ * std::vector<int> fit_info.corr_id
+ * with the id of the correlators in the order:
+ * [first row], [second row], ...
+ * M_00, M_01, ..., M_0N, M_11, ...
+**********************************/
+double **HANKEL_GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
+    double ct,ctp;
+    int Ng=fit_info.N;
+    int Nh=fit_info.HENKEL_size;
+    int N=Ng*Nh;
+    if (fit_info.value_or_vector==1){
+        Ng=sqrt(fit_info.N);
+        error(fit_info.N!=(Ng*Ng) ,1,"GEVP_matrix",
+          "when you want the eigenvector N must be the square of the size of the matrix: fit_info.N=%d ", fit_info.N );
+    }
+    int ncorr=fit_info.corr_id.size();
+    error(ncorr!=(Ng*Ng+Ng)/2 ,1,"GEVP_matrix",
+          "you need to provide (N^2+N)/2 to populate the top triangular matrix NxN:\n  N=%d    ncorr=%d\n",Ng,ncorr  );
+    
+    int T=file_head.l0;
+    double **M=double_calloc_2(N*N,2);// [NxN] [reim ]
+    double **Mt0=double_calloc_2(N*N,2);
+    
+    double **lambdat=double_malloc_2(N,2);// [N] [reim]
+    double **vec=double_malloc_2(N*N,2);
+    int t0=fit_info.t0_GEVP%T;
+    if (fit_info.GEVP_swap_t_t0){
+        t0=t;
+        t=fit_info.t0_GEVP%T;
+        exit(12);
+    }
+    // else if (fit_info.GEVP_tpt0)
+    //     t0= (fit_info.t0_GEVP+t)%T ; 
+    int myt,myt0;
+    if(fit_info.GEVP_tpt0) {
+        myt0=t;
+        myt=(t+t0)%T;
+    }
+    else  {
+        myt0=t0;
+        myt=t;
+    }
+
+     //t
+    for (int ih=0;ih<Nh;ih++){
+    for (int kh=ih;kh<Nh;kh++){
+    int count=0;
+    for (int ig=0;ig<Ng;ig++){
+        for (int kg=ig;kg<Ng;kg++){
+            int corr_ik= fit_info.corr_id[count];
+            int ik=(ig+ih*Ng)+(kg+kh*Ng)*N;
+            int ki=(kg+kh*Ng)+(ig+ih*Ng)*N;
+            //printf("%d  %g\n",ik,in[j][corr_ik][t][0]);
+            M[ik][0]  = in[j][corr_ik][(myt+ih+kh)%T][0];
+            Mt0[ik][0]= in[j][corr_ik][(myt0+ih+kh)%T][0];
+            M[ki][0]=M[ik][0];
+            Mt0[ki][0]=Mt0[ik][0];
+            count++;
+        }
+    }
+    }}
+
+//     error(!is_it_positive_lex_reim(Mt0, N) , 1, "GEVP_matrix:", "GEVP_matrix M(t0) not positive defined"  ) ;
+    int verbosity=0;
+    if (t>2*T/5 || j!=0) verbosity=-1;
+//    if(t==1){printf("t=1\n"); verbosity=3;}
+//        printf("t= %d\n",t);verbosity=3;
+
+    //GEVP_real(M,Mt0,N,&lambdat,&vec,verbosity);
+    generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec,verbosity); 
+           
+    int n=fit_info.n;
+    double **r;
+    r=r_equal_value_or_vector(  lambdat, vec, fit_info,  myt, myt0);
+    
+    double **r1=double_malloc_2(Ng,2);
+    // pass only fit_info.N values or vectors
+    for (int ig=0;ig<Ng;ig++){
+        r1[ig][0]=r[ig][0];
+        r1[ig][1]=r[ig][1];
+    }
+    free_2(N,r);
+
+
+    free_2(N*N,M);
+    free_2(N*N,Mt0);
+    free_2(N,lambdat);
+//     free_2(N,lambdatp1);
+    free_2(N*N,vec);
+    
+    return r1;
 }

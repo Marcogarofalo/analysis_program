@@ -229,7 +229,7 @@ struct  fit_type
   bool GEVP_swap_t_t0=false;
   
   // HANKEL
-  int HENKEL_size=3;
+  int HENKEL_size=1;
 
   int T;
   int L;
@@ -265,7 +265,7 @@ struct  fit_type
      GEVP_swap_t_t0=false;
 
 
-     HENKEL_size=3;
+     HENKEL_size=1;
 //      f_plateaux_scan=NULL;
 //      name_plateaux_scan="\0";
   };

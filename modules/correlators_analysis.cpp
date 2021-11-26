@@ -277,6 +277,11 @@ double identity(int t, int T, double ** in){
 }
 
 
+double log_corr(int t, int T, double ** in){ 
+    
+    return -log(in[t][0]);
+}
+
 double shift_corr(int t, int T, double ** in){ 
     return in[t][0]-in[t+1][0];
 
