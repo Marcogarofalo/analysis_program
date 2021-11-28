@@ -689,54 +689,62 @@ double **r_equal_value_or_vector( double **lambdat, double **vec, fit_type fit_i
 
 
 double **der2_der2_corr(int j, double ****in,int t,struct fit_type fit_info ){
-    int n=fit_info.n;
-    int id=fit_info.corr_id[n];
+    
+    int id=fit_info.corr_id[id];
     int T=fit_info.T;
     error(fit_info.N!=1,1,"der2_der2_corr","works only with one corr");
     double **r=double_malloc_2(fit_info.N,2);
-    r[0][0]=in[j][n][(t+2)%T][0]-4*in[j][n][(t+1)%T][0]+6*in[j][n][t][0]-4*in[j][n][(t-1+T)%T][0]+in[j][n][(t-2+T)%T][0];
-    r[0][1]=in[j][n][(t+2)%T][1]-4*in[j][n][(t+1)%T][1]+6*in[j][n][t][1]-4*in[j][n][(t-1+T)%T][1]+in[j][n][(t-2+T)%T][1];
+    r[0][0]=in[j][id][(t+2)%T][0]-4*in[j][id][(t+1)%T][0]+6*in[j][id][t][0]-4*in[j][id][(t-1+T)%T][0]+in[j][id][(t-2+T)%T][0];
+    r[0][1]=in[j][id][(t+2)%T][1]-4*in[j][id][(t+1)%T][1]+6*in[j][id][t][1]-4*in[j][id][(t-1+T)%T][1]+in[j][id][(t-2+T)%T][1];
     return r;
 }
 double **der2_corr(int j, double ****in,int t,struct fit_type fit_info ){
-    int n=fit_info.n;
-    int id=fit_info.corr_id[n];
+    int id=fit_info.corr_id[0];
     int T=fit_info.T;
     error(fit_info.N!=1,1,"der2_der2_corr","works only with one corr");
     double **r=double_malloc_2(fit_info.N,2);
-    r[0][0]=in[j][n][(t+1)%T][0]-2*in[j][n][t][0]+in[j][n][(t-1+T)%T][0];
-    r[0][1]=in[j][n][(t+1)%T][1]-2*in[j][n][t][1]+in[j][n][(t-1+T)%T][1];
+    r[0][0]=in[j][id][(t+1)%T][0]-2*in[j][id][t][0]+in[j][id][(t-1+T)%T][0];
+    r[0][1]=in[j][id][(t+1)%T][1]-2*in[j][id][t][1]+in[j][id][(t-1+T)%T][1];
     return r; 
 }
 
 double **der1_der1_corr(int j, double ****in,int t,struct fit_type fit_info ){
-    int n=fit_info.n;
-    int id=fit_info.corr_id[n];
+    int id=fit_info.corr_id[0];
     int T=fit_info.T;
     error(fit_info.N!=1,1,"der2_der2_corr","works only with one corr");
     double **r=double_malloc_2(fit_info.N,2);
-    r[0][0]=-in[j][n][(t+1)%T][0]+2*in[j][n][t][0]-in[j][n][(t-1+T)%T][0];
-    r[0][1]=-in[j][n][(t+1)%T][1]+2*in[j][n][t][1]-in[j][n][(t-1+T)%T][1];
+    r[0][0]=-in[j][id][(t+1)%T][0]+2*in[j][id][t][0]-in[j][id][(t-1+T)%T][0];
+    r[0][1]=-in[j][id][(t+1)%T][1]+2*in[j][id][t][1]-in[j][id][(t-1+T)%T][1];
+    return r;
+}
+
+double **der1_der1dag_corr(int j, double ****in,int t,struct fit_type fit_info ){
+    
+    int id=fit_info.corr_id[0];
+    int T=fit_info.T;
+    error(fit_info.N!=1,1,"der2_der2_corr","works only with one corr");
+    double **r=double_malloc_2(fit_info.N,2);
+    r[0][0]=in[j][id][(t+2)%T][0]-2*in[j][id][(t+1)%T][0]+in[j][id][t][0];
+    r[0][1]=in[j][id][(t+2)%T][1]-2*in[j][id][(t+1)%T][1]+in[j][id][t][1];
     return r;
 }
 double **der1_corr(int j, double ****in,int t,struct fit_type fit_info ){
-    int n=fit_info.n;
-    int id=fit_info.corr_id[n];
+    
+    int id=fit_info.corr_id[0];
     int T=fit_info.T;
     error(fit_info.N!=1,1,"der2_der2_corr","works only with one corr");
     double **r=double_malloc_2(fit_info.N,2);
-    r[0][0]=in[j][n][(t+1)%T][0]-in[j][n][t][0];
-    r[0][1]=in[j][n][(t+1)%T][1]-in[j][n][t][1];
+    r[0][0]=in[j][id][(t+1)%T][0]-in[j][id][t][0];
+    r[0][1]=in[j][id][(t+1)%T][1]-in[j][id][t][1];
     return r; 
 }
 double **der1dag_corr(int j, double ****in,int t,struct fit_type fit_info ){
-    int n=fit_info.n;
-    int id=fit_info.corr_id[n];
+    int id=fit_info.corr_id[0];
     int T=fit_info.T;
     error(fit_info.N!=1,1,"der2_der2_corr","works only with one corr");
     double **r=double_malloc_2(fit_info.N,2);
-    r[0][0]=in[j][n][(t-1+T)%T][0]-in[j][n][t][0];
-    r[0][1]=in[j][n][(t-1+T)%T][1]-in[j][n][t][1];
+    r[0][0]=in[j][id][(t-1+T)%T][0]-in[j][id][t][0];
+    r[0][1]=in[j][id][(t-1+T)%T][1]-in[j][id][t][1];
     return r; 
 }
 
@@ -747,6 +755,85 @@ double **der1dag_corr(int j, double ****in,int t,struct fit_type fit_info ){
  * [first row], [second row], ...
  * M_00, M_01, ..., M_0N, M_11, ...
 **********************************/
+double **GEVPn_matrix(int j, double ****in,int t,struct fit_type fit_info ){
+    double ct,ctp;
+    int N=fit_info.N;
+    if (fit_info.value_or_vector==1){
+        N=sqrt(fit_info.N);
+        error(fit_info.N!=(N*N) ,1,"GEVP_matrix",
+          "when you want the eigenvector N must be the square of the size of the matrix: fit_info.N=%d ", fit_info.N );
+    }
+    int ncorr=fit_info.corr_id.size();
+    error(ncorr!=(N*N+N)/2 ,1,"GEVP_matrix",
+          "you need to provide (N^2+N)/2 to populate the top triangular matrix NxN:\n  N=%d    ncorr=%d\n",N,ncorr  );
+    
+    error(fit_info.HENKEL_size!=1,1,__func__,"HENKEL_size need to be 1");
+    int T=file_head.l0;
+    double **M0=double_calloc_2(N*N,2);// [NxN] [reim ]
+    double **M=double_calloc_2(N*N,2);// [NxN] [reim ]
+    double **Mt0=double_calloc_2(N*N,2);
+    
+    double **lambdat=double_malloc_2(N,2);// [N] [reim]
+    double **vec=double_malloc_2(N*N,2);
+    int t0=fit_info.t0_GEVP%T;
+    if (fit_info.GEVP_swap_t_t0){
+        t0=t;
+        t=fit_info.t0_GEVP%T;
+    }
+    else if (fit_info.GEVP_tpt0)
+        t0= (fit_info.t0_GEVP+t)%T ; 
+    
+     //t
+    int count=0;
+    for (int i=0;i<N;i++){
+        for (int k=i;k<N;k++){
+            int corr_ik= fit_info.corr_id[count];
+            int ik=i+k*N;
+            int ki=k+i*N;
+            //printf("%d  %g\n",ik,in[j][corr_ik][t][0]);
+            M0[ik][0]  = in[j][corr_ik][0][0];
+            M[ik][0]  = in[j][corr_ik][t][0];
+            Mt0[ik][0]= in[j][corr_ik][t0][0];
+            M[ki][0]=M[ik][0];
+            Mt0[ki][0]=Mt0[ik][0];
+            count++;
+        }
+    }
+    for (int i=0;i<N;i++){
+        for (int k=i;k<N;k++){
+            int ik=i+k*N;
+            int ki=k+i*N;
+            int ii=i+i*N;
+            int kk=k+k*N;
+            M[ik][0]=M[ik][0]/sqrt(M0[ii][0]*M0[kk][0] );
+            Mt0[ik][0]=Mt0[ik][0]/sqrt(M0[ii][0]*M0[kk][0] );
+            M[ki][0]=M[ik][0];
+            Mt0[ki][0]=Mt0[ik][0];
+        }
+    }
+    
+
+   int verbosity=0;
+    if (t>2*T/5 || j!=0) verbosity=-1;
+//    if(t==1){printf("t=1\n"); verbosity=3;}
+//        printf("t= %d\n",t);verbosity=3;
+
+    //GEVP_real(M,Mt0,N,&lambdat,&vec,verbosity);
+    generalysed_Eigenproblem(M,Mt0,N,&lambdat,&vec,verbosity); 
+           
+    int n=fit_info.n;
+    double **r;
+    r=r_equal_value_or_vector(  lambdat, vec, fit_info,  t, t0);
+    
+    free_2(N*N,M);
+    free_2(N*N,Mt0);
+    free_2(N,lambdat);
+    free_2(N*N,vec);
+    
+    return r;
+}
+
+
 double **GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info ){
     double ct,ctp;
     int N=fit_info.N;
