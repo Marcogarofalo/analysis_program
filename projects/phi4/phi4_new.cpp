@@ -4887,9 +4887,8 @@ check_correlatro_counter(398);
 
 
 
-    printf("GEVPn_0_3_1\n");
-
-if (params.data.ncorr>148+1e+6){    
+printf("GEVPn_0_3_1\n");
+if (params.data.ncorr>148 && strcmp(argv[4],"G2t_T64_L24_msq0-4.868000_msq1-4.710000_l01.000000_l11.000000_mu2.000000_g0.250000_rep0_bin100_merged_bin1000")==0 ){    
     
     char name_v[NAMESIZE];
     fit_info.N=3;
@@ -4950,8 +4949,7 @@ if (params.data.ncorr>148+1e+6){
 check_correlatro_counter(413);
 
 fit_info.restore_default();
-
-
+printf("GEVP_0_3_1_001\n");
 if (params.data.ncorr>190){    
 
     char name_v[NAMESIZE];
@@ -4991,7 +4989,7 @@ if (params.data.ncorr>190){
     fit_info.corr_id={0, 129, 127, 188,   
                            5, 128, 189 ,
                                1 , 190 ,
-                                   187 };
+                                   187 };// { phi0, phi0^3, phi1, phi0^2phi1}
 
     fit_info.value_or_vector=1; // 0= values
     fit_info.t0_GEVP=3;
@@ -5017,6 +5015,7 @@ if (params.data.ncorr>190){
 check_correlatro_counter(437);
 
 fit_info.restore_default();
+printf("GEVP_0_3_1_001_011\n");
 if (params.data.ncorr>199){    
     
     fit_info.restore_default();
@@ -5056,10 +5055,10 @@ if (params.data.ncorr>199){
     int N=sqrtN*sqrtN;
     fit_info.N=N;
     fit_info.corr_id={0, 129, 127, 188, 194,  
-                        5, 128, 189, 195,
-                            1 , 190, 196,
-                                187, 199,
-                                     193};//diag{ phi0->phi0, phi3->phi3, phi1->phi1,   dphi0->dphi0 }
+                           5, 128, 189, 195,
+                               1 , 190, 196,
+                                   187, 199,
+                                       193};//diag{ phi0->phi0, phi3->phi3, phi1->phi1,  phi0^2phi1, phi0 phi1^2 }
 
 
     fit_info.value_or_vector=1; // 0= values
@@ -5088,16 +5087,18 @@ check_correlatro_counter(472);
 
 
 fit_info.restore_default();
-if (params.data.ncorr>199){    
+printf("GEVP_0_3_1_001_011_111\n");
+if (params.data.ncorr>207){    
     
     fit_info.restore_default();
     char name_v[NAMESIZE];
-    fit_info.N=5;
-    fit_info.corr_id={0, 129, 127, 188, 194,  
-                           5, 128, 189, 195,
-                               1 , 190, 196,
-                                   187, 199,
-                                        193};//diag{ phi0->phi0, phi3->phi3, phi1->phi1,   dphi0->dphi0 }
+    fit_info.N=6;
+    fit_info.corr_id={0, 129, 127, 188, 194, 201, 
+                           5, 128, 189, 195, 202,
+                               1 , 190, 196, 203,
+                                   187, 199, 206,
+                                        193, 207,
+                                             200};//operators{ phi0, phi0^3, phi1, phi0^2phi1, phi0phi1phi1, phi1^3}
     fit_info.value_or_vector=0; // 0= values
     fit_info.t0_GEVP=3;
     //fit_info.corr_id={1,2};
@@ -5111,26 +5112,27 @@ if (params.data.ncorr>199){
         mysprintf(name_v,NAMESIZE,"GEVP_0_3_1_001_011_111_l%d",i   );
         double *l0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-fit_info.N+i, name_v, identity,jack_file);
         free(l0_GEVP);
-        check_correlatro_counter(438+i);
+        check_correlatro_counter(473+i);
     }
-    check_correlatro_counter(442);
+    check_correlatro_counter(478);
 
     for (int i=0; i< fit_info.N; i++){
         mysprintf(name_v,NAMESIZE,"GEVP_0_3_1_001_011_111_meffl%d",i   );
         double *ml0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-fit_info.N+i, name_v, M_eff_T,jack_file);
         free(ml0_GEVP);
-        check_correlatro_counter(443+i);
+        check_correlatro_counter(479+i);
     }
-    check_correlatro_counter(447);
+    check_correlatro_counter(484);
 
-    int sqrtN=5;
+    int sqrtN=6;
     int N=sqrtN*sqrtN;
     fit_info.N=N;
-    fit_info.corr_id={0, 129, 127, 188, 194,  
-                        5, 128, 189, 195,
-                            1 , 190, 196,
-                                187, 199,
-                                     193};//diag{ phi0->phi0, phi3->phi3, phi1->phi1,   dphi0->dphi0 }
+    fit_info.corr_id={0, 129, 127, 188, 194, 201, 
+                           5, 128, 189, 195, 202,
+                               1 , 190, 196, 203,
+                                   187, 199, 206,
+                                        193, 207,
+                                             200};//operators{ phi0, phi0^3, phi1, phi0^2phi1, phi0phi1phi1, phi1^3}
 
 
     fit_info.value_or_vector=1; // 0= values
@@ -5149,13 +5151,82 @@ if (params.data.ncorr>199){
         mysprintf(name_v,NAMESIZE,"GEVP_0_3_1_001_011_111_v%d_%d",id,comp   );
         double *l0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-N+i, name_v, identity,jack_file);
         free(l0_GEVP);
-        check_correlatro_counter(448+i);
+        check_correlatro_counter(485+i);
     }
-    check_correlatro_counter(472);
+    check_correlatro_counter(520);
 
-}else { for (int i =438 ;i<=472;i++)  zero_corr(zeros,Njack, jack_file );}
-check_correlatro_counter(472);
+}else { for (int i =473 ;i<=520;i++)  zero_corr(zeros,Njack, jack_file );}
+check_correlatro_counter(520);
  
+printf("GEVP_0_3_1_phi3nl\n");
+if (params.data.ncorr>212 && strcmp(argv[4],"G2t_T64_L24_msq0-4.868000_msq1-4.710000_l01.000000_l11.000000_mu2.000000_g0.250000_rep0_bin100_merged_bin1000")==0 ){    
+
+    double *d0d0=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, 209, "phi3nl_meff", M_eff_T,jack_file);
+    free(d0d0);
+    check_correlatro_counter(521);
+    char name_v[NAMESIZE];
+    fit_info.N=4;
+    fit_info.corr_id={0, 129, 127, 210,   
+                           5, 128, 211 ,
+                               1 , 212 ,
+                                   209 };//diag{ phi0->phi0, phi3->phi3, phi1->phi1,   dphi0->dphi0 }
+    fit_info.value_or_vector=0; // 0= values
+    fit_info.t0_GEVP=3;
+    //fit_info.corr_id={1,2};
+    printf("GEVP_0_3_1_phi3nl\n");
+    add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix ,   fit_info );
+    printf(" ncorr after GEVP %d\n",ncorr_new);
+    
+    fit_info.restore_default();
+    
+    for (int i=0; i< fit_info.N; i++){
+        mysprintf(name_v,NAMESIZE,"GEVP_0_3_1_phi3nl_l%d",i   );
+        double *l0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-fit_info.N+i, name_v, identity,jack_file);
+        free(l0_GEVP);
+        check_correlatro_counter(522+i);
+    }
+    check_correlatro_counter(525);
+
+    for (int i=0; i< fit_info.N; i++){
+        mysprintf(name_v,NAMESIZE,"GEVP_0_3_1_phi3nl_meffl%d",i   );
+        double *ml0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-fit_info.N+i, name_v, M_eff_T,jack_file);
+        free(ml0_GEVP);
+        check_correlatro_counter(526+i);
+    }
+    check_correlatro_counter(529);
+
+    int sqrtN=4;
+    int N=sqrtN*sqrtN;
+    fit_info.N=N;
+    fit_info.corr_id={0, 129, 127, 188,   
+                           5, 128, 189 ,
+                               1 , 190 ,
+                                   187 };// { phi0, phi0^3, phi1, phi0^2phi1}
+
+    fit_info.value_or_vector=1; // 0= values
+    fit_info.t0_GEVP=3;
+    //fit_info.corr_id={1,2};
+    printf("GEVP_0_3_1_phi3nl_v\n");
+    add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix ,   fit_info );
+    printf(" ncorr after GEVP %d\n",ncorr_new);
+    
+    fit_info.restore_default();
+    //id_GEVP_031_p1=ncorr_new;
+    
+    for (int i=0; i< N; i++){
+        int comp=i%sqrtN;
+        int id=i/sqrtN;
+        mysprintf(name_v,NAMESIZE,"GEVP_0_3_1_phi3nl_v%d_%d",id,comp   );
+        double *l0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-N+i, name_v, identity,jack_file);
+        free(l0_GEVP);
+        check_correlatro_counter(530+i);
+    }
+    check_correlatro_counter(545);
+
+}else { for (int i =521 ;i<=545;i++)  zero_corr(zeros,Njack, jack_file );}
+check_correlatro_counter(545);
+fit_info.restore_default();
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
