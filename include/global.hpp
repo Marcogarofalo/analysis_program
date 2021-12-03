@@ -125,7 +125,9 @@ struct  database_file_jack
     char FV_exclude[NAMESIZE];
     char FAp1_exclude[NAMESIZE];
     char kp[NAMESIZE];
+    char mpcac[NAMESIZE];
     char sampling[10];
+
     int Njack;    
     double a;
     FILE *f_M_PS;
@@ -135,6 +137,7 @@ struct  database_file_jack
     FILE *f_FAp, *f_FA, *f_FA_autoplateaux;
     FILE *f_FV,*f_FV_autoplateaux;
     FILE *f_xG;
+    FILE *f_mpcac;
     
     char FA_from_H0[NAMESIZE];
     char FA_from_H0_autoplateaux[NAMESIZE];

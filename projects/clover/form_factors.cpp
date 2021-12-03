@@ -273,7 +273,8 @@ static int index_minus_theta(int imom)
 }
 
 
-void read_twopt(FILE *stream,int size, int iconf , double **to_write,int si, int ii, int imom2, int imom1, int ik2, int r2, int ik1,int r1 ){
+void read_twopt(FILE *stream,int size, int iconf , double **to_write,int si, int ii, int imom2, int imom1, int ik2, int r2, int ik1,int r1,
+int sym ){
    
    long int tmp;
    int iiconf,N,s;
@@ -302,8 +303,8 @@ void read_twopt(FILE *stream,int size, int iconf , double **to_write,int si, int
        im+= obs[index+1];
        vol++;
        index=2*index_twopt(si,ii,t,imom2,imom1,ik2,mr2,ik1,mr1);
-	   re+= obs[index];
-       im+= obs[index+1];
+	   re+=((double) sym) * obs[index];
+       im+=((double) sym) * obs[index+1];
        vol++;
 	   to_write[t][0]=re/( (double) vol );
 	   to_write[t][1]=im/( (double) vol );
@@ -428,6 +429,7 @@ void setup_single_file_jack_ASCI(char  *save_name, char **argv,const char  *name
 
 void setup_file_jack(char **argv,int Njack){
     if( strcmp(argv[4],"jack")==0){
+     setup_single_file_jack(file_jack.mpcac,argv,"jackknife/mpcac_jack",Njack);
      setup_single_file_jack(file_jack.M_PS,argv,"jackknife/M_{PS}_jack",Njack);
      setup_single_file_jack(file_jack.f_PS,argv,"jackknife/f_{PS}_jack",Njack);
      setup_single_file_jack(file_jack.Zf_PS,argv,"jackknife/Zf_{PS}_jack",Njack);
@@ -438,7 +440,8 @@ void setup_file_jack(char **argv,int Njack){
     }
                
     if( strcmp(argv[4],"boot")==0){
-               
+     setup_single_file_jack(file_jack.mpcac,argv,"jackknife/mpcac_boot",Njack);
+     
      setup_single_file_jack(file_jack.M_PS,argv,"jackknife/M_{PS}_boot",Njack);
      setup_single_file_jack(file_jack.f_PS,argv,"jackknife/f_{PS}_boot",Njack);
      setup_single_file_jack(file_jack.Zf_PS,argv,"jackknife/Zf_{PS}_boot",Njack);
@@ -485,7 +488,6 @@ int main(int argc, char **argv){
    char namefile[NAMESIZE];
    
    
-   
    FILE *outfile        =NULL; mysprintf(namefile,NAMESIZE,"%s/out/out_E0.txt",argv[3]);        outfile=fopen(namefile,"w+");       error(outfile==NULL,1,"main ", "Unable to open %s file",namefile);
    FILE *outfile_ls        =NULL; mysprintf(namefile,NAMESIZE,"%s/out/out_E0_ls.txt",argv[3]);        outfile_ls=fopen(namefile,"w+");       error(outfile_ls==NULL,1,"main ", "Unable to open %s file",namefile);
    FILE *outfile_ss        =NULL; mysprintf(namefile,NAMESIZE,"%s/out/out_E0_ss.txt",argv[3]);        outfile_ss=fopen(namefile,"w+");       error(outfile_ss==NULL,1,"main ", "Unable to open %s file",namefile);
@@ -530,6 +532,7 @@ int main(int argc, char **argv){
    f_ss=fopen(namefile,"r"); if (f_ss==NULL) {printf("2pt file not found\n"); exit(0);}
    
    read_file_head_bin(f_ll);
+   print_file_head(outfile);
    print_file_head(outfile);
    print_file_head(outfile_ls);
    print_file_head(outfile_ss);
@@ -581,7 +584,7 @@ int main(int argc, char **argv){
    int var=2,si_2pt,si;
    
    
-   data=calloc_corr(confs, var*var,  file_head.l0 );
+   data=calloc_corr(confs, var*var+2,  file_head.l0 );
    lambda0=calloc_corr(Njack, var*var,  file_head.l0 );
    projected_O=calloc_corr(Njack, var*var,  file_head.l0);
      
@@ -693,10 +696,14 @@ int main(int argc, char **argv){
 
        for (i=0;i<confs;i++){
       // extract_twopt(out[i] ,data[i][0],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1 );
-          read_twopt(f_ll,size,i ,data[i][0],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1 );
-          read_twopt(f_ls,size,i ,data[i][1],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1 );
-          read_twopt(f_sl,size,i ,data[i][2],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1 );
-          read_twopt(f_ss,size,i ,data[i][3],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1 );
+          read_twopt(f_ll,size,i ,data[i][0],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1, 1 );
+          read_twopt(f_ls,size,i ,data[i][1],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1, 1 );
+          read_twopt(f_sl,size,i ,data[i][2],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1, 1 );
+          read_twopt(f_ss,size,i ,data[i][3],si_2pt,ii,imom2,imom1,ik2,r2,ik1,r1, 1 );
+
+          //ii=0 V0P5 , ii=1 P5P5
+	      read_twopt(f_ll,size,i ,data[i][4],si_2pt,0,imom2,imom1,0,r2,0,r1,-1 );
+          read_twopt(f_ll,size,i ,data[i][5],si_2pt,ii,imom2,imom1,0,r2,0,r1,1 );
      // if(  strcmp(name,"P5P5")==0 ) if(ik2==0) if (r2==0) if (ik1==0) if (r1==0) if (imom1==0) if (imom2==0) for(t=0;t<file_head.l0;t++){ 
        //   fprintf(petros,"%d   %.15f   %.15f\n",t,data[i][0][t][0],data[i][0][t][1]);}
        }
@@ -705,9 +712,13 @@ int main(int argc, char **argv){
        symmetrise_corr(confs, 2, file_head.l0,data);
        symmetrise_corr(confs, 3, file_head.l0,data);
 
-       data_bin=binning(confs, var*var, file_head.l0 ,data, bin);
+       antisymmetrise_corr(confs, 4, file_head.l0,data);
+       forward_derivative_corr(confs, 4, file_head.l0,data);
+       symmetrise_corr(confs, 5, file_head.l0,data);
 
-       conf_jack=create_resampling(argv[4],Neff, var*var, file_head.l0, data_bin);
+       data_bin=binning(confs, var*var+2, file_head.l0 ,data, bin);
+
+       conf_jack=create_resampling(argv[4],Neff, var*var+2, file_head.l0, data_bin);
       
        get_kinematic( ik2,r2,  ik1, r1,imom2,  imom1 );
        
@@ -717,6 +728,10 @@ mass_jack_fit_GEVP[ik2][ik1]=compute_effective_mass_GEVP(  argv, kinematic_2pt, 
   */  
        
        mass_jack_fit[ik2][ik1]=compute_effective_mass(  argv, kinematic_2pt,  name, conf_jack,  Njack ,&plateaux_masses,outfile,0,"M_{PS}^{ll}");
+       
+       double *tmp1=compute_mpcac(  argv, kinematic_2pt,  name, conf_jack,  Njack ,plateaux_masses,m_pcac,0);
+       free(tmp1);
+       
        double *tmp=compute_effective_mass(  argv, kinematic_2pt,  name, conf_jack,  Njack ,&plateaux_masses,outfile_ls,1,"M_{PS}^{ls}");
        free(tmp);
        tmp=compute_effective_mass(  argv, kinematic_2pt,  name, conf_jack,  Njack ,&plateaux_masses,outfile_ss,3,"M_{PS}^{ss}");

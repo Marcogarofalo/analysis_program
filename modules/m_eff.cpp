@@ -1716,6 +1716,51 @@ double   *compute_effective_mass_out_max_twist(char **option ,struct kinematic k
 }
 */
 
+double   *compute_mpcac(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, int Njack ,FILE *plateaux_masses,FILE *outfile,  int index  ){
+   int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
+   if ( strcmp(option[1],"read_plateaux")==0 )
+   	go_to_line(plateaux_masses,line);
+   
+   double **r,*m,**mt,*fit;
+   int i,j,yn;
+    
+   r=(double**) malloc(sizeof(double*)*file_head.l0);
+   for(i=0;i<file_head.l0;i++)
+       r[i]=(double*) malloc(sizeof(double)*Njack);
+   mt=(double**) malloc(sizeof(double*)*file_head.l0);
+
+   double mu1=kinematic_2pt.k1;
+   double mu2=kinematic_2pt.k2;
+   double cl,cs,tmp;
+
+  
+   
+   for(i=1;i<file_head.l0/2;i++){    
+           for (j=0;j<Njack;j++){
+		         r[i][j]=-conf_jack[j][4][i][1]/(2.*conf_jack[j][5][i][0]);
+           }
+           if( strcmp(option[4],"jack")==0)
+               mt[i]=mean_and_error_jack(Njack, r[i]);
+           if( strcmp(option[4],"boot")==0)
+               mt[i]=mean_and_error_boot(Njack, r[i]);
+           fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
+   }
+   fit=fit_plateaux(option, kinematic_2pt ,  name,"m_{PCAC}",mt,r,  Njack,plateaux_masses,outfile);
+   
+   write_jack_bin(Njack,fit,file_jack.mpcac);
+     
+   for(i=1;i<file_head.l0/2;i++)
+       free(mt[i]);
+   free(mt);
+   for(i=0;i<file_head.l0;i++)
+       free(r[i]);
+   free(r);
+   
+   fflush(outfile);
+     
+    return fit;    
+    
+}
 double   *compute_effective_mass_out_max_twist(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, int Njack ,FILE *plateaux_masses,FILE *outfile,  int index  ){
    int line=kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1);
    if ( strcmp(option[1],"read_plateaux")==0 )

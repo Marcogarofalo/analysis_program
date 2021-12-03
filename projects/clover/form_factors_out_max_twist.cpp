@@ -428,6 +428,8 @@ void setup_single_file_jack_ASCI(char  *save_name, char **argv,const char  *name
 
 void setup_file_jack(char **argv,int Njack){
     if( strcmp(argv[4],"jack")==0){
+     setup_single_file_jack(file_jack.mpcac,argv,"jackknife/mpcac_jack",Njack);
+
      setup_single_file_jack(file_jack.M_PS,argv,"jackknife/M_{PS}_jack",Njack);
      setup_single_file_jack(file_jack.f_PS,argv,"jackknife/f_{PS}_jack",Njack);
      setup_single_file_jack(file_jack.Zf_PS,argv,"jackknife/Zf_{PS}_jack",Njack);
@@ -438,7 +440,8 @@ void setup_file_jack(char **argv,int Njack){
     }
                
     if( strcmp(argv[4],"boot")==0){
-               
+     setup_single_file_jack(file_jack.mpcac,argv,"jackknife/mpcac_boot",Njack);
+           
      setup_single_file_jack(file_jack.M_PS,argv,"jackknife/M_{PS}_boot",Njack);
      setup_single_file_jack(file_jack.f_PS,argv,"jackknife/f_{PS}_boot",Njack);
      setup_single_file_jack(file_jack.Zf_PS,argv,"jackknife/Zf_{PS}_boot",Njack);
@@ -719,6 +722,8 @@ mass_jack_fit_GEVP[ik2][ik1]=compute_effective_mass_GEVP(  argv, kinematic_2pt, 
 		       f_jack_fit[ik2][ik1]=compute_Zf_PS_ll_out_max_twist(  argv, kinematic_2pt,  name, conf_jack, mass_jack_fit[ik2][ik1],  Njack ,plateaux_masses,outfile_f );
 
        }*/
+       double *tmp1=compute_mpcac(  argv, kinematic_2pt,  name, conf_jack,  Njack ,plateaux_masses,m_pcac,0);
+       free(tmp1);
        if (ik1==0 &&  ik2<4){
             mass_jack_fit[ik2][ik1]=compute_effective_mass_out_max_twist(  argv, kinematic_2pt,  name, conf_jack,  Njack ,plateaux_masses,outfile,0);
             mass_jack_fit_GEVP[ik2][ik1]=compute_effective_mass_GEVP(  argv, kinematic_2pt,  name, conf_jack,  Njack, var ,plateaux_masses_GEVP,outfile_GEVP );
