@@ -29,12 +29,27 @@ double r_AWI(int j, double ****in,int t ,struct fit_type fit_info){
     return (-2*num/(4.*den)) ;
     //return num;
 }
-
+double r_AWI_loc(int j, double ****in,int t ,struct fit_type fit_info){
+    int T=file_head.l0;
+    double num= in[j][13][t][0];//(in[j][0][(t+1)%T][0]-in[j][0][t][0])*in[j][7][tptau][0];
+    double den= in[j][9][t][0];//(in[j][5][t][0])*in[j][7][tptau][0];
+    return (-2*num/(4.*den)) ;
+    //return num;
+}
 
 
 double m_PCAC(int j, double ****in,int t ,struct fit_type fit_info){
     int T=file_head.l0;
     double num= (in[j][0][(t+1)%T][0]-in[j][0][t][0]);
+    double den= (in[j][1][t][0]);
+    return (num/(4*den)) ;
+    //return num;
+}
+
+
+double m_PCAC_loc(int j, double ****in,int t ,struct fit_type fit_info){
+    int T=file_head.l0;
+    double num= (in[j][11][(t+1)%T][0]-in[j][11][t][0]);
     double den= (in[j][1][t][0]);
     return (num/(4*den)) ;
     //return num;

@@ -84,6 +84,16 @@ double lhs_critical_eta_mu_m0(int n, int e , int j , vector<header_BSM> params,v
     else{ r=0; exit(1);}    
     return r;
 }
+
+double lhs_critical_eta_mu_m0_loc(int n, int e , int j , vector<header_BSM> params,vector<data_BSM> gjack, struct fit_type fit_info ){
+    double r;
+    if(n==0)
+        r= gjack[e].jack[7][j]; //r_AWI
+    else if( n==1)
+        r= gjack[e].jack[8][j]; //m_pcac
+    else{ r=0; exit(1);}    
+    return r;
+}
  
 double lhs_mpcac_MPS2(int n, int e , int j , vector<header_BSM> params,vector<data_BSM> gjack, struct fit_type fit_info ){
     double r;

@@ -191,9 +191,29 @@ int main(int argc, char **argv){
     int var_to_read=correlators.size();
     correlators.emplace_back("JTILDEA1P1TRIVIALphi");
     correlators.emplace_back("P1DP1NONSMEAREDNONTRIVIALphi");
+    
+    correlators.emplace_back("LOCALCURRENTTAU1P1");//10
+    correlators.emplace_back("LOCALCURRENTTAU2P2");//11
+    correlators.emplace_back("LOCALCURRENTTAU3P3");//12
+    
+    f_correlators.resize(correlators.size());
+   
+    for (int i =10;i<correlators.size();i++){
+        mysprintf(namefile,NAMESIZE,"%s/data/%s",  argv[3], correlators[i].c_str() );
+        f_correlators[i]=open_file(namefile,"r+");
+        printf("reading file: %s\n",namefile);
+        if (i==0)
+            read_header_BSM(header,f_correlators[i]);
+        else 
+            check_header_BSM(header,f_correlators[i],correlators[i]);
+            
+    }
+    correlators.emplace_back("LOCALCURRENTTAU1P1phi");//13  to be created
+    
     int var=correlators.size();
     data=calloc_corr(confs, var,  header.T );
     int tau=5;
+    var_to_read=var-3;
     
     for (int iconf=0; iconf< confs ;iconf++){
         
@@ -210,15 +230,23 @@ int main(int argc, char **argv){
             data[iconf][9][t][1]=0;
             
         }
-        for(int i =8 ; i<var_to_read ; i++){//var_to_read
+        
+        for(int i =10 ; i< 13; i++){//var_to_read
             for (int t =0; t< header.T;t++)
-                fscanf(f_correlators[i],"%lf  %lf\n",&data[iconf][i+2][t][0],&data[iconf][i+2][t][1]);
+                fscanf(f_correlators[i],"%lf  %lf\n",&data[iconf][i][t][0],&data[iconf][i][t][1]);
         }
+        for (int t =0; t< header.T;t++){
+            int tptau=(t+tau)%T;
+            data[iconf][13][t][0]= (data[iconf][10][(t+1)%T][0]-data[iconf][10][t][0])*data[iconf][7][tptau][0];
+            data[iconf][13][t][1]=0;
+            
+        }
+        // for(int i =14 ; i<var_to_read ; i++){//var_to_read
+        //     for (int t =0; t< header.T;t++)
+        //         fscanf(f_correlators[i],"%lf  %lf\n",&data[iconf][i+2][t][0],&data[iconf][i+2][t][1]);
+        // }
         
     }
-    
-    
-    
 //forward_derivative_corr(confs,0,header.T,data);
     symmetrise_corr(confs, 1, header.T,data);    
     symmetrise_corr(confs, 2, header.T,data);
@@ -304,6 +332,8 @@ int main(int argc, char **argv){
     }
     fit_info_silent.restore_default();
     sprintf(option[1],"%s",save_option);// restore option
+        
+    corr_counter=-1;
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     // 0
@@ -331,14 +361,23 @@ int main(int argc, char **argv){
     free_fit_result(fit_info,fit_out);
     // 4
     fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1", conf_jack ,namefile_plateaux, outfile, 
-                                              m_PCAC, "m_PCAC",  fit_info, jack_file );
+                                              m_PCAC, "m_AWI",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
       
     
     
     double *mass1=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,namefile_plateaux,outfile,8,"m_num", M_eff_T,jack_file);
     double *mass2=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,namefile_plateaux,outfile,9,"m_den", M_eff_T,jack_file);
-    
-    
+
+    //7
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1phi", conf_jack ,namefile_plateaux, outfile, 
+                                              r_AWI_loc, "r_AWI_loc",  fit_info, jack_file );
+    free_fit_result(fit_info,fit_out);
+    check_correlatro_counter(7);
+    //8
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1", conf_jack ,namefile_plateaux, outfile, 
+                                              m_PCAC_loc, "m_AWI_loc",  fit_info, jack_file );
+    free_fit_result(fit_info,fit_out);
+    check_correlatro_counter(8);
     
 }
