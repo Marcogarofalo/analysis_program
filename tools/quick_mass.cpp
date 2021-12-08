@@ -18,6 +18,8 @@
 #include "linear_fit.hpp"
 #include "various_fits.hpp"
 #include "mutils.hpp"
+#include "correlators_analysis.hpp"
+#include "non_linear_fit.hpp"
 
 #include<fstream>
 using namespace std;
@@ -475,8 +477,8 @@ int main(int argc, char **argv){
    FILE *plateaux_masses=NULL, *plateaux_masses_GEVP=NULL; 
    FILE *plateaux_f=NULL;   
 
-   error(argc!=7,1,"main ",
-         "usage:./quinck_mass  blind/see/read_plateaux file T  mu1 mu2 bin");
+   error(argc<7,1,"main ",
+         "usage:./quinck_mass  blind/see/read_plateaux file T  mu1 mu2 bin  [file_PA]");
     char **option;
     option=(char **) malloc(sizeof(char*)*6);
     option[0]=(char *) malloc(sizeof(char)*NAMESIZE);
@@ -521,14 +523,29 @@ int main(int argc, char **argv){
    FILE *outfile        =NULL; mysprintf(namefile,NAMESIZE,"%s_mass.txt",argv[2]);        outfile=fopen(namefile,"w+");       error(outfile==NULL,1,"main ", "Unable to open %s file",namefile);
    
    FILE *infile=open_file(argv[2],"r");
+   FILE *infile1;
+   if (argc>7)
+        infile1=open_file(argv[7],"r");
+
    int count=0;
    string line;
    ifstream file(argv[2]);
    while (getline(file, line))
         count++;
- 
+   cout << "the file contain data up to t= ? (reply <=0 to say T)  "  << endl;
+   int Tcorr_max=T;
+   int CMI;
+   scanf("%d",&Tcorr_max);
+   if (Tcorr_max<=0)
+        Tcorr_max=T;
+   else{
+       cout << "CMI format? no=0  yes=1"<<endl;
+       scanf("%d",&CMI);
+   }
+
+
    cout << "Numbers of lines in the file : " << count << endl;
-   confs=count/T;
+   confs=count/Tcorr_max;
    //confs=count;
    
    int bin=atoi(argv[6]);;
@@ -537,31 +554,65 @@ int main(int argc, char **argv){
    
    cout << "Numbers of configurations in the file : " << confs << endl;
    
-   
    data=calloc_corr(confs, 2,  file_head.l0 );
+
    
    setup_file_jack(option,Njack);
    
    for (int iconf=0; iconf< confs ;iconf++){
        for (int t =0; t< T ;t++){
-           int tt;
+            int tt;
            //fscanf(infile,"%d  %lf",&tt,&data[iconf][0][t][0]);
            //error(t!=tt, 1, "main: reading","time do not match  conf=%d   t=%d  read %d",iconf ,t,tt);
-           double a ,b,c;
+            int a ,b,c;
            //fscanf(infile,"%d  ",&tt);
            //tt=t;
            //fscanf(infile," %lf",&data[iconf][0][t][0]);
-           fscanf(infile,"%d  %lf %lf %lf %lf",&tt,&data[iconf][0][t][0],&a,&b,&c);
-           error(t!=tt, 1, "main: reading","time do not match  conf=%d   t=%d  read %d",iconf ,t,tt);
-           
+            if (t< Tcorr_max){
+                fscanf(infile,"%d  %d %d %lf %lf",&a,&b,&tt,&data[iconf][0][t][0],&data[iconf][0][t][1]);
+                error(t!=tt, 1, "main: reading","time do not match  conf=%d   t=%d  read %d",iconf ,t,tt);
+            } else{
+                data[iconf][0][t][0]=0;
+                data[iconf][0][t][1]=0;
+            }
            //fscanf(infile,"%lf",&data[iconf][0][t][0]);
            //data[iconf][0][t][0]*=-1;
        }
     }
+    if (argc>7){
+        for (int iconf=0; iconf< confs ;iconf++){
+            for (int t =0; t< T ;t++){
+                int tt;
+                int a ,b,c;
+                if (t< Tcorr_max){
+                    fscanf(infile1,"%d  %d %d %lf %lf",&a,&b,&tt,&data[iconf][1][t][0],&data[iconf][1][t][1]);
+                    error(t!=tt, 1, "main: reading","time do not match  conf=%d   t=%d  read %d",iconf ,t,tt);
+                } else{
+                    data[iconf][0][t][0]=0;
+                    data[iconf][0][t][1]=0;
+                }
+            }
+        }     
+    }
+    if (CMI==1){
+        for (int iconf=0; iconf< confs ;iconf++){
+            for (int t =(T/2)+1; t< T ;t++){
+                    data[iconf][0][t][0]=data[iconf][0][T-t][1];
+                    if (argc>7){
+                        data[iconf][1][t][0]=data[iconf][1][T-t][1];
+                    }
+            }
+        }
+    }
 
-    symmetrise_corr(confs, 0, file_head.l0,data);
-    data_bin=binning(confs, 1, file_head.l0 ,data, bin);
-    conf_jack=create_resampling(option[4],Neff, 1, file_head.l0, data_bin);
+
+    // symmetrise_corr(confs, 0, file_head.l0,data);
+    data_bin=binning(confs, 2, file_head.l0 ,data, bin);
+    conf_jack=create_resampling(option[4],Neff, 2, file_head.l0, data_bin);
+    symmetrise_jackboot(Njack,0,T,conf_jack);
+    symmetrise_jackboot(Njack,1,T,conf_jack,-1);
+
+
     get_kinematic( 0,0,  1, 0,0,  0 );
     printf("option[4]=%s\n",option[4]);
 
@@ -576,10 +627,28 @@ int main(int argc, char **argv){
         free(m);
     }
     fprintf(outfile,"\n\n");   
+
+
+
     mass=compute_effective_mass(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,0,"M_{PS}^{ll}");
     Zfpi=compute_Zf_PS_ll(  option, kinematic_2pt, (char*) "P5P5", conf_jack, mass,  Njack ,plateaux_masses,outfile );
-    
-    
+    if (argc>7){
+        FILE *jack_file=fopen("/dev/null","r");
+        struct fit_type fit_info;
+        fit_info.Nvar=1;
+        fit_info.Npar=1;
+        fit_info.N=1;
+        fit_info.Njack=Njack;
+        fit_info.corr_id={0,1};
+        fit_info.function=constant_fit ;
+        fit_result fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,"plateaux_masses", outfile, 
+            [](int j, double ****in,int t ,struct fit_type fit_info){
+                double r=-(in[j][1][t+1][0] -in[j][1][t][0] )/(2.*in[j][0][t][0]);
+                return r;
+            } ,
+            "mpcac",  fit_info, jack_file);
+        free_fit_result(fit_info,fit_out);
+    }
     free(mass);free(Zfpi);
     free_corr(Neff, 1, file_head.l0 ,data_bin);
     free_jack(Njack,1 , file_head.l0, conf_jack);

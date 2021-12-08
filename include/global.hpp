@@ -208,7 +208,7 @@ struct  fit_type
   int n;// an index to be passed to (*function)( iN ,int,double*,int,double*)
   double (*f1)(int,int,double*,int,double*);
   double (*f2)(int,int,double*,int,double*);
-  int n_ext_P; //number of external parameter that will no be fitted
+  int n_ext_P=0; //number of external parameter that will no be fitted
   double **ext_P;  //parameter to not fit, they will be add to the Nvar,  Nvar=variables+(prameter to not fit)
   int custom=false; // false=0 means default fit , 1 custom fit options
   double lambda=0.001;
@@ -245,6 +245,7 @@ struct  fit_type
   
   void restore_default(){
      custom=false; // 1 means default fit , 0 custom fit options
+     n_ext_P=0; //number of external parameter that will no be fitted
      lambda=0.001;
      acc=0.001; 
      h=1e-5; 

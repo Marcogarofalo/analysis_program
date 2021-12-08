@@ -549,9 +549,11 @@ struct fit_result fit_fun_to_corr(char **option,struct kinematic kinematic_2pt ,
                 kinematic_2pt.k1,kinematic_2pt.r1,kinematic_2pt.mom1);   
                 plotting( file_head.l0, mt , &tmin,&tmax, &sep);
                 fit_out=try_fit(option ,tmin, tmax, sep , mt, r, Njack,&chi2, fit_info );
-                //yn=plotting_fit(file_head.l0, mt , tmin,tmax,m,chi2);
+                double *m=mean_and_error(option[4],Njack,fit_out.P[0] );
+                yn=plotting_fit(file_head.l0, mt , tmin,tmax,m,fit_out.chi2);
                 // to_do:    add test of the fit
                 //yn=0;
+                free(m);
                 free_fit_result( fit_info, fit_out);
             }
    }

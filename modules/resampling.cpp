@@ -164,14 +164,14 @@ return  jack;
 }
 
 
-void symmetrise_jackboot(int  Np1, int var, int T, double ****in ){
+void symmetrise_jackboot(int  Np1, int var, int T, double ****in ,int sym){
     if ( (T%2) ==1){
         printf("error in symmetrise_jackboot: you can not symmetryse if T is not even\n T= %d\n",T);
         exit(1);
     }
     for (int j=0; j<Np1;j++ ){
         for (int t=1; t<T/2;t++ ){
-            in[j][var][t][0]=(in[j][var][t][0]+in[j][var][T-t][0])/2.0;
+            in[j][var][t][0]=(in[j][var][t][0]+sym* in[j][var][T-t][0])/2.0;
             in[j][var][T-t][0]=in[j][var][t][0];
         }
     }

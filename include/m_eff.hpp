@@ -46,7 +46,7 @@ double   *H_over_H0(char **option ,struct kinematic_G kinematic_2pt_G , char* na
 double   *H_minus_H0(char **option ,struct kinematic_G kinematic_2pt_G , char* name,double ****conf_jack,double *mass_jack_fit_k2k1, double* mass_rest, double *oPp_PS_jack_fit,int Njack ,FILE *plateaux_masses,FILE *outfile,int index,int *sym );
 double   *H_minus_H0_HA(char **option ,struct kinematic_G kinematic_2pt_G , char* name,double ****conf_jack,double *mass_jack_fit_k2k1, double* mass_rest, double *oPp_PS_jack_fit, double *Zf_PS_jack_fit ,int Njack ,FILE *plateaux_masses,FILE *outfile,int index,int *sym );
 
-
+extern double   *compute_mpcac(char **option,struct kinematic kinematic_2pt , char* name, double ****conf_jack, int Njack ,FILE *plateaux_masses,FILE *outfile ,int index);
 extern double   *compute_effective_mass_out_max_twist(char **option,struct kinematic kinematic_2pt , char* name, double ****conf_jack, int Njack ,FILE *plateaux_masses,FILE *outfile ,int index);
 extern double   *compute_Zf_PS_ll_out_max_twist(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, double *mass_jack_fit_k2k1,int Njack ,FILE *plateaux_masses,FILE *outfile );
 double   *compute_f_PS_ls_ss_out_max_twist(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, double *mass_jack_fit_k2k1,int Njack ,FILE *plateaux_masses,FILE*plateaux_mpcac,FILE *outfile );

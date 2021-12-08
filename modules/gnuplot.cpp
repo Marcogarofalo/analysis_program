@@ -99,7 +99,7 @@ int plotting_fit(int T, double **corr,int tmin,int tmax, double *fit,double *chi
     fprintf(gnuplotPipe,"f(x)= x<(%d-0.1) ? 1/0 : x>(%d+0.1) ? 1/0 : %g  \n",tmin,tmax,fit[0]);
     fprintf(gnuplotPipe,"fp(x)= x<(%d-0.1) ? 1/0 : x>(%d+0.1) ? 1/0 : %g + %g \n",tmin,tmax,fit[0],fit[1]);
 
-    fprintf(gnuplotPipe,"set title 'chi2=%g+-%.2g'\n",chi2[0],chi2[1]);
+    fprintf(gnuplotPipe,"set title 'chi2=%g'\n",chi2[0]);
     fprintf(gnuplotPipe,"set sample 200\n");
     fprintf(gnuplotPipe, "plot 'data.temp' i 0 u 1:2:3 w e, fm(x) t '' lc 7, f(x) t '' lc 7, fp(x) t '' lc 7\n");
     fflush(gnuplotPipe);
