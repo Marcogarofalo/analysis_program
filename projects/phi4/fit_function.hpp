@@ -80,6 +80,28 @@ void init_dvec(int n,int *dvec,int *dvec1, int *dvec2, int *dmax1, int *dmax2 ){
 }
 
 
+void init_dvec_g(int n,int *dvec,int *dvec1, int *dvec2, int *dmax1, int *dmax2 ){
+    
+    if(n==0 ){//E2_0
+        dvec[0]=0; dvec[1]=0; dvec[2]=0;
+        dvec1[0]=0; dvec1[1]=0; dvec1[2]=0;
+        dvec2[0]=0; dvec2[1]=0; dvec2[2]=0;
+        dmax1[0]=1; dmax1[1]=0; dmax1[2]=0;
+        dmax2[0]=-1; dmax2[1]=0; dmax2[2]=0;
+    }
+    else if (n==1){
+        dvec[0]=0; dvec[1]=0; dvec[2]=0;
+        dvec1[0]=1; dvec1[1]=0; dvec1[2]=0;
+        dvec2[0]=-1; dvec2[1]=0; dvec2[2]=0;
+        dmax1[0]=1; dmax1[1]=0; dmax1[2]=1;
+        dmax2[0]=-1; dmax2[1]=0; dmax2[2]=-1;
+    }
+    else {
+        printf("init_dvec n=%d not implemented\n",n); exit(1);
+    }
+}
+
+
 void init_dvec_QC3_pole(int n,int *dvec ){
     if(n==0){//E2_0
         dvec[0]=0; dvec[1]=0; dvec[2]=0;
@@ -131,6 +153,42 @@ double get_E2_n(int n, int e , int j , vector<data_phi> gjack  ){
     return E2;
     
 }
+
+double get_E2_g_n(int n, int e , int j , vector<data_phi> gjack  ){
+    double E2;
+    if(n==0){//E2_0
+        if(gjack[e].jack[594][j]!=0) 
+            E2=gjack[e].jack[594][j];
+        else {
+            E2=gjack[e].jack[4][j];
+            // printf("else\n");
+        }
+        //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
+    }
+    else if(n==1){//E2_0
+        E2=gjack[e].jack[595][j];
+        //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
+    }
+    // else if(n==1){//E2_0_p1
+    //     E2=gjack[e].jack[100][j];
+    //     //         dvec[0]=1; dvec[1]=0; dvec[2]=0;
+    // }
+    // else if(n==2){//E2_0_p11
+    //     E2=gjack[e].jack[102][j];
+    //     //         dvec[0]=1; dvec[1]=1; dvec[2]=0;
+    // }
+    // else if(n==4){//E2_0_p111
+    //     E2=gjack[e].jack[104][j];
+    //     //         dvec[0]=1; dvec[1]=1; dvec[2]=1;
+    // }
+    // else if(n==3){//E2_0_A1
+    //     E2=gjack[e].jack[80][j];
+    //     //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
+    // }
+    else{ E2=0 ;printf("%s n=%d not implemented\n",__func__,n);  exit(1);}
+    return E2;
+    
+}
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////kcotd
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -174,6 +232,41 @@ double lhs_kcotd(int n, int e , int j , vector<cluster::IO_params> params,vector
         int dvec[3]= {0,0,0};
         r=kcotd( gjack[e].jack[80][j] ,gjack[e].jack[1][j], dvec, params[e].data.L[1]  );
     }
+    
+    return r;
+}
+
+
+
+double lhs_kcotd_g(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    double r;
+    if(n==0){//E2_0
+        int dvec[3]= {0,0,0};
+        if (gjack[e].jack[594][j] !=0){
+            printf("here  %d\n",gjack[e].Nobs);
+            r=kcotd( gjack[e].jack[594][j] ,gjack[e].jack[443][j], dvec, params[e].data.L[1]  );
+        }
+        else{
+            r=kcotd( gjack[e].jack[4][j] ,gjack[e].jack[443][j], dvec, params[e].data.L[1]  );
+        }
+    }
+    else{  printf("%s",__func__); exit(1);}
+    // if(n==1){//E2_0_p1
+    //     int dvec[3]= {1,0,0};
+    //     r=kcotd( gjack[e].jack[100][j] ,gjack[e].jack[1][j], dvec, params[e].data.L[1]  );
+    // }
+    // if(n==2){//E2_0_p1
+    //     int dvec[3]= {1,1,0};
+    //     r=kcotd( gjack[e].jack[102][j] ,gjack[e].jack[1][j], dvec, params[e].data.L[1]  );
+    // }
+    // if(n==4){//E2_0_p1
+    //     int dvec[3]= {1,1,1};
+    //     r=kcotd( gjack[e].jack[104][j] ,gjack[e].jack[1][j], dvec, params[e].data.L[1]  );
+    // }
+    // if(n==3){//E2_0_A1
+    //     int dvec[3]= {0,0,0};
+    //     r=kcotd( gjack[e].jack[80][j] ,gjack[e].jack[1][j], dvec, params[e].data.L[1]  );
+    // }
     
     return r;
 }
@@ -241,6 +334,28 @@ double lhs_delta(int n, int e , int j , vector<cluster::IO_params> params,vector
     
 }
 
+double lhs_delta_g(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec_g(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    double E2;
+    double mass=gjack[e].jack[443][j];
+    
+    E2=get_E2_g_n( n,  e ,  j ,  gjack  );
+
+    double L=params[e].data.L[1];
+    //     printf("%g  %g  %g \n",E2,E2fL,E2f);
+    double E2_CM=energy_CM(E2,dvec,L);
+    double k=sqrt(E2_CM*E2_CM/4. -mass*mass);
+    
+    double q=k*L/(2.*pi_greco);
+    double gamma=E2/E2_CM;
+    double A=1.;
+    double z[2];
+    dzeta_function(z,  q*q,0 , 0, dvec, gamma, A, 1.e-3, 1.e6 ,3);
+    
+    return  atan( (pow(pi_greco,3./2.)  *gamma*L*k)/z[0] *2*pi_greco);
+      
+}
 double lhs_delta_Elatt(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
     int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
     init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
@@ -343,6 +458,9 @@ double lhs_delta_ECM_latt(int n, int e , int j , vector<cluster::IO_params> para
 double compute_k(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
     double L=params[e].data.L[1];
     double mass=gjack[e].jack[1][j];
+    if (gjack[e].Nobs>=443 && gjack[e].jack[443][j]!=0){
+        mass=gjack[e].jack[443][j];
+    }
     double E2=gjack[e].jack[4][j];
     double E2_0_p1=gjack[e].jack[100][j];
     double E2_0_p11=gjack[e].jack[102][j];
@@ -375,9 +493,48 @@ double compute_k(int n, int e , int j , vector<cluster::IO_params> params,vector
     return sqrt(E2_CM*E2_CM/4. -mass*mass);
     
 }
+
+double compute_k_m_g(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    double L=params[e].data.L[1];
+    double mass=gjack[e].jack[1][j];
+    if (gjack[e].Nobs>=443 && gjack[e].jack[443][j]!=0){
+        mass=gjack[e].jack[443][j];
+    }
+    double     E2=get_E2_g_n( n,  e ,  j ,  gjack  );
+    double E2_CM;
+
+    if(n==0){//E2_0
+        int dvec[3]= {0,0,0};
+        E2_CM=energy_CM(E2,dvec,L);
+    }
+    else if(n==1){//E2_0_p1
+        int dvec[3]= {0,0,0};
+        E2_CM=energy_CM(E2,dvec,L);
+    }
+    
+    else {
+        printf("%s n=%d not implemented\n",__func__,n); 
+    }
+    return sqrt(E2_CM*E2_CM/4. -mass*mass)/mass;
+    
+}
+
 double rhs_delta(int n, int Nvar, double *x,int Npar,double  *P){
     double a0m=P[0], r0m=P[1];
     double k_m=x[10];
+    double kcot=1.0/(a0m)  + r0m*k_m*k_m/(2.);
+    
+    if (Npar>2){
+        kcot=- P[2]*r0m*r0m*r0m*k_m*k_m*k_m*k_m;
+    }
+    
+    return  atan(k_m/ kcot);
+}
+
+
+double rhs_delta_g(int n, int Nvar, double *x,int Npar,double  *P){
+    double a0m=P[0], r0m=P[1];
+    double k_m=x[13];
     double kcot=1.0/(a0m)  + r0m*k_m*k_m/(2.);
     
     if (Npar>2){
@@ -399,7 +556,18 @@ double rhs_kcotd(int n, int Nvar, double *x,int Npar,double  *P){
     return  kcot;
     
 }
-
+double rhs_kcotd_g(int n, int Nvar, double *x,int Npar,double  *P){
+    double a0=P[0], r0=P[1];
+    double k=x[13]*x[1]; // k/m   * m
+    double kcot=1.0/a0  + r0*k*k/2.;
+    
+    if (Npar>2){
+        kcot=- P[2]*r0*r0*r0*k*k*k*k;
+    }
+    
+    return  kcot;
+    
+}
 
 double to_invert_k_from_phase_shift(int n, int Nvar, double *x,int Npar,double  *P){
     double a0m0=P[0], r0m0=P[1];//, P2=P[2];
@@ -436,18 +604,58 @@ double to_invert_k_from_phase_shift(int n, int Nvar, double *x,int Npar,double  
     double r=real(zc*2.*pi_greco/( pow(pi_greco,3./2.) *L*gamma*mass )    );
 //     double kcotdelta=1.0/a0  + r0*k*k/2. - P2*r0*r0*r0*k*k*k*k;
     double k_m=k/mass;
-    double kcotdelta_m=1.0/a0m0+ + r0m0*k_m*k_m/2.;  //   (k cot(d) )/ mass
+    double kcotdelta_m=1.0/a0m0 ;  //   (k cot(d) )/ mass
+    if (Npar>=2){
+        kcotdelta_m+= r0m0*k_m*k_m/2.;
+    }
     if (Npar>=3){
         kcotdelta_m+=P[2]*r0m0*r0m0*r0m0*k_m*k_m*k_m*k_m;
     }
 //      if(n==2 && fabs(L-36)<1e-3)  printf("kcotdelta_m =%g  k=%g   r=%g  qsq=%g  gamma=%g  z=%g, %g   fun=%g  dvec=(%d,%d,%d)\n",kcotdelta_m,k,r,qsq,gamma,z[0],z[1], kcotdelta_m-r,dvec[0] ,dvec[1] ,dvec[2]);
 //    std::cout<< "ZC " << zc << "       q "<< q<<endl;
-//     printf(" k=%g   fit=%g        mass=%g    dvec=(%d,%d,%d) E2CM=%g\n ",k, r/kcotdelta  ,mass, dvec[0] ,dvec[1] ,dvec[2], E2_CM);
+    //   printf(" k=%g   f(k)=%g  kcotdelta_m=%g   r=%g  z=%g  gamma=%g   mass=%g  L=%g   dvec=(%d,%d,%d) E2CM=%g\n ",k, kcotdelta_m-r ,kcotdelta_m, r , z[0] ,gamma,mass, L, dvec[0] ,dvec[1] ,dvec[2], E2_CM);
     return         kcotdelta_m-r;
     
     
 }
 
+double to_invert_k_from_phase_shift_g(int n, int Nvar, double *x,int Npar,double  *P){
+    double a0m0=P[0], r0m0=P[1];//, P2=P[2];
+    double L=x[0];
+    double mass=x[1];
+    double k=x[2];
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    
+    init_dvec_g(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    
+    double E2_CM=sqrt(k*k+mass*mass)*2.;
+    double E2=sqrt( (k*k+mass*mass)*4.+ (2*pi_greco/L)*(2*pi_greco/L)*( dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]   )  );
+    
+    double qsq=k*k * (L/(2*pi_greco))*  (L/(2*pi_greco));
+    double gamma=E2/E2_CM;
+    double A=1.;
+    double z[2];
+    
+    double zinter=zeta.compute( L,  n,  mass/*(L/(2*pi_greco))*/ ,  qsq);
+
+     z[0]=zinter; z[1]=0;
+
+    std::complex<double>  zc(z[0],z[1]);
+        
+    double r=real(zc*2.*pi_greco/( pow(pi_greco,3./2.) *L*gamma*mass )    );
+    double k_m=k/mass;
+    double kcotdelta_m=1.0/a0m0 ;  //   (k cot(d) )/ mass
+    if (Npar>=2){
+        kcotdelta_m+= r0m0*k_m*k_m/2.;
+    }
+    if (Npar>=3){
+        kcotdelta_m+=P[2]*r0m0*r0m0*r0m0*k_m*k_m*k_m*k_m;
+    }
+    //    printf(" k=%g   f(k)=%g  kcotdelta_m=%g   r=%g  z=%g  gamma=%g   mass=%g  L=%g   dvec=(%d,%d,%d) E2CM=%g\n ",k, kcotdelta_m-r ,kcotdelta_m, r , z[0] ,gamma,mass, L, dvec[0] ,dvec[1] ,dvec[2], E2_CM);
+    return         kcotdelta_m-r;
+    
+    
+}
 double rhs_k_from_phase_shift(int n, int Nvar, double *x,int Npar,double  *P){
     double E2;
     double xx[3]={x[0],x[1],1} ; //{L,mass,   k to be find by the bisection}
@@ -475,7 +683,7 @@ double rhs_k_from_phase_shift(int n, int Nvar, double *x,int Npar,double  *P){
     double kf1=sqrt(ECMfsq/4.-mass*mass);
     
 
-    double xmin=kf+1e-6;
+    double xmin=kf+1e-8;
     double xmax=kf1-1e-6;//- (kf1-kf)/1e+3;
 //     if(n==2 && fabs(L-36)<1e-3) 
     E2=rtsafe( to_invert_k_from_phase_shift , n,  3, xx, Npar, P, 2/*ivar*/,0. /*input*/,    xmin, xmax,  1e-5, 100, 4e-5);
@@ -485,6 +693,41 @@ double rhs_k_from_phase_shift(int n, int Nvar, double *x,int Npar,double  *P){
 }
 
 
+double rhs_k_from_phase_shift_g(int n, int Nvar, double *x,int Npar,double  *P){
+    double E2;
+    double xx[3]={x[0],x[1],1} ; //{L,mass,   k to be find by the bisection}
+    //double p[5]={0 ,2.*pi_greco/x[0], sqrt(2)*2.*pi_greco/x[0] , sqrt(3)*2.*pi_greco/x[0],0 };
+    
+//      printf("before   n=%d   L=%g   m=%g  a=%g  r=%g   P=%g\n",n,x[0],x[1],P[0],P[1],P[2]);
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec_g(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    double mass =x[1];
+    double L=x[0];
+    // xmin have to be k in free theory
+
+    double E1f=sqrt(mass*mass+(2.*pi_greco/L)*(2.*pi_greco/L)*(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
+    double E2f=sqrt(mass*mass+(2.*pi_greco/L)*(2.*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
+    double Ef=E1f+E2f;
+    double ECMfsq=Ef*Ef-(2*pi_greco/L)*(2*pi_greco/L)*(dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
+    double gamma=E2f/sqrt(ECMfsq);
+ 
+    double kf=sqrt(ECMfsq/4. -mass*mass);
+    
+    E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dmax1[0])*(dmax1[0])+dmax1[1]*dmax1[1]+(dmax1[2])*(dmax1[2]))   );
+    E2f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dmax2[0])*(dmax2[0])+dmax2[1]*dmax2[1]+(dmax2[2])*(dmax2[2]))   );
+    Ef=E1f+E2f;
+    ECMfsq=Ef*Ef-(2*pi_greco/L)*(2*pi_greco/L)*((dvec[0])*(dvec[0])+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
+    double kf1=sqrt(ECMfsq/4.-mass*mass);
+    
+
+    double xmin=kf+1e-6;
+    double xmax=kf1-1e-6;//- (kf1-kf)/1e+3;
+//     if(n==2 && fabs(L-36)<1e-3) 
+    E2=rtsafe( to_invert_k_from_phase_shift_g , n,  3, xx, Npar, P, 2/*ivar*/,0. /*input*/,    xmin, xmax,  1e-5, 100, 4e-5);
+
+    
+    return E2/mass;
+}
 
 
 
@@ -533,6 +776,44 @@ double rhs_deltaE2_m_quant_cond(int n, int Nvar, double *x,int Npar,double  *P){
     
 }
 
+
+
+double rhs_deltaE2_m_quant_cond_g(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double xx[3]={x[0],x[1],1} ; //{L,mass,   k to be find by the bisection}
+    //double p[5]={0 ,2.*pi_greco/x[0], sqrt(2)*2.*pi_greco/x[0] , sqrt(3)*2.*pi_greco/x[0],0 };
+    
+    //      printf("before   n=%d   L=%g   m=%g  a=%g  r=%g   P=%g\n",n,x[0],x[1],P[0],P[1],P[2]);
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec_g(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    double mass=xx[1];
+    double L=x[0];
+    // xmin have to be k in free theory
+    double E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
+    double E2f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
+    double Ef=E1f+E2f;
+    double ECMfsq=Ef*Ef-(2*pi_greco/L)*(2*pi_greco/L)*(dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
+    
+    double kf=sqrt(ECMfsq/4. -mass*mass);
+    
+    
+    E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dmax1[0])*(dmax1[0])+dmax1[1]*dmax1[1]+(dmax1[2])*(dmax1[2]))   );
+    E2f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*((dmax2[0])*(dmax2[0])+dmax2[1]*dmax2[1]+(dmax2[2])*(dmax2[2]))   );
+    double Ef_p=E1f+E2f;
+    double ECMfsq_p=Ef_p*Ef_p-(2*pi_greco/L)*(2*pi_greco/L)*((dvec[0])*(dvec[0])+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
+    double kf1=sqrt(ECMfsq_p/4.-mass*mass);
+    
+    
+    double xmin=kf+1e-6;
+    double xmax=kf1-1e-6;//- (kf1-kf)/1e+3;
+
+    double k=rtsafe( to_invert_k_from_phase_shift_g , n,  3, xx, Npar, P, 2/*ivar*/,0. /*input*/,    xmin, xmax,  1e-5, 100, 1e-4);
+    double E2=sqrt( (k*k+mass*mass)*4.+ (2*pi_greco/L)*(2*pi_greco/L)*( dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]   )  );
+    
+    return (E2)/mass;
+
+    
+}
 
 #ifdef PYTHON
 double rhs_E3_m_QC3_pole(int n, int Nvar, double *x,int Npar,double  *P){
@@ -800,6 +1081,39 @@ double lhs_k(int n, int e , int j , vector<cluster::IO_params> params,vector<dat
     
 }
 
+double lhs_k_g(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    double E2;
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    double mass=gjack[e].jack[443][j];
+    // if(n==0){//E2_0
+    //     E2=gjack[e].jack[4][j];
+    //     dvec[0]=0; dvec[1]=0; dvec[2]=0;
+    // }
+    E2=get_E2_g_n(n,e,j,gjack);
+
+    init_dvec_g(n, dvec, dvec1,dvec2, dmax1, dmax2);
+    // else if(n==1){//E2_0_p1
+    //     E2=gjack[e].jack[100][j];
+    //     dvec[0]=1; dvec[1]=0; dvec[2]=0;
+    // }
+    // else if(n==2){//E2_0_p11
+    //     E2=gjack[e].jack[102][j];
+    //     dvec[0]=1; dvec[1]=1; dvec[2]=0;
+    // }
+    // else if(n==4){//E2_0_p111
+    //     E2=gjack[e].jack[104][j];
+    //     dvec[0]=1; dvec[1]=1; dvec[2]=1;
+    // }
+    // else if(n==3){//E2_0_A1
+    //     E2=gjack[e].jack[80][j];
+    //     dvec[0]=0; dvec[1]=0; dvec[2]=0;
+    // }
+    // else{ E2=0 ; dvec[0]=0; dvec[1]=0; dvec[2]=0; exit(1);}
+    double E2_CM=sqrt(E2*E2-(2.*pi_greco/params[e].data.L[1])*(2.*pi_greco/params[e].data.L[1])*( dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]   ));
+    double k=sqrt((E2_CM*E2_CM/4. - mass*mass))/mass;
+    return k;
+    
+}
 
 double lhs_deltaE2_m_latt(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
     double E2;
@@ -851,6 +1165,60 @@ double lhs_deltaE2_m_latt(int n, int e , int j , vector<cluster::IO_params> para
 //     double E2_CM=sqrt(E2*E2-(2.*pi_greco/params[e].data.L[1])*(2.*pi_greco/params[e].data.L[1])*( dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]   ));
 //     double k=sqrt((E2_CM*E2_CM/4. - mass*mass))/mass;
 //     return k;
+}
+
+
+
+double lhs_deltaE2_m_latt_g(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    double E2;
+    double mass=gjack[e].jack[443][j];
+    int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec_g(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    
+    if(n==0){//E2_0
+        if (gjack[e].jack[594][j]!=0)
+            E2=gjack[e].jack[594][j];
+        else
+            E2=gjack[e].jack[4][j];
+//         dvec[0]=0; dvec[1]=0; dvec[2]=0;
+     }
+//     else if(n==1){//E2_0_p1
+//         E2=gjack[e].jack[100][j];
+// //         dvec[0]=1; dvec[1]=0; dvec[2]=0;
+//     }
+//     else if(n==2){//E2_0_p11
+//         E2=gjack[e].jack[102][j];
+// //         dvec[0]=1; dvec[1]=1; dvec[2]=0;
+//     }
+//     else if(n==4){//E2_0_p111
+//         E2=gjack[e].jack[104][j];
+// //         dvec[0]=1; dvec[1]=1; dvec[2]=1;
+//     }
+//     else if(n==3){//E2_0_A1
+//         E2=gjack[e].jack[80][j];
+// //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
+//     }
+    else{ E2=0 ; dvec[0]=0; dvec[1]=0; dvec[2]=0; printf("%s n not supported\n",__func__); exit(1);}
+//     double E20=gjack[e].jack[4][j];
+    double hatp2=4.*sin(dvec1[0]*pi_greco/params[e].data.L[1]) *sin(dvec1[0]*pi_greco/params[e].data.L[1]) ;
+    hatp2+=4.*sin(dvec1[1]*pi_greco/params[e].data.L[2]) *sin(dvec1[1]*pi_greco/params[e].data.L[2]) ;
+    hatp2+=4.*sin(dvec1[2]*pi_greco/params[e].data.L[3]) *sin(dvec1[2]*pi_greco/params[e].data.L[3]) ;
+//     double E20=gjack[e].jack[4][j];
+    double E2fL=acosh(  cosh(mass) +0.5*( hatp2));
+    hatp2=4.*sin(dvec2[0]*pi_greco/params[e].data.L[1]) *sin(dvec2[0]*pi_greco/params[e].data.L[1]) ;
+    hatp2+=4.*sin(dvec2[1]*pi_greco/params[e].data.L[2]) *sin(dvec2[1]*pi_greco/params[e].data.L[2]) ;
+    hatp2+=4.*sin(dvec2[2]*pi_greco/params[e].data.L[3]) *sin(dvec2[2]*pi_greco/params[e].data.L[3]) ;
+    E2fL+=acosh(cosh(mass) +0.5*( + hatp2));
+    
+    double L=params[e].data.L[1];
+    double Ef1=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
+    double Ef2=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
+    double E2f=Ef1+Ef2;
+    
+    
+    
+    return (E2-E2fL+E2f)/mass;
+
 }
 
 double lhs_k_p111(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
@@ -1045,6 +1413,10 @@ double muDE_00_lhs(int n, int e , int j , vector<cluster::IO_params> params,vect
     return DE*gjack[e].jack[1][j]/2.;
 }
 
+double muDE_00_g_lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    double DE=gjack[e].jack[4][j]-2*gjack[e].jack[443][j];
+    return DE*gjack[e].jack[443][j]/2.;
+}
 double muDE_00_infm_lhs(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
     double DE=gjack[e].jack[4][j]-2*gjack[e].jack[1][j];
     double mu=fit_info.ext_P[0][j]*fit_info.ext_P[1][j]/(fit_info.ext_P[0][j]+fit_info.ext_P[1][j]);
@@ -1328,6 +1700,9 @@ void print_fit_band_k_m(char **argv,vector<data_phi> gjack ,struct fit_type fit_
         for (int j=0;j<Njack;j++){
             tmpx[0]=(double) params[0].data.L[1];//L
             tmpx[1]=gjack[0].jack[1][j];//m0
+            if (gjack[0].Nobs>=443){
+                tmpx[1]=gjack[0].jack[443][j];//m0
+            }
             tmpx[2]=gjack[0].jack[2][j];//m1
             tmpx[3]=gjack[0].jack[4][j];//E20
             tmpx[4]=gjack[0].jack[5][j];//E21
@@ -1354,6 +1729,60 @@ void print_fit_band_k_m(char **argv,vector<data_phi> gjack ,struct fit_type fit_
     ////////// end fit band k
     free_2(Njack,tif);
 }
+
+
+
+void print_fit_band_k_m_g(char **argv,vector<data_phi> gjack ,struct fit_type fit_info, const char* label, struct fit_result fit_out, int *en, double ***x, double ***y,  vector<cluster::IO_params> params, std::vector<int> myen){
+    
+    int Npar=fit_info.Npar;
+    int Nvar=fit_info.Nvar+fit_info.n_ext_P;
+    int Njack=gjack[0].Njack;
+    int N=fit_info.N;
+    char namefile[NAMESIZE];
+    FILE *f;
+    
+    mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_k_m.txt",argv[3], label);
+    f=open_file(namefile,"w+");
+    double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
+    double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
+    double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+    printf("writing: %s\n",namefile);
+    for (int i=0 ; i<100; i++){
+        
+        for (int j=0;j<Njack;j++){
+            tmpx[0]=(double) params[0].data.L[1];//L
+            tmpx[1]=gjack[0].jack[1][j];//m0
+            if (gjack[0].Nobs>=443){
+                tmpx[1]=gjack[0].jack[443][j];//m0
+            }
+            tmpx[2]=gjack[0].jack[2][j];//m1
+            tmpx[3]=gjack[0].jack[4][j];//E20
+            tmpx[4]=gjack[0].jack[5][j];//E21
+            tmpx[5]=params[0].data.L[1];//T
+            tmpx[6]=0;//k
+            tmpx[7]=x[j][0][7];
+            tmpx[8]=x[j][0][8];
+            tmpx[9]=x[j][0][9];
+            
+            tmpx[10]=0;//k/m
+            
+            for(int i=fit_info.Nvar ; i<fit_info.Nvar+ fit_info.n_ext_P; i++)
+                tmpx[i]=fit_info.ext_P[i-fit_info.Nvar][j];
+            
+            tmpy[j]=fit_info.function(0,Nvar,tmpx,Npar,tif[j]);//N, Nvar, x ,Npar,P
+            
+
+            tmpx[13]=0+i*0.004;//k/m if g>0
+        }
+        fprintf(f,"%g  \t %g  %g   \n",tmpx[10],tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy )  );
+        
+    }
+    
+    free(tmpy);free(tmpx);
+    fclose(f);  
+    ////////// end fit band k
+    free_2(Njack,tif);
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// print output
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1368,6 +1797,7 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     FILE *f;
     
     mysprintf(namefile,NAMESIZE,"%s/%s_fit_data.txt",argv[3], label);
+    printf("writing data in : %s\n",namefile);
     f=open_file(namefile,"w+");
     int count=0;
     for (int n=0;n<N;n++){
@@ -1415,16 +1845,22 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     fclose(f);
     
     double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
+
+    if ( strcmp(label,"delta_2par_m1-4.705")==0){
+        print_fit_band_k_m_g( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
+
+    }
+
 //     if (strcmp(label,"k_from_phase_shift")!=0 && strcmp(label,"k_from_phase_shift_n4")!=0 && strcmp(label,"k_from_phase_shift_n5")!=0 && strcmp(label,"k_from_phase_shift_acotZ")!=0 && strcmp(label,"QC3")!=0 && strcmp(label,"deltaE2_m_quant_cond")!=0 ){
     if (strcmp(label,"M0_finite_vol")==0 || strcmp(label,"M1_finite_vol")==0 || strcmp(label,"M1_p1_finite_vol")==0 || strcmp(label,"a_00_luscher")==0 
         || strcmp(label,"kcotd")==0 || strcmp(label,"kcotd_Elatt")==0 
         || strcmp(label,"kcotd_2par")==0 || strcmp(label,"kcotd_Elatt_2par")==0 || strcmp(label,"kcotd_ECM_latt_2par")==0 
-        || strcmp(label,"delta_2par")==0 || strcmp(label,"delta_Elatt_2par")==0 || strcmp(label,"delta_ECM_latt_2par")==0 
+        || strcmp(label,"delta_2par")==0 || strcmp(label,"delta_2par_g")==0 || strcmp(label,"delta_Elatt_2par")==0 || strcmp(label,"delta_ECM_latt_2par")==0 
         || strcmp(label,"a_00_luscher_infm")==0 || strcmp(label,"a_01_luscher")==0
         || strcmp(label,"a_01_luscher_div_shift")==0  || strcmp(label,"a_00_BH")==0 || strcmp(label,"a_01_BH_03t16_shifted")==0
         || strcmp(label,"a_01_BH_04t16_shifted")==0 ||  strcmp(label,"a_01_BH_02t10_shifted")==0  || strcmp(label,"a_01_lusher_const")==0  || strcmp(label,"fit_diff_L_BH02t16")==0 || strcmp(label,"fit_diff_L_BH03t16")==0 
         || strcmp(label,"a_01_luscher_const")==0  
-        || strcmp(label,"fit_diff_L_C2_m_C2shifted")==0 || strcmp(label,"fit_L_C2")==0 || strcmp(label,"fit_L_C2shifted")==0 
+        || strcmp(label,"fit_diff_L_C2_m_C2shifted")==0 || strcmp(label,"fit_L_C2")==0 || strcmp(label,"fit_L_C2shifted")==0  
     )
 //             || strcmp(label,"M1_finite_vol")==0  || strcmp(label,"a_00_luscher")==0  || strcmp(label,"kcotd")==0 
 //             || strcmp(label,"kcotd_Elatt")==0 || strcmp(label,"a_00_luscher_infm")==0 || strcmp(label,"a_01_luscher")==0 
@@ -1437,67 +1873,9 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
         print_fit_band_k( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
         print_fit_band_k_m( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
         
+
     }
-//     if (strcmp(label,"k_from_phase_shift")==0 || strcmp(label,"k_from_phase_shift_n4")==0 || strcmp(label,"k_from_phase_shift_n5")==0 || strcmp(label,"k_from_phase_shift_acotZ")==0) {
-//         /////////fit band L for each n
-//         for (int n=0;n< N; n++){
-//             
-//             mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_n%d_L.txt",argv[3], label,n);
-//             f=open_file(namefile,"w+");
-//             double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
-//             double *tmpy=(double*) malloc(sizeof(double*)* Njack);
-//             printf("writing: %s\n",namefile);
-//             
-//             for (int i=0 ; i<80; i++){
-//                 double finalL=16+i*0.5;
-//                 for (int j=0;j<Njack;j++){
-//                     tmpx[1]=gjack[myen.back()].jack[1][j];//m0   put for each n the mass of the last ensemble
-//                     tmpx[2]=gjack[0].jack[2][j];//m1  //
-//                     tmpx[3]=gjack[0].jack[4][j];//E20
-//                     tmpx[4]=gjack[0].jack[5][j];//E21
-//                     tmpx[5]=(double) params[0].data.L[0];//T
-//                     tmpx[6]=x[j][0][6];
-//                     tmpx[7]=x[j][0][7];
-//                     for(int i=fit_info.Nvar ; i<fit_info.Nvar+ fit_info.n_ext_P; i++)
-//                         tmpx[i]=fit_info.ext_P[fit_info.Nvar][j];
-//                     
-// //                     int Lmin=0;
-// //                     for(int iL=1; iL<(myen.size()-2);iL++) {
-// //                         if (finalL> params[iL].data.L[1] )
-// //                             Lmin++;
-// //                     }
-// //                     double zL[3];
-// //                     int Lmax=Lmin+3;
-// //                     double **M=double_malloc_2(3,3);
-// //                     double y[3];
-// //                     
-// //                     for(int iL=Lmin;iL<Lmax;iL++){
-// //                         tmpx[0]=params[iL].data.L[1];
-// //                         zL[iL-Lmin]=fit_info.function(n,Nvar,tmpx,Npar,tif[j]);//N, Nvar, x ,Npar,P
-// //                     }
-// //                     M[0][0]=params[Lmin].data.L[1]*params[Lmin].data.L[1];      M[0][1]=params[Lmin].data.L[1];     M[0][2]=1.;
-// //                     M[1][0]=params[Lmin+1].data.L[1]*params[Lmin+1].data.L[1];  M[1][1]=params[Lmin+1].data.L[1];   M[1][2]=1.;
-// //                     M[2][0]=params[Lmin+2].data.L[1]*params[Lmin+2].data.L[1];  M[2][1]=params[Lmin+2].data.L[1];   M[2][2]=1.;
-// //                     y[0]=zL[0]; y[1]=zL[1];  y[2]=zL[2];
-// //                     double *P=LU_decomposition_solver(3, M, y  );
-// //                     
-// //                     tmpy[j]=P[0]*finalL*finalL+P[1]*finalL+P[2];
-// //                     free_2(3,M);
-// //                     free(P);
-//                        tmpx[0]=finalL;
-//                        tmpy[j]=fit_info.function(n,Nvar,tmpx,Npar,tif[j]);
-//                        
-//                 }
-//                 fprintf(f,"%g  \t %g  %g\n",finalL,tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
-//                 
-//                 
-//             }
-//             free(tmpy);free(tmpx);
-//             fclose(f); 
-//             
-//         }
-//     }
-    
+
     free_2(Njack,tif);
     
 }
@@ -1543,6 +1921,9 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
             for (int e=0;e<en[n];e++){
                 x[j][count][0]=(double) params[myen[e]].data.L[1];//L
                 x[j][count][1]=gjack[myen[e]].jack[1][j];//m0
+                if (gjack[0].Nobs>=443 && gjack[myen[e]].jack[443][j]!=0){
+                        x[j][count][1]=gjack[myen[e]].jack[443][j];//m0
+                }
                 x[j][count][2]=gjack[myen[e]].jack[2][j];//m1
                 x[j][count][3]=gjack[myen[e]].jack[4][j];//E20
                 x[j][count][4]=gjack[myen[e]].jack[5][j];//E21
@@ -1550,8 +1931,11 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
                 
                 x[j][count][6]=compute_k(n,myen[e],j,params,gjack,fit_info);//k
                 x[j][count][7]=gjack[myen[e]].jack[1][j]*(double) params[myen[e]].data.L[1]/(2.*pi_greco);//mL_2pi
-                
+                if (gjack[0].Nobs>=443 && gjack[myen[e]].jack[443][j]!=0){
+                    x[j][count][7]=gjack[myen[e]].jack[443][j]*(double) params[myen[e]].data.L[1]/(2.*pi_greco);//mL_2pi
+                }
                 x[j][count][10]=x[j][count][6]/x[j][count][1]; //k/m
+               
                 
                 for(int i=0 ; i< fit_info.n_ext_P; i++){
                     x[j][count][i+fit_info.Nvar]=fit_info.ext_P[i][j];
@@ -1587,6 +1971,9 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
             for (int j=0;j<Njack;j++){
                 x[j][count][11]=E3_m[Njack-1];
                 x[j][count][12]=err;
+                 if (gjack[0].Nobs>=443){
+                    x[j][count][13]=compute_k_m_g(n,myen[e],j,params,gjack,fit_info);// 
+                }
                 
             }
             free(E3_m);

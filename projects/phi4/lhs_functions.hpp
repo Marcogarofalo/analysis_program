@@ -1238,7 +1238,6 @@ double **GEVP_matrix_p11(int j, double ****in,int t,struct fit_type fit_info ){
     return r;
 }
 
-#endif
 
 double hankel(int j, double ****in,int t,struct fit_type fit_info ){
     int N=fit_info.HENKEL_size;
@@ -1381,3 +1380,14 @@ double **HANKEL_GEVP_matrix(int j, double ****in,int t,struct fit_type fit_info 
     
     return r1;
 }
+
+template <int ix, int iy, int iz>
+double **average_xyz(int j, double ****in,int t,struct fit_type fit_info ){
+    double **r=double_malloc_2(fit_info.N,2);
+    r[0][0]=(in[j][ix][t][0]+in[j][iy][t][0]+in[j][iz][t][0])/3.;
+    r[0][1]=(in[j][ix][t][1]+in[j][iy][t][1]+in[j][iz][t][1])/3.;
+    
+    return r;
+}
+
+#endif
