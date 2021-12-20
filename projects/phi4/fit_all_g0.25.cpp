@@ -86,10 +86,21 @@ void print_fit_band_L_M(char **argv,vector<data_phi> gjack ,struct fit_type fit_
                 double *y=(double*) malloc(sizeof(double)*myen.size());
                 for (int e=0; e<myen.size();e++){
                     y[e]= lhs_E3_m(n,myen[e],j,params,gjack,fit_info);// E3( \vec{n} )/mass
+                    if (params[0].data.gC>0){
+                        y[e]= lhs_E3_m_g(n,myen[e],j,params,gjack,fit_info);
+                    }
                     x[e]=params[myen[e]].data.L[1];
                 }
                 tmpx[8]=inter_spline( tmpx[0], myen.size(), x, y   ); // tmpx[0]=L 
-                                     
+
+                if (params[0].data.gC>0){
+                    tmpx[1]=gjack[0].jack[443][j];//m0
+                    tmpx[10]=compute_k_m_g(n,0,j,params,gjack,fit_info);//k_m
+                    tmpx[6]=tmpx[10]*tmpx[1];//k
+                    tmpx[3]=gjack[0].jack[594][j];//E20
+                    tmpx[7]=gjack[0].jack[443][j]*(double) params[0].data.L[1]/(2.*pi_greco);//mL_2pi
+                }    
+
                 free(x);free(y);
                 //tmpx[8]=E3_m[j];// E3( \vec{n} )/mass
                 
@@ -503,8 +514,8 @@ int main(int argc, char **argv){
          err_mass.emplace_back(  error_jackboot(argv[1],Njack, gjack[e1].jack[443] )  );
      }
      
-    // zeta.Init_Lmq(Ls, masses, err_mass  );
-    // zeta.write("zeta_g0.25.dat");
+    //zeta.Init_Lmq_g(Ls, masses, err_mass  );
+    //zeta.write("zeta_g0.25.dat");
     zeta.read("zeta_g0.25.dat");
     // //   zeta_interpolation   zz;
     // //  zz.Init(argv[1] , myen , paramsj ,gjack  );
@@ -540,7 +551,7 @@ int main(int argc, char **argv){
      fit_info.function=M_finite_volume; fit_info_m0.function=M_finite_volume;
 
      
-     fit_m0=fit_data(argv,  paramsj ,gjack, M0_finite_volume_lhs ,fit_info, "M0_finite_vol" ,myen);
+     fit_m0=fit_data(argv,  paramsj ,gjack, M0_g_finite_volume_lhs ,fit_info, "M0_finite_vol" ,myen);
     
      
      fit_m1=fit_data(argv,  paramsj ,gjack, M1_finite_volume_lhs ,fit_info, "M1_finite_vol" ,myen);
@@ -558,12 +569,12 @@ int main(int argc, char **argv){
      
      fit_info.Npar=1;
      fit_info.N=1;
-     fit_info.Njack=gjack[0].Njack;
+     fit_info.Njack=gjack[0].Njack;// E1_0
      fit_info.n_ext_P=0;
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
      fit_info.function=muDE_rhs;
      
-     struct fit_result fit_a_00=fit_data(argv,  paramsj ,gjack, muDE_00_lhs ,fit_info, "a_00_luscher",myen );
+     struct fit_result fit_a_00=fit_data(argv,  paramsj ,gjack, muDE_00_g_lhs ,fit_info, "a_00_luscher",myen );
      
      printf("\n/////////////////////////////////     k cot delta    //////////////////\n");
      ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -571,23 +582,39 @@ int main(int argc, char **argv){
      //////////////////////////////////////////////////////////////////////////////////////////////////
      
     
-     fit_info.Npar=3;
-     fit_info.N=1;
+     fit_info.Npar=2;
+     fit_info.N=3;
      fit_info.Njack=gjack[0].Njack;
      fit_info.n_ext_P=0;
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
-     fit_info.function=rhs_kcotd_g;
+     fit_info.function=rhs_kcotd_m;
      
-     struct fit_result fit_kcotd=fit_data(argv,  paramsj ,gjack, lhs_kcotd_g ,fit_info, "kcotd",myen );
-     
+     struct fit_result fit_kcotd=fit_data(argv,  paramsj ,gjack, lhs_kcotd_m_g ,fit_info, "kcotd_m",myen );
       
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+     // kcot  deltaE
+     //////////////////////////////////////////////////////////////////////////////////////////////////
+          printf("\n/////////////////////////////////     k cot delta deltaE    //////////////////\n");
+
+    
+     fit_info.Npar=2;
+     fit_info.N=3;
+     fit_info.Njack=gjack[0].Njack;
+     fit_info.n_ext_P=0;
+     //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.function=rhs_kcotd_m;
+     
+     struct fit_result fit_kcotd_DeltaE=fit_data(argv,  paramsj ,gjack, lhs_kcotd_m_deltaE_g ,fit_info, "kcotd_m_deltaE",myen );
+      
+
+
      ///////////////////////////////////////////////////////////////////////////////////////////////////
      printf("\n/////////////////////////////////   fit  k  form from_phase_shift    //////////////////\n");
      //////////////////////////////////////////////////////////////////////////////////////////////////
      
      
      fit_info.Npar=2;
-     fit_info.N=1;
+     fit_info.N=3;
      fit_info.Njack=gjack[0].Njack;
      fit_info.n_ext_P=0;
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
@@ -611,7 +638,7 @@ int main(int argc, char **argv){
      fit_info.restore_default();
      
      fit_info.Npar=2;
-     fit_info.N=1;
+     fit_info.N=3;
      fit_info.Njack=gjack[0].Njack;
      fit_info.n_ext_P=0;
      //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
@@ -632,6 +659,7 @@ int main(int argc, char **argv){
      print_phase_shift(argv, gjack ,  fit_info , "deltaE2_m_quant_cond", deltaE2_m_quant_cond);
      fit_info.restore_default();
      
+     exit(1);
 
     printf("\n/////////////////////////////////     delta 2par   //////////////////\n");
      ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -366,6 +366,120 @@ void zeta_interpolation::Init_Lmq( std::vector<int>  Ls,  std::vector<double> ma
     printf("time to Init zeta_interpolation=%g s\n",b-a);
 }
 
+void zeta_interpolation::Init_Lmq_g(
+     std::vector<int>  Ls,  std::vector<double> masses, std::vector<double> err_mass
+      ){
+    double a=timestamp();
+    error(Ls.size()!=masses.size(),1," Init_Lmq", "Ls vector length %d not the same ad masses %d",Ls.size(),masses.size());
+    error(err_mass.size()!=masses.size(),1," Init_Lmq", "error vector length  %d not the same ad masses %d",err_mass.size(),masses.size());
+    double z[2];
+    int tmp_vec[3]={0,0,0};
+    // init the workspace of the dzeta_function
+    dzeta_function(z,  1 ,0 , 0, tmp_vec, 1, 1. , 1.e-3, 1.e6 ,1);
+    etot=Ls.size();
+    ntot=3;
+    std::vector< std::vector<int> > momenta(ntot,std::vector<int>(3));
+    momenta[0][0]=0; momenta[0][1]=0; momenta[0][2]=0; 
+    momenta[1][0]=1; momenta[1][1]=0; momenta[1][2]=0; 
+    momenta[2][0]=0; momenta[2][1]=0; momenta[2][2]=0; 
+    
+    mom=momenta;
+    krange=double_malloc_4(etot,ntot,Nm,2);
+    m=double_malloc_2(etot,Nm);
+    printf("initializing zeta grid for interpolation \n");
+    
+    grid=(double****) malloc(sizeof(double***)*etot);
+    kint=(double****) malloc(sizeof(double***)*etot);
+    for (int e=0; e<etot;e++){
+        L.emplace_back(Ls[e] );
+        printf(" init L=%d\n",Ls[e]);
+        double twopiL=(2.*pi_greco/L[e]);
+        double twopiL2=twopiL*twopiL;
+        m[e][0]=(masses[e]-5.*err_mass[e]); 
+        for (int im=1; im<Nm;im++){
+            m[e][im]=m[e][0]+(2.*(5.*err_mass[e])*im/((double) Nm)) ;
+        }
+        
+        grid[e]=(double***) malloc(sizeof(double**)*momenta.size());
+        kint[e]=(double***) malloc(sizeof(double**)*momenta.size());
+        for (int d=0; d<ntot;d++){
+            grid[e][d]=(double**) malloc(sizeof(double*)*Nm);
+            kint[e][d]=(double**) malloc(sizeof(double*)*Nm);
+            for (int im=0; im<Nm;im++){
+                //int dvec[3]={momenta[d][0],momenta[d][1],momenta[d][2]};
+                int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+                dvec[0]=mom[d][0]; dvec[1]=mom[d][1]; dvec[2]=mom[d][2]; 
+                
+                if(d==0){//E2_0
+                    dvec1[0]=0; dvec1[1]=0; dvec1[2]=0;
+                    dvec2[0]=0; dvec2[1]=0; dvec2[2]=0;
+                    dmax1[0]=1; dmax1[1]=0; dmax1[2]=0;
+                    dmax2[0]=-1; dmax2[1]=0; dmax2[2]=0;
+                }
+                else if(d==1){//E2_0_p1
+                    dvec1[0]=1; dvec1[1]=0; dvec1[2]=0;
+                    dvec2[0]=0; dvec2[1]=0; dvec2[2]=0;
+                    dmax1[0]=1; dmax1[1]=1; dmax1[2]=0;
+                    dmax2[0]=0; dmax2[1]=-1; dmax2[2]=0;
+                }
+                else if(d==2){//E2_0_A1
+                    dvec1[0]=1; dvec1[1]=0; dvec1[2]=0;
+                    dvec2[0]=-1; dvec2[1]=0; dvec2[2]=0;
+                    dmax1[0]=1; dmax1[1]=0; dmax1[2]=1;
+                    dmax2[0]=-1; dmax2[1]=0; dmax2[2]=-1;
+                }
+                else {
+                    exit(1);
+                }
+                
+                //init the range of k
+                double E1f=sqrt(m[e][im]*m[e][im]/twopiL2+(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
+                double E2f=sqrt(m[e][im]*m[e][im]/twopiL2+(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
+                double Ef=E1f+E2f;
+                double ECMfsq=Ef*Ef-(dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
+                double kf=(ECMfsq/4. -m[e][im]*m[e][im]/twopiL2);
+                krange[e][d][im][0]=kf;//+1e-10;
+                E1f=sqrt(m[e][im]*m[e][im]/twopiL2+((dmax1[0])*(dmax1[0])+dmax1[1]*dmax1[1]+(dmax1[2])*(dmax1[2]))   );
+                E2f=sqrt(m[e][im]*m[e][im]/twopiL2+((dmax2[0])*(dmax2[0])+dmax2[1]*dmax2[1]+(dmax2[2])*(dmax2[2]))   );
+                Ef=E1f+E2f;
+                ECMfsq=Ef*Ef-((dvec[0])*(dvec[0])+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
+                double kf1=(ECMfsq/4.-m[e][im]*m[e][im]/twopiL2);
+                krange[e][d][im][1]=kf1;//-1e-10;
+                //                 int iter=(krange[e][d][im][1]-krange[e][d][im][0]) /h+1 ;
+                int iter=Nh;
+                double h=(krange[e][d][im][1]-krange[e][d][im][0])/(Nh+2.);
+                krange[e][d][im][0]+=h;
+                krange[e][d][im][1]-=h;
+                //                 double h=(krange[e][d][im][1]-krange[e][d][im][0])/(Nh+2);
+                error(iter<3,1,"zeta_interpolation::Init","points to evaluate the zeta in k are %d to little to interpolate try decreasing h",iter);
+                //                     printf("e=%d  mom=%d=(%d,%d,%d)  im=%d  kiter=%d\n",e,d,dvec[0],dvec[1],dvec[2],im,iter );
+                
+                grid[e][d][im]=(double*) malloc(sizeof(double)*(iter));
+                kint[e][d][im]=(double*) malloc(sizeof(double)*(iter));
+                 #pragma omp parallel for  private(z)  shared(h,iter,e,d,im,twopiL2,dvec,m,krange) 
+                for (int ik=0;ik< iter;ik++){
+                    double k=krange[e][d][im][0]+h*ik;
+                    if(ik==iter-1) k=krange[e][d][im][1];
+                    double ECM2=4*(k+m[e][im]*m[e][im]/twopiL2);
+                    double E2=ECM2+(dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
+                    double gamma=sqrt(E2/ECM2); 
+//                     printf("k=%g   gamma=%g  dvec=(%d,%d,%d) mass=%g  e=%d  kmin=%g kmax=%g h=%g, n=%d kf=%g kf1=%g\n",k,gamma,dvec[0],dvec[1],dvec[2],m[e][im],e, krange[e][d][im][0],krange[e][d][im][1],h,d, kf,kf1);
+                    dzeta_function(z,  k ,0 , 0, dvec, gamma, 1. , 1.e-3, 1.e6 ,4);
+                    grid[e][d][im][ik]=z[0]; //real part
+                    kint[e][d][im][ik]=k; //real part
+                    //                     printf("e=%d  n=%d  q2=%g h=%g  z=%g\n",e,d,k,h,z[0]);
+                }
+                for (int ik=iter-2;ik< iter;ik++){
+                    error(grid[e][d][im][0]*grid[e][d][im][ik]>0,1,"zeta_interpolation::Init","over the pole e=%d n=%d  mass(im=%d)=%g  q2=[%g,%g]  h=%g",e,d,im,m[e][im],krange[e][d][im][0],krange[e][d][im][1],h );
+                }
+            }
+        }
+    }
+    double b=timestamp();
+    allocated=0;
+    printf("time to Init zeta_interpolation=%g s\n",b-a);
+}
+
 double zeta_interpolation::compute(double inL, int n, double mass,  double k ){
     
     int e=-1;

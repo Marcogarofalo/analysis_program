@@ -5492,7 +5492,7 @@ check_correlatro_counter(603);
 
 fit_info.restore_default();
 printf("GEVP_0_3_1_001_011_5\n");
-if (params.data.ncorr>207){    
+if (params.data.ncorr>207+1e+6){    
     
     fit_info.restore_default();
     char name_v[NAMESIZE];
@@ -5519,13 +5519,130 @@ if (params.data.ncorr>207){
         free(ml0_GEVP);
         check_correlatro_counter(604+i);
     }
-    check_correlatro_counter(700);
+    check_correlatro_counter(609);
 
     
 
 }else { for (int i =604 ;i<=609;i++)  zero_corr(zeros,Njack, jack_file );}
 check_correlatro_counter(609);
 
+
+
+printf("GEVP_00_11_01_00A1_11A1_01A1\n");
+if (params.data.ncorr>217+1e+6){    
+    fit_info.N=1;
+    fit_info.corr_id={2 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d00=ncorr_new-1;
+    
+    fit_info.corr_id={12 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d00_11=ncorr_new-1;
+
+    fit_info.corr_id={213 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d00_01=ncorr_new-1;
+
+    fit_info.corr_id={3 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d11=ncorr_new-1;
+
+    fit_info.corr_id={214 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d11_01=ncorr_new-1;
+
+    fit_info.corr_id={11 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d01=ncorr_new-1;
+
+    fit_info.N=1;
+    fit_info.corr_id={39 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d00A1=ncorr_new-1;
+    
+    fit_info.corr_id={236 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d00A1_11A1=ncorr_new-1;
+
+    fit_info.corr_id={237 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d00A1_01A1=ncorr_new-1;
+
+    fit_info.corr_id={40 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d11A1=ncorr_new-1;
+
+    fit_info.corr_id={238 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d11A1_01A1=ncorr_new-1;
+
+    fit_info.corr_id={41 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d01A1=ncorr_new-1;
+    
+    fit_info.corr_id={63 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d00_00A1=ncorr_new-1;
+    fit_info.corr_id={261 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d11_00A1=ncorr_new-1;
+    fit_info.corr_id={262 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d01_00A1=ncorr_new-1;
+
+   
+    fit_info.corr_id={64 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d11_11A1=ncorr_new-1;
+
+    fit_info.corr_id={263 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d00_11A1=ncorr_new-1;
+    fit_info.corr_id={264 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d01_11A1=ncorr_new-1;
+
+
+    fit_info.corr_id={65 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d01_01A1=ncorr_new-1;
+    fit_info.corr_id={265 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d00_01A1=ncorr_new-1;
+    fit_info.corr_id={266 };  
+    add_correlators(option , ncorr_new , conf_jack ,der1_corr ,   fit_info );
+    int id_d11_01A1=ncorr_new-1;
+
+    fit_info.restore_default();
+    char name_v[NAMESIZE];
+     fit_info.N=6;
+    fit_info.corr_id={id_d00, id_d00_11,id_d00_01, id_d00_00A1,id_d00_11A1,id_d00_01A1,
+                                 id_d11,id_d11_01, id_d11_00A1,id_d11_11A1,id_d11_01A1,
+                                           id_d01, id_d01_00A1,id_d01_11A1,id_d01_01A1,
+                                                  id_d00A1, id_d00A1_11A1,id_d00A1_01A1,
+                                                                 id_d11A1,id_d11A1_01A1,
+                                                                               id_d01A1};//operators{ shift-phi0, shift-phi1}
+   
+    fit_info.value_or_vector=0; // 0= values
+    fit_info.t0_GEVP=3;
+    
+    add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix ,   fit_info );
+    printf(" ncorr after GEVP %d\n",ncorr_new);
+    
+    fit_info.restore_default();
+   
+    for (int i=0; i< fit_info.N; i++){
+        mysprintf(name_v,NAMESIZE,"GEVP_00_11_01_00A1_11A1_01A1_meffl%d",i   );
+        double *ml0_GEVP=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,namefile_plateaux,outfile, ncorr_new-fit_info.N+i, name_v, M_eff_T ,jack_file);
+        free(ml0_GEVP);
+        check_correlatro_counter(610+i);
+    }
+    check_correlatro_counter(615);
+
+    
+
+}else { for (int i =610 ;i<=615;i++)  zero_corr(zeros,Njack, jack_file );}
+check_correlatro_counter(615);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 // free(E1_0_p1);

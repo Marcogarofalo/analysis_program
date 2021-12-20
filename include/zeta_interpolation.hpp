@@ -30,6 +30,7 @@ public:
     zeta_interpolation(){};
     void Init(char *resampling, std::vector<int>  myen,  std::vector<cluster::IO_params> paramsj, std::vector<data_phi> gjack );
     void Init_Lmq( std::vector<int>  Ls,  std::vector<double> masses, std::vector<double> err_mass );
+    void Init_Lmq_g( std::vector<int>  Ls,  std::vector<double> masses, std::vector<double> err_mass );
     double compute(double inL, int n, double mass,  double k );
     void write(std::string filename="zeta_interpolation.dat");
     void read(std::string filename="zeta_interpolation.dat");
