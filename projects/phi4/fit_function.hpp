@@ -1736,7 +1736,7 @@ void print_fit_band_k_m(char **argv,vector<data_phi> gjack ,struct fit_type fit_
             tmpx[8]=x[j][0][8];
             tmpx[9]=x[j][0][9];
             
-            tmpx[10]=0+i*sqrt(3)/100;//k/m
+            tmpx[10]=0+i*0.02;//k/m
             
             for(int i=fit_info.Nvar ; i<fit_info.Nvar+ fit_info.n_ext_P; i++)
                 tmpx[i]=fit_info.ext_P[i-fit_info.Nvar][j];
