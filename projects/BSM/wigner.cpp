@@ -337,11 +337,11 @@ int main(int argc, char **argv){
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     // 0
-    double *mass=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,namefile_plateaux,outfile,1,"m_PS", M_eff_T,jack_file);
+    double *mass=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,namefile_plateaux,outfile, P1P1TRIVIAL ,"m_PS", M_eff_T,jack_file);
     // 1
-    double *massDs3=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,namefile_plateaux,outfile,6,"m_DS3", M_eff_T,jack_file);
+    double *massDs3=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,namefile_plateaux,outfile,VECTORDENSITY3DENSITY3NONTRIVIAL,"m_DS3", M_eff_T,jack_file);
     // 2
-    double *masss0=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,namefile_plateaux,outfile,4,"m_S0", M_eff_T,jack_file);
+    double *masss0=plateau_correlator_function(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,   header.Njack ,namefile_plateaux,outfile, S0S0TRIVIAL,"m_S0", M_eff_T,jack_file);
     
     
     fit_type fit_info;

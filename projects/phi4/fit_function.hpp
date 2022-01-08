@@ -564,7 +564,7 @@ double rhs_delta(int n, int Nvar, double *x,int Npar,double  *P){
 
 double rhs_delta_g(int n, int Nvar, double *x,int Npar,double  *P){
     double a0m=P[0], r0m=P[1];
-    double k_m=x[13];
+    double k_m=x[10];
     double kcot=1.0/(a0m)  + r0m*k_m*k_m/(2.);
     
     if (Npar>2){
@@ -866,9 +866,7 @@ double rhs_E3_m_QC3_pole(int n, int Nvar, double *x,int Npar,double  *P){
         Pkcot[0]=x[Nvar-2];
         Pkcot[1]=x[Nvar-1];
          
-    double Pkiso[2];
-        Pkiso[0]=P[0];
-        Pkiso[1]=P[1];
+    
 
     int Nkcot=2;
     int Nkiso=Npar;
@@ -888,7 +886,7 @@ double rhs_E3_m_QC3_pole(int n, int Nvar, double *x,int Npar,double  *P){
     double Eend=x[11]+x[12];
     
 //    printf("E=[%g , %g]   E1f=%g   E2f=%g  m=%g\n",Estart,Eend,Estart,Eend,mass);
-    double r=python_detQC_call(Estart, Eend, steps,  L,  nnP, Nkcot,Pkcot,Nkiso, Pkiso);
+    double r=python_detQC_call(Estart, Eend, steps,  L,  nnP, Nkcot,Pkcot,Nkiso, P);
 //     printf("res=%g\n",r);
     return r;
 }
@@ -1270,6 +1268,23 @@ double lhs_q(int n, int e , int j , vector<cluster::IO_params> params,vector<dat
 ///////  lhs E3/m
 //////////////////////////////////////////////////////////////////////////////////////////
 
+double lhs_E3orE1_g_m(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
+    double E3;
+    double mass=gjack[e].jack[443][j];
+   
+    
+    if(n==0){//GEVP 1
+        E3=gjack[e].jack[444][j];
+        //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
+    }
+    else if(n==1){//GEVP 2
+        E3=gjack[e].jack[445][j];
+        //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
+    }
+    
+    else{ E3=0 ; printf("lhs_E3orE1_m n=%d not implemented\n",n); exit(1);}
+  return E3/mass;
+}
 
 double lhs_E3orE1_m(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
     double E3;

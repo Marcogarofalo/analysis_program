@@ -203,7 +203,13 @@ void print_fit_band_E3_vs_L(char **argv,vector<data_phi> gjack , struct fit_type
                 // as error on E3/m  we take the error on the ensemble=0
                 tmpx[12]=E3_m_err;
                 
-                
+                if (params[0].data.gC>0){
+                    tmpx[1]=gjack[0].jack[443][j];//m0
+                    tmpx[10]=compute_k_m_g(n,0,j,params,gjack,fit_info);//k_m
+                    tmpx[6]=tmpx[10]*tmpx[1];//k
+                    tmpx[3]=gjack[0].jack[594][j];//E20
+                    tmpx[7]=gjack[0].jack[443][j]*(double) params[0].data.L[1]/(2.*pi_greco);//mL_2pi
+                }    
                 
                 for(int i=fit_info.Nvar ; i<fit_info.Nvar+ fit_info.n_ext_P; i++)
                     tmpx[i]=fit_info.ext_P[i-fit_info.Nvar][j];
@@ -654,12 +660,12 @@ int main(int argc, char **argv){
      //      the zeta is computed analytically, use the interpolated one for faster result!!!!!!!!!
      //      struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.11,-950, 6.4e-6} );// {-0.948817,-114.788,0.0003987}
      struct fit_result deltaE2_m_quant_cond=fit_data(argv,  paramsj ,gjack, lhs_deltaE2_m_latt_g ,fit_info, "deltaE2_m_quant_cond",myen );
-     print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "deltaE2_m_quant_cond",   deltaE2_m_quant_cond ,fit_m0,    paramsj,  myen);
+     print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "deltaE2_m_quant_cond",   deltaE2_m_quant_cond ,fit_m0,    paramsj,  myen, {22,42});
      
      print_phase_shift(argv, gjack ,  fit_info , "deltaE2_m_quant_cond", deltaE2_m_quant_cond);
      fit_info.restore_default();
      
-     exit(1);
+     
 
     printf("\n/////////////////////////////////     delta 2par   //////////////////\n");
      ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -677,7 +683,7 @@ int main(int argc, char **argv){
      struct fit_result fit_delta_2par=fit_data(argv,  paramsj ,gjack, lhs_delta_g ,fit_info, "delta_2par_g",myen );
      free_fit_result(fit_info,fit_delta_2par);
 
-               exit(1);
+    
 
 
      ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -698,7 +704,7 @@ int main(int argc, char **argv){
      
      printf("//////////////////// poly fit E3   ////////////////////////////////////\n");
      fit_type fit_info_E3_poly;
-     fit_info_E3_poly.N=6;
+     fit_info_E3_poly.N=2;
      
      fit_info_E3_poly.Njack=gjack[0].Njack;
      fit_info_E3_poly.n_ext_P=2;
@@ -718,15 +724,14 @@ int main(int argc, char **argv){
      mysprintf(namefile,NAMESIZE,"poly_E3andE1_N%d",fit_info_E3_poly.N );
     // struct fit_result fit_QC3_poly=fit_data(argv,  paramsj ,gjack, lhs_E3_m ,fit_info_E3_poly, namefile,myen   );
      
-     struct fit_result fit_QC3_poly=fit_data(argv,  paramsj ,gjack, lhs_E3orE1_m ,fit_info_E3_poly, namefile,myen   );
+     struct fit_result fit_QC3_poly=fit_data(argv,  paramsj ,gjack, lhs_E3orE1_g_m ,fit_info_E3_poly, namefile,myen   );
      print_fit_band_L_M( argv, gjack , fit_info_E3_poly,fit_info_m0 ,  namefile,   fit_QC3_poly ,fit_m0,    paramsj,  myen, {23,41});
 //      free_fit_result(fit_info,fit_QC3_poly);
 //      fit_info_E3_poly.restore_default();
      
-     
      printf("////////////////////  kiso pole fit   ////////////////////////////////////\n");
      init_python_detQC();
-      init_python_detQC_kcot_kiso("kcot_2par", "kiso_pole");
+     init_python_detQC_kcot_kiso("kcot_2par", "kiso_pole");
 //     init_python_detQC_kcot_kiso("kcot_2par", "kiso_2par");
 //      init_python_detQC_kcot_kiso("kcot_2par", "kiso_1par");
      fit_info.Npar=2;
@@ -753,7 +758,7 @@ int main(int argc, char **argv){
      //fit_info.repeat_start=2;
      fit_info.guess={-22533.5, 80.5154};
      mysprintf(namefile,NAMESIZE,"QC3_N%d_%dpar_pole",fit_info.N, fit_info.Npar);
-     struct fit_result fit_QC3_1par=fit_data(argv,  paramsj ,gjack, lhs_E3orE1_m ,fit_info, namefile,myen   );
+     struct fit_result fit_QC3_1par=fit_data(argv,  paramsj ,gjack, lhs_E3orE1_g_m ,fit_info, namefile,myen   );
      print_fit_band_E3_vs_L( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3_1par ,fit_m0,    paramsj,  myen,  fit_info_E3_poly, fit_QC3_poly, {23,41});
      
      fit_info.restore_default();
