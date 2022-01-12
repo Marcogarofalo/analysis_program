@@ -30,6 +30,76 @@
 #endif
 //using namespace std;
 
+void printing_file_for_maxim_and_fernando(char **argv, vector<cluster::IO_params> paramsj ,vector<data_phi> gjack,  std::vector<int> myen  ){
+    int Njack=gjack[0].Njack;
+    char resampling[NAMESIZE];
+   	mysprintf(resampling, NAMESIZE, "%s", argv[1]);
+    for (int j = 0; j < Njack; j++)
+	{
+		char name[NAMESIZE];
+		mysprintf(name, NAMESIZE, "data_j%d.txt", j);
+		FILE *f = open_file(name, "w+");
+		fprintf(f,"L	T	g          m02       m12        l0        E1         	E2         	E2p1      	 E2A1        	E3_0     	     	E3_1  \n" );
+	 	for (int e :myen){
+			fprintf(f,"%-4d%-4d%-10g%-10g%-10g%-10g%-14.10g%-14.10g%-14.10g%-14.10g%-14.10g%-14.10g\n",
+					paramsj[e].data.L[1], paramsj[e].data.L[0], paramsj[e].data.gC,
+					paramsj[e].data.msq0, paramsj[e].data.msq1, paramsj[e].data.lambdaC0,
+					gjack[e].jack[443][Njack - 1],
+					gjack[e].jack[594][Njack - 1],
+					gjack[e].jack[597][Njack - 1],
+					gjack[e].jack[601][Njack - 1],
+					gjack[e].jack[444][Njack - 1],
+					gjack[e].jack[445][Njack - 1]);
+		}
+		fclose(f);
+	}
+	{
+		char name[NAMESIZE];
+		mysprintf(name, NAMESIZE, "data.txt");
+		FILE *f = open_file(name, "w+");
+		fprintf(f,"L	T	g          m02       m12        l0        E1    	  E1err     	E2      	E2err       	E2p1     	E2p1err 	 E2A1       	E2A1err     	E3_0     	E3_0err     	E3_1    	E3_1err  \n" );
+	 	for (int e :myen){
+			fprintf(f,"%-4d%-4d%-10g%-10g%-10g%-10g%-14g%-18.10g%-14.10g%-18.10g%-14.10g%-18.10g%-14.10g%-18.10g%-14.10g%-18.10g%-14.10g%-18.10g\n",
+					paramsj[e].data.L[1], paramsj[e].data.L[0], paramsj[e].data.gC,
+					paramsj[e].data.msq0, paramsj[e].data.msq1, paramsj[e].data.lambdaC0,
+					gjack[e].jack[443][Njack - 1], error_jackboot(resampling, Njack, gjack[e].jack[443]),
+					gjack[e].jack[594][Njack - 1], error_jackboot(resampling, Njack, gjack[e].jack[594]),
+					gjack[e].jack[597][Njack - 1], error_jackboot(resampling, Njack, gjack[e].jack[597]),
+					gjack[e].jack[601][Njack - 1], error_jackboot(resampling, Njack, gjack[e].jack[601]),
+					gjack[e].jack[444][Njack - 1], error_jackboot(resampling, Njack, gjack[e].jack[444]),
+					gjack[e].jack[445][Njack - 1], error_jackboot(resampling, Njack, gjack[e].jack[445]));
+		}
+		fclose(f);
+	}
+	{
+		for (int e :myen){
+			char name[NAMESIZE];
+			mysprintf(name, NAMESIZE, "covariance_spectrum_L%d.txt",paramsj[e].data.L[1]);
+			FILE *f = open_file(name, "w+");
+			double **to_cov=double_malloc_2(6,Njack);
+			for(int j=0;j<Njack;j++){
+				to_cov[0][j]=gjack[e].jack[443][j];
+				to_cov[1][j]=gjack[e].jack[594][j];
+				to_cov[2][j]=gjack[e].jack[597][j];
+				to_cov[3][j]=gjack[e].jack[601][j];
+				to_cov[4][j]=gjack[e].jack[444][j];
+				to_cov[5][j]=gjack[e].jack[445][j];
+			}
+			double **cov=covariance(resampling, 6, Njack, to_cov);
+			for(int i=0;i<6;i++){
+				for(int j=0;j<6;j++){
+					fprintf(f,"%-18.10g",cov[i][j]);
+				}
+				fprintf(f,"\n");
+			}
+			fclose(f);
+			free(to_cov);
+			free(cov);
+		}
+	}
+}
+
+
 void init_dvec(int n,int *dvec,int *dvec1, int *dvec2, int *dmax1, int *dmax2 ){
     
     if(n==0){//E2_0
@@ -695,7 +765,11 @@ double to_invert_k_from_phase_shift_g(int n, int Nvar, double *x,int Npar,double
     if (Npar>=3){
         kcotdelta_m+=P[2]*r0m0*r0m0*r0m0*k_m*k_m*k_m*k_m;
     }
-    //    printf(" k=%g   f(k)=%g  kcotdelta_m=%g   r=%g  z=%g  gamma=%g   mass=%g  L=%g   dvec=(%d,%d,%d) E2CM=%g\n ",k, kcotdelta_m-r ,kcotdelta_m, r , z[0] ,gamma,mass, L, dvec[0] ,dvec[1] ,dvec[2], E2_CM);
+        // printf(" k=%g   f(k)=%g  kcotdelta_m=%g   r=%g  z=%g  gamma=%g   mass=%g  L=%g   dvec=(%d,%d,%d) E2CM=%g\n ",k, kcotdelta_m-r ,kcotdelta_m, r , z[0] ,gamma,mass, L, dvec[0] ,dvec[1] ,dvec[2], E2_CM);
+        // printf("P[0]=%g \t",P[0]);
+        // if (Npar>=2) printf("P[1]=%g \t",P[1]);
+        // if (Npar>=3) printf("P[2]=%g \t",P[2]);
+        // printf("\n");
     return         kcotdelta_m-r;
     
     
@@ -849,7 +923,7 @@ double rhs_deltaE2_m_quant_cond_g(int n, int Nvar, double *x,int Npar,double  *P
     
     
     double xmin=kf+1e-6;
-    double xmax=kf1-1e-6;//- (kf1-kf)/1e+3;
+    double xmax=kf1-1e-6;
 
     double k=rtsafe( to_invert_k_from_phase_shift_g , n,  3, xx, Npar, P, 2/*ivar*/,0. /*input*/,    xmin, xmax,  1e-5, 100, 1e-4);
     double E2=sqrt( (k*k+mass*mass)*4.+ (2*pi_greco/L)*(2*pi_greco/L)*( dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]   )  );

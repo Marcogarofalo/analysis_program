@@ -5343,8 +5343,11 @@ if (params.data.ncorr>214){
                               
     fit_info.value_or_vector=0; // 0= values
     fit_info.t0_GEVP=3;
+    if( strcmp(argv[4],"G2t_T64_L14_msq0-4.180000_msq1-4.180000_l02.500000_l12.500000_mu5.000000_g1.500000_rep0_bin1000_merged_bin100")==0){
+        fit_info.t0_GEVP=4;
+    }
+    
     //fit_info.corr_id={1,2};
-    printf("GEVP_00_11_01\n");
     add_correlators(option , ncorr_new , conf_jack ,GEVP_matrix ,   fit_info );
     printf(" ncorr after GEVP %d\n",ncorr_new);
     
