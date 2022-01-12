@@ -219,6 +219,7 @@ struct  fit_type
   double chi2_gap_jackboot=1;
   int guess_per_jack=3;
   int precision_sum=0;// 0 float, 1 float kahan,  >1 long double
+  bool mean_only=false;
   
   
   std::vector<int> corr_id={};
@@ -254,6 +255,8 @@ struct  fit_type
      corr_id=std::vector<int>();
      devorder=4; 
      repeat_start=1;
+
+     mean_only=false;
      
      plateaux_scan=false;
      guess_per_jack=0;

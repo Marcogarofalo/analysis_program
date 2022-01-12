@@ -216,7 +216,7 @@ vector<data_BSM> create_generalised_resampling(  vector<data_BSM> &dataj ){
         cout << "ensembles "<< dataj.size() << endl;
         cout<< "jack tot= "<< jack_tot<< endl;
         
-        //get Nobs the minimum number of observable between the diles
+        //get Nobs the minimum number of observable between the files
         int Nobs=1000;
         for( auto &d :dataj)
             if(Nobs> d.Nobs )

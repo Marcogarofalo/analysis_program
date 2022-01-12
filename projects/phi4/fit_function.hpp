@@ -879,7 +879,6 @@ double rhs_E3_m_QC3_pole(int n, int Nvar, double *x,int Npar,double  *P){
     double L=x[0];
     int steps=4;
     
-    
     L=L*mass;
 
     double Estart=x[11]-x[12];
@@ -2003,17 +2002,14 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
     
     ///////////////// the fit 
     // scan the parameter of the fit with the last jack
-    if (fit_info.guess.size()==0){
+    if (fit_info.guess.size()==0 || fit_info.repeat_start>1){
         guess=guess_for_non_linear_fit_Nf(N, en,x[Njack-1], y[Njack-1] , Nvar,  Npar, fit_info.function,guess );
     }
-    
+    if (fit_info.mean_only==false){
     for (int j=Njack-1;j>=0;j--){
        
-        
-        
         double a=timestamp();
         fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function, guess, fit_info);
-    
         fit_out.chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
         
         if (fit_info.verbosity>0){
@@ -2032,6 +2028,23 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
         //        fit_out.C[i][k][j]=C[i][k];
         //free_2(Npar, C);
         
+        
+    }
+    }
+    else if (fit_info.mean_only==true){
+        int j=Njack-1;
+        fit[j]=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function, guess, fit_info);
+        fit_out.chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+        // for the other jackboot add a white noise to the mean
+        for (j=Njack-2;j>=0;j--){
+            fit[j]=(double*) malloc(sizeof(double)*fit_info.Npar);
+            
+            for (int i=0; i<fit_info.Npar;i++){
+                double noise=fit[Njack-1][i] *mt_rand()/((double)mt_rand.max() *100);
+                fit[j][i]=fit[Njack-1][i]*noise;
+                fit_out.chi2[j]=fit_out.chi2[Njack-1]*noise;
+            }
+        }
         
     }
     for(int i=0;i<Npar;i++)
