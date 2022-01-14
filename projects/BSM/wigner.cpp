@@ -209,7 +209,17 @@ int main(int argc, char **argv){
             
     }
     correlators.emplace_back("LOCALCURRENTTAU1P1phi");//13  to be created
+
+    correlators.emplace_back("JTILDEA1P1TRIVIAL_w2phi");//14
+    correlators.emplace_back("P1DP1NONSMEAREDNONTRIVIAL_w2phi");//15
     
+    correlators.emplace_back("JTILDEA1P1TRIVIAL_w3phi");//16
+    correlators.emplace_back("P1DP1NONSMEAREDNONTRIVIAL_w3phi");//17
+
+    correlators.emplace_back("LOCALCURRENTTAU1P1phi_w2phi");//18
+    correlators.emplace_back("LOCALCURRENTTAU1P1phi_w3phi");//19
+    
+
     int var=correlators.size();
     data=calloc_corr(confs, var,  header.T );
     int tau=5;
@@ -235,12 +245,44 @@ int main(int argc, char **argv){
             for (int t =0; t< header.T;t++)
                 fscanf(f_correlators[i],"%lf  %lf\n",&data[iconf][i][t][0],&data[iconf][i][t][1]);
         }
-        for (int t =0; t< header.T;t++){
+        for (int t =0; t< header.T;t++){//r_awi_loc
             int tptau=(t+tau)%T;
             data[iconf][13][t][0]= (data[iconf][10][(t+1)%T][0]-data[iconf][10][t][0])*data[iconf][7][tptau][0];
             data[iconf][13][t][1]=0;
             
         }
+        for (int t =0; t< header.T;t++){//r_awi
+            for(int wtau=tau; wtau<tau+2; wtau++){
+                int tptau=(t+wtau)%T;
+                data[iconf][14][t][0]= (data[iconf][0][(t+1)%T][0]-data[iconf][0][t][0])*data[iconf][7][tptau][0];
+                data[iconf][14][t][1]=0;
+                data[iconf][15][t][0]= data[iconf][5][t][0]*data[iconf][7][tptau][0];
+                data[iconf][15][t][1]=0;
+            }
+        }
+        for (int t =0; t< header.T;t++){//r_awi
+            for(int wtau=tau; wtau<tau+3; wtau++){
+                int tptau=(t+wtau)%T;
+                data[iconf][16][t][0]= (data[iconf][0][(t+1)%T][0]-data[iconf][0][t][0])*data[iconf][7][tptau][0];
+                data[iconf][16][t][1]=0;
+                data[iconf][17][t][0]= data[iconf][5][t][0]*data[iconf][7][tptau][0];
+                data[iconf][17][t][1]=0;
+            }
+        }
+        for (int t =0; t< header.T;t++){//r_awi_loc
+            for(int wtau=tau; wtau<tau+2; wtau++){
+                int tptau=(t+wtau)%T;
+                data[iconf][18][t][0]= (data[iconf][10][(t+1)%T][0]-data[iconf][10][t][0])*data[iconf][7][tptau][0];
+                data[iconf][18][t][1]=0;
+            }
+        }for (int t =0; t< header.T;t++){//r_awi_loc
+            for(int wtau=tau; wtau<tau+3; wtau++){
+                int tptau=(t+wtau)%T;
+                data[iconf][19][t][0]= (data[iconf][10][(t+1)%T][0]-data[iconf][10][t][0])*data[iconf][7][tptau][0];
+                data[iconf][19][t][1]=0;
+            }
+        }
+        
         // for(int i =14 ; i<var_to_read ; i++){//var_to_read
         //     for (int t =0; t< header.T;t++)
         //         fscanf(f_correlators[i],"%lf  %lf\n",&data[iconf][i+2][t][0],&data[iconf][i+2][t][1]);
@@ -356,12 +398,10 @@ int main(int argc, char **argv){
     //file_head.k[2]=mu1;    file_head.k[3]=mu2;
     
     //c++ 3 || r 2
-    fit_result fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1phi", conf_jack ,namefile_plateaux, outfile, 
-                                              r_AWI, "r_AWI",  fit_info, jack_file );
+    fit_result fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1phi", conf_jack ,namefile_plateaux, outfile, r_AWI, "r_AWI",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     // 4
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1", conf_jack ,namefile_plateaux, outfile, 
-                                              m_PCAC, "m_AWI",  fit_info, jack_file );
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1", conf_jack ,namefile_plateaux, outfile,  m_PCAC, "m_AWI",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
       
     
@@ -379,5 +419,34 @@ int main(int argc, char **argv){
                                               m_PCAC_loc, "m_AWI_loc",  fit_info, jack_file );
     free_fit_result(fit_info,fit_out);
     check_correlatro_counter(8);
+
+    // wall r_awi
+    fit_info.restore_default();
+    fit_info.Nvar=1;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=header.Njack;
+    fit_info.n_ext_P=0;
+    fit_info.function=constant_fit;
+    fit_info.corr_id={14,15};
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1_wphi", conf_jack ,namefile_plateaux, outfile,  ration_corr_min_half, "r_AWI_wall2",  fit_info, jack_file );
+    free_fit_result(fit_info,fit_out);
+    check_correlatro_counter(9);
+    
+    fit_info.corr_id={16,17};
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1_wphi", conf_jack ,namefile_plateaux, outfile,  ration_corr_min_half, "r_AWI_wall3",  fit_info, jack_file );
+    free_fit_result(fit_info,fit_out);
+    check_correlatro_counter(10);
+
+    fit_info.corr_id={18,15};
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1_wphi", conf_jack ,namefile_plateaux, outfile,  ration_corr_min_half, "r_AWI_loc_wall2",  fit_info, jack_file );
+    free_fit_result(fit_info,fit_out);
+    check_correlatro_counter(11);
+
+    fit_info.corr_id={19,17};
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1_wphi", conf_jack ,namefile_plateaux, outfile,  ration_corr_min_half, "r_AWI_loc_wall3",  fit_info, jack_file );
+    free_fit_result(fit_info,fit_out);
+    check_correlatro_counter(12);
+
     
 }

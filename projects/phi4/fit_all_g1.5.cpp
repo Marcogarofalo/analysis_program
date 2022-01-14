@@ -48,20 +48,16 @@ void print_fit_band_L_M(char **argv,vector<data_phi> gjack ,struct fit_type fit_
 	char namefile[NAMESIZE];
 	FILE *f;
 	
-	mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_k.txt",argv[3], label);
-	f=open_file(namefile,"w+");
 	double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
 	double **tif_m0=swap_indices(fit_info_m0.Npar,Njack,fit_out_m0.P);
-	double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
-	double *tmpy=(double*) malloc(sizeof(double*)* Njack);
 	printf("writing: %s\n",namefile);
 	
 	for (int n=0;n< N; n++){
 		
 		mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_n%d_L.txt",argv[3], label,n);
 		f=open_file(namefile,"w+");
-		double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
-		double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+		double *tmpx=(double*) malloc(sizeof(double)* Nvar);
+		double *tmpy=(double*) malloc(sizeof(double)* Njack);
 		printf("writing: %s\n",namefile);
 		
 		for (int i=Lrange[0] ; i<Lrange[1]; i++){
@@ -148,21 +144,17 @@ void print_fit_band_E3_vs_L(char **argv,vector<data_phi> gjack , struct fit_type
 	char namefile[NAMESIZE];
 	FILE *f;
 	
-	mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_k.txt",argv[3], label);
-	f=open_file(namefile,"w+");
 	double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
 	double **tif_m0=swap_indices(fit_info_m0.Npar,Njack,fit_out_m0.P);
 	double **tif_E3_poly=swap_indices(fit_info_E3_poly.Npar, Njack, fit_E3_poly.P);
-	double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
-	double *tmpy=(double*) malloc(sizeof(double*)* Njack);
-	printf("writing: %s\n",namefile);
+
 	
 	for (int n=0;n< N; n++){
 		
 		mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_n%d_L.txt",argv[3], label,n);
 		f=open_file(namefile,"w+");
-		double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
-		double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+		double *tmpx=(double*) malloc(sizeof(double)* Nvar);
+		double *tmpy=(double*) malloc(sizeof(double)* Njack);
 		printf("writing: %s\n",namefile);
 		
 		for (int i=Lrange[0] ; i<Lrange[1]; i++){
@@ -251,24 +243,19 @@ void print_kiso_P0_inf_L_M(char **argv,vector<data_phi> gjack , struct fit_type 
 	char namefile[NAMESIZE];
 	FILE *f;
 	
-	mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_k.txt",argv[3], label);
-	f=open_file(namefile,"w+");
 	double **tif=double_malloc_2( Njack,Npar);
 	for (int i=0;i<Npar; i++)
 		for (int j=0;j<Njack;j++)
 			tif[j][i]=0;
 	double **tif_m0=swap_indices(fit_info_m0.Npar,Njack,fit_out_m0.P);
 	double **tif_E3_poly=swap_indices(fit_info_E3_poly.Npar, Njack, fit_E3_poly.P);
-	double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
-	double *tmpy=(double*) malloc(sizeof(double*)* Njack);
-	printf("writing: %s\n",namefile);
 	
 	for (int n=0;n< N; n++){
 		
 		mysprintf(namefile,NAMESIZE,"%s/kiso_P0_n%d_L.txt",argv[3],n);
 		f=open_file(namefile,"w+");
-		double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
-		double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+		double *tmpx=(double*) malloc(sizeof(double)* Nvar);
+		double *tmpy=(double*) malloc(sizeof(double)* Njack);
 		printf("writing: %s\n",namefile);
 		
 		for (int i=Lrange[0] ; i<Lrange[1]; i++){
@@ -319,8 +306,8 @@ void print_kiso_P0_inf_L_M(char **argv,vector<data_phi> gjack , struct fit_type 
 		
 		mysprintf(namefile,NAMESIZE,"%s/kiso_P-1e+3_n%d_L.txt",argv[3],n);
 		f=open_file(namefile,"w+");
-		double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
-		double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+		double *tmpx=(double*) malloc(sizeof(double)* Nvar);
+		double *tmpy=(double*) malloc(sizeof(double)* Njack);
 		printf("writing: %s\n",namefile);
 		
 		for (int i=Lrange[0] ; i<Lrange[1]; i++){

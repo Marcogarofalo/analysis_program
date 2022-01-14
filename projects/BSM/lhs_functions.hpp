@@ -20,6 +20,18 @@
 
 using namespace std;
 
+
+double ration_corr_min_half(int j, double ****in,int t ,struct fit_type fit_info){
+    int inum=fit_info.corr_id[0];
+    int iden=fit_info.corr_id[1];
+    int T=file_head.l0;
+    //int tptau=(t+tau)%T;
+    double num= in[j][inum][t][0];//(in[j][0][(t+1)%T][0]-in[j][0][t][0])*in[j][7][tptau][0];
+    double den= in[j][iden][t][0];//(in[j][5][t][0])*in[j][7][tptau][0];
+    return (-2*num/(4.*den)) ;
+    //return num;
+}
+
 // template<int tau>
 double r_AWI(int j, double ****in,int t ,struct fit_type fit_info){
     int T=file_head.l0;
@@ -53,6 +65,17 @@ double m_PCAC_loc(int j, double ****in,int t ,struct fit_type fit_info){
     double den= (in[j][1][t][0]);
     return (num/(4*den)) ;
     //return num;
+}
+
+double **num_awi_wallphi(int j, double ****in,int t,struct fit_type fit_info ){
+    
+    int id=fit_info.corr_id[0];
+    int T=fit_info.T;
+    error(fit_info.N!=1,1,"der2_der2_corr","works only with one corr");
+    double **r=double_malloc_2(fit_info.N,2);
+    r[0][0]=in[j][id][(t+1)%T][0]-in[j][id][t][0];
+    r[0][1]=in[j][id][(t+1)%T][1]-in[j][id][t][1];
+    return r; 
 }
 
 #endif

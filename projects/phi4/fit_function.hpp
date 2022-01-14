@@ -240,7 +240,7 @@ double get_E2_n(int n, int e , int j , vector<data_phi> gjack  ){
         E2=gjack[e].jack[80][j];
         //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
     }
-    else{ E2=0 ;printf("%s n=%d not implemented\n",__func__,n);  exit(1);}
+    else{ printf("%s n=%d not implemented\n",__func__,n);  exit(1);}
     return E2;
     
 }
@@ -267,7 +267,7 @@ double get_E2_g_n(int n, int e , int j , vector<data_phi> gjack  ){
             E2=gjack[e].jack[80][j];
     }
     
-    else{ E2=0 ;printf("%s n=%d not implemented\n",__func__,n);  exit(1);}
+    else{ printf("%s n=%d not implemented\n",__func__,n);  exit(1);}
     return E2;
     
 }
@@ -293,22 +293,23 @@ double lhs_kcotd(int n, int e , int j , vector<cluster::IO_params> params,vector
         int dvec[3]= {0,0,0};
         r=kcotd( gjack[e].jack[4][j] ,gjack[e].jack[1][j], dvec, params[e].data.L[1]  );
     }
-    if(n==1){//E2_0_p1
+    else if(n==1){//E2_0_p1
         int dvec[3]= {1,0,0};
         r=kcotd( gjack[e].jack[100][j] ,gjack[e].jack[1][j], dvec, params[e].data.L[1]  );
     }
-    if(n==2){//E2_0_p1
+    else if(n==2){//E2_0_p1
         int dvec[3]= {1,1,0};
         r=kcotd( gjack[e].jack[102][j] ,gjack[e].jack[1][j], dvec, params[e].data.L[1]  );
     }
-    if(n==4){//E2_0_p1
+    else if(n==4){//E2_0_p1
         int dvec[3]= {1,1,1};
         r=kcotd( gjack[e].jack[104][j] ,gjack[e].jack[1][j], dvec, params[e].data.L[1]  );
     }
-    if(n==3){//E2_0_A1
+    else if(n==3){//E2_0_A1
         int dvec[3]= {0,0,0};
         r=kcotd( gjack[e].jack[80][j] ,gjack[e].jack[1][j], dvec, params[e].data.L[1]  );
     }
+    else{r=1; exit(1);}
     
     return r;
 }
@@ -599,6 +600,7 @@ double compute_k(int n, int e , int j , vector<cluster::IO_params> params,vector
     }
     else {
         printf("%s n=%d not implemented\n",__func__,n); 
+        exit(1);
     }
     return sqrt(E2_CM*E2_CM/4. -mass*mass);
     
@@ -790,7 +792,7 @@ double rhs_k_from_phase_shift(int n, int Nvar, double *x,int Npar,double  *P){
     double E2f=sqrt(mass*mass+(2.*pi_greco/L)*(2.*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
     double Ef=E1f+E2f;
     double ECMfsq=Ef*Ef-(2*pi_greco/L)*(2*pi_greco/L)*(dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
-    double gamma=E2f/sqrt(ECMfsq);
+    // double gamma=E2f/sqrt(ECMfsq);
  
     double kf=sqrt(ECMfsq/4. -mass*mass);
     
@@ -827,7 +829,7 @@ double rhs_k_from_phase_shift_g(int n, int Nvar, double *x,int Npar,double  *P){
     double E2f=sqrt(mass*mass+(2.*pi_greco/L)*(2.*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
     double Ef=E1f+E2f;
     double ECMfsq=Ef*Ef-(2*pi_greco/L)*(2*pi_greco/L)*(dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
-    double gamma=E2f/sqrt(ECMfsq);
+    // double gamma=E2f/sqrt(ECMfsq);
  
     double kf=sqrt(ECMfsq/4. -mass*mass);
     
@@ -1098,7 +1100,7 @@ double rhs_poly2_E3_m(int n, int Nvar, double *x,int Npar,double  *P){
 
 double rhs_const_E3_m(int n, int Nvar, double *x,int Npar,double  *P){
     
-    double L=x[0];
+    // double L=x[0];
     
     //     double r=P[2*n]+P[2*n+1]*L;
     double r=P[n];
@@ -1145,7 +1147,7 @@ double rhs_q_from_phase_shift(int n, int Nvar, double *x,int Npar,double  *P){
     double E2f=sqrt(mL_2pi*mL_2pi+(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
     double Ef=E1f+E2f;
     double ECMfsq=Ef*Ef-(dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]);
-    double gamma=E2f/sqrt(ECMfsq);
+    // double gamma=E2f/sqrt(ECMfsq);
  
     double qf=sqrt(ECMfsq/4. -mL_2pi*mL_2pi);
      
@@ -1354,7 +1356,6 @@ double lhs_E3orE1_g_m(int n, int e , int j , vector<cluster::IO_params> params,v
         E3=gjack[e].jack[445][j];
         //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
     }
-    
     else{ E3=0 ; printf("lhs_E3orE1_m n=%d not implemented\n",n); exit(1);}
   return E3/mass;
 }
@@ -1673,8 +1674,8 @@ void print_fit_band_L(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_L.txt",argv[3], label);
     f=open_file(namefile,"w+");
     double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
-    double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
-    double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+    double *tmpx=(double*) malloc(sizeof(double)* Nvar);
+    double *tmpy=(double*) malloc(sizeof(double)* Njack);
     printf("writing: %s\n",namefile);
     for (int i=0 ; i<100; i++){
         
@@ -1719,8 +1720,8 @@ void print_fit_band_T(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_T.txt",argv[3], label);
     f=open_file(namefile,"w+");
     double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
-    double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
-    double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+    double *tmpx=(double*) malloc(sizeof(double)* Nvar);
+    double *tmpy=(double*) malloc(sizeof(double)* Njack);
     printf("writing: %s\n",namefile);
     for (int i=0 ; i<100; i++){
         
@@ -1762,8 +1763,8 @@ void print_fit_band_k(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_k.txt",argv[3], label);
     f=open_file(namefile,"w+");
     double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
-    double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
-    double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+    double *tmpx=(double*) malloc(sizeof(double)* Nvar);
+    double *tmpy=(double*) malloc(sizeof(double)* Njack);
     printf("writing: %s\n",namefile);
     for (int i=0 ; i<100; i++){
         
@@ -1807,8 +1808,8 @@ void print_fit_band_k_m(char **argv,vector<data_phi> gjack ,struct fit_type fit_
     mysprintf(namefile,NAMESIZE,"%s/%s_fit_out_k_m.txt",argv[3], label);
     f=open_file(namefile,"w+");
     double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
-    double *tmpx=(double*) malloc(sizeof(double*)* Nvar);
-    double *tmpy=(double*) malloc(sizeof(double*)* Njack);
+    double *tmpx=(double*) malloc(sizeof(double)* Nvar);
+    double *tmpy=(double*) malloc(sizeof(double)* Njack);
     printf("writing: %s\n",namefile);
     for (int i=0 ; i<100; i++){
         

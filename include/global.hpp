@@ -200,16 +200,17 @@ struct  jack_fit
   double **f_PS,**Zf_PS;  
     
 };
-
 struct  fit_type
 {
   double (*function)(int,int,double*,int,double*);//N, Nvar, x ,Npar,P
-  int N,Npar,Nvar,Njack;  
-  int n;// an index to be passed to (*function)( iN ,int,double*,int,double*)
   double (*f1)(int,int,double*,int,double*);
   double (*f2)(int,int,double*,int,double*);
-  int n_ext_P=0; //number of external parameter that will no be fitted
   double **ext_P;  //parameter to not fit, they will be add to the Nvar,  Nvar=variables+(prameter to not fit)
+
+  int N,Npar,Nvar,Njack;  
+  int n;// an index to be passed to (*function)( iN ,int,double*,int,double*)
+  
+  int n_ext_P=0; //number of external parameter that will no be fitted
   int custom=false; // false=0 means default fit , 1 custom fit options
   double lambda=0.001;
   double acc=0.001; 
