@@ -942,8 +942,6 @@ double rhs_E3_m_QC3_pole(int n, int Nvar, double *x,int Npar,double  *P){
         Pkcot[0]=x[Nvar-2];
         Pkcot[1]=x[Nvar-1];
          
-    
-
     int Nkcot=2;
     int Nkiso=Npar;
     int dvec[3];//,dvec1[3],dvec2[3],dmax1[3],dmax2[3];
@@ -963,6 +961,32 @@ double rhs_E3_m_QC3_pole(int n, int Nvar, double *x,int Npar,double  *P){
 //    printf("E=[%g , %g]   E1f=%g   E2f=%g  m=%g\n",Estart,Eend,Estart,Eend,mass);
     double r=python_detQC_call(Estart, Eend, steps,  L,  nnP, Nkcot,Pkcot,Nkiso, P);
 //     printf("res=%g\n",r);
+    return r;
+}
+
+
+double rhs_E3_m_QC3_2sol(int n, int Nvar, double *x,int Npar,double  *P){
+    
+    double Pkcot[2];
+        Pkcot[0]=x[Nvar-2];
+        Pkcot[1]=x[Nvar-1];
+         
+    int Nkcot=2;
+    int Nkiso=Npar;
+    int dvec[3];//,dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec_QC3_pole(n,dvec);
+    //init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    double nnP[3];
+    nnP[0]=(double) dvec[0]; nnP[1]=(double) dvec[1]; nnP[2]=(double) dvec[2];
+    double mass=x[1];
+    double L=x[0];
+    int steps=n; 
+    L=L*mass;
+
+    double Estart=3.05+1e-5;
+    double DeltaE=0.005;
+    double r=python_detQC_call(Estart, DeltaE, n,  L,  nnP, Nkcot,Pkcot,Nkiso, P);
+    // printf("r=%g   n=%d\n",r,n);
     return r;
 }
 
