@@ -310,31 +310,20 @@ void init_python_detQC( ){
 }
 
 
-void init_python_detQC_kcot_kiso(std::string kcot ,std::string kiso ){
+void init_python_detQC_kcot_kiso(std::string kcot , std::string kiso, std::string solve_func="find_sol"){
 
     
     if(pModule)
     {
+        pFunc = PyObject_GetAttrString(pModule, solve_func.c_str() );  printf("importing %s\n",kcot.c_str()); 
+        if(! pFunc || !PyCallable_Check(pFunc))  {printf("cannot load %s function from python\n",solve_func.c_str()); exit(1);}
           
         pkcot = PyObject_GetAttrString(pModule, kcot.c_str() ); printf("importing %s\n",kcot.c_str()); 
         if(! pkcot || !PyCallable_Check(pkcot))  {printf("cannot load %s function from python\n",kcot.c_str()); exit(1);}
 
         pkiso = PyObject_GetAttrString(pModule, kiso.c_str() ); printf("importing %s\n",kiso.c_str() ); 
         if(! pkiso || !PyCallable_Check(pkiso))  {printf("cannot load %s function from python\n",kiso.c_str()); exit(1);}
-
-        
-        if(pFunc && PyCallable_Check(pFunc))
-        {
-            printf("python function callable\n");
-            
-    //         printf("C: find_sol() = %g\n", PyFloat_AsDouble(pValue));
-        }
-        else {
-            if (PyErr_Occurred())
-                PyErr_Print();
-            printf("Cannot find function \n");
-        }
-        
+    
     }
     else {
         PyErr_Print();

@@ -50,7 +50,6 @@ void print_fit_band_L_M(char **argv,vector<data_phi> gjack ,struct fit_type fit_
 	
 	double **tif=swap_indices(fit_info.Npar,Njack,fit_out.P);
 	double **tif_m0=swap_indices(fit_info_m0.Npar,Njack,fit_out_m0.P);
-	printf("writing: %s\n",namefile);
 	
 	for (int n=0;n< N; n++){
 		
@@ -676,10 +675,9 @@ int main(int argc, char **argv){
 
 printf("////////////////////  kiso const fit   ////////////////////////////////////\n");
 	 init_python_detQC();
-	 init_python_detQC_kcot_kiso("kcot_2par", "kiso_const");
-//     init_python_detQC_kcot_kiso("kcot_2par", "kiso_2par");
-//      init_python_detQC_kcot_kiso("kcot_2par", "kiso_1par");
-	 fit_info.Npar=1;
+	 init_python_detQC_kcot_kiso("kcot_2par", "kiso_pole_fix", "find_2sol");
+
+	 
 	 fit_info.N=2;
 	 fit_info.Njack=gjack[0].Njack;
 	 
@@ -690,17 +688,19 @@ printf("////////////////////  kiso const fit   /////////////////////////////////
 	 
 	 
 	 
-	 fit_info.function=rhs_E3_m_QC3_pole;
-	 fit_info.lambda=0.001;
+	 fit_info.function=rhs_E3_m_QC3_2sol;
+	 fit_info.Npar=2;
+	 fit_info.guess={1,10};
+	 fit_info.lambda=0.01;
 	 fit_info.acc=0.01;
-	 fit_info.h=1e-3;
-	 fit_info.devorder=2;
+	 fit_info.h=1e-1;
+	 fit_info.devorder=-2;
 	 fit_info.verbosity=100;
 	 fit_info.repeat_start=1;
-	 fit_info.guess={1};
+	 
 	 fit_info.mean_only=true;
 
-	 mysprintf(namefile,NAMESIZE,"QC3_N%d_const",fit_info.N, fit_info.Npar);
+	 mysprintf(namefile,NAMESIZE,"QC3_N%d_pole_fix",fit_info.N, fit_info.Npar);
 	 struct fit_result fit_QC3_const=fit_data(argv,  paramsj ,gjack, lhs_E3orE1_g_m ,fit_info, namefile,
 	 /*myen*/ {0,1,2}   );
 	//  print_fit_band_E3_vs_L( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3_const ,fit_m0,    paramsj,  myen,  fit_info_E3_poly, fit_QC3_poly, {23,41});
