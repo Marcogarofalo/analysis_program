@@ -105,7 +105,6 @@ void E3_print_extra(double *E3,double *mass, int  *dvec,int L,FILE *outfile, int
 double quantization_condition_2particle(int n  , int Nvar , double* x,int Npar,double*P){
     
     double L=P[3];
-    double DE= P[2] -P[0]-P[1];
     double mu01=  P[0]*P[1]/(P[0]+P[1]); 
     
     double r=-(2.*pi_greco * x[0])  / (mu01*L*L*L);

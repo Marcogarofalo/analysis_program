@@ -8,7 +8,6 @@
 #include <complex.h>
 
 #include "global.hpp"
-
 #include "resampling.hpp"
 #include "read.hpp"
 #include "m_eff.hpp"
@@ -601,7 +600,7 @@ int main(int argc, char **argv){
 	 
 	 //      the zeta is computed analytically, use the interpolated one for faster result!!!!!!!!!
 	 //      struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.11,-950, 6.4e-6} );// {-0.948817,-114.788,0.0003987}
-	 struct fit_result deltaE2_m_quant_cond=fit_data(argv,  paramsj ,gjack, lhs_deltaE2_m_latt_g ,fit_info, "deltaE2_m_quant_cond",myen );
+	 fit_result deltaE2_m_quant_cond=fit_data(argv,  paramsj ,gjack, lhs_deltaE2_m_latt_g ,fit_info, "deltaE2_m_quant_cond",myen );
 	 print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "deltaE2_m_quant_cond",   deltaE2_m_quant_cond ,fit_m0,    paramsj,  myen, {10,20});
 	 
 	 print_phase_shift(argv, gjack ,  fit_info , "deltaE2_m_quant_cond", deltaE2_m_quant_cond);
