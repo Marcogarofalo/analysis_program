@@ -112,7 +112,7 @@ void quickSort(int *order, double *arr, int low, int high)
     }
 }
 
-void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalues, double ***eigenvectors , int verbosity )
+int generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalues, double ***eigenvectors , int verbosity )
 {
     int i,j;
     Eigen::MatrixXcd a(N, N);
@@ -236,6 +236,7 @@ void generalysed_Eigenproblem(double **A, double **B, int N, double ***eigenvalu
         }
     }
     free(lambda);free(order);
+    return err;
 }
 
 

@@ -232,6 +232,7 @@ struct  fit_type
   int value_or_vector=0;  // eigenvalues=0 or eigenvalues =1
   bool GEVP_tpt0=false;
   bool GEVP_swap_t_t0=false;
+  int GEVP_ignore_warning_after_t=1000;
   
   // HANKEL
   int HENKEL_size=1;
@@ -271,7 +272,7 @@ struct  fit_type
      value_or_vector=0;
      GEVP_tpt0=false;
      GEVP_swap_t_t0=false;
-
+     GEVP_ignore_warning_after_t=1000;
 
      HENKEL_size=1;
 //      f_plateaux_scan=NULL;
