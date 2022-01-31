@@ -75,6 +75,19 @@ double rhs_critical_eta_mu_m0_simple(int n, int Nvar, double *x,int Npar,double 
     
 }
 
+
+double lhs_fit_two_func(int n, int e , int j , vector<header_BSM> params,vector<data_BSM> gjack, struct fit_type fit_info ){
+    double r;
+    int n1=fit_info.corr_id[0];
+    int n2=fit_info.corr_id[1];
+    if(n==0)
+        r= gjack[e].jack[n1][j]; //r_AWI
+    else if( n==1)
+        r= gjack[e].jack[n2][j]; //m_pcac
+    else{ r=0; exit(1);}    
+    return r;
+}
+
 double lhs_critical_eta_mu_m0(int n, int e , int j , vector<header_BSM> params,vector<data_BSM> gjack, struct fit_type fit_info ){
     double r;
     if(n==0)
