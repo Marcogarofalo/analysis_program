@@ -54,9 +54,28 @@ double rhs_NG_mpcac_MPS2(int n, int Nvar, double *x,int Npar,double  *P){
         r= P[1]+P[3]*eta_sub+P[5]*mu+P[6]*eta_sub*eta_sub;
     else{ r=0; exit(1);}
         
-    return r;
-    
+    return r; 
 }
+
+
+double rhs_NG_mpcac_MPS2_twoline(int n, int Nvar, double *x,int Npar,double  *P){
+    double eta=x[3], mu=x[5], m0=x[6];
+    double r;
+    double eta_cr=x[Nvar-2];
+    double m0_cr=x[Nvar-1];
+    double eta_sub=eta-eta_cr;
+    double m0_sub=m0-m0_cr;
+    if (n==0) //m_pcac
+        r= P[0]+P[2]*eta_sub+P[4]*mu;
+    else if (n==1) //MPS^2
+        r= P[1]+P[3]*eta_sub+P[5]*mu;
+    else{ r=0; exit(1);}
+        
+    return r; 
+}
+
+
+
 
 double rhs_critical_eta_mu_m0_simple(int n, int Nvar, double *x,int Npar,double  *P){
     double eta=x[3], mu=x[5], m0=x[6];
@@ -69,6 +88,24 @@ double rhs_critical_eta_mu_m0_simple(int n, int Nvar, double *x,int Npar,double 
         r= P[2]*eta_sub+P[3]*m0_sub;
     else if (n==1) //m_pcac
         r= P[4]*m0_sub+P[5]*mu;
+    else{ r=0; exit(1);}
+        
+    return r;
+    
+}
+
+
+double rhs_critical_eta_mu_m0_7par(int n, int Nvar, double *x,int Npar,double  *P){
+    double eta=x[3], mu=x[5], m0=x[6];
+    double r;
+    double eta_cr=P[0];
+    double m0_cr=P[1];
+    double eta_sub=eta-eta_cr;
+    double m0_sub=m0-m0_cr;
+    if (n==0) //r_AWI
+        r= P[2]*eta_sub+P[3]*m0_sub;
+    else if (n==1) //m_pcac
+        r= P[4]*eta_sub+P[5]*m0_sub+P[6]*mu;
     else{ r=0; exit(1);}
         
     return r;

@@ -430,9 +430,12 @@ int main(int argc, char **argv){
 	 mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T64_L22_msq05.450000_msq16.130000_l00.000000_l10.000000_mu0.000000_g0.005000_rep0",argv[2],argv[1]);
 	 emplace_back_par_data(namefile,paramsj,dataj);
 	 //2
-	 mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T64_L24_msq05.450000_msq16.130000_l00.000000_l10.000000_mu0.000000_g0.005000_rep0",argv[2],argv[1]);
+	 mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T64_L23_msq05.450000_msq16.130000_l00.000000_l10.000000_mu0.000000_g0.005000_rep0",argv[2],argv[1]);
 	 emplace_back_par_data(namefile,paramsj,dataj);
 	 //3
+	 mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T64_L24_msq05.450000_msq16.130000_l00.000000_l10.000000_mu0.000000_g0.005000_rep0",argv[2],argv[1]);
+	 emplace_back_par_data(namefile,paramsj,dataj);
+	 //4
 	 mysprintf(namefile,NAMESIZE,"%s/%s_G2t_T64_L26_msq05.450000_msq16.130000_l00.000000_l10.000000_mu0.000000_g0.005000_rep0",argv[2],argv[1]);
 	 emplace_back_par_data(namefile,paramsj,dataj);
 	 
