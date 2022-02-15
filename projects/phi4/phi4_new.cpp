@@ -3543,9 +3543,9 @@ else { for (int i = 121;i < 126;i++)  zero_corr(zeros, Njack, jack_file); }
     else { for (int i = 140;i < 141;i++)  zero_corr(zeros, Njack, jack_file); }
 
     check_correlatro_counter(140);
+    bool generated_GEVP_phi0_phi03_phi1_p1=false;
 
-
-    if (params.data.ncorr >= 135) {
+    if (params.data.ncorr >= 135+1e+6) {
         fit_info.N = 3;
         //     fit_info.t0_GEVP=10;
         fit_info.corr_id = { 33, 136, 130,   95, 133,    34,
@@ -3558,6 +3558,7 @@ else { for (int i = 121;i < 126;i++)  zero_corr(zeros, Njack, jack_file); }
         id_GEVP_031_p1 = ncorr_new;
         fit_info.restore_default();
 
+        generated_GEVP_phi0_phi03_phi1_p1=true;
 
         //c++ 141 || r 142
         double* ml0_GEVP = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, ncorr_new - 3, "GEVP_phi0_phi03_phi1_p1_meffl0", M_eff_T, jack_file);
@@ -3713,7 +3714,6 @@ else { for (int i = 121;i < 126;i++)  zero_corr(zeros, Njack, jack_file); }
         printf(" ncorr after GEVP %d\n", ncorr_new);
         fit_info.restore_default();
 
-
         //c++ 155 || r 142
         double* ml0_GEVP = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, ncorr_new - 3, "GEVP_phi0_phi03_phi1_p11_meffl0", M_eff_T, jack_file);
         check_correlatro_counter(155);
@@ -3745,7 +3745,7 @@ else { for (int i = 121;i < 126;i++)  zero_corr(zeros, Njack, jack_file); }
     check_correlatro_counter(158);
 
 
-    if (params.data.ncorr >= 135) {
+    if (params.data.ncorr >= 135 && generated_GEVP_phi0_phi03_phi1_p1) {
         //id_GEVP_031_p1  should be 173 !
 
         double* l0_GEVP = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, id_GEVP_031_p1 - 3, "GEVP_phi0_phi03_phi1_p1_l0", identity, jack_file);
@@ -3899,7 +3899,7 @@ else { for (int i = 121;i < 126;i++)  zero_corr(zeros, Njack, jack_file); }
 
 
 
-    if (params.data.ncorr >= 135) {
+    if (params.data.ncorr >= 135 && generated_GEVP_phi0_phi03_phi1_p1 ) {
 
         int T = params.data.L[0];
         fit_info.Nvar = 1;
@@ -5435,7 +5435,7 @@ else { for (int i = 594;i <= 596;i++)  zero_corr(zeros, Njack, jack_file); }
 
 
     printf("GEVP_00_11_01_p1\n");
-    if (params.data.ncorr > 217) {
+    if (params.data.ncorr > 217+1e+6) {
 
 
         fit_info.N = 1;
