@@ -230,11 +230,18 @@ int main(int argc, char** argv) {
     mysprintf(namefile, NAMESIZE, "%s/b5.85/L20T40/NG/eta_m2.12_M02_-0.048000_mu03_0.0120_csw_1.0_rho3_NG/jackknife/%s_T40_L20_rho3.000000_eta-2.120000_csw1.000000_mu030.012000_m0-0.048000", argv[2], argv[1]);
     emplace_back_par_data(namefile, paramsj, dataj);
 
-    // mysprintf(namefile, NAMESIZE, "%s/b5.85/L20T40/NG/eta_m1.95_M02_-0.045000_mu03_0.0120_csw_1.0_rho3_NG/jackknife/%s_T40_L20_rho3.000000_eta-1.950000_csw1.000000_mu030.012000_m0-0.045000", argv[2], argv[1]);
-    // emplace_back_par_data(namefile, paramsj, dataj);
+    mysprintf(namefile, NAMESIZE, "%s/b5.85/L20T40/NG/eta_m1.95_M02_-0.045000_mu03_0.0120_csw_1.0_rho3_NG/jackknife/%s_T40_L20_rho3.000000_eta-1.950000_csw1.000000_mu030.012000_m0-0.045000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
 
-    // mysprintf(namefile, NAMESIZE, "%s/b5.85/L20T40/NG/eta_m1.95_M02_-0.045000_mu03_0.0224_csw_1.0_rho3_NG/jackknife/%s_T40_L20_rho3.000000_eta-1.950000_csw1.000000_mu030.022400_m0-0.045000", argv[2], argv[1]);
-    // emplace_back_par_data(namefile, paramsj, dataj);
+    mysprintf(namefile, NAMESIZE, "%s/b5.85/L20T40/NG/eta_m1.95_M02_-0.045000_mu03_0.0224_csw_1.0_rho3_NG/jackknife/%s_T40_L20_rho3.000000_eta-1.950000_csw1.000000_mu030.022400_m0-0.045000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
+    mysprintf(namefile, NAMESIZE, "%s/b5.85/L20T40/NG/eta_m2.0_M02_-0.045000_mu03_0.0120_csw_1.0_rho3_NG/jackknife/%s_T40_L20_rho3.000000_eta-2.000000_csw1.000000_mu030.012000_m0-0.045000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
+    mysprintf(namefile, NAMESIZE, "%s/b5.85/L20T40/NG/eta_m2.0_M02_-0.045000_mu03_0.0224_csw_1.0_rho3_NG/jackknife/%s_T40_L20_rho3.000000_eta-2.000000_csw1.000000_mu030.022400_m0-0.045000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
 
     int NeNG3 = dataj.size() - (NeW + NeNG + NeW3);
     printf("number of ensembles NG(rho3) = %d\n", NeNG3);
@@ -456,14 +463,14 @@ int main(int argc, char** argv) {
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     fit_info.Nvar = 7;
-    fit_info.Npar = 8;
+    fit_info.Npar = 9;
     fit_info.N = 2;
     fit_info.Njack = gjack[0].Njack;
     fit_info.n_ext_P = 2;
     fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
     fit_info.ext_P[0] = fit_critical.P[0];
     fit_info.ext_P[1] = fit_critical.P[1];
-    fit_info.function = rhs_NG_mpcac_MPS2_m0;
+    fit_info.function = rhs_NG_mpcac_MPS2_m0_eta2;
 
 
     mysprintf(namefit, NAMESIZE, "fit_NG_mpcac_MPS_b585_rho3_lines");
@@ -474,6 +481,16 @@ int main(int argc, char** argv) {
     printf("M_PS(eta_cr)  =%g  +-  %g\n", fit_NG3.P[1][Njack - 1], error_jackboot(argv[1], Njack, fit_NG3.P[1]));
 
     fit_info.restore_default();
+
+    double *diff_mpcac_rho3=(double*) malloc(sizeof(double)*Njack);
+    double *diff_M_PS_rho3=(double*) malloc(sizeof(double)*Njack);
+    for(int j=0;j<Njack;j++){
+        diff_mpcac_rho3[j]=fit_NG3.P[0][j]-fit_NG.P[0][j];
+        diff_M_PS_rho3[j]=fit_NG3.P[1][j]-fit_NG.P[1][j];
+    }
+
+    printf("m_pcac(rho3)-m_pcac(rho1.96)|_eta_cr=%g  +-  %g\n", diff_mpcac_rho3[Njack - 1], error_jackboot(argv[1], Njack, diff_mpcac_rho3));
+    printf("M_PS(rho3)-M_PS(rho1.96)|_eta_cr  =%g  +-  %g\n", diff_M_PS_rho3[Njack - 1], error_jackboot(argv[1], Njack, diff_M_PS_rho3));
 
 
 
