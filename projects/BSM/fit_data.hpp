@@ -108,6 +108,21 @@ double rhs_NG_mpcac_MPS2_m0_eta2(int n, int Nvar, double* x, int Npar, double* P
     return r;
 }
 
+double rhs_NG_mpcac_MPS2_m0_eta2_mueta(int n, int Nvar, double* x, int Npar, double* P) {
+    double eta = x[3], mu = x[5], m0 = x[6];
+    double r;
+    double eta_cr = x[Nvar - 2];
+    double m0_cr = x[Nvar - 1];
+    double eta_sub = eta - eta_cr;
+    double m0_sub = m0 - m0_cr;
+    if (n == 0) //m_pcac
+        r = P[0] + P[2] * eta_sub + P[4] * mu + P[6] * m0_sub + P[9] * mu * eta_sub;
+    else if (n == 1) //MPS^2
+        r = P[1] + P[3] * eta_sub + P[5] * mu + P[7] * m0_sub + P[8] * eta_sub * eta_sub;
+    else { r = 0; exit(1); }
+
+    return r;
+}
 
 double rhs_critical_eta_mu_m0_simple(int n, int Nvar, double* x, int Npar, double* P) {
     double eta = x[3], mu = x[5], m0 = x[6];
