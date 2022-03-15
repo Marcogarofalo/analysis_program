@@ -13,6 +13,7 @@ IF(WITH_PYTHON)
     add_target_with_lib(fit_all_g1.5 fit_all_g1.5.cpp)
     add_target_with_lib(fit_all_g0.25_t1 fit_all_g0.25_t1.cpp)
     add_target_with_lib(fit_all_ising_g0.005 fit_all_ising_g0.005.cpp)
+    add_target_with_lib(fit_all_complex_g5 fit_all_complex_g5.cpp)
     #add_target_with_lib(fit_all_g fit_all_g.cpp)
     #add_target_with_lib(fit_all_phi4 fit_all_phi4.cpp)
     

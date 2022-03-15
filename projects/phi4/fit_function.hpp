@@ -99,6 +99,75 @@ void printing_file_for_maxim_and_fernando(char **argv, vector<cluster::IO_params
 	}
 }
 
+void printing_file_for_maxim_and_fernando_complex(char **argv, vector<cluster::IO_params> paramsj ,vector<data_phi> gjack,  std::vector<int> myen  ){
+    int Njack=gjack[0].Njack;
+    char resampling[NAMESIZE];
+   	mysprintf(resampling, NAMESIZE, "%s", argv[1]);
+    for (int j = 0; j < Njack; j++)
+	{
+		char name[NAMESIZE];
+		mysprintf(name, NAMESIZE, "data_j%d.txt", j);
+		FILE *f = open_file(name, "w+");
+		fprintf(f,"L	T	g          m02       m12        l0        E1         	E2         	E2p1      	 E2A1        	E3_0     	     	E3_1  \n" );
+	 	for (int e :myen){
+			fprintf(f,"%-4d%-4d%-10g%-10g%-10g%-10g%-14.10g%-14.10g%-14.10g%-14.10g%-14.10g%-14.10g\n",
+					paramsj[e].data.L[1], paramsj[e].data.L[0], paramsj[e].data.gC,
+					paramsj[e].data.msq0, paramsj[e].data.msq1, paramsj[e].data.lambdaC0,
+					gjack[e].jack[1][Njack - 1],
+					gjack[e].jack[4][Njack - 1],
+					gjack[e].jack[100][Njack - 1],
+					gjack[e].jack[80][Njack - 1],
+					gjack[e].jack[355][Njack - 1],
+					gjack[e].jack[354][Njack - 1]);
+		}
+		fclose(f);
+	}
+	{
+		char name[NAMESIZE];
+		mysprintf(name, NAMESIZE, "data.txt");
+		FILE *f = open_file(name, "w+");
+		fprintf(f,"L	T	g          m02       m12        l0        E1    	  E1err     	E2      	E2err       	E2p1     	E2p1err 	 E2A1       	E2A1err     	E3_0     	E3_0err     	E3_1    	E3_1err  \n" );
+	 	for (int e :myen){
+			fprintf(f,"%-4d%-4d%-10g%-10g%-10g%-10g%-14g%-18.10g%-14.10g%-18.10g%-14.10g%-18.10g%-14.10g%-18.10g%-14.10g%-18.10g%-14.10g%-18.10g\n",
+					paramsj[e].data.L[1], paramsj[e].data.L[0], paramsj[e].data.gC,
+					paramsj[e].data.msq0, paramsj[e].data.msq1, paramsj[e].data.lambdaC0,
+					gjack[e].jack[1][Njack - 1], error_jackboot(resampling, Njack, gjack[e].jack[1]),
+					gjack[e].jack[4][Njack - 1], error_jackboot(resampling, Njack, gjack[e].jack[4]),
+					gjack[e].jack[100][Njack - 1], error_jackboot(resampling, Njack, gjack[e].jack[100]),
+					gjack[e].jack[80][Njack - 1], error_jackboot(resampling, Njack, gjack[e].jack[80]),
+					gjack[e].jack[355][Njack - 1], error_jackboot(resampling, Njack, gjack[e].jack[355]),
+					gjack[e].jack[354][Njack - 1], error_jackboot(resampling, Njack, gjack[e].jack[354]));
+		}
+		fclose(f);
+	}
+	{
+		for (int e :myen){
+			char name[NAMESIZE];
+			mysprintf(name, NAMESIZE, "covariance_spectrum_L%d.txt",paramsj[e].data.L[1]);
+			FILE *f = open_file(name, "w+");
+			double **to_cov=double_malloc_2(6,Njack);
+			for(int j=0;j<Njack;j++){
+				to_cov[0][j]=gjack[e].jack[1][j];
+				to_cov[1][j]=gjack[e].jack[4][j];
+				to_cov[2][j]=gjack[e].jack[100][j];
+				to_cov[3][j]=gjack[e].jack[80][j];
+				to_cov[4][j]=gjack[e].jack[355][j];
+				to_cov[5][j]=gjack[e].jack[354][j];
+			}
+			double **cov=covariance(resampling, 6, Njack, to_cov);
+			for(int i=0;i<6;i++){
+				for(int j=0;j<6;j++){
+					fprintf(f,"%-18.10g",cov[i][j]);
+				}
+				fprintf(f,"\n");
+			}
+			fclose(f);
+			free(to_cov);
+			free(cov);
+		}
+	}
+}
+
 
 void init_dvec(int n,int *dvec,int *dvec1, int *dvec2, int *dmax1, int *dmax2 ){
     
@@ -248,22 +317,22 @@ double get_E2_n(int n, int e , int j , vector<data_phi> gjack  ){
 double get_E2_g_n(int n, int e , int j , vector<data_phi> gjack  ){
     double E2;
     if(n==0){//E2_0
-        if(gjack[e].jack[594][j]!=0) 
-            E2=gjack[e].jack[594][j];
-        else {
+        // if(gjack[e].jack[594][j]!=0) 
+        //     E2=gjack[e].jack[594][j];
+        // else 
             E2=gjack[e].jack[4][j];
-        }
+        
     }
     else if(n==1){//E2_p1
-        if(gjack[e].jack[597][j]!=0) 
-            E2=gjack[e].jack[597][j];
-        else
+        // if(gjack[e].jack[597][j]!=0) 
+        //     E2=gjack[e].jack[597][j];
+        // else
             E2=gjack[e].jack[100][j];
     }
     else if(n==2){//E2_A1
-        if(gjack[e].jack[601][j]!=0) 
-            E2=gjack[e].jack[601][j];
-        else
+        // if(gjack[e].jack[601][j]!=0) 
+        //     E2=gjack[e].jack[601][j];
+        // else
             E2=gjack[e].jack[80][j];
     }
     
