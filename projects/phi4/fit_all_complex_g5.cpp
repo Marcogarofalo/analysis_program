@@ -81,7 +81,7 @@ void print_fit_band_L_M(char **argv,vector<data_phi> gjack ,struct fit_type fit_
 				for (int e=0; e<myen.size();e++){
 					y[e]= lhs_E3_m(n,myen[e],j,params,gjack,fit_info);// E3( \vec{n} )/mass
 					if (params[0].data.gC>0){
-						y[e]= lhs_E3_m_g(n,myen[e],j,params,gjack,fit_info);
+						y[e]= lhs_E3orE1_m_complex(n,myen[e],j,params,gjack,fit_info);
 					}
 					x[e]=params[myen[e]].data.L[1];
 				}
@@ -407,7 +407,7 @@ int main(int argc, char **argv){
 	 read_dataj(f,params[0],dataj[0] );
 	 fclose(f);
 	 */
-	
+	 
 	 vector<cluster::IO_params> paramsj;
 	 vector<data_phi> dataj;
 	 
@@ -496,8 +496,13 @@ int main(int argc, char **argv){
 	 fit_info.n_ext_P=0;                fit_info_m0.n_ext_P=0;
 	 fit_info.function=M_finite_volume; fit_info_m0.function=M_finite_volume;
 
-	 
-	 fit_m0=fit_data(argv,  paramsj ,gjack, M0_g_finite_volume_lhs ,fit_info, "M0_finite_vol" ,myen);
+	 fit_info.n_ext_P=3;
+	 fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+	 fit_info.ext_P[0]=gjack[0].jack[1];
+	 fit_info.ext_P[1]=gjack[0].jack[1];
+	 fit_info.ext_P[2]=gjack[0].jack[1];
+
+	 fit_m0=fit_data(argv,  paramsj ,gjack, M0_finite_volume_lhs ,fit_info, "M0_finite_vol" ,myen);
 	
 	 
 	 fit_m1=fit_data(argv,  paramsj ,gjack, M1_finite_volume_lhs ,fit_info, "M1_finite_vol" ,myen);
@@ -516,11 +521,14 @@ int main(int argc, char **argv){
 	 fit_info.Npar=1;
 	 fit_info.N=1;
 	 fit_info.Njack=gjack[0].Njack;// E1_0
-	 fit_info.n_ext_P=0;
-	 //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+fit_info.n_ext_P=3;
+	 fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+	 fit_info.ext_P[0]=fit_m0.P[0];
+	 fit_info.ext_P[1]=fit_m0.P[0];
+	 fit_info.ext_P[2]=fit_m0.P[0];	 //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
 	 fit_info.function=muDE_rhs;
 	 
-	 struct fit_result fit_a_00=fit_data(argv,  paramsj ,gjack, muDE_00_g_lhs ,fit_info, "a_00_luscher",myen );
+	 struct fit_result fit_a_00=fit_data(argv,  paramsj ,gjack, muDE_00_lhs ,fit_info, "a_00_luscher",myen );
 	 
 	 printf("\n/////////////////////////////////     k cot delta    //////////////////\n");
 	 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -531,8 +539,11 @@ int main(int argc, char **argv){
 	 fit_info.Npar=2;
 	 fit_info.N=3;
 	 fit_info.Njack=gjack[0].Njack;
-	 fit_info.n_ext_P=0;
-	 //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+	fit_info.n_ext_P=3;
+	 fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+	 fit_info.ext_P[0]=fit_m0.P[0];
+	 fit_info.ext_P[1]=fit_m0.P[0];
+	 fit_info.ext_P[2]=fit_m0.P[0];	 //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
 	 fit_info.function=rhs_kcotd_m;
 	 
 	 struct fit_result fit_kcotd=fit_data(argv,  paramsj ,gjack, lhs_kcotd_m_g ,fit_info, "kcotd_m",myen );
@@ -546,8 +557,11 @@ int main(int argc, char **argv){
 	 fit_info.Npar=2;
 	 fit_info.N=3;
 	 fit_info.Njack=gjack[0].Njack;
-	 fit_info.n_ext_P=0;
-	 //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+     fit_info.n_ext_P=3;
+	 fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+	 fit_info.ext_P[0]=fit_m0.P[0];
+	 fit_info.ext_P[1]=fit_m0.P[0];
+	 fit_info.ext_P[2]=fit_m0.P[0];	 //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
 	 fit_info.function=rhs_kcotd_m;
 	 
 	 struct fit_result fit_kcotd_DeltaE=fit_data(argv,  paramsj ,gjack, lhs_kcotd_m_deltaE_g ,fit_info, "kcotd_m_deltaE",myen );
@@ -586,8 +600,11 @@ int main(int argc, char **argv){
 	 fit_info.Npar=2;
 	 fit_info.N=3;
 	 fit_info.Njack=gjack[0].Njack;
-	 fit_info.n_ext_P=0;
-	 //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+ 	 fit_info.n_ext_P=3;
+	 fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+	 fit_info.ext_P[0]=fit_m0.P[0];
+	 fit_info.ext_P[1]=fit_m0.P[0];
+	 fit_info.ext_P[2]=fit_m0.P[0];	 //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
 	 fit_info.function=rhs_deltaE2_m_quant_cond_g;
 	 
 	 fit_info.lambda=0.001;
@@ -600,7 +617,7 @@ int main(int argc, char **argv){
 	 //      the zeta is computed analytically, use the interpolated one for faster result!!!!!!!!!
 	 //      struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.11,-950, 6.4e-6} );// {-0.948817,-114.788,0.0003987}
 	 fit_result deltaE2_m_quant_cond=fit_data(argv,  paramsj ,gjack, lhs_deltaE2_m_latt_g ,fit_info, "deltaE2_m_quant_cond",myen );
-	 print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "deltaE2_m_quant_cond",   deltaE2_m_quant_cond ,fit_m0,    paramsj,  myen, {10,20});
+	 print_fit_band_L_M( argv, gjack , fit_info,fit_info_m0 ,  "deltaE2_m_quant_cond",   deltaE2_m_quant_cond ,fit_m0,    paramsj,  myen, {14,26});
 	 
 	 print_phase_shift(argv, gjack ,  fit_info , "deltaE2_m_quant_cond", deltaE2_m_quant_cond);
 	 fit_info.restore_default();
@@ -616,15 +633,20 @@ int main(int argc, char **argv){
 	 fit_info.Npar=2;
 	 fit_info.N=1;
 	 fit_info.Njack=gjack[0].Njack;
-	 fit_info.n_ext_P=0;
 	 //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
 	 fit_info.function=rhs_delta_g;
+
+	 fit_info.n_ext_P=3;
+	 fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+	 fit_info.ext_P[0]=fit_m0.P[0];
+	 fit_info.ext_P[1]=fit_m0.P[0];
+	 fit_info.ext_P[2]=fit_m0.P[0];
 	 
 	 struct fit_result fit_delta_2par=fit_data(argv,  paramsj ,gjack, lhs_delta_g ,fit_info, "delta_2par_g",myen );
 	 free_fit_result(fit_info,fit_delta_2par);
 
 	
-
+exit(1);
 
 	 ///////////////////////////////////////////////////////////////////////////////////////////////////
 	 printf("\n/////////////////////////////////   fit  E3 quant cond  //////////////////\n");
@@ -648,11 +670,13 @@ int main(int argc, char **argv){
 	 fit_info_E3_poly.Nvar=fit_info.Nvar;
 	 
 	 fit_info_E3_poly.Njack=gjack[0].Njack;
-	 fit_info_E3_poly.n_ext_P=2;
+	 fit_info_E3_poly.n_ext_P=3;
 	 fit_info_E3_poly.ext_P=(double**) malloc(sizeof(double*)*fit_info_E3_poly.n_ext_P);
 	 
 	 fit_info_E3_poly.ext_P[0]=deltaE2_m_quant_cond.P[0];
 	 fit_info_E3_poly.ext_P[1]=deltaE2_m_quant_cond.P[1];
+ 	 fit_info_E3_poly.ext_P[2]=fit_m0.P[0];
+
 	 fit_info_E3_poly.Npar=fit_info_E3_poly.N*4;
 	 fit_info_E3_poly.function=rhs_poly_order_E3_m<4>;
 	 
@@ -665,7 +689,7 @@ int main(int argc, char **argv){
 	 mysprintf(namefile,NAMESIZE,"poly_E3andE1_N%d",fit_info_E3_poly.N );
 	// struct fit_result fit_QC3_poly=fit_data(argv,  paramsj ,gjack, lhs_E3_m ,fit_info_E3_poly, namefile,myen   );
 	 
-	 struct fit_result fit_QC3_poly=fit_data(argv,  paramsj ,gjack, lhs_E3orE1_g_m ,fit_info_E3_poly, namefile,myen   );
+	 struct fit_result fit_QC3_poly=fit_data(argv,  paramsj ,gjack, lhs_E3orE1_m_complex ,fit_info_E3_poly, namefile,myen   );
 	 print_fit_band_L_M( argv, gjack , fit_info_E3_poly,fit_info_m0 ,  namefile,   fit_QC3_poly ,fit_m0,    paramsj,  myen, {23,41});
 //      free_fit_result(fit_info,fit_QC3_poly);
 //      fit_info_E3_poly.restore_default();
@@ -679,10 +703,11 @@ printf("////////////////////  kiso const fit   /////////////////////////////////
 	 fit_info.N=2;
 	 fit_info.Njack=gjack[0].Njack;
 	 
-	 fit_info.n_ext_P=2;
+	 fit_info.n_ext_P=3;
 	 fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
 	 fit_info.ext_P[0]=deltaE2_m_quant_cond.P[0];
 	 fit_info.ext_P[1]=deltaE2_m_quant_cond.P[1];
+	 fit_info.ext_P[2]=fit_m0.P[0];
 	 
 	 
 	 
@@ -699,7 +724,7 @@ printf("////////////////////  kiso const fit   /////////////////////////////////
 	 fit_info.mean_only=true;
 
 	 mysprintf(namefile,NAMESIZE,"QC3_N%d_pole_fix",fit_info.N, fit_info.Npar);
-	 struct fit_result fit_QC3_const=fit_data(argv,  paramsj ,gjack, lhs_E3orE1_g_m ,fit_info, namefile,
+	 struct fit_result fit_QC3_const=fit_data(argv,  paramsj ,gjack, lhs_E3orE1_m_complex ,fit_info, namefile,
 	 /*myen*/ {0,1,2}   );
 	//  print_fit_band_E3_vs_L( argv, gjack , fit_info,fit_info_m0 ,  namefile,   fit_QC3_const ,fit_m0,    paramsj,  myen,  fit_info_E3_poly, fit_QC3_poly, {23,41});
 	 

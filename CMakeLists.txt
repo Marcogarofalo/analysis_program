@@ -100,6 +100,7 @@ add_subdirectory(projects/virtualphoton  virtualphoton)
 add_subdirectory(tools tools)
 add_subdirectory(projects/phi4 phi4)
 add_subdirectory(projects/BSM BSM)
+add_subdirectory(projects/g-2 g-2)
 
 if(WITH_PYTHON)
     add_subdirectory(projects/python_wrapper python_wrapper)
