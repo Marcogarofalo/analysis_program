@@ -52,8 +52,15 @@ jobs:
       run: |
            mkdir build 
            cd build  
-           cmake .. 
-           make
+           cmake ..
+           
+    - name: compiling
+      working-directory: ${{github.workspace}}/build
+      run: make
+       
+    - name: test
+      working-directory: ${{github.workspace}}/build
+      run: |
            cd phi4
            ./phi4_new read_plateaux -p ../../tests/phi4  G2t_T48_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin40_merged_bin1000  -bin 1 jack
            ./test ../../tests/phi4/jackknife/jack_G2t_T48_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_reference ../../tests/phi4/jackknife/jack_G2t_T48_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0
