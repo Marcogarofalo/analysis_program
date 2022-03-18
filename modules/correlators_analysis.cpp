@@ -347,7 +347,7 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
     int i, j;
     double* chi2j;
     int Npar = fit_info.Npar; // parameters
-    int Nvar = fit_info.Nvar;
+    int Nvar = fit_info.Nvar+fit_info.n_ext_P;
     int N = fit_info.N;                                // functions to fit
     int* en = (int*)malloc(sizeof(int) * fit_info.N); // data to fit for each function
     for (i = 0; i < fit_info.N; i++)
@@ -556,8 +556,8 @@ struct fit_result fit_fun_to_corr(char** option, struct kinematic kinematic_2pt,
     // printing the correlator and the function
     double** tif = swap_indices(fit_info.Npar, Njack, fit_out.P);
     double* tmp = (double*)malloc(sizeof(double) * Njack);
-    double* x = (double*)malloc(sizeof(double) * fit_info.Nvar);
-    int xs = fit_info.Nvar - fit_info.n_ext_P;
+    double* x = (double*)malloc(sizeof(double) * (fit_info.Nvar+fit_info.n_ext_P));
+    int xs = fit_info.Nvar ;
     for (int t = 1; t < file_head.l0 / 2; t++) {
         fprintf(outfile, "%d   %.15e    %.15e\t", t, mt[t][0], mt[t][1]);
         // variables and external parameters

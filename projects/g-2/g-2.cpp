@@ -393,6 +393,13 @@ int main(int argc, char** argv) {
     // for (int i = 0;i <= 7;i++) { symmetrise_jackboot(Njack, i, file_head.l0, conf_jack); }
 
     ////////////////////////////////////////////////
+    corr_counter=-1;
+    double* M_PS = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 1, "M_{PS}", M_eff_T, jack_file);
+    check_correlatro_counter(0);
+
+    double* M_PS_OS = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 4, "M_{PS}^{OS}", M_eff_T, jack_file);
+    check_correlatro_counter(1);
+
 
     fit_type fit_info;
     fit_result fit_out;
@@ -401,19 +408,39 @@ int main(int argc, char** argv) {
     fit_info.Npar = 1;
     fit_info.N = 1;
     fit_info.Njack = Njack;
-    fit_info.n_ext_P = 0;
+    fit_info.n_ext_P = 1;
+    fit_info.ext_P=(double**) malloc(sizeof(double*)*1);
+    fit_info.ext_P[0]=M_PS;
     fit_info.function = constant_fit;
 
-    fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, ZAl, "Z_A(l)", fit_info, jack_file);
-    free_fit_result(fit_info, fit_out);
-
-    fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, ZVl, "Z_V(l)", fit_info, jack_file);
-    free_fit_result(fit_info, fit_out);
+    fit_result G_PS = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, GPS_lhs, "G_{PS}", fit_info, jack_file);
+    check_correlatro_counter(2);
 
 
+    fit_info.ext_P[0]=M_PS_OS;
+    fit_result G_PS_OS = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, GPS_OS_lhs, "G_{PS}^{OS}", fit_info, jack_file);
+    check_correlatro_counter(3);
+
+    fit_info.n_ext_P = 0;
+    fit_result ZVl = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, ZVl_lhs, "Z_V(l)", fit_info, jack_file);
+    check_correlatro_counter(4);
 
 
+    fit_info.ext_P[0]=nullptr;
+    free(fit_info.ext_P);
+    fit_info.n_ext_P = 4;
+    fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+    fit_info.ext_P[0]=M_PS;
+    fit_info.ext_P[1]=M_PS_OS;
+    fit_info.ext_P[2]=G_PS.P[0];
+    fit_info.ext_P[3]=G_PS_OS.P[0];
+    
+    fit_result ZAl = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, ZAl_lhs, "Z_A(l)", fit_info, jack_file);
+    check_correlatro_counter(5);
 
-
+    fit_info.restore_default();
+    free(M_PS);free(M_PS_OS);
+    free_fit_result(fit_info,G_PS);free_fit_result(fit_info,G_PS_OS);
+    free_fit_result(fit_info,ZVl);free_fit_result(fit_info,ZAl);
 }
 

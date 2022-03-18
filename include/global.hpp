@@ -275,6 +275,12 @@ struct  fit_type
      GEVP_ignore_warning_after_t=1000;
 
      HENKEL_size=1;
+
+     for (int i=0;i<n_ext_P;i++){
+       ext_P[i]=nullptr;
+     }
+     free(ext_P);
+     n_ext_P=0;
 //      f_plateaux_scan=NULL;
 //      name_plateaux_scan="\0";
   };

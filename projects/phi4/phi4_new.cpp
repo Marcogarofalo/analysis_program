@@ -3945,7 +3945,7 @@ int main(int argc, char** argv) {
     check_correlatro_counter(189);
 
 
-    printf("id_GEVP_031=%d\n", id_GEVP_031);
+    // printf("id_GEVP_031=%d\n", id_GEVP_031);
 
 
 

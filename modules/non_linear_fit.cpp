@@ -109,10 +109,10 @@ struct fit_result malloc_fit(struct  fit_type  fit_info) {
     struct fit_result fit_out;
     fit_out.Njack = fit_info.Njack;
     fit_out.P = (double**)malloc(sizeof(double*) * fit_info.Npar);
-    fit_out.chi2 = (double*)malloc(sizeof(double*) * fit_info.Njack);
+    fit_out.chi2 = (double*)malloc(sizeof(double) * fit_info.Njack);
     fit_out.C = (double***)malloc(sizeof(double**) * fit_info.Npar);
     for (int i = 0;i < fit_info.Npar;i++) {
-        fit_out.P[i] = (double*)malloc(sizeof(double*) * fit_info.Njack);
+        fit_out.P[i] = (double*)malloc(sizeof(double) * fit_info.Njack);
 
         fit_out.C[i] = (double**)malloc(sizeof(double*) * fit_info.Npar);
         for (int n = 0;n < fit_info.Npar;n++) {
@@ -745,7 +745,7 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
     }
     double** alpha_l = (double**)malloc(sizeof(double*) * Npar);
     for (j = 0;j < Npar;j++) {
-        alpha_l[j] = (double*)calloc(Npar, sizeof(double));
+        alpha_l[j] = (double*)malloc(Npar * sizeof(double));
     }
 
     chi2 = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun);//printf("chi2 in fit function=%g\n",chi2/(ensemble[0]*N-Npar));
