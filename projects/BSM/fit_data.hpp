@@ -22,6 +22,23 @@ double rhs_critical_eta_mu_m0(int n, int Nvar, double* x, int Npar, double* P) {
 }
 
 
+double rhs_critical_eta_mu(int n, int Nvar, double* x, int Npar, double* P) {
+    //double a0 = P[0], r0 = P[1], P2 = P[2];
+    double eta = x[3], mu = x[5], m0 = x[6];
+    double eta_cr = P[0];
+    double eta_sub = eta - eta_cr;
+    double r;
+    if (n == 0) //r_AWI
+        r =  P[1] * eta_sub + P[2] * mu ;
+    else if (n == 1) //m_pcac
+        r = P[3] * eta_sub + P[4] * mu ;
+    else { r = 0; exit(1); }
+
+    return r;
+
+}
+
+
 double rhs_critical_eta_mu_m0_shifted(int n, int Nvar, double* x, int Npar, double* P) {
     double a0 = P[0], r0 = P[1], P2 = P[2];
     double eta = x[3], mu = x[5], m0 = x[6];
