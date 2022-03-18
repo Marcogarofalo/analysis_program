@@ -16,9 +16,10 @@
 #include "linear_fit.hpp"
 #include "various_fits.hpp"
 #include "mutils.hpp"
-
+#include "functions.hpp"
 #include "correlators_analysis.hpp"
 #include "eigensystem.hpp"
+#include "non_linear_fit.hpp"
 // #include "lhs_functions.hpp"
 
 #include <string>
@@ -323,17 +324,17 @@ int main(int argc, char** argv) {
     write_header_g2(jack_file);
 
     std::vector<std::string>  correlators;
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);//0
     correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);//1
     correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);//2
     correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);//3
     correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);//4
     correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);//5
     correlators.emplace_back(namefile);
 
     printf("reading confs from file: %s", correlators[0].c_str());
@@ -391,8 +392,23 @@ int main(int argc, char** argv) {
     // ////////////////// symmetrization/////////////////////////////////////////////
     // for (int i = 0;i <= 7;i++) { symmetrise_jackboot(Njack, i, file_head.l0, conf_jack); }
 
+    ////////////////////////////////////////////////
 
+    fit_type fit_info;
+    fit_result fit_out;
 
+    fit_info.Nvar=1;
+    fit_info.Npar=1;
+    fit_info.N=1;
+    fit_info.Njack=Njack;
+    fit_info.n_ext_P=0;
+    fit_info.function=constant_fit;
+    
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1phi", conf_jack ,namefile_plateaux, outfile, ZAl, "Z_A(l)",  fit_info, jack_file );
+    free_fit_result(fit_info,fit_out);
+
+    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1phi", conf_jack ,namefile_plateaux, outfile, ZVl, "Z_V(l)",  fit_info, jack_file );
+    free_fit_result(fit_info,fit_out);
 
 
 

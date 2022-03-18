@@ -28,7 +28,15 @@ double* plateau_correlator_function(char** option, struct kinematic kinematic_2p
 
 
 struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic_2pt, char* name, double**** conf_jack, const char* plateaux_masses, FILE* outfile, int index, int re_im, const char* description, struct fit_type fit_info, FILE* file_jack);
-
+/****************************************************************************
+ *
+ * option[1] = blind/read_plateaux/see
+ * option[3] = path to the directory with subdirectories: jack , out
+ * option[4] = resampling type
+ * option[5] = do not set to "pdf"
+ * option[6] = basename to look for in the plateaux.txt file
+ * description = name to give to the fit, the one get by r
+****************************************************************************/
 struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinematic_2pt, char* name, double**** conf_jack, const char* plateaux_masses, FILE* outfile, double fun_of_corr(int, double****, int, struct fit_type), const char* description, struct fit_type fit_info, FILE* file_jack);
 
 

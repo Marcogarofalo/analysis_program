@@ -22,7 +22,7 @@
 double *LU_decomposition_solver(int N, double **M, double *b){
  double **U,**L,*y,*x;
  int i,j,k;
- 
+
  x=(double*) malloc(sizeof(double)*N);
  y=(double*) malloc(sizeof(double)*N);
  L=(double**) malloc(sizeof(double*)*N);
@@ -31,10 +31,10 @@ double *LU_decomposition_solver(int N, double **M, double *b){
     U[i]=(double*) calloc(N,sizeof(double));
     L[i]=(double*) calloc(N,sizeof(double));
  }
- 
+
  for (i=0;i<N;i++)
      L[i][i]=1;
-     
+
  for (j=0;j<N;j++){
     for (i=0;i<=j;i++){
         U[i][j]=M[i][j];
@@ -48,7 +48,7 @@ double *LU_decomposition_solver(int N, double **M, double *b){
         L[i][j]/=U[j][j];
     }
  }
- 
+
  y[0]=b[0]/L[0][0];
  for (i=0;i<N;i++){
      y[i]=b[i];
@@ -56,7 +56,7 @@ double *LU_decomposition_solver(int N, double **M, double *b){
          y[i]-=L[i][k]*y[k];
      y[i]/=L[i][i];
  }
- 
+
  x[N-1]=y[N-1]/U[N-1][N-1];
  for (i=N-2;i>=0;i--){
      x[i]=y[i];
@@ -64,7 +64,7 @@ double *LU_decomposition_solver(int N, double **M, double *b){
          x[i]-=U[i][k]*x[k];
      x[i]/=U[i][i];
  }
- 
+
  free(y);
  for (i=0;i<N;i++){
      free(L[i]);
@@ -72,22 +72,22 @@ double *LU_decomposition_solver(int N, double **M, double *b){
  }
  free(U);
  free(L);
- 
+
  return x;
-  
+
 }
 
 //return the inverse matrix of M
 double **matrix_inverse(int N, double **M  ){
     double *b,**r,*a;
     int i,j;
-    
+
     b=(double*) calloc(N,sizeof(double));
     r=(double**) malloc(sizeof(double*)*N);
     for (i=0;i<N;i++){
         r[i]=(double*) malloc(N*sizeof(double));
     }
-    
+
     for (i=0;i<N;i++){
         b[i]=1.;
         a=LU_decomposition_solver(N, M, b);
@@ -96,100 +96,100 @@ double **matrix_inverse(int N, double **M  ){
         free(a);
         b[i]=0;
     }
-    
+
     free(b);
-        
+
     return r;
 }*/
 
- 
- 
 
-struct fit_result malloc_fit( struct  fit_type  fit_info){
-   struct fit_result fit_out;
-   fit_out.Njack=fit_info.Njack;
-   fit_out.P=(double**) malloc(sizeof(double*)*fit_info.Npar);
-   fit_out.chi2=(double*) malloc(sizeof(double*)*fit_info.Njack);
-   fit_out.C=(double***) malloc(sizeof(double**)*fit_info.Npar);
-   for(int i=0;i<fit_info.Npar;i++){
-       fit_out.P[i]=(double*) malloc(sizeof(double*)*fit_info.Njack);
-       
-       fit_out.C[i]=(double**) malloc(sizeof(double*)*fit_info.Npar);
-       for(int n=0;n<fit_info.Npar;n++){     
-           fit_out.C[i][n]=(double*) malloc(sizeof(double)*fit_info.Njack);
-           
-       }
-   }
-   return fit_out;
+
+
+struct fit_result malloc_fit(struct  fit_type  fit_info) {
+    struct fit_result fit_out;
+    fit_out.Njack = fit_info.Njack;
+    fit_out.P = (double**)malloc(sizeof(double*) * fit_info.Npar);
+    fit_out.chi2 = (double*)malloc(sizeof(double*) * fit_info.Njack);
+    fit_out.C = (double***)malloc(sizeof(double**) * fit_info.Npar);
+    for (int i = 0;i < fit_info.Npar;i++) {
+        fit_out.P[i] = (double*)malloc(sizeof(double*) * fit_info.Njack);
+
+        fit_out.C[i] = (double**)malloc(sizeof(double*) * fit_info.Npar);
+        for (int n = 0;n < fit_info.Npar;n++) {
+            fit_out.C[i][n] = (double*)malloc(sizeof(double) * fit_info.Njack);
+
+        }
+    }
+    return fit_out;
 }
 
 
-void free_fit_result( struct  fit_type  fit_info,struct fit_result  out){
-    for(int i=0; i<fit_info.Npar;i++){
+void free_fit_result(struct  fit_type  fit_info, struct fit_result  out) {
+    for (int i = 0; i < fit_info.Npar;i++) {
         free(out.P[i]);
-        for(int n=0;n<fit_info.Npar;n++)
+        for (int n = 0;n < fit_info.Npar;n++)
             free(out.C[i][n]);
         free(out.C[i]);
     }
     free(out.P);free(out.C);free(out.chi2);
-    
+
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
- 
 
- 
-struct  fit_result   copy_fit_result(struct fit_result fit_out, struct fit_type fit_info){
+
+
+struct  fit_result   copy_fit_result(struct fit_result fit_out, struct fit_type fit_info) {
     struct  fit_result fit_tmp;
-    int i,j,k;
-    fit_tmp.Njack=fit_out.Njack;
-    fit_tmp.P=(double**) malloc(sizeof(double*)*fit_info.Npar);
-    fit_tmp.C=(double***) malloc(sizeof(double**)*fit_info.Npar);
-    fit_tmp.chi2=(double*) malloc(sizeof(double)*fit_out.Njack);
-    
-    for(i=0;i<fit_info.Npar;i++){
-        fit_tmp.P[i]=(double*) malloc(sizeof(double)*fit_out.Njack);
-        fit_tmp.C[i]=(double**) malloc(sizeof(double*)*fit_info.Npar);
-        for(j=0;j<fit_out.Njack;j++){
-            fit_tmp.P[i][j]=fit_out.P[i][j];
+    int i, j, k;
+    fit_tmp.Njack = fit_out.Njack;
+    fit_tmp.P = (double**)malloc(sizeof(double*) * fit_info.Npar);
+    fit_tmp.C = (double***)malloc(sizeof(double**) * fit_info.Npar);
+    fit_tmp.chi2 = (double*)malloc(sizeof(double) * fit_out.Njack);
+
+    for (i = 0;i < fit_info.Npar;i++) {
+        fit_tmp.P[i] = (double*)malloc(sizeof(double) * fit_out.Njack);
+        fit_tmp.C[i] = (double**)malloc(sizeof(double*) * fit_info.Npar);
+        for (j = 0;j < fit_out.Njack;j++) {
+            fit_tmp.P[i][j] = fit_out.P[i][j];
         }
-        for(k=0;k<fit_info.Npar;k++){
-                fit_tmp.C[i][k]=(double*) malloc(sizeof(double)*fit_out.Njack);
-                for(j=0;j<fit_out.Njack;j++)
-                    fit_tmp.C[i][k][j]=fit_out.C[i][k][j];
-            }
+        for (k = 0;k < fit_info.Npar;k++) {
+            fit_tmp.C[i][k] = (double*)malloc(sizeof(double) * fit_out.Njack);
+            for (j = 0;j < fit_out.Njack;j++)
+                fit_tmp.C[i][k][j] = fit_out.C[i][k][j];
+        }
 
     }
-    for(j=0;j<fit_out.Njack;j++){
-        fit_tmp.chi2[j]=fit_out.chi2[j];
+    for (j = 0;j < fit_out.Njack;j++) {
+        fit_tmp.chi2[j] = fit_out.chi2[j];
     }
     return fit_tmp;
 }
 
-struct  fit_type   copy_fit_type(struct fit_result fit_out, struct fit_type fit_info){
+struct  fit_type   copy_fit_type(struct fit_result fit_out, struct fit_type fit_info) {
     struct  fit_type fit_tmp;
-    fit_tmp.N=fit_info.N;
-    fit_tmp.Npar=fit_info.Npar;
-    fit_tmp.Nvar=fit_info.Nvar;
-    fit_tmp.function=fit_info.function;
+    fit_tmp.N = fit_info.N;
+    fit_tmp.Npar = fit_info.Npar;
+    fit_tmp.Nvar = fit_info.Nvar;
+    fit_tmp.function = fit_info.function;
 
     return fit_tmp;
 }
- 
-struct fit_all   save_fit(struct fit_all fit_chi2_good,struct fit_type fit_info, struct fit_result fit_out){
-    
+
+struct fit_all   save_fit(struct fit_all fit_chi2_good, struct fit_type fit_info, struct fit_result fit_out) {
+
     struct fit_all fit_tmp;
-    int i,j,k;
-    int N=fit_chi2_good.Nfits+1;
-    fit_tmp.Nfits=N;
-    fit_tmp.info=(struct fit_type  *) malloc(sizeof(struct fit_type)*N);
-    fit_tmp.out=(struct fit_result  *) malloc(sizeof(struct fit_result)*N);
-    for(i=0;i<N-1;i++){
-        fit_tmp.out[i]=copy_fit_result(fit_chi2_good.out[i],fit_chi2_good.info[i]);
-        fit_tmp.info[i]=copy_fit_type(fit_chi2_good.out[i],fit_chi2_good.info[i]);
-        for (j=0;j<fit_chi2_good.info[i].Npar;j++){
+    int i, j, k;
+    int N = fit_chi2_good.Nfits + 1;
+    fit_tmp.Nfits = N;
+    fit_tmp.info = (struct fit_type*)malloc(sizeof(struct fit_type) * N);
+    fit_tmp.out = (struct fit_result*)malloc(sizeof(struct fit_result) * N);
+    for (i = 0;i < N - 1;i++) {
+        fit_tmp.out[i] = copy_fit_result(fit_chi2_good.out[i], fit_chi2_good.info[i]);
+        fit_tmp.info[i] = copy_fit_type(fit_chi2_good.out[i], fit_chi2_good.info[i]);
+        for (j = 0;j < fit_chi2_good.info[i].Npar;j++) {
             free(fit_chi2_good.out[i].P[j]);
-            for (k=0;k<fit_chi2_good.info[i].Npar;k++){
+            for (k = 0;k < fit_chi2_good.info[i].Npar;k++) {
                 free(fit_chi2_good.out[i].C[j][k]);
             }
             free(fit_chi2_good.out[i].C[j]);
@@ -198,170 +198,170 @@ struct fit_all   save_fit(struct fit_all fit_chi2_good,struct fit_type fit_info,
         free(fit_chi2_good.out[i].P);
         free(fit_chi2_good.out[i].C);
 
-    }     
-    fit_tmp.out[N-1]=copy_fit_result(fit_out,fit_info);
-    fit_tmp.info[N-1]=copy_fit_type(fit_out,fit_info);
-    
+    }
+    fit_tmp.out[N - 1] = copy_fit_result(fit_out, fit_info);
+    fit_tmp.info[N - 1] = copy_fit_type(fit_out, fit_info);
+
     return fit_tmp;
-    
-} 
+
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //https://en.wikipedia.org/wiki/Finite_difference_coefficient#Central_finite_difference 
 //derivative 1 accuracy 4
-double *der_fun_h( int Nvar, double *x,int Npar,double  *P, double fun(int,double*,int,double*), double h){
-    
-    double *Ph=(double*) malloc(sizeof(double)*Npar);
-    double *df=(double*) calloc(Npar,sizeof(double));
+double* der_fun_h(int Nvar, double* x, int Npar, double* P, double fun(int, double*, int, double*), double h) {
+
+    double* Ph = (double*)malloc(sizeof(double) * Npar);
+    double* df = (double*)calloc(Npar, sizeof(double));
     int i;
-    
-    for (i=0;i<Npar;i++)
-        Ph[i]=P[i];
-    
-    for (i=0;i<Npar;i++){
-        Ph[i]=P[i]-2.*h;
-        df[i]=fun(Nvar,x,Npar,Ph);
-    
-        Ph[i]=P[i]-h;
-        df[i]-=8*fun(Nvar,x,Npar,Ph);
-        
-        Ph[i]=P[i]+h;
-        df[i]+=8*fun(Nvar,x,Npar,Ph);
-    
-        Ph[i]=P[i]+2.*h;
-        df[i]-=fun(Nvar,x,Npar,Ph);
-    
-        Ph[i]=P[i];//you need to leave the parameter as it was before you move to the next parameter
-        df[i]/=(12.*h);
+
+    for (i = 0;i < Npar;i++)
+        Ph[i] = P[i];
+
+    for (i = 0;i < Npar;i++) {
+        Ph[i] = P[i] - 2. * h;
+        df[i] = fun(Nvar, x, Npar, Ph);
+
+        Ph[i] = P[i] - h;
+        df[i] -= 8 * fun(Nvar, x, Npar, Ph);
+
+        Ph[i] = P[i] + h;
+        df[i] += 8 * fun(Nvar, x, Npar, Ph);
+
+        Ph[i] = P[i] + 2. * h;
+        df[i] -= fun(Nvar, x, Npar, Ph);
+
+        Ph[i] = P[i];//you need to leave the parameter as it was before you move to the next parameter
+        df[i] /= (12. * h);
     }
-    
-    
+
+
     free(Ph);
-    
+
     return df;
 }
 
- 
- 
-double compute_chi_non_linear(int ensemble,double **x, double **y, double *P ,int Nvar, int Npar, double fun(int,double*,int,double*)) {
-    double chi2=0,f;
-    int e,j;
-    
-    for (e=0;e<ensemble;e++){
-        f=fun(Nvar,x[e],Npar,P);
-        chi2+=(y[e][0]-f)*(y[e][0]-f)/ (y[e][1]*y[e][1]);
-     
-    } 
-    
+
+
+double compute_chi_non_linear(int ensemble, double** x, double** y, double* P, int Nvar, int Npar, double fun(int, double*, int, double*)) {
+    double chi2 = 0, f;
+    int e, j;
+
+    for (e = 0;e < ensemble;e++) {
+        f = fun(Nvar, x[e], Npar, P);
+        chi2 += (y[e][0] - f) * (y[e][0] - f) / (y[e][1] * y[e][1]);
+
+    }
+
     return chi2;
-    
+
 }
- 
+
 // x[ensemble][variable number] ,   y[ensemble][0=mean,1=error], fun(Nvariables,variables[], Nparameters,parameters[])
 //*funk(Nvariables,variables[], Nparameters,parameters[]) must return a vector[Nparameters] that contain the derivatives of fun respect to the parameters
 //the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 
 //double  *non_linear_fit(int ensemble,double **x, double **y ,int Nvar, int Npar, double fun(int,double*,int,double*) , double *funk(int,double*,int,double*) ){
-double  *non_linear_fit(int ensemble,double **x, double **y ,int Nvar, int Npar, double fun(int,double*,int,double*)  ){
-  
-    double **alpha,*X,*beta,**a,**C,*sigma;
-    int i,j,k,e;
-    double f,*fk;
-    double chi2,chi2_tmp;
-    double *P,*P_tmp,lambda,res;
-    double h=0.00001;
-    lambda=0.001;
-    res=1;
-    
- //   double *fkk;
-    P=(double*) malloc(Npar*sizeof(double));
-    P_tmp=(double*) malloc(Npar*sizeof(double));
-   
-   
-    for (j=0;j<Npar;j++){
-      //  P[j]=0.1;
-        P_tmp[j]=P[j];
+double* non_linear_fit(int ensemble, double** x, double** y, int Nvar, int Npar, double fun(int, double*, int, double*)) {
+
+    double** alpha, * X, * beta, ** a, ** C, * sigma;
+    int i, j, k, e;
+    double f, * fk;
+    double chi2, chi2_tmp;
+    double* P, * P_tmp, lambda, res;
+    double h = 0.00001;
+    lambda = 0.001;
+    res = 1;
+
+    //   double *fkk;
+    P = (double*)malloc(Npar * sizeof(double));
+    P_tmp = (double*)malloc(Npar * sizeof(double));
+
+
+    for (j = 0;j < Npar;j++) {
+        //  P[j]=0.1;
+        P_tmp[j] = P[j];
     }
-    
-    beta=(double*) calloc(Npar,sizeof(double));
-    alpha=(double**) malloc(sizeof(double*)*Npar);
-    for (j=0;j<Npar;j++){
-        alpha[j]=(double*) calloc(Npar,sizeof(double));
-    }   
-    chi2=compute_chi_non_linear( ensemble,x, y, P ,Nvar,  Npar,  fun);
 
-   
+    beta = (double*)calloc(Npar, sizeof(double));
+    alpha = (double**)malloc(sizeof(double*) * Npar);
+    for (j = 0;j < Npar;j++) {
+        alpha[j] = (double*)calloc(Npar, sizeof(double));
+    }
+    chi2 = compute_chi_non_linear(ensemble, x, y, P, Nvar, Npar, fun);
+
+
     // printf("chi2=%f   res=%.10f Bw=%f   fw=%f\n",chi2,res,P[0],P[1]);
-    while (res>0.001){
-        chi2_tmp=chi2+1;   
+    while (res > 0.001) {
+        chi2_tmp = chi2 + 1;
 
-        while (chi2_tmp>chi2){
-          
-            for (e=0;e<ensemble;e++){
-                f=fun(Nvar,x[e],Npar,P);
-                fk=der_fun_h(  Nvar, x[e], Npar,P,  fun,  h);
-             //   fk=funk(Nvar,x[e],Npar,P);
-                for (j=0;j<Npar;j++){
-                    beta[j]+=(y[e][0]-f)*fk[j]/(y[e][1]*y[e][1]);
-              //      printf("|analitic-numeric|=  |%g -%g|   = %g\n",fk[j],fkk[j],fabs(fk[j]-fkk[j]));
-                    for (k=0;k<Npar;k++){
-                        alpha[j][k]+=fk[j]*fk[k]/(y[e][1]*y[e][1]);
+        while (chi2_tmp > chi2) {
+
+            for (e = 0;e < ensemble;e++) {
+                f = fun(Nvar, x[e], Npar, P);
+                fk = der_fun_h(Nvar, x[e], Npar, P, fun, h);
+                //   fk=funk(Nvar,x[e],Npar,P);
+                for (j = 0;j < Npar;j++) {
+                    beta[j] += (y[e][0] - f) * fk[j] / (y[e][1] * y[e][1]);
+                    //      printf("|analitic-numeric|=  |%g -%g|   = %g\n",fk[j],fkk[j],fabs(fk[j]-fkk[j]));
+                    for (k = 0;k < Npar;k++) {
+                        alpha[j][k] += fk[j] * fk[k] / (y[e][1] * y[e][1]);
                     }
                 }
                 free(fk);
-            }    
-
-            for (j=0;j<Npar;j++){
-                alpha[j][j]*=(lambda+1.);
             }
 
-            if (Npar==1){
-                C=(double**) malloc(sizeof(double*)*1);
-                C[0]=(double*) malloc(sizeof(double)*1);
-                C[0][0]=1./alpha[0][0];
+            for (j = 0;j < Npar;j++) {
+                alpha[j][j] *= (lambda + 1.);
+            }
+
+            if (Npar == 1) {
+                C = (double**)malloc(sizeof(double*) * 1);
+                C[0] = (double*)malloc(sizeof(double) * 1);
+                C[0][0] = 1. / alpha[0][0];
             }
             else
-                C=matrix_inverse(Npar, alpha  );
-            
-            for (j=0;j<Npar;j++)
-                P_tmp[j]=P[j];
-            for (j=0;j<Npar;j++){
-                for (k=0;k<Npar;k++){
-                     P_tmp[j]+=C[j][k]*beta[k];
-                 }
-            }    
+                C = matrix_inverse(Npar, alpha);
+
+            for (j = 0;j < Npar;j++)
+                P_tmp[j] = P[j];
+            for (j = 0;j < Npar;j++) {
+                for (k = 0;k < Npar;k++) {
+                    P_tmp[j] += C[j][k] * beta[k];
+                }
+            }
 
             //printf("lambda=%f\n",lambda);
-            chi2_tmp=compute_chi_non_linear( ensemble,x, y, P_tmp ,Nvar,  Npar,  fun);
-	        if (chi2_tmp!=chi2_tmp) chi2_tmp=chi2+1;
-             //       printf("chi2=%f chi2_tmp=%f  res=%f P0=%f P0_tmp=%f  P0=%f P0_tmp=%f\n",chi2,chi2_tmp,res,P[0],P_tmp[0],P[1],P_tmp[1]);
-		    
+            chi2_tmp = compute_chi_non_linear(ensemble, x, y, P_tmp, Nvar, Npar, fun);
+            if (chi2_tmp != chi2_tmp) chi2_tmp = chi2 + 1;
+            //       printf("chi2=%f chi2_tmp=%f  res=%f P0=%f P0_tmp=%f  P0=%f P0_tmp=%f\n",chi2,chi2_tmp,res,P[0],P_tmp[0],P[1],P_tmp[1]);
 
-            if (chi2_tmp>chi2)
-                lambda*=10;
-            for (j=0;j<Npar;j++){
+
+            if (chi2_tmp > chi2)
+                lambda *= 10;
+            for (j = 0;j < Npar;j++) {
                 free(C[j]);
-                 beta[j]=0;
-                 for (k=0;k<Npar;k++){
-                        alpha[j][k]=0;
-                 }
+                beta[j] = 0;
+                for (k = 0;k < Npar;k++) {
+                    alpha[j][k] = 0;
+                }
             }
             free(C);
 
-            
+
         }
-        res=chi2-chi2_tmp;
+        res = chi2 - chi2_tmp;
         //error(res<0,2,"non_linear_fit","The Levenberg-Marquardt accepted a configuration when the chi2 increased");
-        chi2=chi2_tmp;
-        lambda/=10;
-        for (j=0;j<Npar;j++){
-            P[j]=P_tmp[j];
+        chi2 = chi2_tmp;
+        lambda /= 10;
+        for (j = 0;j < Npar;j++) {
+            P[j] = P_tmp[j];
         }
         // printf("chi2=%f   res=%.10f Bw=%f   fw=%f  P1=%f  P2=%f\n",chi2,res,P[0],P[1],P[2],P[3]);
         //printf("check residue=%f\n",res);
     }
 
 
-    for (j=0;j<Npar;j++){
+    for (j = 0;j < Npar;j++) {
         free(alpha[j]);
     }
     free(P_tmp);
@@ -371,35 +371,35 @@ double  *non_linear_fit(int ensemble,double **x, double **y ,int Nvar, int Npar,
 
 //https://en.wikipedia.org/wiki/Finite_difference_coefficient#Central_finite_difference 
 //derivative 1 accuracy 4
-double *der_O4_fun_Nf_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(int,int,double*,int,double*), double h){
-    
-    double *Ph=(double*) malloc(sizeof(double)*Npar);
-    double *df=(double*) calloc(Npar,sizeof(double));
+double* der_O4_fun_Nf_h(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), double h) {
+
+    double* Ph = (double*)malloc(sizeof(double) * Npar);
+    double* df = (double*)calloc(Npar, sizeof(double));
     int i;
-    
-    for (i=0;i<Npar;i++)
-        Ph[i]=P[i];
-    
-    for (i=0;i<Npar;i++){
-        Ph[i]=P[i]-2.*h;
-        df[i]=fun(n,Nvar,x,Npar,Ph);
-        
-        Ph[i]=P[i]-h;
-        df[i]-=8*fun(n,Nvar,x,Npar,Ph);
-        
-        Ph[i]=P[i]+h;
-        df[i]+=8*fun(n,Nvar,x,Npar,Ph);
-        
-        Ph[i]=P[i]+2.*h;
-        df[i]-=fun(n,Nvar,x,Npar,Ph);
-        
-        Ph[i]=P[i];//you need to leave the parameter as it was before you move to the next parameter
-        df[i]/=(12.*h);
+
+    for (i = 0;i < Npar;i++)
+        Ph[i] = P[i];
+
+    for (i = 0;i < Npar;i++) {
+        Ph[i] = P[i] - 2. * h;
+        df[i] = fun(n, Nvar, x, Npar, Ph);
+
+        Ph[i] = P[i] - h;
+        df[i] -= 8 * fun(n, Nvar, x, Npar, Ph);
+
+        Ph[i] = P[i] + h;
+        df[i] += 8 * fun(n, Nvar, x, Npar, Ph);
+
+        Ph[i] = P[i] + 2. * h;
+        df[i] -= fun(n, Nvar, x, Npar, Ph);
+
+        Ph[i] = P[i];//you need to leave the parameter as it was before you move to the next parameter
+        df[i] /= (12. * h);
     }
-    
-    
+
+
     free(Ph);
-    
+
     return df;
 }
 
@@ -407,60 +407,60 @@ double *der_O4_fun_Nf_h(int n, int Nvar, double *x,int Npar,double  *P, double f
 
 //https://en.wikipedia.org/wiki/Finite_difference_coefficient#Central_finite_difference 
 //derivative 1 accuracy 2
-double *der_O2_fun_Nf_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(int,int,double*,int,double*), double h){
-    
-    double *Ph=(double*) malloc(sizeof(double)*Npar);
-    double *df=(double*) calloc(Npar,sizeof(double));
+double* der_O2_fun_Nf_h(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), double h) {
+
+    double* Ph = (double*)malloc(sizeof(double) * Npar);
+    double* df = (double*)calloc(Npar, sizeof(double));
     int i;
-    
-    for (i=0;i<Npar;i++)
-        Ph[i]=P[i];
-    
-    for (i=0;i<Npar;i++){
-         
-        Ph[i]=P[i]-h;
-        df[i]=-fun(n,Nvar,x,Npar,Ph);
-        
-        Ph[i]=P[i]+h;
-        df[i]+=fun(n,Nvar,x,Npar,Ph);
-        
-          
-        Ph[i]=P[i];//you need to leave the parameter as it was before you move to the next parameter
-        df[i]/=(2.*h);
+
+    for (i = 0;i < Npar;i++)
+        Ph[i] = P[i];
+
+    for (i = 0;i < Npar;i++) {
+
+        Ph[i] = P[i] - h;
+        df[i] = -fun(n, Nvar, x, Npar, Ph);
+
+        Ph[i] = P[i] + h;
+        df[i] += fun(n, Nvar, x, Npar, Ph);
+
+
+        Ph[i] = P[i];//you need to leave the parameter as it was before you move to the next parameter
+        df[i] /= (2. * h);
     }
-    
-    
+
+
     free(Ph);
-    
+
     return df;
 }
 
-double *der_O2_fun_Nf_h_adaptive(int n, int Nvar, double *x,int Npar,double  *P, double fun(int,int,double*,int,double*), double h){
-    
-    double *Ph=(double*) malloc(sizeof(double)*Npar);
-    double *df=(double*) calloc(Npar,sizeof(double));
+double* der_O2_fun_Nf_h_adaptive(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), double h) {
+
+    double* Ph = (double*)malloc(sizeof(double) * Npar);
+    double* df = (double*)calloc(Npar, sizeof(double));
     int i;
-    
-    for (i=0;i<Npar;i++)
-        Ph[i]=P[i];
-    
-    
-    for (i=0;i<Npar;i++){
-        double hp=h*fabs(P[i])  ;  
-        Ph[i]=P[i]-hp;
-        df[i]=-fun(n,Nvar,x,Npar,Ph);
-        
-        Ph[i]=P[i]+hp;
-        df[i]+=fun(n,Nvar,x,Npar,Ph);
-        
-        
-        Ph[i]=P[i];//you need to leave the parameter as it was before you move to the next parameter
-        df[i]/=(2.*hp);
+
+    for (i = 0;i < Npar;i++)
+        Ph[i] = P[i];
+
+
+    for (i = 0;i < Npar;i++) {
+        double hp = h * fabs(P[i]);
+        Ph[i] = P[i] - hp;
+        df[i] = -fun(n, Nvar, x, Npar, Ph);
+
+        Ph[i] = P[i] + hp;
+        df[i] += fun(n, Nvar, x, Npar, Ph);
+
+
+        Ph[i] = P[i];//you need to leave the parameter as it was before you move to the next parameter
+        df[i] /= (2. * hp);
     }
-    
-    
+
+
     free(Ph);
-    
+
     return df;
 }
 
@@ -500,176 +500,176 @@ double *der_O2_fun_Nf_h_adaptive(int n, int Nvar, double *x,int Npar,double  *P,
 // }
 //https://en.wikipedia.org/wiki/Finite_difference_coefficient#Central_finite_difference 
 //derivative 1 accuracy 4
-double *derN_fun_Nf_var_h(int n, int Nvar, double *x,int Npar,double  *P, double fun(int,int,double*,int,double*), double h,int N){
-    
-    double *xh=(double*) malloc(sizeof(double)*Nvar);
-    double *df=(double*) calloc(Nvar,sizeof(double));
-    double *tmp;
+double* derN_fun_Nf_var_h(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), double h, int N) {
+
+    double* xh = (double*)malloc(sizeof(double) * Nvar);
+    double* df = (double*)calloc(Nvar, sizeof(double));
+    double* tmp;
     int i;
 
-    for (i=0;i<Nvar;i++)
-        xh[i]=x[i];
-    
-    if (N==0){
-        for (i=0;i<Nvar;i++)
-            df[i]=fun(n,Nvar,xh,Npar,P);
-    }
-    else if (N==1){
-        for (i=0;i<Nvar;i++){
-            xh[i]=x[i]-2.*h;    
-            df[i]=fun(n,Nvar,xh,Npar,P);
-            
-            xh[i]=x[i]-h;
-            df[i]-=8*fun(n,Nvar,xh,Npar,P);
+    for (i = 0;i < Nvar;i++)
+        xh[i] = x[i];
 
-            xh[i]=x[i]+h;
-            df[i]+=8*fun(n,Nvar,xh,Npar,P);
-        
-            xh[i]=x[i]+2.*h;
-            df[i]-=fun(n,Nvar,xh,Npar,P);
-        
-            xh[i]=x[i];//you need to leave the parameter as it was before you move to the next parameter
-            df[i]/=(12.*h);
+    if (N == 0) {
+        for (i = 0;i < Nvar;i++)
+            df[i] = fun(n, Nvar, xh, Npar, P);
+    }
+    else if (N == 1) {
+        for (i = 0;i < Nvar;i++) {
+            xh[i] = x[i] - 2. * h;
+            df[i] = fun(n, Nvar, xh, Npar, P);
+
+            xh[i] = x[i] - h;
+            df[i] -= 8 * fun(n, Nvar, xh, Npar, P);
+
+            xh[i] = x[i] + h;
+            df[i] += 8 * fun(n, Nvar, xh, Npar, P);
+
+            xh[i] = x[i] + 2. * h;
+            df[i] -= fun(n, Nvar, xh, Npar, P);
+
+            xh[i] = x[i];//you need to leave the parameter as it was before you move to the next parameter
+            df[i] /= (12. * h);
         }
     }
-    else{
-        for (i=0;i<Nvar;i++){
-            xh[i]=x[i]-2.*h;
-            tmp=derN_fun_Nf_var_h( n,  Nvar, xh, Npar,P, fun,  h, N-1);
-            df[i]=tmp[i]; free(tmp);
-            
-            xh[i]=x[i]-h;
-            tmp=derN_fun_Nf_var_h( n,  Nvar, xh, Npar,P, fun,  h, N-1);
-            df[i]-=8*tmp[i]; free(tmp);
-            
-            xh[i]=x[i]+h;
-            tmp=derN_fun_Nf_var_h( n,  Nvar, xh, Npar,P, fun,  h, N-1);
-            df[i]+=8*tmp[i]; free(tmp);
-        
-            xh[i]=x[i]+2.*h;
-            tmp=derN_fun_Nf_var_h( n,  Nvar, xh, Npar,P, fun,  h, N-1);
-            df[i]-=tmp[i]; free(tmp);
-        
-            xh[i]=x[i];//you need to leave the parameter as it was before you move to the next parameter
-            df[i]/=(12.*h);
+    else {
+        for (i = 0;i < Nvar;i++) {
+            xh[i] = x[i] - 2. * h;
+            tmp = derN_fun_Nf_var_h(n, Nvar, xh, Npar, P, fun, h, N - 1);
+            df[i] = tmp[i]; free(tmp);
+
+            xh[i] = x[i] - h;
+            tmp = derN_fun_Nf_var_h(n, Nvar, xh, Npar, P, fun, h, N - 1);
+            df[i] -= 8 * tmp[i]; free(tmp);
+
+            xh[i] = x[i] + h;
+            tmp = derN_fun_Nf_var_h(n, Nvar, xh, Npar, P, fun, h, N - 1);
+            df[i] += 8 * tmp[i]; free(tmp);
+
+            xh[i] = x[i] + 2. * h;
+            tmp = derN_fun_Nf_var_h(n, Nvar, xh, Npar, P, fun, h, N - 1);
+            df[i] -= tmp[i]; free(tmp);
+
+            xh[i] = x[i];//you need to leave the parameter as it was before you move to the next parameter
+            df[i] /= (12. * h);
         }
     }
-    
-    for (i=1;i<=N;i++)
-        df[i]/=((double) i);
+
+    for (i = 1;i <= N;i++)
+        df[i] /= ((double)i);
     free(xh);
-    
+
     return df;
 }
 
 
 
-double compute_chi_non_linear_Nf(int N,int *ensemble,double **x, double **y, double *P ,int Nvar, int Npar,  double fun(int,int,double*,int,double*)) {
-    double chi2=0,f;
-    int e,n,count;
-    
-    count=0;
-    for (n=0;n<N;n++){
-        for (e=0;e<ensemble[n];e++){
-            f=fun(n,Nvar,x[count],Npar,P)-y[count][0];
-//             printf("e=%d  n=%d   f=%g  y=%g err=%g    dchi= %g  \n ",e,n,f+y[count][0],y[count][0],y[count][1],f*f/(y[count][1]* y[count][1]));
-            f/=y[count][1];
-            chi2+=f*f;
+double compute_chi_non_linear_Nf(int N, int* ensemble, double** x, double** y, double* P, int Nvar, int Npar, double fun(int, int, double*, int, double*)) {
+    double chi2 = 0, f;
+    int e, n, count;
+
+    count = 0;
+    for (n = 0;n < N;n++) {
+        for (e = 0;e < ensemble[n];e++) {
+            f = fun(n, Nvar, x[count], Npar, P) - y[count][0];
+            //             printf("e=%d  n=%d   f=%g  y=%g err=%g    dchi= %g  \n ",e,n,f+y[count][0],y[count][0],y[count][1],f*f/(y[count][1]* y[count][1]));
+            f /= y[count][1];
+            chi2 += f * f;
             count++;
-        } 
+        }
     }
     return chi2;
 }
 
 
-double compute_chi_non_linear_Nf_long(int N,int *ensemble,double **x, double **y, double *P ,int Nvar, int Npar,  double fun(int,int,double*,int,double*)) {
-    long double chi2=0,f;
-    int e,n,count;
-    
-    count=0;
-    for (n=0;n<N;n++){
-        for (e=0;e<ensemble[n];e++){
-            f=fun(n,Nvar,x[count],Npar,P)-y[count][0];
+double compute_chi_non_linear_Nf_long(int N, int* ensemble, double** x, double** y, double* P, int Nvar, int Npar, double fun(int, int, double*, int, double*)) {
+    long double chi2 = 0, f;
+    int e, n, count;
+
+    count = 0;
+    for (n = 0;n < N;n++) {
+        for (e = 0;e < ensemble[n];e++) {
+            f = fun(n, Nvar, x[count], Npar, P) - y[count][0];
             //             printf("e=%d  n=%d   f=%g  y=%g err=%g    dchi= %g  \n ",e,n,f+y[count][0],y[count][0],y[count][1],f*f/(y[count][1]* y[count][1]));
-            f/=y[count][1];
-            chi2+=f*f;
+            f /= y[count][1];
+            chi2 += f * f;
             count++;
-        } 
+        }
     }
-    double chi2_double=chi2;
+    double chi2_double = chi2;
     return chi2_double;
 }
 
 
-double compute_chi_non_linear_Nf_kahan(int N,int *ensemble,double **x, double **y, double *P ,int Nvar, int Npar,  double fun(int,int,double*,int,double*)) {
-    double chi2=0,f;
-    int e,n,count;
-    double c=0.0;
-    
-    count=0;
-    for (n=0;n<N;n++){
-        for (e=0;e<ensemble[n];e++){
-            f=fun(n,Nvar,x[count],Npar,P)-y[count][0];
+double compute_chi_non_linear_Nf_kahan(int N, int* ensemble, double** x, double** y, double* P, int Nvar, int Npar, double fun(int, int, double*, int, double*)) {
+    double chi2 = 0, f;
+    int e, n, count;
+    double c = 0.0;
+
+    count = 0;
+    for (n = 0;n < N;n++) {
+        for (e = 0;e < ensemble[n];e++) {
+            f = fun(n, Nvar, x[count], Npar, P) - y[count][0];
             //             printf("e=%d  n=%d   f=%g  y=%g err=%g    dchi= %g  \n ",e,n,f+y[count][0],y[count][0],y[count][1],f*f/(y[count][1]* y[count][1]));
-            f/=y[count][1];
-            double in=f*f-c;
-            double t=chi2+in;
-            c=t-chi2 -in;
-            chi2=t;
-           
+            f /= y[count][1];
+            double in = f * f - c;
+            double t = chi2 + in;
+            c = t - chi2 - in;
+            chi2 = t;
+
             count++;
-        } 
+        }
     }
     return chi2;
 }
 
 // x[ensemble][variable number] ,   y[ensemble][0=mean,1=error], fun(index_function,Nvariables,variables[], Nparameters,parameters[])
 //the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 
-double  **covariance_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y,double *P ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ){
-  
-    double **alpha,**C;
-    int i,j,k,e;
-    double f,*fk;
-    int n,count;
-    double h=0.00001;
-    
-    alpha=(double**) malloc(sizeof(double*)*Npar);
-    for (j=0;j<Npar;j++){
-        alpha[j]=(double*) calloc(Npar,sizeof(double));
-    }   
-    
-    count=0;
-    for (n=0;n<N;n++){
-        for (e=0;e<ensemble[n];e++){
-            f=fun(n,Nvar,x[e+count],Npar,P);
-            fk=der_O4_fun_Nf_h(n,  Nvar, x[e+count], Npar,P,  fun,  h);
-            for (j=0;j<Npar;j++){
-                    for (k=j;k<Npar;k++){
-                    alpha[j][k]+=fk[j]*fk[k]/(y[e+count][1]*y[e+count][1]);
+double** covariance_non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, double* P, int Nvar, int Npar, double fun(int, int, double*, int, double*)) {
+
+    double** alpha, ** C;
+    int i, j, k, e;
+    double f, * fk;
+    int n, count;
+    double h = 0.00001;
+
+    alpha = (double**)malloc(sizeof(double*) * Npar);
+    for (j = 0;j < Npar;j++) {
+        alpha[j] = (double*)calloc(Npar, sizeof(double));
+    }
+
+    count = 0;
+    for (n = 0;n < N;n++) {
+        for (e = 0;e < ensemble[n];e++) {
+            f = fun(n, Nvar, x[e + count], Npar, P);
+            fk = der_O4_fun_Nf_h(n, Nvar, x[e + count], Npar, P, fun, h);
+            for (j = 0;j < Npar;j++) {
+                for (k = j;k < Npar;k++) {
+                    alpha[j][k] += fk[j] * fk[k] / (y[e + count][1] * y[e + count][1]);
                 }
             }
             free(fk);
         }
-        count+=ensemble[n];
+        count += ensemble[n];
     }
-    for (j=0;j<Npar;j++){
-         for (k=0;k<j;k++)
-              alpha[j][k]=alpha[k][j];
-            
-            }
-    if (Npar==1){
-                C=(double**) malloc(sizeof(double*)*1);
-                C[0]=(double*) malloc(sizeof(double)*1);
-                C[0][0]=1./alpha[0][0];
+    for (j = 0;j < Npar;j++) {
+        for (k = 0;k < j;k++)
+            alpha[j][k] = alpha[k][j];
+
+    }
+    if (Npar == 1) {
+        C = (double**)malloc(sizeof(double*) * 1);
+        C[0] = (double*)malloc(sizeof(double) * 1);
+        C[0][0] = 1. / alpha[0][0];
     }
     else
-                C=symmetric_matrix_inverse(Npar, alpha  );
-     
-    
-    for (j=0;j<Npar;j++){
+        C = symmetric_matrix_inverse(Npar, alpha);
+
+
+    for (j = 0;j < Npar;j++) {
         free(alpha[j]);
     }
-    
+
     free(alpha);
     return C;
 }
@@ -678,238 +678,238 @@ double  **covariance_non_linear_fit_Nf(int N, int *ensemble ,double **x, double 
 /*********************************************************************************
  * x[ensemble][variable number] ,   y[ensemble][0=mean,1=error],
  * fun(index_function,Nvariables,variables[], Nparameters,parameters[])
- * the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 
+ * the function return an array[Nparameter]  with the value of the parameters that minimise the chi2
  * devorder can be negative, in that case each parameter has is own h[i]=Parameter[i] *h
  ***********************************************************************************/
-//double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar,  double fun(int, int, double*, int, double*) , double* guess, double lambda, double acc, double h, std::vector< double > Prange, int devorder, int verbosity , int precision_sum )
-double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar,  double fun(int, int, double*, int, double*) , double* guess, fit_type fit_info )
-{
-    
-    
-    double lambda=fit_info.lambda;
-    double acc=fit_info.acc;
-    double h=fit_info.h;
-    std::vector< double > Prange=fit_info.Prange;
-    int devorder=fit_info.devorder;
-    int verbosity=fit_info.verbosity;
-    int precision_sum=fit_info.precision_sum;
-    
-    double* (*der_fun_Nf_h)(int , int , double* ,int ,double*  , double (int,int,double*,int,double*), double );
-    double (*chi2_fun)(int ,int *,double **, double **, double * ,int , int ,  double (int,int,double*,int,double*));
-    chi2_fun=compute_chi_non_linear_Nf;
-    
-    if (precision_sum==1){
-        chi2_fun=compute_chi_non_linear_Nf_kahan;
-    }
-    else if (precision_sum>1){
-        chi2_fun=compute_chi_non_linear_Nf_long;
-    }
-    
-    
-    if(devorder==-2){
-        der_fun_Nf_h=der_O2_fun_Nf_h_adaptive;
-    }
-    else if (devorder==4){
-        der_fun_Nf_h=der_O4_fun_Nf_h;
-    }
-    else if (devorder==2){
-        der_fun_Nf_h=der_O2_fun_Nf_h;
-    }else{
-        error(true,1,"non_linear_fit_Nf", "order of the derivative must be 4 (default) , 2,  -2 to set a step different for each parameter h[i]=P[i]*h    ");
-    }
-        
-    
-    double **alpha,*X,*beta,**a,**C,*sigma;
-    int i,j,k,e;
-    double f,*fk;
-    double chi2,chi2_tmp;
-    double *P,*P_tmp,res;
-    int n,count,Niter=0;
-    int nerror=0;
-    res=1;
-    
-    P=(double*) malloc(Npar*sizeof(double));
-    P_tmp=(double*) malloc(Npar*sizeof(double));
-   
-   
-    for (j=0;j<Npar;j++){
-        P[j]=guess[j];
-        P_tmp[j]=P[j];
-    }
-   
-    
-    beta=(double*) calloc(Npar,sizeof(double));
-    alpha=(double**) malloc(sizeof(double*)*Npar);
-    for (j=0;j<Npar;j++){
-        alpha[j]=(double*) calloc(Npar,sizeof(double));
-    }
-    double **alpha_l=(double**) malloc(sizeof(double*)*Npar);
-    for (j=0;j<Npar;j++){
-        alpha_l[j]=(double*) calloc(Npar,sizeof(double));
-    }   
+ //double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar,  double fun(int, int, double*, int, double*) , double* guess, double lambda, double acc, double h, std::vector< double > Prange, int devorder, int verbosity , int precision_sum )
+double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar, double fun(int, int, double*, int, double*), double* guess, fit_type fit_info) {
 
-    chi2=chi2_fun(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun);//printf("chi2 in fit function=%g\n",chi2/(ensemble[0]*N-Npar));
 
-    chi2_tmp=chi2+1;
-    if(verbosity>0)
-        printf("non_linear_fit_Nf:\ninitial chi2=%g\n",chi2);
-//     printf("chi2=%f   res=%.10f P0=%f   P1=%f\n",chi2,res,P[0],P[1]);
-    while (res>acc){
-        chi2_tmp=chi2+1;  
-        if(Niter>200){ if(verbosity>0) printf("Niter=%d of the Levenberg-Marquardt chi2 minimization: exeeds max number\n",Niter); break;}
+    double lambda = fit_info.lambda;
+    double acc = fit_info.acc;
+    double h = fit_info.h;
+    std::vector< double > Prange = fit_info.Prange;
+    int devorder = fit_info.devorder;
+    int verbosity = fit_info.verbosity;
+    int precision_sum = fit_info.precision_sum;
+
+    double* (*der_fun_Nf_h)(int, int, double*, int, double*, double(int, int, double*, int, double*), double);
+    double (*chi2_fun)(int, int*, double**, double**, double*, int, int, double(int, int, double*, int, double*));
+    chi2_fun = compute_chi_non_linear_Nf;
+
+    if (precision_sum == 1) {
+        chi2_fun = compute_chi_non_linear_Nf_kahan;
+    }
+    else if (precision_sum > 1) {
+        chi2_fun = compute_chi_non_linear_Nf_long;
+    }
+
+
+    if (devorder == -2) {
+        der_fun_Nf_h = der_O2_fun_Nf_h_adaptive;
+    }
+    else if (devorder == 4) {
+        der_fun_Nf_h = der_O4_fun_Nf_h;
+    }
+    else if (devorder == 2) {
+        der_fun_Nf_h = der_O2_fun_Nf_h;
+    }
+    else {
+        error(true, 1, "non_linear_fit_Nf", "order of the derivative must be 4 (default) , 2,  -2 to set a step different for each parameter h[i]=P[i]*h    ");
+    }
+
+
+    double** alpha, * X, * beta, ** a, ** C, * sigma;
+    int i, j, k, e;
+    double f, * fk;
+    double chi2, chi2_tmp;
+    double* P, * P_tmp, res;
+    int n, count, Niter = 0;
+    int nerror = 0;
+    res = 1;
+
+    P = (double*)malloc(Npar * sizeof(double));
+    P_tmp = (double*)malloc(Npar * sizeof(double));
+
+
+    for (j = 0;j < Npar;j++) {
+        P[j] = guess[j];
+        P_tmp[j] = P[j];
+    }
+
+
+    beta = (double*)calloc(Npar, sizeof(double));
+    alpha = (double**)malloc(sizeof(double*) * Npar);
+    for (j = 0;j < Npar;j++) {
+        alpha[j] = (double*)calloc(Npar, sizeof(double));
+    }
+    double** alpha_l = (double**)malloc(sizeof(double*) * Npar);
+    for (j = 0;j < Npar;j++) {
+        alpha_l[j] = (double*)calloc(Npar, sizeof(double));
+    }
+
+    chi2 = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun);//printf("chi2 in fit function=%g\n",chi2/(ensemble[0]*N-Npar));
+
+    chi2_tmp = chi2 + 1;
+    if (verbosity > 0)
+        printf("non_linear_fit_Nf:\ninitial chi2=%g\n", chi2);
+    //     printf("chi2=%f   res=%.10f P0=%f   P1=%f\n",chi2,res,P[0],P[1]);
+    while (res > acc) {
+        chi2_tmp = chi2 + 1;
+        if (Niter > 200) { if (verbosity > 0) printf("Niter=%d of the Levenberg-Marquardt chi2 minimization: exeeds max number\n", Niter); break; }
         Niter++;
-        nerror=0;
-        bool computed_alpha=false;
-        while (chi2_tmp>=chi2) {  //do {} while()   , at least one time is done. if chi is too big chi_tmp=chi+1 = chi 
+        nerror = 0;
+        bool computed_alpha = false;
+        while (chi2_tmp >= chi2) {  //do {} while()   , at least one time is done. if chi is too big chi_tmp=chi+1 = chi 
         //printf("lambda=%g\n",lambda);
-            if(!computed_alpha){
-                count=0;
-                for (n=0;n<N;n++){
-                    for (e=0;e<ensemble[n];e++){//printf("e=%d   n=%d   en[%d]=%d\n",e,n,n,ensemble[n]);
-                        f=fun(n,Nvar,x[e+count],Npar,P);
-                        fk=der_fun_Nf_h(n,  Nvar, x[e+count], Npar,P,  fun,  h);
-                        if(verbosity>2){
-                            printf("n=%d     e=%d   fun=%g  derivative=\t",n,e,f);
-                            for(j=0;j<Npar;j++){printf("%g \t",fk[j]);}printf("\n");
+            if (!computed_alpha) {
+                count = 0;
+                for (n = 0;n < N;n++) {
+                    for (e = 0;e < ensemble[n];e++) {//printf("e=%d   n=%d   en[%d]=%d\n",e,n,n,ensemble[n]);
+                        f = fun(n, Nvar, x[e + count], Npar, P);
+                        fk = der_fun_Nf_h(n, Nvar, x[e + count], Npar, P, fun, h);
+                        if (verbosity > 2) {
+                            printf("n=%d     e=%d   fun=%g  derivative=\t", n, e, f);
+                            for (j = 0;j < Npar;j++) { printf("%g \t", fk[j]); }printf("\n");
                         }
-                        for (j=0;j<Npar;j++){
-                            beta[j]+=(y[e+count][0]-f)*fk[j]/(y[e+count][1]*y[e+count][1]);
-                    //      printf("|analitic-numeric|=  |%g -%g|   = %g\n",fk[j],fkk[j],fabs(fk[j]-fkk[j]));
-                            for (k=j;k<Npar;k++){
-                                alpha[j][k]+=fk[j]*fk[k]/(y[e+count][1]*y[e+count][1]);
+                        for (j = 0;j < Npar;j++) {
+                            beta[j] += (y[e + count][0] - f) * fk[j] / (y[e + count][1] * y[e + count][1]);
+                            //      printf("|analitic-numeric|=  |%g -%g|   = %g\n",fk[j],fkk[j],fabs(fk[j]-fkk[j]));
+                            for (k = j;k < Npar;k++) {
+                                alpha[j][k] += fk[j] * fk[k] / (y[e + count][1] * y[e + count][1]);
                             }
-                            
-                            
+
+
                         }
                         free(fk);
                     }
-                    count+=ensemble[n];
+                    count += ensemble[n];
                 }
-                computed_alpha=true;
+                computed_alpha = true;
             }
-                
-            for (j=0;j<Npar;j++){
-                alpha_l[j][j]=(lambda+1.)*alpha[j][j];
-                for (k=0;k<j;k++)
-                    alpha_l[j][k]=alpha[k][j];
-                for (k=j+1;k<Npar;k++)
-                    alpha_l[j][k]=alpha[j][k];
-                    
-            
+
+            for (j = 0;j < Npar;j++) {
+                alpha_l[j][j] = (lambda + 1.) * alpha[j][j];
+                for (k = 0;k < j;k++)
+                    alpha_l[j][k] = alpha[k][j];
+                for (k = j + 1;k < Npar;k++)
+                    alpha_l[j][k] = alpha[j][k];
+
+
             }
-/*
-            if (Npar==1){
-                C=(double**) malloc(sizeof(double*)*1);
-                C[0]=(double*) malloc(sizeof(double)*1);
-                C[0][0]=1./alpha[0][0];
-            }
-            else
-                C=matrix_inverse(Npar, alpha  );
-  
-            for (j=0;j<Npar;j++){
-                P_tmp[j]=P[j];
-                for (k=0;k<Npar;k++){
-                     P_tmp[j]+=C[j][k]*beta[k];
-                 }
-            }    
-*/
+            /*
+                        if (Npar==1){
+                            C=(double**) malloc(sizeof(double*)*1);
+                            C[0]=(double*) malloc(sizeof(double)*1);
+                            C[0][0]=1./alpha[0][0];
+                        }
+                        else
+                            C=matrix_inverse(Npar, alpha  );
+
+                        for (j=0;j<Npar;j++){
+                            P_tmp[j]=P[j];
+                            for (k=0;k<Npar;k++){
+                                 P_tmp[j]+=C[j][k]*beta[k];
+                             }
+                        }
+            */
             free(P_tmp);
-            P_tmp=cholesky_solver_if_possible(Npar , alpha_l , beta);
+            P_tmp = cholesky_solver_if_possible(Npar, alpha_l, beta);
             //P_tmp=LU_decomposition_solver(Npar , alpha , beta);
-            if (Prange.size()==Npar){
-                bool too_far=false;
-                for (j=0;j<Npar;j++){
-                    if (fabs((P_tmp[j]-P[j])/P[j])>Prange[j]){
-                        
-                        too_far=true;
+            if (Prange.size() == Npar) {
+                bool too_far = false;
+                for (j = 0;j < Npar;j++) {
+                    if (fabs((P_tmp[j] - P[j]) / P[j]) > Prange[j]) {
+
+                        too_far = true;
                     }
-                    
+
                 }
-                if (too_far){
-                    lambda*=10;
+                if (too_far) {
+                    lambda *= 10;
                     // for (j=0;j<Npar;j++){
                     //     beta[j]=0;
                     //     for (k=0;k<Npar;k++){
                     //         alpha[j][k]=0;
                     //     }
                     // }
-                    if(verbosity>0){
-                        printf(" non_linear_fit_Nf a parameter proposal was rejected because out of range Niter=%d\n",Niter);
-                        printf("lambda=%f\n",lambda);
-                        printf("chi2=%f chi2_tmp=%f  res=%f \n\n",chi2,chi2_tmp,res);
-                        for (j=0;j<Npar;j++)
-                            printf("P[%d]=%g   Ptmp[%d]=%g\n",j,P[j],j,P_tmp[j]);
+                    if (verbosity > 0) {
+                        printf(" non_linear_fit_Nf a parameter proposal was rejected because out of range Niter=%d\n", Niter);
+                        printf("lambda=%f\n", lambda);
+                        printf("chi2=%f chi2_tmp=%f  res=%f \n\n", chi2, chi2_tmp, res);
+                        for (j = 0;j < Npar;j++)
+                            printf("P[%d]=%g   Ptmp[%d]=%g\n", j, P[j], j, P_tmp[j]);
                     }
                     continue;
                 }
             }
-            
-            for (j=0;j<Npar;j++){
-                P_tmp[j]+=P[j];
+
+            for (j = 0;j < Npar;j++) {
+                P_tmp[j] += P[j];
             }
-            
-            chi2_tmp=chi2_fun(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun);
-            if(verbosity>1){
-                printf("%s:  new_chi2=%g   old_chi=%g  ",__func__,chi2_tmp, chi2 );
-                for (int i=0;i<Npar;i++){
-                    printf("  P[%d]=%g",i,P_tmp[i]);
+
+            chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun);
+            if (verbosity > 1) {
+                printf("%s:  new_chi2=%g   old_chi=%g  ", __func__, chi2_tmp, chi2);
+                for (int i = 0;i < Npar;i++) {
+                    printf("  P[%d]=%g", i, P_tmp[i]);
                 }
                 printf("\n");
             }
 
-	        if (chi2_tmp!=chi2_tmp) chi2_tmp=chi2+1;
-            
+            if (chi2_tmp != chi2_tmp) chi2_tmp = chi2 + 1;
 
-            if (chi2_tmp>=chi2)
-                lambda*=10;
-            
-            
-           // free(C);
-            //error(lambda>1e+15,1,"non_linear_fit_Nf","lambda of the Levenberg-Marquardt chi2 minimization: exeeds 1e+15 lambda=%g",lambda);
-            if(lambda>1e+15){
+
+            if (chi2_tmp >= chi2)
+                lambda *= 10;
+
+
+            // free(C);
+             //error(lambda>1e+15,1,"non_linear_fit_Nf","lambda of the Levenberg-Marquardt chi2 minimization: exeeds 1e+15 lambda=%g",lambda);
+            if (lambda > 1e+15) {
                 //printf("lambda of the Levenberg-Marquardt chi2 minimization: exeeds 1e+15 lambda=%g\n RESET lambda=0.001\n",lambda); 
                 /*free(P_tmp);
                 free(alpha);free(beta);
                 return P;*/
-                lambda=0.001;
+                lambda = 0.001;
                 nerror++;
-                if (nerror>20){
-                    if(verbosity>0) 
+                if (nerror > 20) {
+                    if (verbosity > 0)
                         printf("\n !!!!!!!!!!!!!!!! error:  Impossible to minimise the chi2 with Levenberg-Marquardt for this starting point   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                    for (j=0;j<Npar;j++){
-                        if(verbosity>0)  printf("  guess[%d]=%g\t",j,guess[j]);
+                    for (j = 0;j < Npar;j++) {
+                        if (verbosity > 0)  printf("  guess[%d]=%g\t", j, guess[j]);
                         free(alpha[j]);
                     }
-                    if(verbosity>0)  printf("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
+                    if (verbosity > 0)  printf("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
                     free(P_tmp);
                     free(alpha);free(beta);
                     return P;
                 }
-                    
+
             }
 
-            
-        } 
-        res=chi2-chi2_tmp;
-        lambda/=10;
-        for (j=0;j<Npar;j++){
-            P[j]=P_tmp[j];
-//             printf("P[%d]= %f    \t",j,P[j]);
+
         }
-        if(verbosity>=2)  printf("\nres=%g  acc=%g  chi2=%g  \n",res,acc,chi2);
-        error(res<0 ,2,"non_linear_fit","The Levenberg-Marquardt accepted a configuration when the chi2 increased");
-        chi2=chi2_tmp;
-        for (j=0;j<Npar;j++){
-            beta[j]=0;
-            for (k=0;k<Npar;k++){
-                    alpha[j][k]=0;
+        res = chi2 - chi2_tmp;
+        lambda /= 10;
+        for (j = 0;j < Npar;j++) {
+            P[j] = P_tmp[j];
+            //             printf("P[%d]= %f    \t",j,P[j]);
+        }
+        if (verbosity >= 2)  printf("\nres=%g  acc=%g  chi2=%g  \n", res, acc, chi2);
+        error(res < 0, 2, "non_linear_fit", "The Levenberg-Marquardt accepted a configuration when the chi2 increased");
+        chi2 = chi2_tmp;
+        for (j = 0;j < Npar;j++) {
+            beta[j] = 0;
+            for (k = 0;k < Npar;k++) {
+                alpha[j][k] = 0;
             }
         }
-        computed_alpha=false;
+        computed_alpha = false;
 
     }
 
-    for (j=0;j<Npar;j++){
+    for (j = 0;j < Npar;j++) {
         free(alpha[j]);
         free(alpha_l[j]);
     }
@@ -922,160 +922,160 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
 
 // x[ensemble][variable number] ,   y[ensemble][0=mean,1=error], fun(index_function,Nvariables,variables[], Nparameters,parameters[])
 //the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 
-double  *guess_for_non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess ,fit_type fit_info){
-  
-    int i,j,jmax,k,e,n;
-    double en_tot=0;
-    double chi2,chi2_tmp,chi2_tmp1;
-    double *P,*P_tmp;
-    double r,rm,gmax=2;
-    rm=(double) RAND_MAX;
-    
-    for (n=0;n<N;n++)
-       en_tot+=ensemble[n];
+double* guess_for_non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar, double fun(int, int, double*, int, double*), double* guess, fit_type fit_info) {
+
+    int i, j, jmax, k, e, n;
+    double en_tot = 0;
+    double chi2, chi2_tmp, chi2_tmp1;
+    double* P, * P_tmp;
+    double r, rm, gmax = 2;
+    rm = (double)RAND_MAX;
+
+    for (n = 0;n < N;n++)
+        en_tot += ensemble[n];
     //for(i=0;i<Npar;i++)
       //      guess[i]=((r/rm)-0.5)*2;
-    P=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess , fit_info);
-    chi2=compute_chi_non_linear_Nf(N, ensemble,x, y, P ,Nvar,  Npar,  fun)/(en_tot-Npar);
-    jmax=3+((int) (chi2*2));
-    
+    P = non_linear_fit_Nf(N, ensemble, x, y, Nvar, Npar, fun, guess, fit_info);
+    chi2 = compute_chi_non_linear_Nf(N, ensemble, x, y, P, Nvar, Npar, fun) / (en_tot - Npar);
+    jmax = 3 + ((int)(chi2 * 2));
+
     std::mt19937 mt_rand(123);
-    
-    if (jmax>15  || chi2!=chi2 || chi2<0 ) jmax=35;
-    if(jmax <=3) jmax=15;
 
-    chi2_tmp1=chi2;
+    if (jmax > 15 || chi2 != chi2 || chi2 < 0) jmax = 35;
+    if (jmax <= 3) jmax = 15;
 
-    for (j=0;j<jmax;j++){
-        for(int ir=0;ir<fit_info.repeat_start;ir++){
-            for(i=0;i<Npar;i++){
-                r=mt_rand()/((double)mt_rand.max() );
-                guess[i]=((r/rm)-0.5)*(j+1);
-            //  printf("%f\t",guess[i]);
+    chi2_tmp1 = chi2;
+
+    for (j = 0;j < jmax;j++) {
+        for (int ir = 0;ir < fit_info.repeat_start;ir++) {
+            for (i = 0;i < Npar;i++) {
+                r = mt_rand() / ((double)mt_rand.max());
+                guess[i] = ((r / rm) - 0.5) * (j + 1);
+                //  printf("%f\t",guess[i]);
             }
-        // printf("\n");
-            P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess , fit_info);
-            chi2_tmp=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun)/(en_tot-Npar);
+            // printf("\n");
+            P_tmp = non_linear_fit_Nf(N, ensemble, x, y, Nvar, Npar, fun, guess, fit_info);
+            chi2_tmp = compute_chi_non_linear_Nf(N, ensemble, x, y, P_tmp, Nvar, Npar, fun) / (en_tot - Npar);
             //printf("chi2=%.10f \tchi2_tmp=%.10f   dof=%f\n",chi2,chi2_tmp,en_tot-Npar);
             /*for(i=0;i<Npar;i++)
                 printf("P[%d]=%g\t",i,P[i]);
             printf("\n");*/
-            if (fabs(chi2-chi2_tmp)<1e-3 ){
-                gmax=gmax*10;//printf("the chi2 didn't change\n\n");
+            if (fabs(chi2 - chi2_tmp) < 1e-3) {
+                gmax = gmax * 10;//printf("the chi2 didn't change\n\n");
                 free(P_tmp);
             }
-            else if (chi2_tmp-chi2<-1e-3 ){
-                free(P); P=P_tmp;
-                chi2=chi2_tmp;
+            else if (chi2_tmp - chi2 < -1e-3) {
+                free(P); P = P_tmp;
+                chi2 = chi2_tmp;
                 //printf("chi2 smaller founded\n\n");
             }
-            else{
+            else {
                 free(P_tmp);//printf("chi2 LARGER\n\n");
-                chi2_tmp1=chi2_tmp;
+                chi2_tmp1 = chi2_tmp;
             }
         }
     }
     //do an other loop if chi2 still large
-    if (chi2> 10 || chi2!=chi2 ){
-        for (j=0;j<jmax;j++){
-            for(int ir=0;ir<fit_info.repeat_start;ir++){
-                
-                for(i=0;i<Npar;i++){
-                    r=mt_rand()/((double)mt_rand.max() );
-                    guess[i]=((r/rm)-0.5)*exp(j-jmax/2);
-                //  printf("%f\t",guess[i]);
+    if (chi2 > 10 || chi2 != chi2) {
+        for (j = 0;j < jmax;j++) {
+            for (int ir = 0;ir < fit_info.repeat_start;ir++) {
+
+                for (i = 0;i < Npar;i++) {
+                    r = mt_rand() / ((double)mt_rand.max());
+                    guess[i] = ((r / rm) - 0.5) * exp(j - jmax / 2);
+                    //  printf("%f\t",guess[i]);
                 }
-            // printf("\n");
-                P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess , fit_info);
-                chi2_tmp=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun)/(en_tot-Npar);
+                // printf("\n");
+                P_tmp = non_linear_fit_Nf(N, ensemble, x, y, Nvar, Npar, fun, guess, fit_info);
+                chi2_tmp = compute_chi_non_linear_Nf(N, ensemble, x, y, P_tmp, Nvar, Npar, fun) / (en_tot - Npar);
                 //printf("chi2=%.10f \tchi2_tmp=%.10f\n",chi2,chi2_tmp);
                 /*for(i=0;i<Npar;i++)
                     printf("P[%d]=%g\t",i,P[i]);
                 printf("\n");*/
-                if (fabs(chi2-chi2_tmp)<1e-3 ){
-                    gmax=gmax*10;//printf("the chi2 didn't change\n\n");
+                if (fabs(chi2 - chi2_tmp) < 1e-3) {
+                    gmax = gmax * 10;//printf("the chi2 didn't change\n\n");
                     free(P_tmp);
                 }
-                else if (chi2_tmp-chi2<-1e-3 ){
-                    free(P); P=P_tmp;
-                    chi2=chi2_tmp;
+                else if (chi2_tmp - chi2 < -1e-3) {
+                    free(P); P = P_tmp;
+                    chi2 = chi2_tmp;
                     //printf("chi2 smaller founded\n\n");
                 }
-                else{
+                else {
                     free(P_tmp);//printf("chi2 LARGER\n\n");
-                    chi2_tmp1=chi2_tmp;
+                    chi2_tmp1 = chi2_tmp;
                 }
             }
         }
     }
     //do an other loop if chi2 still large
-    if (chi2> 10 || chi2!=chi2 ){
-        for (j=0;j<jmax;j++){
-            for(int ir=0;ir<fit_info.repeat_start;ir++){
-                for(i=0;i<Npar;i++){
-                    r=mt_rand()/((double)mt_rand.max() );
-                    guess[i]=((r/rm)-0.5)/exp(j-jmax/2);
+    if (chi2 > 10 || chi2 != chi2) {
+        for (j = 0;j < jmax;j++) {
+            for (int ir = 0;ir < fit_info.repeat_start;ir++) {
+                for (i = 0;i < Npar;i++) {
+                    r = mt_rand() / ((double)mt_rand.max());
+                    guess[i] = ((r / rm) - 0.5) / exp(j - jmax / 2);
                     //  printf("%f\t",guess[i]);
                 }
                 // printf("\n");
-                P_tmp=non_linear_fit_Nf(N, ensemble ,x, y , Nvar,  Npar,   fun ,guess , fit_info);
-                chi2_tmp=compute_chi_non_linear_Nf(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun)/(en_tot-Npar);
-            // printf("chi2=%.10f \tchi2_tmp=%.10f\n",chi2,chi2_tmp);
-                /*for(i=0;i<Npar;i++)
-                *       printf("P[%d]=%g\t",i,P[i]);
-                *   printf("\n");*/
-                if (fabs(chi2-chi2_tmp)<1e-3 ){
-                    gmax=gmax*10;//printf("the chi2 didn't change\n\n");
+                P_tmp = non_linear_fit_Nf(N, ensemble, x, y, Nvar, Npar, fun, guess, fit_info);
+                chi2_tmp = compute_chi_non_linear_Nf(N, ensemble, x, y, P_tmp, Nvar, Npar, fun) / (en_tot - Npar);
+                // printf("chi2=%.10f \tchi2_tmp=%.10f\n",chi2,chi2_tmp);
+                    /*for(i=0;i<Npar;i++)
+                    *       printf("P[%d]=%g\t",i,P[i]);
+                    *   printf("\n");*/
+                if (fabs(chi2 - chi2_tmp) < 1e-3) {
+                    gmax = gmax * 10;//printf("the chi2 didn't change\n\n");
                     free(P_tmp);
                 }
-                else if (chi2_tmp-chi2<-1e-3 ){
-                    free(P); P=P_tmp;
-                    chi2=chi2_tmp;
+                else if (chi2_tmp - chi2 < -1e-3) {
+                    free(P); P = P_tmp;
+                    chi2 = chi2_tmp;
                     //printf("chi2 smaller founded\n\n");
                 }
-                else{
+                else {
                     free(P_tmp);//printf("chi2 LARGER\n\n");
-                    chi2_tmp1=chi2_tmp;
+                    chi2_tmp1 = chi2_tmp;
                 }
             }
         }
     }
-    if (fit_info.verbosity>=0) printf("final chi2=%f\n",chi2);
+    if (fit_info.verbosity >= 0) printf("final chi2=%f\n", chi2);
     free(guess);
     return P;
 }
 
 
 
-double compute_chi_non_linear_Nf_cov1(int N,int *ensemble,double **x, double **y, double *P ,int Nvar, int Npar,  double fun(int,int,double*,int,double*), double **cov1) {
-    double chi2=0,f,f1;
-    int e,n,count,e1,n1,count1;
-    
-    
-     
-    int en_tot=0;
-    for (n=0;n<N;n++)
-        for (e=0;e<ensemble[n];e++)
+double compute_chi_non_linear_Nf_cov1(int N, int* ensemble, double** x, double** y, double* P, int Nvar, int Npar, double fun(int, int, double*, int, double*), double** cov1) {
+    double chi2 = 0, f, f1;
+    int e, n, count, e1, n1, count1;
+
+
+
+    int en_tot = 0;
+    for (n = 0;n < N;n++)
+        for (e = 0;e < ensemble[n];e++)
             en_tot++;
-    
-    double *tmp=(double*) malloc(sizeof(double)*en_tot);     
-    count=0;
-    for (n=0;n<N;n++){
-        for (e=0;e<ensemble[n];e++){
-            tmp[count]=   fun(n,Nvar,x[count],Npar,P)-y[count][0];// f1(n,e,N,N1,Nvar,x1[count],Npar,Npar1,P,fun)-y1[count][0];
+
+    double* tmp = (double*)malloc(sizeof(double) * en_tot);
+    count = 0;
+    for (n = 0;n < N;n++) {
+        for (e = 0;e < ensemble[n];e++) {
+            tmp[count] = fun(n, Nvar, x[count], Npar, P) - y[count][0];// f1(n,e,N,N1,Nvar,x1[count],Npar,Npar1,P,fun)-y1[count][0];
             count++;
         }
     }
-    
-    for (int i=0;i<en_tot;i++)
-        chi2+=tmp[i]*cov1[i][i]*tmp[i];
-            
-    
-    for (int i=0;i<en_tot;i++)
-        for (int j=i+1;j<en_tot;j++)
-            chi2+=2.*tmp[i]*cov1[i][j]*tmp[j];
-        
-    free(tmp);    
+
+    for (int i = 0;i < en_tot;i++)
+        chi2 += tmp[i] * cov1[i][i] * tmp[i];
+
+
+    for (int i = 0;i < en_tot;i++)
+        for (int j = i + 1;j < en_tot;j++)
+            chi2 += 2. * tmp[i] * cov1[i][j] * tmp[j];
+
+    free(tmp);
     /*double chi2o=0;
     count=0;
     for (n=0;n<N;n++){
@@ -1090,225 +1090,226 @@ double compute_chi_non_linear_Nf_cov1(int N,int *ensemble,double **x, double **y
                 }
             }
             count++;
-        } 
+        }
     }
     error(fabs(chi2-chi2o)>e1-6,1,"chi2 diverso","");
     */
     return chi2;
 }
 
-double compute_chi_non_linear_Nf_cov(int N,int *ensemble,double **x, double **y, double *P ,int Nvar, int Npar,  double fun(int,int,double*,int,double*), double **cov) {
-    int n,e;
-    int en_tot=0;
-    for (n=0;n<N;n++)
-        for (e=0;e<ensemble[n];e++)
-            en_tot+=1;
-        
-    double **cov1=symmetric_matrix_inverse(en_tot, cov  );
-    double chi2=compute_chi_non_linear_Nf_cov1( N, ensemble, x, y,  P , Nvar,  Npar,  fun, cov1) ;
-    free_2(en_tot,cov1);
+double compute_chi_non_linear_Nf_cov(int N, int* ensemble, double** x, double** y, double* P, int Nvar, int Npar, double fun(int, int, double*, int, double*), double** cov) {
+    int n, e;
+    int en_tot = 0;
+    for (n = 0;n < N;n++)
+        for (e = 0;e < ensemble[n];e++)
+            en_tot += 1;
+
+    double** cov1 = symmetric_matrix_inverse(en_tot, cov);
+    double chi2 = compute_chi_non_linear_Nf_cov1(N, ensemble, x, y, P, Nvar, Npar, fun, cov1);
+    free_2(en_tot, cov1);
     return chi2;
 }
 // x[ensemble][variable number] ,   y[ensemble][0=mean,1=error], fun(index_function,Nvariables,variables[], Nparameters,parameters[]), 
 //cov[en_tot][en_tot]  is the covariance matrix, with en_tot=sum_i^N ensemble[i],
 //the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 
-double  *non_linear_fit_Nf_covariance(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess, double **cov1, int devorder ){
-  
-    
-    double* (*der_fun_Nf_h)(int , int , double* ,int ,double*  , double (int,int,double*,int,double*), double );
-    if (devorder==4){
-        der_fun_Nf_h=der_O4_fun_Nf_h;
-    }
-    else if (devorder==2){
-        der_fun_Nf_h=der_O2_fun_Nf_h;
-    }else{
-        error(true,1,"non_linear_fit_Nf", "order of the derivative must be 4 (default) or 2");
-    }
-    double **alpha,*X,*beta,**a,**C,*sigma;
-    int i,j,k,e;
-    double f,*fk,f1,*fk1;
-    double chi2,chi2_tmp;
-    double *P,*P_tmp,lambda,res;
-    int n,count,n1,count1,e1,Niter=0;
-    double h=1.0e-5;
-    lambda=0.001;
-    res=1;
-    int en_tot=0;
-    for (n=0;n<N;n++)
-        for (e=0;e<ensemble[n];e++)
-            en_tot+=1;
-      /*  
-    int yn=is_it_positive( cov,  en_tot);
-    while(yn==1){
-        printf("covariance matrix not positive defined adding 0.0001*cov[0][0]*I \n");
-        for(i=0;i<en_tot;i++)
-             cov[i][i]+=cov[0][0]*1e-12;
-        yn=is_it_positive( cov,  en_tot);  
-        printf("now the matrix is positive defined.  %d\n",yn);
-    }  
-    double **cov1=symmetric_matrix_inverse(en_tot, cov  );
-    */
-   
- /*   printf("covariance\n");
-    for (j=0;j<en_tot;j++){
-        for (i=0;i<en_tot;i++){
-        printf("%g\t",cov[j][i]);
-        }
-        printf("\n");
-    }
-    printf("inverse\n");
-    for (j=0;j<en_tot;j++){
-        for (i=0;i<en_tot;i++){
-        printf("%g\t",cov1[j][i]);
-        }
-        printf("\n");
-    }*/
-        
- //   double *fkk;
-    P=(double*) malloc(Npar*sizeof(double));
-    P_tmp=(double*) malloc(Npar*sizeof(double));
-   
-   
-    for (j=0;j<Npar;j++){
-        P[j]=guess[j];
-        P_tmp[j]=P[j];
-    }
-   
-    
-    beta=(double*) calloc(Npar,sizeof(double));
-    alpha=(double**) malloc(sizeof(double*)*Npar);
-    for (j=0;j<Npar;j++){
-        alpha[j]=(double*) calloc(Npar,sizeof(double));
-    }   
+double* non_linear_fit_Nf_covariance(int N, int* ensemble, double** x, double** y, int Nvar, int Npar, double fun(int, int, double*, int, double*), double* guess, double** cov1, int devorder) {
 
-    chi2=compute_chi_non_linear_Nf_cov1(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun,cov1);
 
-    chi2_tmp=chi2+1;
-    double *f_value=(double*) malloc(sizeof(double)*en_tot);
-    double **df_value=(double**) malloc(sizeof(double*)*en_tot);
-   
-    while (res>0.001){
-        chi2_tmp=chi2+1;  
-        if(Niter>200){ printf("Niter=%d of the Levenberg-Marquardt chi2 minimization: exeeds max number\n",Niter); break;}
+    double* (*der_fun_Nf_h)(int, int, double*, int, double*, double(int, int, double*, int, double*), double);
+    if (devorder == 4) {
+        der_fun_Nf_h = der_O4_fun_Nf_h;
+    }
+    else if (devorder == 2) {
+        der_fun_Nf_h = der_O2_fun_Nf_h;
+    }
+    else {
+        error(true, 1, "non_linear_fit_Nf", "order of the derivative must be 4 (default) or 2");
+    }
+    double** alpha, * X, * beta, ** a, ** C, * sigma;
+    int i, j, k, e;
+    double f, * fk, f1, * fk1;
+    double chi2, chi2_tmp;
+    double* P, * P_tmp, lambda, res;
+    int n, count, n1, count1, e1, Niter = 0;
+    double h = 1.0e-5;
+    lambda = 0.001;
+    res = 1;
+    int en_tot = 0;
+    for (n = 0;n < N;n++)
+        for (e = 0;e < ensemble[n];e++)
+            en_tot += 1;
+    /*
+  int yn=is_it_positive( cov,  en_tot);
+  while(yn==1){
+      printf("covariance matrix not positive defined adding 0.0001*cov[0][0]*I \n");
+      for(i=0;i<en_tot;i++)
+           cov[i][i]+=cov[0][0]*1e-12;
+      yn=is_it_positive( cov,  en_tot);
+      printf("now the matrix is positive defined.  %d\n",yn);
+  }
+  double **cov1=symmetric_matrix_inverse(en_tot, cov  );
+  */
+
+  /*   printf("covariance\n");
+     for (j=0;j<en_tot;j++){
+         for (i=0;i<en_tot;i++){
+         printf("%g\t",cov[j][i]);
+         }
+         printf("\n");
+     }
+     printf("inverse\n");
+     for (j=0;j<en_tot;j++){
+         for (i=0;i<en_tot;i++){
+         printf("%g\t",cov1[j][i]);
+         }
+         printf("\n");
+     }*/
+
+     //   double *fkk;
+    P = (double*)malloc(Npar * sizeof(double));
+    P_tmp = (double*)malloc(Npar * sizeof(double));
+
+
+    for (j = 0;j < Npar;j++) {
+        P[j] = guess[j];
+        P_tmp[j] = P[j];
+    }
+
+
+    beta = (double*)calloc(Npar, sizeof(double));
+    alpha = (double**)malloc(sizeof(double*) * Npar);
+    for (j = 0;j < Npar;j++) {
+        alpha[j] = (double*)calloc(Npar, sizeof(double));
+    }
+
+    chi2 = compute_chi_non_linear_Nf_cov1(N, ensemble, x, y, P_tmp, Nvar, Npar, fun, cov1);
+
+    chi2_tmp = chi2 + 1;
+    double* f_value = (double*)malloc(sizeof(double) * en_tot);
+    double** df_value = (double**)malloc(sizeof(double*) * en_tot);
+
+    while (res > 0.001) {
+        chi2_tmp = chi2 + 1;
+        if (Niter > 200) { printf("Niter=%d of the Levenberg-Marquardt chi2 minimization: exeeds max number\n", Niter); break; }
         Niter++;
-    while (chi2_tmp>chi2){
-        
-          count=0;
-          for (n=0;n<N;n++){
-                for (e=0;e<ensemble[n];e++){
-                    f_value[count]=fun(n,Nvar,x[e],Npar,P);
-                    df_value[count]=der_fun_Nf_h(n,  Nvar, x[e], Npar,P,  fun,  h);
+        while (chi2_tmp > chi2) {
+
+            count = 0;
+            for (n = 0;n < N;n++) {
+                for (e = 0;e < ensemble[n];e++) {
+                    f_value[count] = fun(n, Nvar, x[e], Npar, P);
+                    df_value[count] = der_fun_Nf_h(n, Nvar, x[e], Npar, P, fun, h);
                     count++;
                 }
-          }
-          for (j=0;j<Npar;j++){
-                /*for(i=0;i<en_tot;i++)   
+            }
+            for (j = 0;j < Npar;j++) {
+                /*for(i=0;i<en_tot;i++)
                     beta[j]+=(y[i][0]-f_value[i])*cov1[i][i]*df_value[i][j];*/
-                for(i=0;i<en_tot;i++)   
-                    for(int ii=0;ii<en_tot;ii++) 
-                        beta[j]+=(y[i][0]-f_value[i])*cov1[i][ii]*df_value[ii][j];
-                
-                
-                for (k=j;k<Npar;k++){
+                for (i = 0;i < en_tot;i++)
+                    for (int ii = 0;ii < en_tot;ii++)
+                        beta[j] += (y[i][0] - f_value[i]) * cov1[i][ii] * df_value[ii][j];
+
+
+                for (k = j;k < Npar;k++) {
                     //for(i=0;i<en_tot;i++)
                     //    alpha[j][k]+=df_value[i][j]*cov1[i][i]*df_value[i][k];
-                    for(i=0;i<en_tot;i++)   
-                        for(int ii=0;ii<en_tot;ii++) 
-                            alpha[j][k]+=df_value[i][j]*cov1[i][ii]*df_value[ii][k];            
+                    for (i = 0;i < en_tot;i++)
+                        for (int ii = 0;ii < en_tot;ii++)
+                            alpha[j][k] += df_value[i][j] * cov1[i][ii] * df_value[ii][k];
                 }
-          }
-          for(i=0;i<en_tot;i++)
-              free(df_value[i]);
-            
-            double *beta1=(double*) calloc(Npar,sizeof(double));
-            double **alpha1=(double**) malloc(Npar*sizeof(double));
-            for (j=0;j<Npar;j++)
-                alpha1[j]=(double*) calloc(Npar,sizeof(double));
-                 
-            count=0;
-            for (n=0;n<N;n++){
-                for (e=0;e<ensemble[n];e++){
-                    
-                    f=fun(n,Nvar,x[e+count],Npar,P);
-                    fk=der_fun_Nf_h(n,  Nvar, x[e+count], Npar,P,  fun,  h);
-                    count1=0;
-                    for (n1=0;n1<N;n1++){
-                        for (e1=0;e1<ensemble[n1];e1++){
-                            f1=fun(n1,Nvar,x[e1+count1],Npar,P);
-                            fk1=der_fun_Nf_h(n1,  Nvar, x[e1+count1], Npar,P,  fun,  h);
-                            
-                            for (j=0;j<Npar;j++){
-                                beta1[j]+=(y[e1+count1][0]-f1)*cov1[e1+count1][e+count]*fk[j];
-                                for (k=j;k<Npar;k++){
-                                    alpha1[j][k]+=fk1[j]*cov1[e1+count1][e+count]*fk[k];
+            }
+            for (i = 0;i < en_tot;i++)
+                free(df_value[i]);
+
+            double* beta1 = (double*)calloc(Npar, sizeof(double));
+            double** alpha1 = (double**)malloc(Npar * sizeof(double));
+            for (j = 0;j < Npar;j++)
+                alpha1[j] = (double*)calloc(Npar, sizeof(double));
+
+            count = 0;
+            for (n = 0;n < N;n++) {
+                for (e = 0;e < ensemble[n];e++) {
+
+                    f = fun(n, Nvar, x[e + count], Npar, P);
+                    fk = der_fun_Nf_h(n, Nvar, x[e + count], Npar, P, fun, h);
+                    count1 = 0;
+                    for (n1 = 0;n1 < N;n1++) {
+                        for (e1 = 0;e1 < ensemble[n1];e1++) {
+                            f1 = fun(n1, Nvar, x[e1 + count1], Npar, P);
+                            fk1 = der_fun_Nf_h(n1, Nvar, x[e1 + count1], Npar, P, fun, h);
+
+                            for (j = 0;j < Npar;j++) {
+                                beta1[j] += (y[e1 + count1][0] - f1) * cov1[e1 + count1][e + count] * fk[j];
+                                for (k = j;k < Npar;k++) {
+                                    alpha1[j][k] += fk1[j] * cov1[e1 + count1][e + count] * fk[k];
                                 }
-                                
-                                
+
+
                             }
                             free(fk1);
                         }
-                        count1+=ensemble[n];
+                        count1 += ensemble[n];
                     }
                     free(fk);
                 }
-                count+=ensemble[n];
+                count += ensemble[n];
             }
-            
-            for (j=0;j<Npar;j++)
-                error( fabs(beta[j]-beta1[j])>1e-6 ,1,"fit", "beta differs:   %d    %g    %g",j,beta[j],beta1[j]);
-            for (j=0;j<Npar;j++)
-                for (k=j;k<Npar;k++)
-                error( fabs(alpha[j][k]-alpha1[j][k])>1e-6 ,1,"fit", "alpha differs:   %d  %d   %g    %g",j,k,alpha[j][k],alpha1[j][k]);
-            
+
+            for (j = 0;j < Npar;j++)
+                error(fabs(beta[j] - beta1[j]) > 1e-6, 1, "fit", "beta differs:   %d    %g    %g", j, beta[j], beta1[j]);
+            for (j = 0;j < Npar;j++)
+                for (k = j;k < Npar;k++)
+                    error(fabs(alpha[j][k] - alpha1[j][k]) > 1e-6, 1, "fit", "alpha differs:   %d  %d   %g    %g", j, k, alpha[j][k], alpha1[j][k]);
+
             free(beta1);
-                
-                
-            for (j=0;j<Npar;j++){
-                alpha[j][j]*=(lambda+1.);
-                for (k=0;k<j;k++)
-                    alpha[j][k]=alpha[k][j];
-            
+
+
+            for (j = 0;j < Npar;j++) {
+                alpha[j][j] *= (lambda + 1.);
+                for (k = 0;k < j;k++)
+                    alpha[j][k] = alpha[k][j];
+
             }
             free(P_tmp);
-            P_tmp=cholesky_solver_if_possible(Npar , alpha , beta);
+            P_tmp = cholesky_solver_if_possible(Npar, alpha, beta);
 
-            for (j=0;j<Npar;j++)
-                P_tmp[j]+=P[j];
+            for (j = 0;j < Npar;j++)
+                P_tmp[j] += P[j];
 
-            chi2_tmp=compute_chi_non_linear_Nf_cov1(N, ensemble,x, y, P_tmp ,Nvar,  Npar,  fun,cov1);
-	        if (chi2_tmp!=chi2_tmp) chi2_tmp=chi2+1;
+            chi2_tmp = compute_chi_non_linear_Nf_cov1(N, ensemble, x, y, P_tmp, Nvar, Npar, fun, cov1);
+            if (chi2_tmp != chi2_tmp) chi2_tmp = chi2 + 1;
 
-		    
 
-            if (chi2_tmp>chi2)
-                lambda*=10;
-            
-            for (j=0;j<Npar;j++){
 
-                beta[j]=0;
-                for (k=0;k<Npar;k++){
-                       alpha[j][k]=0;
+            if (chi2_tmp > chi2)
+                lambda *= 10;
+
+            for (j = 0;j < Npar;j++) {
+
+                beta[j] = 0;
+                for (k = 0;k < Npar;k++) {
+                    alpha[j][k] = 0;
                 }
             }
-            if(lambda>1e+15){
-                printf("lambda of the Levenberg-Marquardt chi2 minimization: exeeds 1e+15 lambda=%g\n RESET lambda=0.001\n",lambda); 
-                lambda=0.001;
+            if (lambda > 1e+15) {
+                printf("lambda of the Levenberg-Marquardt chi2 minimization: exeeds 1e+15 lambda=%g\n RESET lambda=0.001\n", lambda);
+                lambda = 0.001;
             }
 
-            
-        }
-        res=chi2-chi2_tmp;
 
-        chi2=chi2_tmp;
-        lambda/=10;
-        for (j=0;j<Npar;j++){
-            P[j]=P_tmp[j];
+        }
+        res = chi2 - chi2_tmp;
+
+        chi2 = chi2_tmp;
+        lambda /= 10;
+        for (j = 0;j < Npar;j++) {
+            P[j] = P_tmp[j];
 
         }
     }
 
     //free_2(en_tot,cov1);
-    for (j=0;j<Npar;j++){
+    for (j = 0;j < Npar;j++) {
         free(alpha[j]);
     }
     free(f_value);free(df_value);
@@ -1320,80 +1321,81 @@ double  *non_linear_fit_Nf_covariance(int N, int *ensemble ,double **x, double *
 
 
 
-double rtsafe(void (*funcd)(double,int,double*, double *, double *),int Npar,double *P , double x1, double x2,
-double xacc)
-//Using a combination of Newton-Raphson and bisection, find the root of a function bracketed
-//between x1 and x2. The root, returned as the function value rtsafe, will be refined until
-//its accuracy is known within ±xacc. funcd is a user-supplied routine that returns both the
-//function value and the first derivative of the function.
+double rtsafe(void (*funcd)(double, int, double*, double*, double*), int Npar, double* P, double x1, double x2,
+    double xacc)
+    //Using a combination of Newton-Raphson and bisection, find the root of a function bracketed
+    //between x1 and x2. The root, returned as the function value rtsafe, will be refined until
+    //its accuracy is known within ±xacc. funcd is a user-supplied routine that returns both the
+    //function value and the first derivative of the function.
 {
-int j;
-double df,dx,dxold,f,fh,fl;
-double temp,xh,xl,rts;
+    int j;
+    double df, dx, dxold, f, fh, fl;
+    double temp, xh, xl, rts;
 
-(*funcd)(x1,Npar,P,&fl,&df);
-(*funcd)(x2,Npar,P,&fh,&df);
-error(((fl > 0.0 && fh > 0.0) || (fl < 0.0 && fh < 0.0)),1,"rtsafe","Root must be bracketed in rtsafe");
-if (fl == 0.0) return x1;
-if (fh == 0.0) return x2;
-if (fl < 0.0) {// Orient the search so that f (xl) < 0.
-xl=x1;
-xh=x2;
-} else {
-xh=x1;
-xl=x2;
-}
-rts=0.5*(x1+x2);// Initialize the guess for root,
-dxold=fabs(x2-x1);  //the “stepsize before last,”
-dx=dxold;// and the last step.
-
-(*funcd)(rts,Npar,P,&f,&df); 
-for (j=1;j<=MAXIT;j++) { // Loop over allowed iterations.
-    if ((((rts-xh)*df-f)*((rts-xl)*df-f) > 0.0)//Bisect if Newton out of range,
-        || (fabs(2.0*f) > fabs(dxold*df))) {//or not decreasing fast enough.
-        dxold=dx;
-        dx=0.5*(xh-xl);
-        rts=xl+dx;
-        if (xl == rts) return rts;// Change in root is negligible.
-    } 
-    else {//Newton step acceptable. Take it.
-        dxold=dx;
-        dx=f/df;
-        temp=rts;
-        rts -= dx;
-        if (temp == rts) return rts;
+    (*funcd)(x1, Npar, P, &fl, &df);
+    (*funcd)(x2, Npar, P, &fh, &df);
+    error(((fl > 0.0 && fh > 0.0) || (fl < 0.0 && fh < 0.0)), 1, "rtsafe", "Root must be bracketed in rtsafe");
+    if (fl == 0.0) return x1;
+    if (fh == 0.0) return x2;
+    if (fl < 0.0) {// Orient the search so that f (xl) < 0.
+        xl = x1;
+        xh = x2;
     }
-    if (fabs(dx) < xacc) return rts; //Convergence criterion.
+    else {
+        xh = x1;
+        xl = x2;
+    }
+    rts = 0.5 * (x1 + x2);// Initialize the guess for root,
+    dxold = fabs(x2 - x1);  //the “stepsize before last,”
+    dx = dxold;// and the last step.
 
-    (*funcd)(rts,Npar,P,&f,&df);
-    if (f < 0.0)
-        xl=rts;
-    else
-        xh=rts;
-}
-error(1>0,1,"rtsafe","Maximum number of iterations exceeded in rtsafe");
-return 0.0;
+    (*funcd)(rts, Npar, P, &f, &df);
+    for (j = 1;j <= MAXIT;j++) { // Loop over allowed iterations.
+        if ((((rts - xh) * df - f) * ((rts - xl) * df - f) > 0.0)//Bisect if Newton out of range,
+            || (fabs(2.0 * f) > fabs(dxold * df))) {//or not decreasing fast enough.
+            dxold = dx;
+            dx = 0.5 * (xh - xl);
+            rts = xl + dx;
+            if (xl == rts) return rts;// Change in root is negligible.
+        }
+        else {//Newton step acceptable. Take it.
+            dxold = dx;
+            dx = f / df;
+            temp = rts;
+            rts -= dx;
+            if (temp == rts) return rts;
+        }
+        if (fabs(dx) < xacc) return rts; //Convergence criterion.
+
+        (*funcd)(rts, Npar, P, &f, &df);
+        if (f < 0.0)
+            xl = rts;
+        else
+            xh = rts;
+    }
+    error(1 > 0, 1, "rtsafe", "Maximum number of iterations exceeded in rtsafe");
+    return 0.0;
 }
 
-double rtbis(double (*func)(double , double,int,double*),double input,int Npar, double *P, double x1, double x2, double xacc)
+double rtbis(double (*func)(double, double, int, double*), double input, int Npar, double* P, double x1, double x2, double xacc)
 //Using bisection, find the root of a function func known to lie between x1 and x2. The root,
 //returned as rtbis, will be refined until its accuracy is ±xacc.
 {
 
     int j;
-    double dx,f,fmid,xmid,rtb;
+    double dx, f, fmid, xmid, rtb;
 
-    f=(*func)(input,x1,Npar,P);
-    fmid=(*func)(input,x2,Npar,P);
+    f = (*func)(input, x1, Npar, P);
+    fmid = (*func)(input, x2, Npar, P);
 
-    error(f*fmid >= 0.0,1,"rtbis","Root must be bracketed for bisection in rtbis f(x1)=%f   f(x2)=%f",f,fmid);
-    rtb = f < 0.0 ? (dx=x2-x1,x1) : (dx=x1-x2,x2);// Orient the search so that f>0
-    for (j=1;j<=MAXIT;j++) {// lies at x+dx.
-        fmid=(*func)(input,xmid=rtb+(dx *= 0.5),Npar,P); //Bisection loop.
-        if (fmid <= 0.0) rtb=xmid;
+    error(f * fmid >= 0.0, 1, "rtbis", "Root must be bracketed for bisection in rtbis f(x1)=%f   f(x2)=%f", f, fmid);
+    rtb = f < 0.0 ? (dx = x2 - x1, x1) : (dx = x1 - x2, x2);// Orient the search so that f>0
+    for (j = 1;j <= MAXIT;j++) {// lies at x+dx.
+        fmid = (*func)(input, xmid = rtb + (dx *= 0.5), Npar, P); //Bisection loop.
+        if (fmid <= 0.0) rtb = xmid;
         if (fabs(dx) < xacc || fmid == 0.0) return rtb;
     }
-    error(1>0,1,"rtbis","Too many bisections in rtbis");
+    error(1 > 0, 1, "rtbis", "Too many bisections in rtbis");
     return 0.0;
 }
 
@@ -1402,149 +1404,147 @@ double rtbis(double (*func)(double , double,int,double*),double input,int Npar, 
  * Using bisection, find the root of a function func-input known to lie between x1 and x2. The root,
  * returned as rtbis, will be refined until its accuracy is ±xacc.
  * /func return different values for different n
- * it solves function=input 
+ * it solves function=input
  * if root not in range:
  *  Pedanticness==0 try other range if faliure return NaN (default)
- *  Pedanticness==1 return NaN 
+ *  Pedanticness==1 return NaN
  *  Pedanticness==2 try other range if faliure exit
  *  Pedanticness==3  exit
  *****************************************************************************************************************/
-double rtbis_func_eq_input(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double input, double x1, double x2, double xacc, int Pedanticness )
-{
-     
-    double *xt = (double*) malloc(sizeof(double)*Nvar);
-    for (int i=0;i<Nvar; i++)
-        xt[i]=x[i];
-    
-    
+double rtbis_func_eq_input(double (*func)(int, int, double*, int, double*), int n, int Nvar, double* x, int Npar, double* P, int ivar, double input, double x1, double x2, double xacc, int Pedanticness) {
+
+    double* xt = (double*)malloc(sizeof(double) * Nvar);
+    for (int i = 0;i < Nvar; i++)
+        xt[i] = x[i];
+
+
     int j;
-    double dx,f,fmid,xmid,rtb;
-    xt[ivar]=x1;
-    f=(*func)(n,Nvar,xt,Npar,P)-input;
-    xt[ivar]=x2;
-    fmid=(*func)(n,Nvar,xt,Npar,P)-input;
-    
-    error(f*fmid >= 0.0  && Pedanticness>=2 ,1,"rtbis","Root must be bracketed for bisection in rtbis f(%g)=%f   f(%g)=%f",x1,f,x2,fmid);
-    bool try_range = Pedanticness==0 || Pedanticness==2;
-    bool return_nan = Pedanticness<2;
-    if (f*fmid >= 0.0 && try_range ){ 
+    double dx, f, fmid, xmid, rtb;
+    xt[ivar] = x1;
+    f = (*func)(n, Nvar, xt, Npar, P) - input;
+    xt[ivar] = x2;
+    fmid = (*func)(n, Nvar, xt, Npar, P) - input;
+
+    error(f * fmid >= 0.0 && Pedanticness >= 2, 1, "rtbis", "Root must be bracketed for bisection in rtbis f(%g)=%f   f(%g)=%f", x1, f, x2, fmid);
+    bool try_range = Pedanticness == 0 || Pedanticness == 2;
+    bool return_nan = Pedanticness < 2;
+    if (f * fmid >= 0.0 && try_range) {
         //printf("#f(x)  x\n");
-        for (int i=0;i<100; i++){
-            xt[ivar]=x1-  2*(x2-x1) *i  ;
-            f=(*func)(n,Nvar,xt,Npar,P)-input;
+        for (int i = 0;i < 100; i++) {
+            xt[ivar] = x1 - 2 * (x2 - x1) * i;
+            f = (*func)(n, Nvar, xt, Npar, P) - input;
             //printf("%f   %f\n",f, xt[ivar] );
-            if(f*fmid <= 0.0) break;
-        } 
-        if(f*fmid <= 0.0){
-            x1=xt[ivar];
-            f=(*func)(n,Nvar,xt,Npar,P)-input;
+            if (f * fmid <= 0.0) break;
+        }
+        if (f * fmid <= 0.0) {
+            x1 = xt[ivar];
+            f = (*func)(n, Nvar, xt, Npar, P) - input;
         }
         else {
-            xt[ivar]=x1;
-            f=(*func)(n,Nvar,xt,Npar,P)-input;
-            for (int i=0;i<100; i++){
-                xt[ivar]=x2+  2*(x2-x1) *i  ;
-                fmid=(*func)(n,Nvar,xt,Npar,P)-input;
+            xt[ivar] = x1;
+            f = (*func)(n, Nvar, xt, Npar, P) - input;
+            for (int i = 0;i < 100; i++) {
+                xt[ivar] = x2 + 2 * (x2 - x1) * i;
+                fmid = (*func)(n, Nvar, xt, Npar, P) - input;
                 //printf("%f   %f\n",f, xt[ivar] );
-                if(f*fmid <= 0.0) break;
-            } 
-            x2=xt[ivar];
+                if (f * fmid <= 0.0) break;
+            }
+            x2 = xt[ivar];
         }
         //xt[ivar]=x2;
         //fmid=(*func)(n,Nvar,xt,Npar,P)-input;
     }
-    error(f*fmid >= 0.0  && !return_nan ,1,"rtbis","Root must be bracketed for bisection in rtbis f(x1)=%f   f(x2)=%f",f,fmid);
-    if (f*fmid >= 0.0  && return_nan){printf("error: bisect f(%g)=%f   f(%g)=%f\n",x1,f,x2,fmid); return NAN;}
-    
-    rtb = f < 0.0 ? (dx=x2-x1,x1) : (dx=x1-x2,x2);// Orient the search so that f>0
-    for (j=1;j<=MAXIT;j++) {// lies at x+dx.
+    error(f * fmid >= 0.0 && !return_nan, 1, "rtbis", "Root must be bracketed for bisection in rtbis f(x1)=%f   f(x2)=%f", f, fmid);
+    if (f * fmid >= 0.0 && return_nan) { printf("error: bisect f(%g)=%f   f(%g)=%f\n", x1, f, x2, fmid); return NAN; }
+
+    rtb = f < 0.0 ? (dx = x2 - x1, x1) : (dx = x1 - x2, x2);// Orient the search so that f>0
+    for (j = 1;j <= MAXIT;j++) {// lies at x+dx.
         //printf(" x=%f \n",xt[ivar]   );
-        xt[ivar]=rtb+(dx *= 0.5);
-        fmid=(*func)(n,Nvar,xt,Npar,P)-input; //Bisection loop.
+        xt[ivar] = rtb + (dx *= 0.5);
+        fmid = (*func)(n, Nvar, xt, Npar, P) - input; //Bisection loop.
         //printf(" x+dx=%f fmind=%f   %d\n",xt[ivar], fmid ,MAXIT  );
-        if (fmid <= 0.0) rtb=xt[ivar];
-        if (fabs(dx) < xacc || fmid == 0.0){
+        if (fmid <= 0.0) rtb = xt[ivar];
+        if (fabs(dx) < xacc || fmid == 0.0) {
             free(xt);
             return rtb;
         }
     }
     free(xt);
-    
-    error( !return_nan,1,"rtbis","Too many bisections in rtbis");
+
+    error(!return_nan, 1, "rtbis", "Too many bisections in rtbis");
     //printf("Too many bisections in rtbis\n");
     return NAN;
 }
 
 
-inline double derivative_O4_ivar(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double h){
-    
-    x[ivar]=x[ivar]-2.*h;      // x-2*h
-    double df=func(n,Nvar,x,Npar,P);
-    
-    x[ivar]=x[ivar]+h;        // x-h
-    df-=8*func(n,Nvar,x,Npar,P);
-    
-    x[ivar]=x[ivar]+2*h;     // x+h
-    df+=8*func(n,Nvar,x,Npar,P);
-    
-    x[ivar]=x[ivar]+h;      //h+2h
-    df-=func(n,Nvar,x,Npar,P);
-    
-    x[ivar]=x[ivar]-2.*h;//you need to leave the parameter as it was before you move to the next parameter
-    df/=(12.*h);
-    
-    return df;
-} 
+inline double derivative_O4_ivar(double (*func)(int, int, double*, int, double*), int n, int Nvar, double* x, int Npar, double* P, int ivar, double h) {
 
-inline double derivative_O2_ivar(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double h){
-    
-    x[ivar]=x[ivar]-h;      // x-h
-    double df=-func(n,Nvar,x,Npar,P);
-    
-    x[ivar]=x[ivar]+2*h;        // x+h
-    df+=func(n,Nvar,x,Npar,P);
-    
-    
-    x[ivar]=x[ivar]-h;//you need to leave the parameter as it was before you move to the next parameter
-    df/=(2.*h);
-    
+    x[ivar] = x[ivar] - 2. * h;      // x-2*h
+    double df = func(n, Nvar, x, Npar, P);
+
+    x[ivar] = x[ivar] + h;        // x-h
+    df -= 8 * func(n, Nvar, x, Npar, P);
+
+    x[ivar] = x[ivar] + 2 * h;     // x+h
+    df += 8 * func(n, Nvar, x, Npar, P);
+
+    x[ivar] = x[ivar] + h;      //h+2h
+    df -= func(n, Nvar, x, Npar, P);
+
+    x[ivar] = x[ivar] - 2. * h;//you need to leave the parameter as it was before you move to the next parameter
+    df /= (12. * h);
+
     return df;
-} 
+}
+
+inline double derivative_O2_ivar(double (*func)(int, int, double*, int, double*), int n, int Nvar, double* x, int Npar, double* P, int ivar, double h) {
+
+    x[ivar] = x[ivar] - h;      // x-h
+    double df = -func(n, Nvar, x, Npar, P);
+
+    x[ivar] = x[ivar] + 2 * h;        // x+h
+    df += func(n, Nvar, x, Npar, P);
+
+
+    x[ivar] = x[ivar] - h;//you need to leave the parameter as it was before you move to the next parameter
+    df /= (2. * h);
+
+    return df;
+}
 
 /*Using the Newton-Raphson method, find the root of a function known to lie in the interval  [ x1, x2]. The root rtnew*t will be refined until its accuracy is known within ±xacc. funcd
  i *s a user-supplied routine that returns both the function value and the first derivative of the
  function at the point x.
- * 
- * 
+ *
+ *
  */
-double rtnewt(double (*func)(int , int , double*,int,double*),int n, int Nvar, double *x,int Npar, double *P, int ivar,double input, double xstart,  double xmin, double xmax ,  float xacc, int JMAX, double h)
-{
+double rtnewt(double (*func)(int, int, double*, int, double*), int n, int Nvar, double* x, int Npar, double* P, int ivar, double input, double xstart, double xmin, double xmax, float xacc, int JMAX, double h) {
     void nrerror(char error_text[]);
     int j;
-    double df,dx,f,rtn;
-    double *xt = (double*) malloc(sizeof(double)*Nvar);
-    for (int i=0;i<Nvar; i++)
-        xt[i]=x[i];
-    xt[ivar]=xstart;
-    
-    for (j=1;j<=JMAX;j++) {
-        
-        f=(*func)(n,Nvar,xt,Npar,P)-input;
-        df=derivative_O2_ivar(func,n,Nvar,xt,Npar,P,ivar,h );
-        dx=f/df;
+    double df, dx, f, rtn;
+    double* xt = (double*)malloc(sizeof(double) * Nvar);
+    for (int i = 0;i < Nvar; i++)
+        xt[i] = x[i];
+    xt[ivar] = xstart;
+
+    for (j = 1;j <= JMAX;j++) {
+
+        f = (*func)(n, Nvar, xt, Npar, P) - input;
+        df = derivative_O2_ivar(func, n, Nvar, xt, Npar, P, ivar, h);
+        dx = f / df;
         xt[ivar] -= dx;
-        printf("j=%d   k=%g    f=%g  df=%g  dx=%g\n",j,xt[ivar],f,df,dx);
-        
-        if ((xmin-xt[ivar])*(xt[ivar]-xmax) < 0.0)
-            error(0==0,1,"rtnwt","Jumped out of brackets [%g,%g] in rtnewt x=%g ",xmin,xmax,xt[ivar]);
+        printf("j=%d   k=%g    f=%g  df=%g  dx=%g\n", j, xt[ivar], f, df, dx);
+
+        if ((xmin - xt[ivar]) * (xt[ivar] - xmax) < 0.0)
+            error(0 == 0, 1, "rtnwt", "Jumped out of brackets [%g,%g] in rtnewt x=%g ", xmin, xmax, xt[ivar]);
         if (fabs(dx) < xacc) return xt[ivar];
-        
+
     }
-    
-    error(0==0,1,"rtnwt","Maximum number of iterations exceeded in rtnewt");
+
+    error(0 == 0, 1, "rtnwt", "Maximum number of iterations exceeded in rtnewt");
     //nrerror("Maximum number of iterations exceeded in rtnewt");
     return 0.0;
-    
+
 }
 
 /***********************************************************************
@@ -1553,71 +1553,71 @@ double rtnewt(double (*func)(int , int , double*,int,double*),int n, int Nvar, d
  * its accuracy is known within ±xacc. funcd is a user-supplied routine that returns both the
  * function value and the first derivative of the function.
  ***********************************************************************/
-// float rtsafe(void (*funcd)(float, float *, float *), float x1, float x2,
-//              float xacc)
-double  rtsafe(double (*func)(int , int , double*,int,double*), int n, int Nvar, double *x,int Npar, double *P, int ivar,double input,   double x1, double x2 ,  float xacc, int JMAX, double h)
-{
+ // float rtsafe(void (*funcd)(float, float *, float *), float x1, float x2,
+ //              float xacc)
+double  rtsafe(double (*func)(int, int, double*, int, double*), int n, int Nvar, double* x, int Npar, double* P, int ivar, double input, double x1, double x2, float xacc, int JMAX, double h) {
     int j;
-    double df,dx,dxold,f,fh,fl;
-    double temp,xh,xl,rts;
-    double *xt = (double*) malloc(sizeof(double)*Nvar);
-    for (int i=0;i<Nvar; i++)
-        xt[i]=x[i];
-    
-    
-    xt[ivar]=x1;
-    fl=(*func)(n,Nvar,xt,Npar,P)-input;
-//     df=derivative_ivar(func,n,Nvar,xt,Npar,P,ivar,h );
-    xt[ivar]=x2;
-    fh=(*func)(n,Nvar,xt,Npar,P)-input;
-//     df=derivative_ivar(func,n,Nvar,xt,Npar,P,ivar,h );
-    
-    
-    error((fl > 0.0 && fh > 0.0) || (fl < 0.0 && fh < 0.0),2,"rtsafe","Root must be bracketed in rtsafe  f(%g)=%g  f(%g)=%g",x1,fl,x2,fh );
+    double df, dx, dxold, f, fh, fl;
+    double temp, xh, xl, rts;
+    double* xt = (double*)malloc(sizeof(double) * Nvar);
+    for (int i = 0;i < Nvar; i++)
+        xt[i] = x[i];
+
+
+    xt[ivar] = x1;
+    fl = (*func)(n, Nvar, xt, Npar, P) - input;
+    //     df=derivative_ivar(func,n,Nvar,xt,Npar,P,ivar,h );
+    xt[ivar] = x2;
+    fh = (*func)(n, Nvar, xt, Npar, P) - input;
+    //     df=derivative_ivar(func,n,Nvar,xt,Npar,P,ivar,h );
+
+
+    error((fl > 0.0 && fh > 0.0) || (fl < 0.0 && fh < 0.0), 2, "rtsafe", "Root must be bracketed in rtsafe  f(%g)=%g  f(%g)=%g", x1, fl, x2, fh);
     if (fl == 0.0) return x1;
     if (fh == 0.0) return x2;
     if (fl < 0.0) {
-//         Orient the search so that f (xl) < 0.
-        xl=x1;
-        xh=x2;
-    } else {
-        xh=x1;
-        xl=x2;
+        //         Orient the search so that f (xl) < 0.
+        xl = x1;
+        xh = x2;
     }
-    rts=0.5*(x1+x2);           // Initialize the guess for root,
-    dxold=fabs(x2-x1);         // the “stepsize before last,”
-    dx=dxold;                  //and the last step.
-    
-    xt[ivar]=rts;
-    f=(*func)(n,Nvar,xt,Npar,P)-input;
-    df=derivative_O2_ivar(func,n,Nvar,xt,Npar,P,ivar,h );
-    for (j=1;j<=MAXIT;j++) {//     Loop over allowed iterations.
-        if ((((rts-xh)*df-f)*((rts-xl)*df-f) > 0.0) || (fabs(2.0*f) > fabs(dxold*df))) { //      Bisect if Newton out of range,   or not decreasing fast enough.
-            dxold=dx;
-            dx=0.5*(xh-xl);
-            rts=xl+dx;
+    else {
+        xh = x1;
+        xl = x2;
+    }
+    rts = 0.5 * (x1 + x2);           // Initialize the guess for root,
+    dxold = fabs(x2 - x1);         // the “stepsize before last,”
+    dx = dxold;                  //and the last step.
+
+    xt[ivar] = rts;
+    f = (*func)(n, Nvar, xt, Npar, P) - input;
+    df = derivative_O2_ivar(func, n, Nvar, xt, Npar, P, ivar, h);
+    for (j = 1;j <= MAXIT;j++) {//     Loop over allowed iterations.
+        if ((((rts - xh) * df - f) * ((rts - xl) * df - f) > 0.0) || (fabs(2.0 * f) > fabs(dxold * df))) { //      Bisect if Newton out of range,   or not decreasing fast enough.
+            dxold = dx;
+            dx = 0.5 * (xh - xl);
+            rts = xl + dx;
             if (xl == rts) return rts; // Change in root is negligible.
         }
         else {  //Newton step acceptable. Take it.
-            dxold=dx;
-            dx=f/df;
-            temp=rts;
+            dxold = dx;
+            dx = f / df;
+            temp = rts;
             rts -= dx;
             if (temp == rts) return rts;
         }
         if (fabs(dx) < xacc) return rts; //    Convergence criterion.
-        xt[ivar]=rts;   // The one new function evaluation per iteration.
-        f=(*func)(n,Nvar,xt,Npar,P)-input;
-        df=derivative_O2_ivar(func,n,Nvar,xt,Npar,P,ivar,h );
+        xt[ivar] = rts;   // The one new function evaluation per iteration.
+        f = (*func)(n, Nvar, xt, Npar, P) - input;
+        df = derivative_O2_ivar(func, n, Nvar, xt, Npar, P, ivar, h);
         if (f < 0.0)//            Maintain the bracket on the root.
-            xl=rts;
+            xl = rts;
         else
-            xh=rts;
+            xh = rts;
     }
-    error(0==0,1,"rtsafe:","Maximum number of iterations exceeded in rtsafe");
+    error(0 == 0, 1, "rtsafe:", "Maximum number of iterations exceeded in rtsafe");
     return 0.0;//Never get here.
 }
-            
+
 
 /*
 
@@ -1632,30 +1632,30 @@ double *f1k( int Nvar, double *x,int Npar,double  *P)
     r[0]=log(P[0]*x[0])+1+log(P[1]*x[1]);
     r[1]=(P[0]/P[1]);
     return r;
-    
+
 }
 
 int main(){
-    
+
     double *P;
     double **x,**y;
     int i;
-    
+
     x=(double**) malloc(sizeof(double*)*4);
     y=(double**) malloc(sizeof(double*)*4);
     for (i=0;i<4;i++){
-       x[i]=(double*) malloc(sizeof(double)*2);   
+       x[i]=(double*) malloc(sizeof(double)*2);
        y[i]=(double*) malloc(sizeof(double)*2);
     }
    x[0][0]=1;x[1][0]=4;x[2][0]=7;x[3][0]=10;
    x[0][1]=2;x[1][1]=3;x[2][1]=5;x[3][1]=9;
-   
+
    y[0][0]=2;y[1][0]=5;y[2][0]=8;y[3][0]=11;
    y[0][1]=0.5;y[1][1]=2;y[2][1]=2;y[3][1]=2;
     int ensemble=4;
     int Nvar=2;
     int Npar=2;
-        
+
 
 //P=non_linear_fit( ensemble,x, y , Nvar,  Npar,  f1 , f1k);
 P=non_linear_fit( ensemble,x, y , Nvar,  Npar,  f1 );
@@ -1669,13 +1669,13 @@ printf("P[1]=%f\n",P[1]);
 /*Gnuplot result
 gnuplot> f(x)=A*log(A*x)
 gnuplot> fit f(x) 'tmp' i 0 u 1:2:3 yerr via A
-iter      chisq       delta/lim  lambda   A            
+iter      chisq       delta/lim  lambda   A
    0 1.0935357306e+02   0.00e+00  1.35e+01    4.343868e+00
    1 9.0384567941e+00  -1.11e+06  1.35e+00    3.012440e+00
    2 2.7981042656e+00  -2.23e+05  1.35e-01    2.553096e+00
    3 2.7944989111e+00  -1.29e+02  1.35e-02    2.541241e+00
    4 2.7944983222e+00  -2.11e-02  1.35e-03    2.541377e+00
-iter      chisq       delta/lim  lambda   A            
+iter      chisq       delta/lim  lambda   A
 
 After 4 iterations the fit converged.
 final sum of squares of residuals : 2.7945
