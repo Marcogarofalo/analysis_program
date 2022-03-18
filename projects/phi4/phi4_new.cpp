@@ -1352,7 +1352,7 @@ int main(int argc, char** argv) {
 
     //     struct fit_type fit_info;
     struct fit_result  fit_out;
-    fit_info.Nvar = 3;
+    fit_info.Nvar = 1;
     fit_info.Npar = 3;
     fit_info.N = 1;
     fit_info.Njack = Njack;
@@ -1387,7 +1387,7 @@ int main(int argc, char** argv) {
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    fit_info.Nvar = 3;
+    fit_info.Nvar = 1;
     fit_info.Npar = 1;
     fit_info.N = 1;
     fit_info.Njack = Njack;
@@ -1427,7 +1427,7 @@ int main(int argc, char** argv) {
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
-    fit_info.Nvar = 3;
+    fit_info.Nvar = 1;
     fit_info.Npar = 2;
     fit_info.N = 1;
     fit_info.Njack = Njack;
@@ -1442,7 +1442,7 @@ int main(int argc, char** argv) {
     free_fit_result(fit_info, fit_out);
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
-    fit_info.Nvar = 3;
+    fit_info.Nvar = 1;
     fit_info.Npar = 2;
     fit_info.N = 1;
     fit_info.Njack = Njack;
@@ -1460,7 +1460,7 @@ int main(int argc, char** argv) {
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
-    fit_info.Nvar = 3;
+    fit_info.Nvar = 1;
     fit_info.Npar = 3;
     fit_info.N = 1;
     fit_info.Njack = Njack;
@@ -1478,7 +1478,7 @@ int main(int argc, char** argv) {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
 
-    fit_info.Nvar = 3;
+    fit_info.Nvar = 1;
     fit_info.Npar = 3;
     fit_info.N = 1;
     fit_info.Njack = Njack;
@@ -1571,6 +1571,7 @@ int main(int argc, char** argv) {
     fit_info.N = 1;
     fit_info.Njack = Njack;
     fit_info.n_ext_P = 0;
+    fit_info.ext_P = (double**)malloc(sizeof(double*) * 2);
     fit_info.function = constant_fit;
 
     file_head.k[2] = mu1;    file_head.k[3] = mu2;
@@ -1590,7 +1591,7 @@ int main(int argc, char** argv) {
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// C4_BH_03t16
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -1624,11 +1625,12 @@ int main(int argc, char** argv) {
         fit_info.restore_default();
         ///// const fit
 
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 2;
         fit_info.N = 1;
         fit_info.Njack = Njack;
         fit_info.n_ext_P = 2;
+        fit_info.ext_P = (double**)malloc(sizeof(double*) * 2);
         fit_info.function = four_pt_BH_00_t_t3_const;
 
         //c++ 24 || r 25
@@ -1658,7 +1660,7 @@ int main(int argc, char** argv) {
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// C4_BH_04t16
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -1686,7 +1688,7 @@ int main(int argc, char** argv) {
         fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"P5P5", conf_jack, namefile_plateaux, outfile, lhs_four_BH_04t16, "E4_04t16", fit_info, jack_file);
         free_fit_result(fit_info, fit_out);
         ///// const fit
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 2;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -1718,7 +1720,7 @@ int main(int argc, char** argv) {
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// C4_BH_03t20
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -1746,7 +1748,7 @@ int main(int argc, char** argv) {
         fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"P5P5", conf_jack, namefile_plateaux, outfile, lhs_four_BH_03t20, "E4_03t20", fit_info, jack_file);
         free_fit_result(fit_info, fit_out);
         ///// const fit
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 2;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -1778,7 +1780,7 @@ int main(int argc, char** argv) {
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// C4_BH_04t20
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -1806,7 +1808,7 @@ int main(int argc, char** argv) {
         fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"P5P5", conf_jack, namefile_plateaux, outfile, lhs_four_BH_04t20, "E4_04t20", fit_info, jack_file);
         free_fit_result(fit_info, fit_out);
         ///// const fit
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 2;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -1839,7 +1841,7 @@ int main(int argc, char** argv) {
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
        /// C4_BH_05t20
        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -1867,7 +1869,7 @@ int main(int argc, char** argv) {
         fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"P5P5", conf_jack, namefile_plateaux, outfile, lhs_four_BH_05t20, "E4_05t20", fit_info, jack_file);
         free_fit_result(fit_info, fit_out);
         ///// const fit
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 2;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -1900,7 +1902,7 @@ int main(int argc, char** argv) {
 
         ///////////////////////togrep:shifted fit of BH
         //03t16
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -1933,7 +1935,7 @@ int main(int argc, char** argv) {
         free_fit_result(fit_info, fit_out);
         //////////////////////
         //04t16
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -1967,7 +1969,7 @@ int main(int argc, char** argv) {
 
         //////////////////////
         //03t20
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -2002,7 +2004,7 @@ int main(int argc, char** argv) {
 
         //////////////////////
         //04t20
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -2036,7 +2038,7 @@ int main(int argc, char** argv) {
 
         //////////////////////
         //05t20
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -2072,7 +2074,7 @@ int main(int argc, char** argv) {
 
         /////HERE we try different shifts
         //03t16
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -2122,7 +2124,7 @@ int main(int argc, char** argv) {
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             /// C4_BH_10_03t16
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            fit_info.Nvar = 3;
+            fit_info.Nvar = 1;
             fit_info.Npar = 1;
             fit_info.N = 1;
             fit_info.Njack = Njack;
@@ -2137,7 +2139,7 @@ int main(int argc, char** argv) {
             free_fit_result(fit_info, fit_out);
             ///// const fit
 
-            fit_info.Nvar = 3;
+            fit_info.Nvar = 1;
             fit_info.Npar = 2;
             fit_info.N = 1;
             fit_info.Njack = Njack;
@@ -2155,7 +2157,7 @@ int main(int argc, char** argv) {
             if (params.data.ncorr > 32) {
 
                 //02t10
-                fit_info.Nvar = 3;
+                fit_info.Nvar = 1;
                 fit_info.Npar = 1;
                 fit_info.N = 1;
                 fit_info.Njack = Njack;
@@ -2172,7 +2174,7 @@ int main(int argc, char** argv) {
 
 
                 //02t12
-                fit_info.Nvar = 3;
+                fit_info.Nvar = 1;
                 fit_info.Npar = 1;
                 fit_info.N = 1;
                 fit_info.Njack = Njack;
@@ -2256,7 +2258,7 @@ int main(int argc, char** argv) {
                     double* E2_1_A1 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 40, "E2_1_A1", shift_and_M_eff_sinh_T, jack_file);
                     free(E2_1_A1);
 
-                    fit_info.Nvar = 3;
+                    fit_info.Nvar = 1;
                     fit_info.Npar = 3;
                     fit_info.N = 1;
                     fit_info.Njack = Njack;
@@ -2280,7 +2282,7 @@ int main(int argc, char** argv) {
                     double* E2_1_E1 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 43, "E2_1_E1", shift_and_M_eff_sinh_T, jack_file);
                     free(E2_1_E1);
 
-                    fit_info.Nvar = 3;
+                    fit_info.Nvar = 1;
                     fit_info.Npar = 3;
                     fit_info.N = 1;
                     fit_info.Njack = Njack;
@@ -2303,7 +2305,7 @@ int main(int argc, char** argv) {
                     double* E2_1_E2 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 46, "E2_1_E2", shift_and_M_eff_sinh_T, jack_file);
                     free(E2_1_E2);
 
-                    fit_info.Nvar = 3;
+                    fit_info.Nvar = 1;
                     fit_info.Npar = 3;
                     fit_info.N = 1;
                     fit_info.Njack = Njack;
@@ -2329,7 +2331,7 @@ int main(int argc, char** argv) {
     else { for (int i = 21;i < 89;i++)  zero_corr(zeros, Njack, jack_file); }
 
     //E2_01_div_shift
-    fit_info.Nvar = 3;
+    fit_info.Nvar = 1;
     fit_info.Npar = 2;
     fit_info.N = 1;
     fit_info.Njack = Njack;
@@ -2393,7 +2395,7 @@ int main(int argc, char** argv) {
         double* E2_1_A1E1 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 49, "E2_1_A1E1", shift_and_M_eff_sinh_T, jack_file);
         free(E2_1_A1E1);
 
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 3;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -2421,7 +2423,7 @@ int main(int argc, char** argv) {
         double* E2_1_A1E2 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 55, "E2_1_A1E2", shift_and_M_eff_sinh_T, jack_file);
         free(E2_1_A1E2);
 
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 3;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -2448,7 +2450,7 @@ int main(int argc, char** argv) {
         double* E2_1_A1o20 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 61, "E2_1_A1o20", shift_and_M_eff_sinh_T, jack_file);
         free(E2_1_A1o20);
 
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 3;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -2490,11 +2492,12 @@ int main(int argc, char** argv) {
         free_fit_result(fit_info, fit_out);
         fit_info.restore_default();
 
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 3;
         fit_info.N = 1;
         fit_info.Njack = Njack;
         fit_info.n_ext_P = 2;
+        fit_info.ext_P = (double**)malloc(sizeof(double*) * 2);
         fit_info.function = C2_diff_masses;
 
         file_head.k[2] = mu1;    file_head.k[3] = mu2;
@@ -2517,15 +2520,15 @@ int main(int argc, char** argv) {
             printf("%g  %g \n", fit_info.ext_P[0][Njack - 1], fit_info.ext_P[1][Njack - 1]);
 
         }
-        if (strcmp(argv[4], "G2t_T64_L24_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g0.000000_rep0_bin1000_merged_bin100")==0||
-        strcmp(argv[4], "G2t_T64_L22_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g2.000000_rep0_bin1000_merged_bin100")==0 ||
-        strcmp(argv[4], "G2t_T64_L18_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g2.000000_rep0_bin1000_merged_bin100")==0 ||
-        strcmp(argv[4], "G2t_T64_L20_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0_bin1000_merged_bin100")==0 ||
-        strcmp(argv[4], "G2t_T64_L18_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g0.500000_rep0_bin1000_merged_bin100")==0 ||
-        strcmp(argv[4], "G2t_T64_L16_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0_bin1000_merged_bin100")==0 ||
-        strcmp(argv[4], "G2t_T64_L19_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0_bin1000_merged_bin100")==0 ||
-        strcmp(argv[4], "G2t_T64_L20_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0_bin1000_merged_bin100")==0 
-         ){
+        if (strcmp(argv[4], "G2t_T64_L24_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g0.000000_rep0_bin1000_merged_bin100") == 0 ||
+            strcmp(argv[4], "G2t_T64_L22_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g2.000000_rep0_bin1000_merged_bin100") == 0 ||
+            strcmp(argv[4], "G2t_T64_L18_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g2.000000_rep0_bin1000_merged_bin100") == 0 ||
+            strcmp(argv[4], "G2t_T64_L20_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0_bin1000_merged_bin100") == 0 ||
+            strcmp(argv[4], "G2t_T64_L18_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g0.500000_rep0_bin1000_merged_bin100") == 0 ||
+            strcmp(argv[4], "G2t_T64_L16_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0_bin1000_merged_bin100") == 0 ||
+            strcmp(argv[4], "G2t_T64_L19_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0_bin1000_merged_bin100") == 0 ||
+            strcmp(argv[4], "G2t_T64_L20_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0_bin1000_merged_bin100") == 0
+            ) {
             fit_info.repeat_start = 6;
             fit_info.acc = 1e-5;
             fit_info.precision_sum = 4;
@@ -2602,11 +2605,12 @@ int main(int argc, char** argv) {
         free_fit_result(fit_info, fit_out);
 
 
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 3;
         fit_info.N = 1;
         fit_info.Njack = Njack;
         fit_info.n_ext_P = 2;
+        fit_info.ext_P = (double**)malloc(sizeof(double*) * 2);
         fit_info.function = C2_diff_masses;
 
         file_head.k[2] = mu1;    file_head.k[3] = mu2;
@@ -2662,11 +2666,12 @@ int main(int argc, char** argv) {
         E1_0_p111 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 90, "E1_0_p111", M_eff_T, jack_file);
 
 
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 3;
         fit_info.N = 1;
         fit_info.Njack = Njack;
         fit_info.n_ext_P = 2;
+        fit_info.ext_P = (double**)malloc(sizeof(double*) * 2);
         fit_info.function = C2_diff_masses;
 
         file_head.k[2] = mu1;    file_head.k[3] = mu2;
@@ -2805,13 +2810,13 @@ int main(int argc, char** argv) {
         /////////////matrix element
         /////////////////////////////////////////////////////////////////////////////////////
         int T = params.data.L[0];
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
         fit_info.function = me_k3pi_rhs_T_2;
         fit_info.n_ext_P = 2;
-
+        fit_info.ext_P = (double**)malloc(sizeof(double*) * 2);
         fit_info.ext_P[0] = mass[1];
         fit_info.ext_P[1] = E3_0;
 
@@ -2820,7 +2825,7 @@ int main(int argc, char** argv) {
 
         fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"P5P5", conf_jack, namefile_plateaux, outfile, matrix_element_k3pi_T_2, "me_T_2", fit_info, jack_file);
 
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -2835,7 +2840,7 @@ int main(int argc, char** argv) {
 
         fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"P5P5", conf_jack, namefile_plateaux, outfile, matrix_element_k3pi<120, 10>, "me_t10", fit_info, jack_file);
 
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -2850,7 +2855,7 @@ int main(int argc, char** argv) {
 
         fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"P5P5", conf_jack, namefile_plateaux, outfile, matrix_element_k3pi<121, 12>, "me_t12", fit_info, jack_file);
 
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -2877,11 +2882,12 @@ int main(int argc, char** argv) {
     if (params.data.ncorr > 90) {
 
 
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 2;
         fit_info.N = 1;
         fit_info.Njack = Njack;
         fit_info.n_ext_P = 2;
+        fit_info.ext_P = (double**)malloc(sizeof(double*) * 2);
         fit_info.function = C2_diff_masses_weight_shift;
 
         file_head.k[2] = mu1;    file_head.k[3] = mu2;
@@ -2902,11 +2908,12 @@ int main(int argc, char** argv) {
         free_fit_result(fit_info, fit_out);
         fit_info.restore_default();
 
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 2;
         fit_info.N = 1;
         fit_info.Njack = Njack;
         fit_info.n_ext_P = 2;
+        fit_info.ext_P = (double**)malloc(sizeof(double*) * 2);
         fit_info.function = C2_diff_masses_weight_shift;
 
         file_head.k[2] = mu1;    file_head.k[3] = mu2;
@@ -2919,7 +2926,7 @@ int main(int argc, char** argv) {
         //     if (params.data.lambdaC0!=0) phase_shift(fit_out.P[0],mass[0],dvec_p11, params.data.L[1], outfile,  Njack, option[4] );
         free_fit_result(fit_info, fit_out);
 
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 2;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -2951,7 +2958,7 @@ int main(int argc, char** argv) {
     if (params.data.ncorr > 122) {
 
 
-        fit_info.Nvar = 3;
+        fit_info.Nvar = 1;
         fit_info.Npar = 4;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -3101,6 +3108,14 @@ int main(int argc, char** argv) {
         fit_info.restore_default();
 
         //c++ 118 || r 119
+        fit_info.Nvar = 6;
+        fit_info.Npar = 5;
+        fit_info.N = 1;
+        fit_info.Njack = Njack;
+        fit_info.function = C3p_vev;
+        fit_info.n_ext_P = 5;
+        fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
+
         fit_info.ext_P[0] = mass[0];
         fit_info.ext_P[1] = E2[0];
         fit_info.ext_P[2] = E1_0_p11;
@@ -3130,7 +3145,19 @@ int main(int argc, char** argv) {
         fit_info.restore_default();
 
         //     
+        fit_info.Nvar = 6;
+        fit_info.Npar = 5;
+        fit_info.N = 1;
+        fit_info.Njack = Njack;
+        fit_info.function = C3p_vev;
+        fit_info.n_ext_P = 5;
+        fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
 
+        fit_info.ext_P[0] = mass[0];
+        fit_info.ext_P[1] = E2[0];
+        fit_info.ext_P[2] = E1_0_p11;
+        fit_info.ext_P[3] = E2_0_p11;
+        fit_info.ext_P[4] = E1_0_p11;
         fit_info.ext_P[0] = mass[0];
         fit_info.ext_P[1] = E2[0];
         fit_info.ext_P[2] = E1_0_p111;
@@ -3302,6 +3329,7 @@ int main(int argc, char** argv) {
         fit_info.Njack = Njack;
         fit_info.function = constant_fit;
         fit_info.n_ext_P = 1;
+        fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
 
         fit_info.ext_P[0] = mass[1];
 
@@ -3364,11 +3392,13 @@ int main(int argc, char** argv) {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////   E2_01 ws
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    fit_info.Nvar = 3;
+    fit_info.Nvar = 1;
     fit_info.Npar = 2;
     fit_info.N = 1;
     fit_info.Njack = Njack;
     fit_info.n_ext_P = 2;
+    fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
+
     fit_info.function = C2_diff_masses_weight_shift;
 
     file_head.k[2] = mu1;    file_head.k[3] = mu2;
@@ -3469,7 +3499,8 @@ int main(int argc, char** argv) {
         fit_info.Njack = Njack;
         fit_info.function = fun_l1_GEVP;
         fit_info.n_ext_P = 1;
-        fit_info.ext_P = (double**)malloc(sizeof(double*) * 2);
+        fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
+
 
         fit_info.ext_P[0] = ml0_GEVP;
 
@@ -3493,7 +3524,7 @@ int main(int argc, char** argv) {
             //c++ 135  || r 136
             double* sE2_0 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 155, "sE2_0", shift_and_M_eff_sinh_T, jack_file);
 
-            fit_info.Nvar = 3;
+            fit_info.Nvar = 1;
             fit_info.Npar = 4;
             fit_info.N = 1;
             fit_info.Njack = Njack;
@@ -5454,7 +5485,7 @@ int main(int argc, char** argv) {
 
 
     printf("GEVP_00_11_01_p1\n");
-    if (params.data.ncorr > 217 ) {
+    if (params.data.ncorr > 217) {
 
 
         fit_info.N = 1;
@@ -5741,22 +5772,22 @@ int main(int argc, char** argv) {
 
         fit_info.corr_id = { 12 };
         add_correlators(option, ncorr_new, conf_jack, der1_corr, fit_info);
-        int id_d00_11 = ncorr_new - 1;  
+        int id_d00_11 = ncorr_new - 1;
 
         fit_info.corr_id = { 3 };
         add_correlators(option, ncorr_new, conf_jack, der1_corr, fit_info);
         int id_d11 = ncorr_new - 1;
 
-         
+
         fit_info.restore_default();
         char name_v[NAMESIZE];
         fit_info.N = 2;
         fit_info.corr_id = { id_d00, id_d00_11,
-                                     id_d11        };//operators{ shift-phi0, shift-phi1}
-        
+                                     id_d11 };//operators{ shift-phi0, shift-phi1}
+
         fit_info.value_or_vector = 0; // 0= values
         fit_info.t0_GEVP = 3;
-        
+
         add_correlators(option, ncorr_new, conf_jack, GEVP_matrix, fit_info);
         printf(" ncorr after GEVP %d\n", ncorr_new);
         fit_info.restore_default();

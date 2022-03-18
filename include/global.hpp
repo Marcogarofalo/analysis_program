@@ -248,7 +248,6 @@ struct  fit_type
   
   void restore_default(){
      custom=false; // 1 means default fit , 0 custom fit options
-     n_ext_P=0; //number of external parameter that will no be fitted
      lambda=0.001;
      acc=0.001; 
      h=1e-5; 
