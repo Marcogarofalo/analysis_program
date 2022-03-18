@@ -378,7 +378,7 @@ int main(int argc, char** argv) {
         // read correlators[i] and store in data[conf][i][t][re/im]
         read_twopt(correlators[i].c_str(), confs, T, data, i);
     }
-    
+
     data_bin = binning(confs, var, file_head.l0, data, bin);
     // //if you want to do the gamma analysis you need to do before freeing the raw data
     // // effective_mass_phi4_gamma(option, kinematic_2pt, (char*)"P5P5", data_bin, Neff, namefile_plateaux, out_gamma, 0, "M_{PS}^{ll}");
@@ -397,18 +397,18 @@ int main(int argc, char** argv) {
     fit_type fit_info;
     fit_result fit_out;
 
-    fit_info.Nvar=1;
-    fit_info.Npar=1;
-    fit_info.N=1;
-    fit_info.Njack=Njack;
-    fit_info.n_ext_P=0;
-    fit_info.function=constant_fit;
-    
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1phi", conf_jack ,namefile_plateaux, outfile, ZAl, "Z_A(l)",  fit_info, jack_file );
-    free_fit_result(fit_info,fit_out);
+    fit_info.Nvar = 1;
+    fit_info.Npar = 1;
+    fit_info.N = 1;
+    fit_info.Njack = Njack;
+    fit_info.n_ext_P = 0;
+    fit_info.function = constant_fit;
 
-    fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "A1P1phi", conf_jack ,namefile_plateaux, outfile, ZVl, "Z_V(l)",  fit_info, jack_file );
-    free_fit_result(fit_info,fit_out);
+    fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, ZAl, "Z_A(l)", fit_info, jack_file);
+    free_fit_result(fit_info, fit_out);
+
+    fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, ZVl, "Z_V(l)", fit_info, jack_file);
+    free_fit_result(fit_info, fit_out);
 
 
 
