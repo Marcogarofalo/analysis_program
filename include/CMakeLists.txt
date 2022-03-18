@@ -41,7 +41,7 @@ add_library(
     rand.hpp
     ../modules/rand.cpp
 ) 
-
+target_link_libraries(rand PUBLIC linear_fit)
 target_include_directories(rand PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 

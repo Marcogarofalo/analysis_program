@@ -4,6 +4,7 @@
 #include <cmath>
 #include <limits>
 #include "linear_fit.hpp"
+
 double generateGaussianNoise(double mu, double sigma)
 {
 	static const double epsilon = std::numeric_limits<double>::min();

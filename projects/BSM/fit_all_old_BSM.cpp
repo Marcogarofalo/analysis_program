@@ -207,19 +207,19 @@ int main(int argc, char** argv) {
     struct fit_result  fit_critical;
     char namefit[NAMESIZE];
     fit_info.Nvar = 7;
-    fit_info.Npar = 8;
-    fit_info.N = 2;
+    fit_info.Npar = 3;
+    fit_info.N = 1;
     fit_info.Njack = gjack[0].Njack;
     fit_info.n_ext_P = 0;
-    fit_info.function = rhs_critical_eta_mu_m0;
+    fit_info.function = rhs_critical_eta_mu;
 
 
-    fit_critical = fit_data(argv, paramsj, gjack, lhs_critical_eta_mu_m0, fit_info, "eta_m0_critical_b585", myenW);
-    print_fit_band_eta(argv, gjack, fit_info, "eta_m0_critical_b585", fit_critical, paramsj, myenW);
+    fit_critical = fit_data(argv, paramsj, gjack, lhs_critical_eta_mu_m0, fit_info, "eta_critical_b585", myenW);
+    print_fit_band_eta(argv, gjack, fit_info, "eta_critical_b585", fit_critical, paramsj, myenW);
 
     free_fit_result(fit_info, fit_critical);
     fit_info.restore_default();
-
+ exit(1);
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     // start fitting
     //////////////////////////////////////////////////////////////////////////////////////////////////

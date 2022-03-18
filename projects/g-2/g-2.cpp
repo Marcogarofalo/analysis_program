@@ -49,7 +49,7 @@ void get_kinematic(int ik2, int r2, int ik1, int r1, int imom2, int imom1) {
 
 }
 
-int read_nconfs(char stream[NAMESIZE]) {
+int read_nconfs(const char stream[NAMESIZE]) {
 
     long int tmp;
     int s = file_head.l1 + 1 + 3;
@@ -103,7 +103,7 @@ double matrix_element_GEVP(int t, double** cor, double mass) {
 }
 
 
-void read_twopt(char namefile[NAMESIZE], int confs, int T, double**** to_write, int id) {
+void read_twopt(const char namefile[NAMESIZE], int confs, int T, double**** to_write, int id) {
     char tmp[NAMESIZE];
     int sd = 0;
     std::fstream newfile;
@@ -129,7 +129,7 @@ void read_twopt(char namefile[NAMESIZE], int confs, int T, double**** to_write, 
         error(0 == 0, 1, "correlators_analysis.cpp line_read_plateaux",
             "unable to open %s", namefile);
     }
-    
+
 }
 
 // void read_twopt(FILE* stream, int iconf, double*** to_write, cluster::IO_params params, int index) {
@@ -322,15 +322,35 @@ int main(int argc, char** argv) {
     FILE* jack_file = open_file(namefile, "w+");
     write_header_g2(jack_file);
 
-    char infile_equal_P5A0[NAMESIZE];
-    mysprintf(infile_equal_P5A0, NAMESIZE, "%s/%s_r.equal_mu.%f_P5A0.txt", argv[3], argv[4], mu);
-    printf("reading input :\n %s \n", infile_equal_P5A0);
+    std::vector<std::string>  correlators;
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);
+    correlators.emplace_back(namefile);
+
+    printf("reading confs from file: %s", correlators[0].c_str());
+    confs = read_nconfs(correlators[0].c_str());
+    cout << "confs =" << confs << endl;
+    for (auto name : correlators) {
+        printf("checking confs from file: %s\n", name.c_str());
+        int check_conf = read_nconfs(name.c_str());
+        error(confs != check_conf, 1, "reading number of configuration", "not all the files have the same confs");
+    }
+
+
     // FILE* infile_equal_P5A0 = open_file(namefile, "r+");
     // int count = 0;
-    confs = read_nconfs(infile_equal_P5A0);
+
 
     //confs=confs/10;
-    cout << "confs =" << confs << endl;
     // compute what will be the neff after the binning 
     int bin = atoi(argv[6]);
     int Neff = confs / bin;
@@ -347,28 +367,26 @@ int main(int argc, char** argv) {
     }
     fwrite(&Njack, sizeof(int), 1, jack_file);
 
-    int var = 1;
+    setup_file_jack(option, Njack);
+    get_kinematic(0, 0, 1, 0, 0, 0);
+
+    int var = correlators.size();
     data = calloc_corr(confs, var, file_head.l0);
 
-    setup_file_jack(option, Njack);
-
-    get_kinematic(0, 0, 1, 0, 0, 0);
-    // printf("option[4]=%s\n", option[4]);
-    read_twopt(infile_equal_P5A0, confs, T, data, 0);
-    // for (int t=0;t<T/2+1;t++){
-    //     printf("%g\n",data[0][0][t][0]);
-    // }
-
-    // data_bin = binning(confs, var, file_head.l0, data, bin);
+    for (int i = 0; i < var; i++) {
+        // read correlators[i] and store in data[conf][i][t][re/im]
+        read_twopt(correlators[i].c_str(), confs, T, data, i);
+    }
+    
+    data_bin = binning(confs, var, file_head.l0, data, bin);
     // //if you want to do the gamma analysis you need to do before freeing the raw data
     // // effective_mass_phi4_gamma(option, kinematic_2pt, (char*)"P5P5", data_bin, Neff, namefile_plateaux, out_gamma, 0, "M_{PS}^{ll}");
     // // effective_mass_phi4_gamma(option, kinematic_2pt, (char*)"P5P5", data_bin, Neff, namefile_plateaux, out_gamma, 1, "M_{PS1}^{ll}");
     // //effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,namefile_plateaux,out_gamma,3,"M_{PS}^{ll}");
+    free_corr(confs, var, file_head.l0, data);
 
-    // free_corr(confs, var, file_head.l0, data);
-
-    // conf_jack = create_resampling(option[4], Neff, var, file_head.l0, data_bin);
-    // free_corr(Neff, var, file_head.l0, data_bin);
+    conf_jack = create_resampling(option[4], Neff, var, file_head.l0, data_bin);
+    free_corr(Neff, var, file_head.l0, data_bin);
 
     // ////////////////// symmetrization/////////////////////////////////////////////
     // for (int i = 0;i <= 7;i++) { symmetrise_jackboot(Njack, i, file_head.l0, conf_jack); }
