@@ -2722,7 +2722,7 @@ int main(int argc, char** argv) {
     error(corr_counter != 104, -1, "correlator counter wrong", "corr_counter=%d     expected=104", corr_counter);
 
     if (params.data.ncorr > 122) {
-        fit_info.Nvar = 5;
+        fit_info.Nvar = 1;
         fit_info.Npar = 4;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -2777,7 +2777,7 @@ int main(int argc, char** argv) {
         //  
 
 
-        fit_info.Nvar = 6;
+        fit_info.Nvar = 1;
         fit_info.Npar = 4;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -3028,7 +3028,7 @@ int main(int argc, char** argv) {
         free_fit_result(fit_info, fit_out);
         fit_info.restore_default();
 
-        fit_info.Nvar = 6;
+        fit_info.Nvar = 1;
         fit_info.Npar = 5;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -3108,7 +3108,7 @@ int main(int argc, char** argv) {
         fit_info.restore_default();
 
         //c++ 118 || r 119
-        fit_info.Nvar = 6;
+        fit_info.Nvar = 1;
         fit_info.Npar = 5;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -3145,7 +3145,7 @@ int main(int argc, char** argv) {
         fit_info.restore_default();
 
         //     
-        fit_info.Nvar = 6;
+        fit_info.Nvar = 1;
         fit_info.Npar = 5;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -3198,7 +3198,7 @@ int main(int argc, char** argv) {
         //  
 
 
-        fit_info.Nvar = 6;
+        fit_info.Nvar = 1;
         fit_info.Npar = 5;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -3323,7 +3323,7 @@ int main(int argc, char** argv) {
         /////////////matrix element phi1
         /////////////////////////////////////////////////////////////////////////////////////
 
-        fit_info.Nvar = 2;
+        fit_info.Nvar = 1;
         fit_info.Npar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -3345,7 +3345,7 @@ int main(int argc, char** argv) {
         /////////////matrix element
         /////////////////////////////////////////////////////////////////////////////////////
         int T = params.data.L[0];
-        fit_info.Nvar = 7;
+        fit_info.Nvar = 1;
         fit_info.Npar = 3;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -3493,7 +3493,7 @@ int main(int argc, char** argv) {
         free(ml0_GEVP);free(ml1_GEVP);free(ml2_GEVP);
 
         //c++ 133 || r 134
-        fit_info.Nvar = 2;
+        fit_info.Nvar = 1;
         fit_info.Npar = 2;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -5819,7 +5819,7 @@ int main(int argc, char** argv) {
     free_jack(Njack, ncorr_new, file_head.l0, conf_jack);
 
     fclose(out_gamma);
-    free(fit_info.ext_P);
+    // free(fit_info.ext_P);
     free_tower(7, (void**)option);
 
     for (i = 0;i < file_head.nmoms;i++)
