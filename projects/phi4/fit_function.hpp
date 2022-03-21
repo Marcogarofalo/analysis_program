@@ -1009,8 +1009,8 @@ double rhs_deltaE2_m_quant_cond_g(int n, int Nvar, double *x,int Npar,double  *P
 double rhs_E3_m_QC3_pole(int n, int Nvar, double *x,int Npar,double  *P){
     
     double Pkcot[2];
-        Pkcot[0]=x[Nvar-2];
-        Pkcot[1]=x[Nvar-1];
+        Pkcot[0]=x[Nvar-3];
+        Pkcot[1]=x[Nvar-2];
          
     int Nkcot=2;
     int Nkiso=Npar;
@@ -1019,7 +1019,7 @@ double rhs_E3_m_QC3_pole(int n, int Nvar, double *x,int Npar,double  *P){
     //init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
     double nnP[3];
     nnP[0]=(double) dvec[0]; nnP[1]=(double) dvec[1]; nnP[2]=(double) dvec[2];
-    double mass=x[1];
+    double mass=x[Nvar-1];//x[1];
     double L=x[0];
     int steps=4;
     
@@ -1028,7 +1028,7 @@ double rhs_E3_m_QC3_pole(int n, int Nvar, double *x,int Npar,double  *P){
     double Estart=x[11]-x[12];
     double Eend=x[11]+x[12];
     
-//    printf("E=[%g , %g]   E1f=%g   E2f=%g  m=%g\n",Estart,Eend,Estart,Eend,mass);
+    // printf("E=[%g , %g]   E1f=%g   E2f=%g  m=%g\n",Estart,Eend,Estart,Eend,mass);
     double r=python_detQC_call(Estart, Eend, steps,  L,  nnP, Nkcot,Pkcot,Nkiso, P);
 //     printf("res=%g\n",r);
     return r;
@@ -2173,7 +2173,6 @@ struct fit_result fit_data(char **argv, vector<cluster::IO_params> params ,vecto
             
         }
     }
-    
     
     ////////////////////////////////////////// y
     count=0;
