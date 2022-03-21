@@ -24,9 +24,18 @@ project(analysis_program CXX C)
 # Eigen
 IF(NOT DEFINED EIGEN3_INCLUDE_DIR)
   find_package(Eigen3 REQUIRED)
+  MESSAGE("Eigen: " ${EIGEN3_INCLUDE_DIR})
 ENDIF()
 INCLUDE_DIRECTORIES ( "${EIGEN3_INCLUDE_DIR}" )
 
+
+#using the globally installed version of Eigen: sudo apt-get libeigen3-dev
+# Eigen
+IF(NOT DEFINED GSL_INCLUDE_DIR)
+  find_package(GSL REQUIRED) 
+  MESSAGE("GSL: " ${GSL})
+ENDIF()
+#INCLUDE_DIRECTORIES ( "${EIGEN3_INCLUDE_DIR}" )
 
 IF(WITH_PYTHON)
     SET(python_dir "/usr/include/python3.9/")  #sudo apt-get install python3.9-dbg
@@ -42,6 +51,7 @@ IF(WITH_PYTHON)
 ENDIF()
 
 
+find_package(Eigen3 REQUIRED)
 add_subdirectory(include  include)
 
 # this has been taken straight from the build system of Balint's Dslash (github.com/bjoo/KokkosDslash)
