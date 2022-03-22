@@ -572,7 +572,8 @@ double compute_chi_non_linear_Nf(int N, int* ensemble, double** x, double** y, d
     for (n = 0;n < N;n++) {
         for (e = 0;e < ensemble[n];e++) {
             f = fun(n, Nvar, x[count], Npar, P) - y[count][0];
-            //             printf("e=%d  n=%d   f=%g  y=%g err=%g    dchi= %g  \n ",e,n,f+y[count][0],y[count][0],y[count][1],f*f/(y[count][1]* y[count][1]));
+                        // printf("e=%d  n=%d   f=%g  y=%g err=%g    dchi= %g  \n ",e,n,f+y[count][0],y[count][0],y[count][1],f*f/(y[count][1]* y[count][1]));
+                        //  for(int pp=0;pp<Npar; pp++) printf("P: %g  \t",P[pp]]); printf("\n");
             f /= y[count][1];
             chi2 += f * f;
             count++;

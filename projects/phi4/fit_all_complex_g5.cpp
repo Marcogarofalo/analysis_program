@@ -67,7 +67,16 @@ void print_fit_band_L_M(char** argv, vector<data_phi> gjack, struct fit_type fit
 			}
 			double E3_m_err = error_jackboot(argv[1], Njack, E3_m);
 			for (int j = 0;j < Njack;j++) {
-				tmpx[1] = fit_info_m0.function(0, fit_info_m0.Nvar, tmpx, fit_info_m0.Npar, tif_m0[j]); //m0   put for each n the mass of the last ensemble
+				int eL = -1;
+				for (int e = 0; e < myen.size();e++) {
+					if (tmpx[0] == params[e].data.L[1])
+						eL = e;
+				}
+				if (eL == -1)
+					tmpx[1] = fit_info_m0.function(0, fit_info_m0.Nvar, tmpx, fit_info_m0.Npar, tif_m0[j]); //m0   put for each n the mass of the last ensemble
+				else
+					tmpx[1] = gjack[eL].jack[1][j];
+				// tmpx[1] = fit_out_m0.P[0][j];
 
 				tmpx[2] = gjack[0].jack[2][j];//m1  //
 				tmpx[3] = gjack[0].jack[4][j];//E20
@@ -88,7 +97,7 @@ void print_fit_band_L_M(char** argv, vector<data_phi> gjack, struct fit_type fit
 				tmpx[8] = inter_spline(tmpx[0], myen.size(), x, y); // tmpx[0]=L 
 
 				if (params[0].data.gC > 0) {
-					tmpx[1] = gjack[0].jack[443][j];//m0
+					// tmpx[1] = gjack[0].jack[443][j];//m0
 					tmpx[10] = compute_k_m_g(n, 0, j, params, gjack, fit_info);//k_m
 					tmpx[6] = tmpx[10] * tmpx[1];//k
 					tmpx[3] = gjack[0].jack[594][j];//E20
@@ -102,9 +111,12 @@ void print_fit_band_L_M(char** argv, vector<data_phi> gjack, struct fit_type fit
 				tmpx[9] = E3_m_err;
 
 
-				for (int i = fit_info.Nvar; i < fit_info.Nvar + fit_info.n_ext_P; i++)
-					tmpx[i] = fit_info.ext_P[i - fit_info.Nvar][j];
-
+				// for (int i = fit_info.Nvar; i < fit_info.Nvar + fit_info.n_ext_P; i++)
+				// 	tmpx[i] = fit_info.ext_P[i - fit_info.Nvar][j];
+				for (int i = 0; i < fit_info.n_ext_P; i++) {
+					// printf("HERE %d  %d\n",i + fit_info.Nvar,Nvar);
+					tmpx[i + fit_info.Nvar] = fit_info.ext_P[i][j];
+				}
 
 
 				tmpy[j] = fit_info.function(n, Nvar, tmpx, Npar, tif[j]);
@@ -114,9 +126,10 @@ void print_fit_band_L_M(char** argv, vector<data_phi> gjack, struct fit_type fit
 				//                     printf("%g   j=%d \t k=%g  m=%g P0=%g  P1=%g\n",finalL,j,tmpy[j], tmpx[1], tif[j][0] ,tif[j][1]  );
 				//                 
 			}
-			/*if (fabs(finalL-36)<1e-5  && n==2){
-				printf("%g  \t %g  %g\n",finalL,tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
-			}*/
+			// if (fabs(finalL-20)<1e-5  && n==0){
+			// 	printf("%g  \t %g  %g\n",finalL,tmpy[Njack-1], error_jackboot(argv[1],Njack, tmpy ) );
+			// 	printf(" %g  %g\n",fit_out.P[0][Njack-1],fit_out.P[1][Njack-1] );
+			// }
 			fprintf(f, "%g  \t %g  %g\n", finalL, tmpy[Njack - 1], error_jackboot(argv[1], Njack, tmpy));
 
 			free(E3_m);
@@ -477,8 +490,8 @@ int main(int argc, char** argv) {
 		err_mass.emplace_back(error_jackboot(argv[1], Njack, gjack[e1].jack[443]));
 	}
 
-	//zeta.Init_Lmq_g(Ls, masses, err_mass  );
-	//zeta.write("zeta_complex_g5.dat");
+	// zeta.Init_Lmq_g(Ls, masses, err_mass  );
+	// zeta.write("zeta_complex_g5.dat");
 	zeta.read("zeta_complex_g5.dat");
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	// printing files
@@ -611,20 +624,24 @@ int main(int argc, char** argv) {
 	fit_info.function = rhs_deltaE2_m_quant_cond_g;
 
 	fit_info.lambda = 0.001;
-	fit_info.acc = 0.01;
+	fit_info.acc = 0.001;
 	fit_info.h = 1e-3;
-	fit_info.Prange = { 100,10 };
+	// fit_info.Prange = { 10,10 };
 	fit_info.devorder = 2;
-	fit_info.guess = { -0.123, -4.67 };
+	// fit_info.repeat_start = 10;
+	fit_info.precision_sum=2;
+	fit_info.verbosity = 0;
+	fit_info.guess = { -0.141739, -2.89287 };
 
 	//      the zeta is computed analytically, use the interpolated one for faster result!!!!!!!!!
 	//      struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.11,-950, 6.4e-6} );// {-0.948817,-114.788,0.0003987}
 	fit_result deltaE2_m_quant_cond = fit_data(argv, paramsj, gjack, lhs_deltaE2_m_latt_g, fit_info, "deltaE2_m_quant_cond", myen);
-	print_fit_band_L_M(argv, gjack, fit_info, fit_info_m0, "deltaE2_m_quant_cond", deltaE2_m_quant_cond, fit_m0, paramsj, myen, { 14,26 });
+	print_fit_band_L_M(argv, gjack, fit_info, fit_info_m0, "deltaE2_m_quant_cond", deltaE2_m_quant_cond, fit_m0, paramsj, myen, { 13,26 });
 
 	print_phase_shift(argv, gjack, fit_info, "deltaE2_m_quant_cond", deltaE2_m_quant_cond);
 	fit_info.restore_default();
 
+	exit(1);
 
 
 	printf("\n/////////////////////////////////     delta 2par   //////////////////\n");
@@ -647,7 +664,6 @@ int main(int argc, char** argv) {
 
 	struct fit_result fit_delta_2par = fit_data(argv, paramsj, gjack, lhs_delta_g, fit_info, "delta_2par_g", myen);
 	free_fit_result(fit_info, fit_delta_2par);
-
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -735,7 +751,7 @@ int main(int argc, char** argv) {
 
 	printf("////////////////////  kiso pole fit   ////////////////////////////////////\n");
 	init_python_detQC();
-	init_python_detQC_kcot_kiso("kcot_2par", "kiso_pole","find_sol");
+	init_python_detQC_kcot_kiso("kcot_2par", "kiso_pole", "find_sol");
 	//     init_python_detQC_kcot_kiso("kcot_2par", "kiso_2par");
 	//      init_python_detQC_kcot_kiso("kcot_2par", "kiso_1par");
 	fit_info.Npar = 2;
@@ -751,13 +767,13 @@ int main(int argc, char** argv) {
 	fit_info.ext_P[2] = fit_m0.P[0];
 
 	fit_info.lambda = 0.001;
-	fit_info.acc = 0.1;
-	fit_info.h = 1e-3;
+	fit_info.acc = 10;
+	fit_info.h = 1e-2;
 	//fit_info.Prange={1000,10000};
 	fit_info.devorder = 2;
 	fit_info.verbosity = 100;
 	fit_info.repeat_start = 2;
-	fit_info.guess = { 1000,9.65 };
+	fit_info.guess = { -0.142262, -2.96471 };
 	fit_info.mean_only = true;
 
 	mysprintf(namefile, NAMESIZE, "QC3_N%d_%dpar_pole", fit_info.N, fit_info.Npar);

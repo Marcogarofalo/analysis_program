@@ -969,14 +969,16 @@ double rhs_deltaE2_m_quant_cond(int n, int Nvar, double *x,int Npar,double  *P){
 
 
 double rhs_deltaE2_m_quant_cond_g(int n, int Nvar, double *x,int Npar,double  *P){
-    
-    double xx[3]={x[0],x[1],1} ; //{L,mass,   k to be find by the bisection}
+
+    double mass=x[1];
+    // double mass=x[Nvar-1];
+    double xx[3]={x[0],mass,1} ; //{L,mass,   k to be find by the bisection}
     //double p[5]={0 ,2.*pi_greco/x[0], sqrt(2)*2.*pi_greco/x[0] , sqrt(3)*2.*pi_greco/x[0],0 };
     
     //      printf("before   n=%d   L=%g   m=%g  a=%g  r=%g   P=%g\n",n,x[0],x[1],P[0],P[1],P[2]);
     int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
     init_dvec_E2_g(n,dvec,dvec1,dvec2,dmax1,dmax2);
-    double mass=xx[1];
+    
     double L=x[0];
     // xmin have to be k in free theory
     double E1f=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec1[0]*dvec1[0]+dvec1[1]*dvec1[1]+dvec1[2]*dvec1[2])   );
@@ -1000,7 +1002,9 @@ double rhs_deltaE2_m_quant_cond_g(int n, int Nvar, double *x,int Npar,double  *P
     double k=rtsafe( to_invert_k_from_phase_shift_g , n,  3, xx, Npar, P, 2/*ivar*/,0. /*input*/,    xmin, xmax,  1e-5, 100, 1e-4);
     double E2=sqrt( (k*k+mass*mass)*4.+ (2*pi_greco/L)*(2*pi_greco/L)*( dvec[0]*dvec[0]+dvec[1]*dvec[1]+dvec[2]*dvec[2]   )  );
     
-    return (E2)/mass;
+    double mass_inf=x[Nvar-1];
+    // printf("m  %g  %g    %d\n",mass,mass_inf,Nvar-1);
+    return (E2/mass_inf);
 
     
 }
@@ -1363,7 +1367,7 @@ double lhs_deltaE2_m_latt(int n, int e , int j , vector<cluster::IO_params> para
 
 double lhs_deltaE2_m_latt_g(int n, int e , int j , vector<cluster::IO_params> params,vector<data_phi> gjack, struct fit_type fit_info ){
     double E2;
-    double mass=gjack[e].jack[443][j];
+    double mass=gjack[e].jack[1][j];
     // double mass=fit_info.ext_P[2][j];
 
     int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
@@ -1384,7 +1388,8 @@ double lhs_deltaE2_m_latt_g(int n, int e , int j , vector<cluster::IO_params> pa
     double Ef2=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
     double E2f=Ef1+Ef2;
     
-    return (E2-E2fL+E2f)/mass;
+    double mass_inf=fit_info.ext_P[2][j];
+    return (E2-E2fL+E2f)/mass_inf;
 
 }
 
@@ -1998,9 +2003,11 @@ void print_fit_output(char **argv,vector<data_phi> gjack ,struct fit_type fit_in
     mysprintf(namefile,NAMESIZE,"%s/%s_fit_P.tex",argv[3], label);
     f=open_file(namefile,"w+");
     fprintf(f,"\\begin{gather}\n");
-    fprintf(f,"\\chi^2/d.o.f.=%g \\\\ \n", fit_out.chi2[Njack-1]);//error_jackboot(argv[1], Njack, fit_out.chi2)
+    printf("chi^2/d.o.f.=%g  \n", fit_out.chi2[Njack-1]);//error_jackboot(argv[1], Njack, fit_out.chi2)
+    fprintf(f,"\\chi^2/d.o.f.=%g  \n", fit_out.chi2[Njack-1]);//error_jackboot(argv[1], Njack, fit_out.chi2)
     for (int i=0;i<Npar;i++){
         fprintf(f,"P[%d]=%g\\pm (%.2g) \\\\ \n",i, fit_out.P[i][Njack-1], error_jackboot(argv[1], Njack, fit_out.P[i]));
+        printf("P[%d]=%g (%.2g) \n",i, fit_out.P[i][Njack-1], error_jackboot(argv[1], Njack, fit_out.P[i]));
     }
     fprintf(f,"\\end{gather}\n");
     double **cov=covariance(argv[1], Npar, Njack, fit_out.P);
