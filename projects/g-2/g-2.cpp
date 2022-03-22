@@ -27,6 +27,8 @@
 #include <string>
 #include <fstream>
 #include <memory>
+
+#include <gsl/gsl_integration.h>
 using namespace std;
 
 
@@ -244,9 +246,9 @@ int main(int argc, char** argv) {
 
 
 
-    error(argc != 12, 1, "main ",
+    error(argc != 15, 1, "main ",
         "usage:./g-2  blind/see/read_plateaux -p path basename -bin $bin"
-        "  -mu mu -L L jack/boot ");
+        "  -mu mu -L L jack/boot -a a da ");
     error(strcmp(argv[1], "blind") != 0 && strcmp(argv[1], "see") != 0 && strcmp(argv[1], "read_plateaux") != 0, 1, "main ",
         "argv[1] only options:  blind/see/read_plateaux ");
 
@@ -258,12 +260,14 @@ int main(int argc, char** argv) {
 
 
 
-    error(strcmp(argv[5], "-bin") != 0, 1, "main", "argv[4] must be: -bin");
-    error(strcmp(argv[7], "-mu") != 0, 1, "main", "argv[4] must be: -mu");
-    error(strcmp(argv[9], "-L") != 0, 1, "main", "argv[4] must be: -L");
+    error(strcmp(argv[5], "-bin") != 0, 1, "main", "argv[5] must be: -bin");
+    error(strcmp(argv[7], "-mu") != 0, 1, "main", "argv[7] must be: -mu");
+    error(strcmp(argv[9], "-L") != 0, 1, "main", "argv[9] must be: -L");
     error(strcmp(argv[11], "jack") != 0 && strcmp(argv[7], "boot") != 0, 1, "main",
         "argv[6] only options: jack/boot");
-
+    error(strcmp(argv[12], "-a") != 0, 1, "main", "argv[12] must be: -a");
+    double lattice_spacing = atof(argv[13]);
+    double err_lattice_spacing = atof(argv[14]);
 
     char** option;
     option = (char**)malloc(sizeof(char*) * 7);
@@ -295,6 +299,8 @@ int main(int argc, char** argv) {
     mysprintf(option[6], NAMESIZE, namefile); // basename
 
     printf("resampling %s\n", option[4]);
+    char resampling[NAMESIZE];
+    mysprintf(resampling, NAMESIZE, argv[11]);
     int T = file_head.l0;
 
     file_head.nk = 2;
@@ -439,6 +445,34 @@ int main(int argc, char** argv) {
     check_correlatro_counter(5);
 
     fit_info.restore_default();
+
+    double* amu_sd = (double*)malloc(sizeof(double) * Njack);
+    double* VV = (double*)malloc(sizeof(double) * file_head.l0);
+    int seed;
+    if (lattice_spacing == 0.0947 && err_lattice_spacing == 0.0004)  seed = 1;
+    if (lattice_spacing == 0.0816 && err_lattice_spacing == 0.0003)  seed = 2;
+    if (lattice_spacing == 0.0694 && err_lattice_spacing == 0.0003)  seed = 3;
+    if (lattice_spacing == 0.0577 && err_lattice_spacing == 0.0002)  seed = 4;
+    double* a = fake_sampling(resampling, lattice_spacing, err_lattice_spacing, Njack, seed);
+    double* ZA = fake_sampling(resampling, 0.742837, 0.00023, Njack, seed);
+    double* ZV = fake_sampling(resampling, 0.706377, 1.1e-5, Njack, seed);
+    for (int j = 0;j < Njack;j++) {
+        for (int t = 0;t < file_head.l0;t++) {
+            VV[t] = conf_jack[j][2][t][0];
+        }
+        amu_sd[j] = ZV[j] * ZV[j] * compute_amu_sd(VV, a[j], 5.0 / 9.0);
+    }
+    printf("amu_sd(equal,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
+
+    for (int j = 0;j < Njack;j++) {
+        for (int t = 0;t < file_head.l0;t++) {
+            VV[t] = conf_jack[j][5][t][0];
+        }
+        amu_sd[j] = ZA[j] * ZA[j] * compute_amu_sd(VV, a[j], 5.0 / 9.0);
+    }
+    printf("amu_sd(opposite,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
+
+
     free(M_PS);free(M_PS_OS);
     free_fit_result(fit_info, G_PS);free_fit_result(fit_info, G_PS_OS);
     free_fit_result(fit_info, ZVl);free_fit_result(fit_info, ZAl);
