@@ -5806,6 +5806,71 @@ int main(int argc, char** argv) {
     check_correlatro_counter(617);
 
 
+
+    if (params.data.ncorr >= 273) {
+
+        char name_v[NAMESIZE];
+        fit_info.N = 3;
+        fit_info.corr_id = { 5, 128,269,
+                                1 ,271,
+                                267 };//diag{ 3phi0->3phi0, phi1->phi1 }
+        fit_info.value_or_vector = 0; // 0= values
+        fit_info.t0_GEVP = 3;
+        //fit_info.corr_id={1,2};
+        printf("GEVP_3_1_00d1\n");
+        add_correlators(option, ncorr_new, conf_jack, GEVP_matrix, fit_info);
+        printf(" ncorr after GEVP %d\n", ncorr_new);
+
+        fit_info.restore_default();
+
+        for (int i = 0; i < fit_info.N; i++) {
+            mysprintf(name_v, NAMESIZE, "GEVP_3_1_00d1_l%d", i);
+            double* l0_GEVP = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, ncorr_new - fit_info.N + i, name_v, identity, jack_file);
+            free(l0_GEVP);
+            check_correlatro_counter(618 + i);
+        }
+        for (int i = 0; i < fit_info.N; i++) {
+            mysprintf(name_v, NAMESIZE, "GEVP_3_1_00d1_meffl%d", i);
+            double* ml0_GEVP = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, ncorr_new - fit_info.N + i, name_v, M_eff_T, jack_file);
+            free(ml0_GEVP);
+            check_correlatro_counter(621 + i);
+        }
+
+        double* tmp_imag = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 270, "imag_3_00d1", identity, jack_file);
+        free(tmp_imag);
+
+        tmp_imag = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 272, "imag_1_00d1", identity, jack_file);
+        free(tmp_imag);
+        
+
+        // int sqrtN = 2;
+        // int N = sqrtN * sqrtN;
+        // fit_info.N = N;
+        // fit_info.corr_id = { 5, 128,
+        //                         1 };//diag{ 3phi0->3phi0, phi1->phi1 }
+        // fit_info.value_or_vector = 1; // 0= values
+        // fit_info.t0_GEVP = 3;
+        // //fit_info.corr_id={1,2};
+        // printf("GEVP_3_1_v\n");
+        // add_correlators(option, ncorr_new, conf_jack, GEVP_matrix, fit_info);
+        // printf(" ncorr after GEVP %d\n", ncorr_new);
+
+        // fit_info.restore_default();
+        // //id_GEVP_031_p1=ncorr_new;
+
+        // for (int i = 0; i < N; i++) {
+        //     int comp = i % sqrtN;
+        //     int id = i / sqrtN;
+        //     mysprintf(name_v, NAMESIZE, "GEVP_3_1_v%d_%d", id, comp);
+        //     double* l0_GEVP = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, ncorr_new - N + i, name_v, identity, jack_file);
+        //     free(l0_GEVP);
+        //     check_correlatro_counter(356 + i);
+        // }
+        // check_correlatro_counter(359);
+    }
+    else { for (int i = 618;i <= 623;i++)  zero_corr(zeros, Njack, jack_file); }
+    check_correlatro_counter(623);
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
     // free(E1_0_p1);
     // free(E1_0_p11);
