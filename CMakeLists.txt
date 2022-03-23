@@ -35,7 +35,7 @@ IF(NOT DEFINED GSL_INCLUDE_DIR)
   find_package(GSL REQUIRED) 
   MESSAGE("GSL: " ${GSL})
 ENDIF()
-#INCLUDE_DIRECTORIES ( "${EIGEN3_INCLUDE_DIR}" )
+#INCLUDE_DIRECTORIES ( "${GSL_INCLUDE_DIR}" )
 
 IF(WITH_PYTHON)
     SET(python_dir "/usr/include/python3.9/")  #sudo apt-get install python3.9-dbg
