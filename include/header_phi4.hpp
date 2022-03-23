@@ -13,10 +13,11 @@
 #include "global.hpp"
 #include "mutils.hpp"
 #include "tower.hpp"
+#include "fit_all.hpp"
 
 using namespace std;
 
-struct data_phi{
+struct data_phi: public data_all{
     int Njack;
     int Nobs;
     double **jack;
@@ -71,7 +72,7 @@ namespace cluster {
         int header_size;
         
     };
-    class IO_params {
+    class IO_params: public generic_header {
         
     private:
         
@@ -209,12 +210,12 @@ namespace cluster {
 }
 
 void read_header_phi4(FILE *stream, cluster::IO_params &params );
-void emplace_back_par_data( char* namefile, std::vector< cluster::IO_params >& paramsj, std::vector< data_phi >& dataj );
+void emplace_back_par_data( char* namefile, std::vector< cluster::IO_params >& paramsj, std::vector< data_all >& dataj );
 void read_Njack_Nobs( FILE* stream, cluster::IO_params params, int& Njack, int& Nobs );
-void read_dataj( FILE* stream, cluster::IO_params params, data_phi& dj );
+void read_dataj( FILE* stream, cluster::IO_params params, data_all& dj );
 void read_header_phi4( FILE* stream, cluster::IO_params& params );
 void write_header_phi4( FILE* stream, cluster::IO_params params );
-vector<data_phi> create_generalised_resampling(  vector<data_phi> &dataj );
+vector<data_all> create_generalised_resampling_phi(  vector<data_all> &dataj , vector<cluster::IO_params> paramsj);
 
 
 #endif

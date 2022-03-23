@@ -218,6 +218,8 @@ struct  fit_type {
   std::vector<int> corr_id = {};
   std::vector<double>  Prange = {};
   std::vector<double>  guess = {};
+  std::vector<int> myen = {};
+  double*** x;
 
   // GEVP
   int t0_GEVP = 3;
@@ -238,6 +240,7 @@ struct  fit_type {
   std::string resampling;
   int verbosity = 0;
 
+  
   void restore_default() {
     custom = false; // 1 means default fit , 0 custom fit options
     lambda = 0.001;
@@ -248,6 +251,8 @@ struct  fit_type {
     corr_id = std::vector<int>();
     devorder = 4;
     repeat_start = 1;
+    
+    myen = std::vector<int>();
 
     mean_only = false;
 
@@ -275,7 +280,7 @@ struct  fit_type {
     }
     //      f_plateaux_scan=NULL;
     //      name_plateaux_scan="\0";
-  };
+  }
 
 
 };

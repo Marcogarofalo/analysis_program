@@ -35,7 +35,7 @@ using namespace std;
 
 int main(int argc, char **argv){
     vector<cluster::IO_params> paramsj;
-     vector<data_phi> dataj;
+     vector<data_all> dataj;
      
      int Ne=0; 
      cluster::IO_params params;

@@ -110,7 +110,7 @@ void read_Njack_Nobs( FILE *stream, cluster::IO_params params, int &Njack, int &
     
 }
 
-void read_dataj(FILE *stream,cluster::IO_params params, data_phi &dj){
+void read_dataj(FILE *stream,cluster::IO_params params, data_all &dj){
     read_Njack_Nobs(stream, params, dj.Njack, dj.Nobs );
     //printf("Nobs=%d   Njack=%d\n",dj.Nobs,dj.Njack)
     dj.jack=double_malloc_2( dj.Nobs, dj.Njack);
@@ -121,9 +121,9 @@ void read_dataj(FILE *stream,cluster::IO_params params, data_phi &dj){
     
 }
 
-void emplace_back_par_data( char *namefile , vector<cluster::IO_params> &paramsj, vector<data_phi> &dataj){
+void emplace_back_par_data( char *namefile , vector<cluster::IO_params> &paramsj, vector<data_all> &dataj){
     cluster::IO_params params;
-    data_phi  data;
+    data_all  data;
     FILE *f=open_file(namefile,"r");
     read_header_phi4( f  , params);
     read_dataj(f,params,data );
@@ -136,7 +136,7 @@ void emplace_back_par_data( char *namefile , vector<cluster::IO_params> &paramsj
 }
 
 
-vector<data_phi> create_generalised_resampling(  vector<data_phi> &dataj ){
+vector<data_all> create_generalised_resampling_phi(  vector<data_all> &dataj, vector<cluster::IO_params> paramsj ){
     // if the length is the same return dataj
     int same=0;
     for( auto &d :dataj){
@@ -150,7 +150,7 @@ vector<data_phi> create_generalised_resampling(  vector<data_phi> &dataj ){
     }
     else{
         cout << "creating generalised jack"<<endl;
-        vector<data_phi> gjack;
+        vector<data_all> gjack;
         //gjack.resize(dataj.size());
         //jac_tot is the summ of all jackknife +1 
         //remember alle the dataj have one extra entry for the mean
@@ -171,9 +171,11 @@ vector<data_phi> create_generalised_resampling(  vector<data_phi> &dataj ){
             
             
             for(int e=0;e<dataj.size();e++){
-                data_phi tmp;
+                data_all tmp;
                 tmp.Njack=jack_tot;
                 tmp.Nobs=Nobs;
+                tmp.header.L=paramsj[e].data.L[1];
+                tmp.header.T=paramsj[e].data.L[0];
                 cout<< Nobs<<" " <<jack_tot<< endl;
                 tmp.jack=double_malloc_2( Nobs, jack_tot);
                 int counter=0;
@@ -196,7 +198,7 @@ vector<data_phi> create_generalised_resampling(  vector<data_phi> &dataj ){
                 free_2(dataj[e].Nobs, dataj[e].jack);
                 gjack.emplace_back(tmp);
             }
-            vector<data_phi>().swap(dataj);
+            vector<data_all>().swap(dataj);
             
             return gjack;
             

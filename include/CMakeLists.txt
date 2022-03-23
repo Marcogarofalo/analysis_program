@@ -275,9 +275,21 @@ add_library(
     header_phi4.hpp
     ../modules/header_phi4.cpp
 )
-#target_link_libraries(header_phi4 PUBLIC global)
+target_link_libraries(header_phi4 PUBLIC fit_all)
 set_target_properties(header_phi4 PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(header_phi4 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+ 
+
+
+add_library(
+    fit_all STATIC
+    fit_all.hpp
+    ../modules/fit_all.cpp
+)
+target_link_libraries(fit_all PUBLIC non_linear_fit)
+target_link_libraries(fit_all PUBLIC global)
+#set_target_properties(fit_all PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(fit_all PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
  
  
 add_library(
