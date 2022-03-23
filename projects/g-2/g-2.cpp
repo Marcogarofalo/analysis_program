@@ -20,6 +20,7 @@
 #include "correlators_analysis.hpp"
 #include "eigensystem.hpp"
 #include "non_linear_fit.hpp"
+#include "tower.hpp"
 // #include "lhs_functions.hpp"
 
 #include <string>
@@ -34,6 +35,71 @@ using namespace std;
 
 struct  kinematic kinematic_2pt;
 
+
+class configuration_class {
+public:
+    std::vector<std::string> iconfs;
+    std::vector<int> to_bin;//0 last, 1 alone, 2 first, 3 in the list
+    std::vector<int> next_to_bin;
+    int confs_after_binning;
+
+
+    void check_binnign() {
+        confs_after_binning = 0;
+        for (int i = 0; i < iconfs.size(); i++) {
+            to_bin[i] = 1;// alone
+            next_to_bin[i] = -1;
+            confs_after_binning++;
+            for (int j = i - 1; j >= 0; j--) {
+                if (strcmp(iconfs[i].c_str(), iconfs[j].c_str()) == 0) {
+                    if (to_bin[j] == 1) {
+                        to_bin[j] = 2;// has a similar and it is first in the list
+                    }
+                    else if (to_bin[j] == 0) {
+                        to_bin[j] = 3;// it needs to be binned with others
+                    }
+                    next_to_bin[j] = i;
+                    to_bin[i] = 0;// last in the list of confs to bin
+                    confs_after_binning--;
+                    break;
+                }
+
+            }
+
+        }
+        // for (int i = 0; i < iconfs.size(); i++) {
+        //     printf("%s   %d    %d\n", iconfs[i].c_str(), to_bin[i], next_to_bin[i]);
+        // }
+        
+    }
+
+
+    configuration_class(const char stream[NAMESIZE]) {
+
+        long int tmp;
+        int s = file_head.l1 + 1 + 3;
+        int count = 0;
+        string line;
+        ifstream file(stream);
+        while (getline(file, line)) {
+            count++;
+            if (line.compare(0, 1, "#") == 0) {
+                line.erase(8);
+                line.erase(0, 1);
+                iconfs.emplace_back(line);
+                // printf("%s\n", line.c_str());
+            }
+
+        }
+        std::cout << "lines=" << count << std::endl;
+        error(count % s != 0, 1, "read_nconfs lines and T do not match", "lines=%i   T/2=%i", count, file_head.l1);
+        int c = count / s;
+        std::cout << "confs=" << c << std::endl;
+
+        to_bin = std::vector<int>(iconfs.size());
+        next_to_bin = std::vector<int>(iconfs.size());
+    }
+};
 
 void get_kinematic(int ik2, int r2, int ik1, int r1, int imom2, int imom1) {
     kinematic_2pt.ik2 = ik2;
@@ -52,23 +118,59 @@ void get_kinematic(int ik2, int r2, int ik1, int r1, int imom2, int imom1) {
 
 }
 
-int read_nconfs(const char stream[NAMESIZE]) {
+void line_read_param(char** option, const char* corr, double& tmin, double& tmax, int& sep, const char* namefile_plateaux) {
 
-    long int tmp;
-    int s = file_head.l1 + 1 + 3;
-    int count = 0;
-    string line;
-    ifstream file(stream);
-    while (getline(file, line))
-        count++;
-    std::cout << "lines=" << count << std::endl;
-    error(count % s != 0, 1, "read_nconfs lines and T do not match", "lines=%i   T/2=%i", count, file_head.l1);
-    int c = count / s;
-    std::cout << "confs=" << c << std::endl;
+    int line = 0;
+    // option[3] path
+    // option[6] file
+    char namefile[NAMESIZE];
+    mysprintf(namefile, NAMESIZE, "%s/%s", option[3], namefile_plateaux);
+    std::fstream newfile;
 
-    return c;
+    newfile.open(namefile, std::ios::in); // open a file to perform read operation using file object
+    int match = 0;
+    if (newfile.is_open()) { // checking whether the file is open
+        std::string tp;
+        while (getline(newfile, tp)) { // read data from file object and put it into string.
+            line++;
+            std::vector<std::string> x = split(tp, ' ');
 
+            std::string name = option[6];
+            std::string correlator = corr;
+            if (x.empty() == 0) {
+                if (x[0].compare(name) == 0 && x[1].compare(correlator) == 0) {
+                    tmin = stod(x[2]);
+                    tmax = stod(x[3]);
+                    sep = stoi(x[4]);
+                    printf("correlator %s  plateaux %g  %g %d\n", correlator.c_str(), tmin, tmax, sep);
+                    match++;
+                    break;
+                }
+            }
+        }
+        newfile.close(); // close the file object.
+    }
+    else {
+        error(0 == 0, 1, "correlators_analysis.cpp line_read_plateaux",
+            "unable to open %s", namefile);
+    }
+    // error(match==0,1,"correlators_analysis.cpp line_read_plateaux",
+    //       "no match for plateau %s   %s \n in the file %s ",option[6], corr,namefile);
+    if (match == 0) {
+        printf("no plateau found for %s in plateau file %s\n", corr, namefile);
+        printf("looking for a line:\n %s  %s\n", option[6], corr);
+        exit(1);
+    }
+    if (match > 0){
+        printf("multiple lines line:\n %s  %s\n", option[6], corr);
+        exit(1);
+    }
+    if (tmax > tmin) {
+        printf("\n\n bel errore del cazzo\n\n");
+    }
 }
+
+
 static void  write_file_head(FILE* stream) {
     int i, dsize;
     double* dstd;
@@ -95,7 +197,6 @@ static void  write_file_head(FILE* stream) {
 }
 
 
-
 double matrix_element_GEVP(int t, double** cor, double mass) {
     double me;
 
@@ -104,16 +205,36 @@ double matrix_element_GEVP(int t, double** cor, double mass) {
 
     return  me;
 }
+void return_conf_binned(double* tmp_b, double** tmp, configuration_class confs, int id, int T) {
+    double N = 1;
+    for (int t = 0;t < T / 2 + 1;t++)
+        tmp_b[t] += tmp[id][t];
+    // printf("%s\t", confs.iconfs[id].c_str());
 
+    while (confs.to_bin[id] >= 2) {
+        id = confs.next_to_bin[id];
+        // printf("%s\t", confs.iconfs[id].c_str());
+        for (int t = 0;t < T / 2 + 1;t++)
+            tmp_b[t] += tmp[id][t];
+        N++;
+    }
+    for (int t = 0;t < T / 2 + 1;t++)
+        tmp_b[t] /= N;
 
-void read_twopt(const char namefile[NAMESIZE], int confs, int T, double**** to_write, int id) {
-    char tmp[NAMESIZE];
+    // printf("\n");
+    
+}
+
+void read_twopt(const char namefile[NAMESIZE], configuration_class confs, int T, double**** to_write, int id) {
+    // char tmp[NAMESIZE];
     int sd = 0;
     std::fstream newfile;
     newfile.open(namefile, std::ios::in);
+    double** tmp = double_malloc_2(confs.iconfs.size(), T / 2 + 2);
+
     if (newfile.is_open()) { // checking whether the file is open
         std::string tp;
-        for (int i = 0;i < confs;i++) {
+        for (int i = 0;i < confs.iconfs.size();i++) {
             getline(newfile, tp);
             // cout<< tp<< endl;
             getline(newfile, tp);
@@ -122,7 +243,8 @@ void read_twopt(const char namefile[NAMESIZE], int confs, int T, double**** to_w
             // cout<< tp<< endl;
             for (int t = 0;t < T / 2 + 1;t++) {
                 getline(newfile, tp);
-                to_write[i][id][t][0] = stod(tp);
+                // to_write[i][id][t][0] = stod(tp);
+                tmp[i][t] = stod(tp);
                 // printf("%.15f\n", to_write[i][id][t][0]);
             }
 
@@ -132,6 +254,22 @@ void read_twopt(const char namefile[NAMESIZE], int confs, int T, double**** to_w
         error(0 == 0, 1, "correlators_analysis.cpp line_read_plateaux",
             "unable to open %s", namefile);
     }
+
+    int count = 0;
+    for (int i = 0;i < confs.iconfs.size();i++) {
+        if (confs.to_bin[i] == 1 || confs.to_bin[i] == 2) { // if it is alone or it is first of the list
+            double* tmp_b = (double*)calloc((T / 2 + 2), sizeof(double));
+            return_conf_binned(tmp_b, tmp, confs, i, T);
+            for (int t = 0;t < T / 2 + 1;t++) {
+                to_write[count][id][t][0] = tmp_b[t];
+            }
+            free(tmp_b);
+            count++;
+        }
+    }
+
+
+
 
 }
 
@@ -214,7 +352,6 @@ void write_header_g2(FILE* stream) {
 }
 
 
-
 int main(int argc, char** argv) {
     int size;
     int i, j, t;
@@ -246,9 +383,9 @@ int main(int argc, char** argv) {
 
 
 
-    error(argc != 15, 1, "main ",
+    error(argc != 12, 1, "main ",
         "usage:./g-2  blind/see/read_plateaux -p path basename -bin $bin"
-        "  -mu mu -L L jack/boot -a a da ");
+        "  -mu mu -L L jack/boot  ");
     error(strcmp(argv[1], "blind") != 0 && strcmp(argv[1], "see") != 0 && strcmp(argv[1], "read_plateaux") != 0, 1, "main ",
         "argv[1] only options:  blind/see/read_plateaux ");
 
@@ -265,9 +402,7 @@ int main(int argc, char** argv) {
     error(strcmp(argv[9], "-L") != 0, 1, "main", "argv[9] must be: -L");
     error(strcmp(argv[11], "jack") != 0 && strcmp(argv[7], "boot") != 0, 1, "main",
         "argv[6] only options: jack/boot");
-    error(strcmp(argv[12], "-a") != 0, 1, "main", "argv[12] must be: -a");
-    double lattice_spacing = atof(argv[13]);
-    double err_lattice_spacing = atof(argv[14]);
+    
 
     char** option;
     option = (char**)malloc(sizeof(char*) * 7);
@@ -344,14 +479,23 @@ int main(int argc, char** argv) {
     correlators.emplace_back(namefile);
 
     printf("reading confs from file: %s", correlators[0].c_str());
-    confs = read_nconfs(correlators[0].c_str());
+    // auto iconfs = read_nconfs(correlators[0].c_str());
+    configuration_class myconfs(correlators[0].c_str());
+    confs = myconfs.iconfs.size();
     cout << "confs =" << confs << endl;
     for (auto name : correlators) {
         printf("checking confs from file: %s\n", name.c_str());
-        int check_conf = read_nconfs(name.c_str());
-        error(confs != check_conf, 1, "reading number of configuration", "not all the files have the same confs");
+        // auto check_iconfs = read_nconfs(name.c_str());
+        configuration_class check_confs(name.c_str());
+        for (int i = 0;i < confs;i++) {
+            error(myconfs.iconfs[i] != check_confs.iconfs[i], 1, "configurations id do not match", "");
+        }
+        error(confs != check_confs.iconfs.size(), 1, "reading number of configuration", "not all the files have the same confs");
     }
-
+    myconfs.check_binnign();
+    confs = myconfs.confs_after_binning;
+    cout << "number of different configurations:" << confs << endl;
+    // which_confs_are_the_same(std::vector<std::string> iconfs);
 
     // FILE* infile_equal_P5A0 = open_file(namefile, "r+");
     // int count = 0;
@@ -360,8 +504,8 @@ int main(int argc, char** argv) {
     //confs=confs/10;
     // compute what will be the neff after the binning 
     int bin = atoi(argv[6]);
-    int Neff = confs / bin;
-    cout << "effective configurations after binning (" << bin << "):  " << Neff << endl;
+    int Neff =  bin;
+    cout << "effective configurations after binning ( bin size " << confs/bin << "):  " << Neff << endl;
 
     int Njack;
     if (strcmp(argv[11], "jack") == 0)
@@ -382,10 +526,11 @@ int main(int argc, char** argv) {
 
     for (int i = 0; i < var; i++) {
         // read correlators[i] and store in data[conf][i][t][re/im]
-        read_twopt(correlators[i].c_str(), confs, T, data, i);
+        read_twopt(correlators[i].c_str(), myconfs, T, data, i);
     }
 
-    data_bin = binning(confs, var, file_head.l0, data, bin);
+    // data_bin = binning(confs, var, file_head.l0, data, bin);
+    data_bin = binning_toNb(confs, var, file_head.l0, data, bin);
     // //if you want to do the gamma analysis you need to do before freeing the raw data
     // // effective_mass_phi4_gamma(option, kinematic_2pt, (char*)"P5P5", data_bin, Neff, namefile_plateaux, out_gamma, 0, "M_{PS}^{ll}");
     // // effective_mass_phi4_gamma(option, kinematic_2pt, (char*)"P5P5", data_bin, Neff, namefile_plateaux, out_gamma, 1, "M_{PS1}^{ll}");
@@ -446,32 +591,45 @@ int main(int argc, char** argv) {
 
     fit_info.restore_default();
 
-    double* amu_sd = (double*)malloc(sizeof(double) * Njack);
+    // double* amu_sd = (double*)malloc(sizeof(double) * Njack);
     double* VV = (double*)malloc(sizeof(double) * file_head.l0);
+    double mean,err;
     int seed;
-    if (lattice_spacing == 0.0947 && err_lattice_spacing == 0.0004)  seed = 1;
-    if (lattice_spacing == 0.0816 && err_lattice_spacing == 0.0003)  seed = 2;
-    if (lattice_spacing == 0.0694 && err_lattice_spacing == 0.0003)  seed = 3;
-    if (lattice_spacing == 0.0577 && err_lattice_spacing == 0.0002)  seed = 4;
-    double* a = fake_sampling(resampling, lattice_spacing, err_lattice_spacing, Njack, seed);
-    double* ZA = fake_sampling(resampling, 0.742837, 0.00023, Njack, seed);
-    double* ZV = fake_sampling(resampling, 0.706377, 1.1e-5, Njack, seed);
-    for (int j = 0;j < Njack;j++) {
-        for (int t = 0;t < file_head.l0;t++) {
-            VV[t] = conf_jack[j][2][t][0];
-        }
-        amu_sd[j] = ZV[j] * ZV[j] * compute_amu_sd(VV, a[j], 5.0 / 9.0);
-    }
-    printf("amu_sd(equal,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
+    line_read_param(option, "a", mean, err, seed,  namefile_plateaux);
+    double* a = fake_sampling(resampling, mean, err, Njack, seed);
+    line_read_param(option, "ZA", mean, err, seed,  namefile_plateaux);
+    double* ZA = fake_sampling(resampling, mean, err, Njack, seed);
+    line_read_param(option, "ZV", mean, err, seed,  namefile_plateaux);
+    double* ZV = fake_sampling(resampling, mean, err, Njack, seed);
+    
+    
+   
+    double (*int_scheme)(int, int, double*);
 
-    for (int j = 0;j < Njack;j++) {
-        for (int t = 0;t < file_head.l0;t++) {
-            VV[t] = conf_jack[j][5][t][0];
-        }
-        amu_sd[j] = ZA[j] * ZA[j] * compute_amu_sd(VV, a[j], 5.0 / 9.0);
-    }
-    printf("amu_sd(opposite,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
+   
+    int_scheme = integrate_reinman;
+    double *amu_sd = compute_amu_sd(conf_jack,2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile,"amu_{sd}(eq,l)",resampling);
+    write_jack(amu_sd,  Njack,  jack_file);
+    printf("amu_sd(eq,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
+    free(amu_sd);
 
+    amu_sd = compute_amu_sd(conf_jack,5, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile,"amu_{sd}(op,l)",resampling);
+    write_jack(amu_sd,  Njack,  jack_file); 
+    printf("amu_sd(op,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
+    free(amu_sd);
+
+
+    int_scheme = integrate_simpson38;
+    amu_sd = compute_amu_sd(conf_jack,2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile,"amu_{sd,simpson38}(eq,l)",resampling);
+    write_jack(amu_sd,  Njack,  jack_file);
+    printf("amu_sd_simpson38(eq,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
+    free(amu_sd);
+
+    amu_sd = compute_amu_sd(conf_jack,5, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile,"amu_{sd,simpson38}(op,l)",resampling);
+    write_jack(amu_sd,  Njack,  jack_file); 
+    printf("amu_sd_simpson38(op,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
+    free(amu_sd);
+    
 
     free(M_PS);free(M_PS_OS);
     free_fit_result(fit_info, G_PS);free_fit_result(fit_info, G_PS_OS);

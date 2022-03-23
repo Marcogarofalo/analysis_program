@@ -23,6 +23,8 @@ void check_correlatro_counter(int i);
 double constant_fit(int n, int Nvar, double* x, int Npar, double* P);
 
 double shift_and_M_eff_acosh(int t, int T, double** in);
+
+
 double* plateau_correlator_function(char** option, struct kinematic kinematic_2pt, char* name, double**** conf_jack, int Njack, const char* plateaux_masses, FILE* outfile, int index, const char* description, double (*fun)(int, int, double**), FILE* file_jack, struct fit_type fit_info = default_fit_info);
 // jackknife plateau_correlator_function(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, int Njack ,const char  *plateaux_masses,FILE *outfile,  int index , const char *description , double (*fun)(int ,int  , double ** ),  FILE * file_jack);
 
@@ -43,5 +45,7 @@ struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinemat
 void add_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack, double** fun_of_corr(int, double****, int, struct fit_type), struct fit_type fit_info);
 
 void zero_corr(double* zeros, int Njack, FILE* jack_file);
+
+void write_jack(double* corr, int Njack, FILE* jack_file);
 #endif
 

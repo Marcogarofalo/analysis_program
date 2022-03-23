@@ -329,6 +329,10 @@ int line_read_plateaux(char** option, const char* corr, int& tmin, int& tmax, in
             myscanf(3, (char*)"%d %d %d", &tmin, &tmax, &sep);
         }
     }
+    if (match > 0){
+        printf("multiple lines line:\n %s  %s\n", option[6], corr);
+        exit(1);
+    }
     if (tmin > tmax) {
         printf("\n\nerror tmin can not be more than tmax set tmin=tmax-1\n\n");
         tmin = tmax - 1;
@@ -834,5 +838,11 @@ void add_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack,
 
 void zero_corr(double* zeros, int Njack, FILE* jack_file) {
     fwrite(zeros, sizeof(double), Njack, jack_file);
+    corr_counter++;
+}
+
+
+void write_jack(double* corr, int Njack, FILE* jack_file) {
+    fwrite(corr, sizeof(double), Njack, jack_file);
     corr_counter++;
 }
