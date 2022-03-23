@@ -44,7 +44,8 @@ double compute_amu_sd(double* VV, double a, double q2) {
         // printf("time = %d, z=%g\n", t_a, z);
         double K = z * z * kernel_K(z);
         double theta = gm2_step_function(t / 0.15, t1_d);
-        amu += K * VV[t_a] * (1 - theta);
+        double VV_sub=VV[t_a]-q2*(1.0/(2.0*M_PI*M_PI*pow(t_a,5)));
+        amu += K * VV_sub * (1 - theta);
         // printf("t=%d  K=%g   VV=%g  1-theta=%g  amu=%g\n",t_a,K, VV[t_a],1-theta, amu);
     }
     amu *= 4 * alpha_em * alpha_em *
