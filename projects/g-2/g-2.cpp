@@ -144,7 +144,7 @@ void line_read_param(char** option, const char* corr, double& tmin, double& tmax
                     sep = stoi(x[4]);
                     printf("correlator %s  plateaux %g  %g %d\n", correlator.c_str(), tmin, tmax, sep);
                     match++;
-                    break;
+                    // break;
                 }
             }
         }
@@ -161,7 +161,7 @@ void line_read_param(char** option, const char* corr, double& tmin, double& tmax
         printf("looking for a line:\n %s  %s\n", option[6], corr);
         exit(1);
     }
-    if (match > 0){
+    if (match > 1){
         printf("multiple lines line:\n %s  %s\n", option[6], corr);
         exit(1);
     }

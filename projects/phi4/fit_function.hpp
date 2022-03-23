@@ -426,8 +426,8 @@ double lhs_kcotd_m_deltaE_g(int n, int e , int j , vector<cluster::IO_params> pa
     int dvec[3],dvec1[3],dvec2[3],dmax1[3],dmax2[3];
     init_dvec_E2_g(n, dvec, dvec1, dvec2, dmax1, dmax2);
     double E2=get_E2_g_n(n, e, j, gjack);
-    //double mass=gjack[e].jack[443][j];
-    double mass=fit_info.ext_P[2][j];
+    double mass=gjack[e].jack[1][j];
+    
 
     double hatp2=4.*sin(dvec1[0]*pi_greco/params[e].data.L[1]) *sin(dvec1[0]*pi_greco/params[e].data.L[1]) ;
     hatp2+=4.*sin(dvec1[1]*pi_greco/params[e].data.L[2]) *sin(dvec1[1]*pi_greco/params[e].data.L[2]) ;
@@ -446,8 +446,9 @@ double lhs_kcotd_m_deltaE_g(int n, int e , int j , vector<cluster::IO_params> pa
     
     E2=E2-E2fL+E2f;
 
-    r=kcotd( E2 , gjack[e].jack[443][j], dvec, params[e].data.L[1] );
-    return r/gjack[e].jack[443][j];
+    r=kcotd( E2 , mass, dvec, params[e].data.L[1] );
+    double mass_inf=fit_info.ext_P[2][j];
+    return r/mass_inf;
 }
 
 

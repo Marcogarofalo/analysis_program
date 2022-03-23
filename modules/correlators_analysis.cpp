@@ -307,7 +307,7 @@ int line_read_plateaux(char** option, const char* corr, int& tmin, int& tmax, in
                     sep = stoi(x[4]);
                     printf("correlator %s  plateaux %d  %d %d\n", correlator.c_str(), tmin, tmax, sep);
                     match++;
-                    break;
+                    // break;
                 }
             }
         }
@@ -329,7 +329,7 @@ int line_read_plateaux(char** option, const char* corr, int& tmin, int& tmax, in
             myscanf(3, (char*)"%d %d %d", &tmin, &tmax, &sep);
         }
     }
-    if (match > 0){
+    if (match > 1){
         printf("multiple lines line:\n %s  %s\n", option[6], corr);
         exit(1);
     }
