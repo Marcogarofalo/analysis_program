@@ -672,9 +672,9 @@ void zeta_interpolation::write(std::string filename){
     ir=fwrite(&Nm,sizeof(int),1,f );
     
     for (int i=0;i<ntot;i++){
-        ir=fwrite(&mom[i][0],sizeof(double),1,f );
-        ir=fwrite(&mom[i][2],sizeof(double),1,f );
-        ir=fwrite(&mom[i][3],sizeof(double),1,f );
+        ir=fwrite(&mom[i][0],sizeof(int),1,f );
+        ir=fwrite(&mom[i][2],sizeof(int),1,f );
+        ir=fwrite(&mom[i][3],sizeof(int),1,f );
     }
     printf("writing zeta grid for interpolation \n");
     for (int e=0; e<etot;e++){
@@ -718,9 +718,9 @@ void zeta_interpolation::read(std::string filename){
     
     std::vector< std::vector<int> > momenta(ntot,std::vector<int>(3));
     for (int i=0;i<ntot;i++){
-        ir=fread(&momenta[i][0],sizeof(double),1,f );
-        ir=fread(&momenta[i][2],sizeof(double),1,f );
-        ir=fread(&momenta[i][3],sizeof(double),1,f );
+        ir=fread(&momenta[i][0],sizeof(int),1,f );
+        ir=fread(&momenta[i][1],sizeof(int),1,f );
+        ir=fread(&momenta[i][2],sizeof(int),1,f );
     }
     mom=momenta;
     
