@@ -26,7 +26,9 @@ public:
 
 };
 
-struct fit_result fit_all_data(char **argv, std::vector<data_all> gjack, double lhs_fun(int, int, int  ,std::vector<data_all>,struct fit_type ) , struct fit_type fit_info, const char* label );
+struct fit_result fit_all_data(char** argv, std::vector<data_all> gjack,
+    double lhs_fun(int, int, int, std::vector<data_all>, struct fit_type),
+    struct fit_type fit_info, const char* label);
 
 #endif
 

@@ -1882,8 +1882,9 @@ void print_fit_band_L(char** argv, vector<data_all> gjack, struct fit_type fit_i
             tmpx[5] = (double)params[0].data.L[0];//T
             tmpx[6] = x[j][0][6];
             tmpx[7] = x[j][0][7];
-            tmpx[8] = x[j][0][8];
-            tmpx[10] = x[j][0][10];
+            for (int i = 8; i < fit_info.Nvar; i++)
+                tmpx[i] = x[j][0][i];
+
             for (int i = fit_info.Nvar; i < fit_info.Nvar + fit_info.n_ext_P; i++)
                 tmpx[i] = fit_info.ext_P[i - fit_info.Nvar][j];
 
@@ -1928,7 +1929,9 @@ void print_fit_band_T(char** argv, vector<data_all> gjack, struct fit_type fit_i
             tmpx[5] = 16 + i * 1;//T
             tmpx[6] = x[j][0][6];
             tmpx[7] = x[j][0][7];
-            tmpx[8] = x[j][0][8];
+            for (int i = 8; i < fit_info.Nvar; i++)
+                tmpx[i] = x[j][0][i];
+
             for (int i = fit_info.Nvar; i < fit_info.Nvar + fit_info.n_ext_P; i++)
                 tmpx[i] = fit_info.ext_P[i - fit_info.Nvar][j];
 
@@ -1971,7 +1974,8 @@ void print_fit_band_k(char** argv, vector<data_all> gjack, struct fit_type fit_i
             tmpx[5] = params[0].data.L[1];//T
             tmpx[6] = 0 + i * 0.004;//k
             tmpx[7] = x[j][0][7];
-            tmpx[8] = x[j][0][8];
+            for (int i = 8; i < fit_info.Nvar; i++)
+                tmpx[i] = x[j][0][i];
 
             for (int i = fit_info.Nvar; i < fit_info.Nvar + fit_info.n_ext_P; i++)
                 tmpx[i] = fit_info.ext_P[i - fit_info.Nvar][j];
@@ -2020,6 +2024,8 @@ void print_fit_band_k_m(char** argv, vector<data_all> gjack, struct fit_type fit
             tmpx[9] = x[j][0][9];
 
             tmpx[10] = 0 + i * 0.02;//k/m
+            for (int i = 11; i < fit_info.Nvar; i++)
+                tmpx[i] = x[j][0][i];
 
             for (int i = fit_info.Nvar; i < fit_info.Nvar + fit_info.n_ext_P; i++)
                 tmpx[i] = fit_info.ext_P[i - fit_info.Nvar][j];
@@ -2189,7 +2195,7 @@ struct fit_result fit_data(char** argv, vector<cluster::IO_params> params, vecto
                 x[j][count][5] = (double)params[myen[e]].data.L[0];//T
 
                 x[j][count][10] = compute_k_m_g(n, myen[e], j, params, gjack, fit_info);//k/m
-                x[j][count][6] = x[j][count][6] * x[j][count][1]; //k/m
+                x[j][count][6] = x[j][count][10] * x[j][count][1]; //k/m
 
                 x[j][count][7] = gjack[myen[e]].jack[1][j] * (double)params[myen[e]].data.L[1] / (2. * pi_greco);//mL_2pi
                 // if (params[myen[e]].data.gC>0 && gjack[0].Nobs>=443 && gjack[myen[e]].jack[443][j]!=0){
