@@ -738,9 +738,9 @@ int main(int argc, char** argv) {
 	fit_result deltaE2_m_QC2 = fit_all_data(argv, jackall, lhs_deltaE2_m_latt_QC2, fit_info, "deltaE2_m_QC2");
 	// print_fit_band_L_M(argv, gjack, fit_info, fit_info_m0, "deltaE2_m_QC2",
 	// 				 deltaE2_m_quant_cond, fit_m0, paramsj, myen, { 13,26 });
-	print_fit_band( argv,  jackall,   fit_info,
-		 fit_info_m0, "deltaE2_m_QC2", "L"
-		 fit_out,   fit_out_m0, 0, 0, int steps);
+	// print_fit_band( argv,  jackall,   fit_info,
+	// 	 fit_info_m0, "deltaE2_m_QC2", "L"
+	// 	 fit_out,   fit_out_m0, 0, 0, int steps);
 	fit_info.restore_default();
 	exit(1);
 
