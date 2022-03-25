@@ -2,7 +2,8 @@
 #define global_H
 
 #include <vector>
-
+#include <cstdio>
+#include <string>
 #ifdef CONTROL 
 #define EXTERN 
 #else
@@ -291,6 +292,7 @@ struct  fit_type {
 
 struct fit_result {
   int Njack;
+  int Npar;
   double** P;// [par][jack]
   double* chi2;
   double*** C;
@@ -299,7 +301,7 @@ struct fit_result {
 
 
 struct fit_all {
-  int Nfits;
+  int Nfits=0;
   struct fit_type* info;
   struct fit_result* out;
 };

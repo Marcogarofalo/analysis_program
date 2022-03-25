@@ -33,6 +33,7 @@
 
 #include <QC3_interface.hpp>
 #include "fit_all.hpp"
+#include "extra_func_phi4.hpp"
 
 
 using namespace std;
@@ -588,7 +589,7 @@ int main(int argc, char** argv) {
 	fit_info.ext_P[2] = gjack[0].jack[1];
 
 	fit_m0 = fit_data(argv, paramsj, gjack, M0_finite_volume_lhs, fit_info, "M0_finite_vol", myen);
-
+	jackall.add_fit(fit_m0);
 
 	fit_m1 = fit_data(argv, paramsj, gjack, M1_finite_volume_lhs, fit_info, "M1_finite_vol", myen);
 
@@ -679,34 +680,34 @@ int main(int argc, char** argv) {
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	printf("\n/////////////////////////////////   fit  deltaE2_m_quant_cond  //////////////////\n");
 	//////////////////////////////////////////////////////////////////////////////////////////////////
-	fit_info.restore_default();
+	// fit_info.restore_default();
 
-	fit_info.Npar = 2;
-	fit_info.N = 3;
-	fit_info.Njack = gjack[0].Njack;
-	fit_info.n_ext_P = 3;
-	fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
-	fit_info.ext_P[0] = fit_m0.P[0];
-	fit_info.ext_P[1] = fit_m0.P[0];
-	fit_info.ext_P[2] = fit_m0.P[0];	 //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
-	fit_info.function = rhs_deltaE2_m_quant_cond_g;
+	// fit_info.Npar = 2;
+	// fit_info.N = 3;
+	// fit_info.Njack = gjack[0].Njack;
+	// fit_info.n_ext_P = 3;
+	// fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
+	// fit_info.ext_P[0] = fit_m0.P[0];
+	// fit_info.ext_P[1] = fit_m0.P[0];
+	// fit_info.ext_P[2] = fit_m0.P[0];	 //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+	// fit_info.function = rhs_deltaE2_m_quant_cond_g;
 
-	fit_info.lambda = 0.001;
-	fit_info.acc = 0.001;
-	fit_info.h = 1e-3;
-	// fit_info.Prange = { 10,10 };
-	fit_info.devorder = 2;
-	// fit_info.repeat_start = 10;
-	fit_info.precision_sum = 2;
-	fit_info.verbosity = 0;
-	fit_info.guess = { -0.141739, -2.89287 };
+	// fit_info.lambda = 0.001;
+	// fit_info.acc = 0.001;
+	// fit_info.h = 1e-3;
+	// // fit_info.Prange = { 10,10 };
+	// fit_info.devorder = 2;
+	// // fit_info.repeat_start = 10;
+	// fit_info.precision_sum = 2;
+	// fit_info.verbosity = 0;
+	// fit_info.guess = { -0.141739, -2.89287 };
 
-	//      the zeta is computed analytically, use the interpolated one for faster result!!!!!!!!!
-	//      struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.11,-950, 6.4e-6} );// {-0.948817,-114.788,0.0003987}
-	fit_result deltaE2_m_quant_cond = fit_data(argv, paramsj, gjack, lhs_deltaE2_m_latt_g, fit_info, "deltaE2_m_quant_cond", myen);
-	print_fit_band_L_M(argv, gjack, fit_info, fit_info_m0, "deltaE2_m_quant_cond", deltaE2_m_quant_cond, fit_m0, paramsj, myen, { 13,26 });
+	// //      the zeta is computed analytically, use the interpolated one for faster result!!!!!!!!!
+	// //      struct fit_result k_from_phase_shift_3par=fit_data(argv,  paramsj ,gjack, lhs_k ,fit_info, "k_from_phase_shift_n5_3par",myen ,  {-0.11,-950, 6.4e-6} );// {-0.948817,-114.788,0.0003987}
+	// fit_result deltaE2_m_quant_cond = fit_data(argv, paramsj, gjack, lhs_deltaE2_m_latt_g, fit_info, "deltaE2_m_quant_cond", myen);
+	// print_fit_band_L_M(argv, gjack, fit_info, fit_info_m0, "deltaE2_m_quant_cond", deltaE2_m_quant_cond, fit_m0, paramsj, myen, { 13,26 });
 
-	print_phase_shift(argv, gjack, fit_info, "deltaE2_m_quant_cond", deltaE2_m_quant_cond);
+	// print_phase_shift(argv, gjack, fit_info, "deltaE2_m_quant_cond", deltaE2_m_quant_cond);
 	// fit_info.restore_default();
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	printf("\n/////////////////////////////////   fit  deltaE2_m_QC3  //////////////////\n");
@@ -736,13 +737,10 @@ int main(int argc, char** argv) {
 	}
 	fit_info.function = rhs_deltaE2_m_QC2;
 	fit_result deltaE2_m_QC2 = fit_all_data(argv, jackall, lhs_deltaE2_m_latt_QC2, fit_info, "deltaE2_m_QC2");
-	// print_fit_band_L_M(argv, gjack, fit_info, fit_info_m0, "deltaE2_m_QC2",
-	// 				 deltaE2_m_quant_cond, fit_m0, paramsj, myen, { 13,26 });
-	// print_fit_band( argv,  jackall,   fit_info,
-	// 	 fit_info_m0, "deltaE2_m_QC2", "L"
-	// 	 fit_out,   fit_out_m0, 0, 0, int steps);
+	fit_info.band_range = { 13, 21 };
+	print_fit_band_phi4(argv, jackall, fit_info, fit_info_m0, "deltaE2_m_QC2", "L", deltaE2_m_QC2, fit_m0, 0, 0, 1);
+
 	fit_info.restore_default();
-	exit(1);
 
 
 	printf("\n/////////////////////////////////     delta 2par   //////////////////\n");
@@ -751,27 +749,58 @@ int main(int argc, char** argv) {
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-	fit_info.Npar = 2;
-	fit_info.N = 1;
-	fit_info.Njack = gjack[0].Njack;
-	//fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
-	fit_info.function = rhs_delta_g;
+	// fit_info.Npar = 2;
+	// fit_info.N = 1;
+	// fit_info.Njack = gjack[0].Njack;
+	// //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+	// fit_info.function = rhs_delta_g;
 
-	fit_info.n_ext_P = 3;
-	fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
-	fit_info.ext_P[0] = fit_m0.P[0];
-	fit_info.ext_P[1] = fit_m0.P[0];
-	fit_info.ext_P[2] = fit_m0.P[0];
+	// fit_info.n_ext_P = 3;
+	// fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
+	// fit_info.ext_P[0] = fit_m0.P[0];
+	// fit_info.ext_P[1] = fit_m0.P[0];
+	// fit_info.ext_P[2] = fit_m0.P[0];
 
-	struct fit_result fit_delta_2par = fit_data(argv, paramsj, gjack, lhs_delta_g, fit_info, "delta_2par_g", myen);
-	free_fit_result(fit_info, fit_delta_2par);
+	// struct fit_result fit_delta_2par = fit_data(argv, paramsj, gjack, lhs_delta_g, fit_info, "delta_2par_g", myen);
+	// free_fit_result(fit_info, fit_delta_2par);
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	printf("\n/////////////////////////////////   fit  E3 quant cond  //////////////////\n");
 	//////////////////////////////////////////////////////////////////////////////////////////////////
+
+	printf("//////////////////// poly fit E3   ////////////////////////////////////\n");
+
+	fit_type fit_info_E3_poly;
+	fit_info_E3_poly.N = 2;
+	fit_info_E3_poly.Nvar = 1;
+	fit_info_E3_poly.function = rhs_poly_order_E3_m<4>;
+	fit_info_E3_poly.myen = myen;
+	fit_info_E3_poly.Njack = jackall.en[0].Njack;
+	fit_info_E3_poly.Npar = fit_info_E3_poly.N * 4;
+	fit_info_E3_poly.verbosity = 0;
+	fit_info_E3_poly.x = double_malloc_3(fit_info_E3_poly.Nvar, fit_info_E3_poly.myen.size() * fit_info_E3_poly.N, fit_info_E3_poly.Njack);
+
+	printf("size=%ld\n", fit_info_E3_poly.guess.size());
+	count = 0;
+	for (int n = 0;n < fit_info_E3_poly.N;n++) {
+		for (int e = 0;e < fit_info_E3_poly.myen.size();e++) {
+			for (int j = 0;j < Njack;j++) {
+				fit_info_E3_poly.x[0][count][j] = paramsj[e].data.L[1];
+			}
+			count++;
+		}
+	}
+	fit_result fit_QC3_poly = fit_all_data(argv, jackall, lhs_E3_m_new, fit_info_E3_poly, "fit_QC3_poly");
+
+	fit_info_E3_poly.band_range = { 13, 21 };
+	print_fit_band(argv, jackall, fit_info_E3_poly, fit_info_m0, "fit_QC3_poly", "L", fit_QC3_poly, fit_m0, 0, 0, 1);
+
+	fit_info.restore_default();
+	exit(1);
+
 #ifdef PYTHON
-	 //// we need python
+	//// we need python
 	wchar_t* program = Py_DecodeLocale(argv[0], NULL);
 	if (program == NULL) {
 		fprintf(stderr, "Fatal error: cannot decode argv[0]\n");
@@ -783,36 +812,35 @@ int main(int argc, char** argv) {
 	///////////// end python init
 
 
-	printf("//////////////////// poly fit E3   ////////////////////////////////////\n");
-	fit_type fit_info_E3_poly;
-	fit_info_E3_poly.N = 2;
-	fit_info_E3_poly.Nvar = fit_info.Nvar;
+	// fit_type fit_info_E3_poly;
+	// fit_info_E3_poly.N = 2;
+	// fit_info_E3_poly.Nvar = fit_info.Nvar;
 
-	fit_info_E3_poly.Njack = gjack[0].Njack;
-	fit_info_E3_poly.n_ext_P = 3;
-	fit_info_E3_poly.ext_P = (double**)malloc(sizeof(double*) * fit_info_E3_poly.n_ext_P);
+	// fit_info_E3_poly.Njack = gjack[0].Njack;
+	// fit_info_E3_poly.n_ext_P = 3;
+	// fit_info_E3_poly.ext_P = (double**)malloc(sizeof(double*) * fit_info_E3_poly.n_ext_P);
 
-	fit_info_E3_poly.ext_P[0] = deltaE2_m_quant_cond.P[0];
-	fit_info_E3_poly.ext_P[1] = deltaE2_m_quant_cond.P[1];
-	fit_info_E3_poly.ext_P[2] = fit_m0.P[0];
+	// fit_info_E3_poly.ext_P[0] = deltaE2_m_quant_cond.P[0];
+	// fit_info_E3_poly.ext_P[1] = deltaE2_m_quant_cond.P[1];
+	// fit_info_E3_poly.ext_P[2] = fit_m0.P[0];
 
-	fit_info_E3_poly.Npar = fit_info_E3_poly.N * 4;
-	fit_info_E3_poly.function = rhs_poly_order_E3_m<4>;
+	// fit_info_E3_poly.Npar = fit_info_E3_poly.N * 4;
+	// fit_info_E3_poly.function = rhs_poly_order_E3_m<4>;
 
-	fit_info_E3_poly.lambda = 0.001;
-	fit_info_E3_poly.acc = 0.01;
-	fit_info_E3_poly.h = 1e-3;
-	fit_info_E3_poly.Prange = { 1000,10000 };
-	fit_info_E3_poly.devorder = 2;
+	// fit_info_E3_poly.lambda = 0.001;
+	// fit_info_E3_poly.acc = 0.01;
+	// fit_info_E3_poly.h = 1e-3;
+	// fit_info_E3_poly.Prange = { 1000,10000 };
+	// fit_info_E3_poly.devorder = 2;
 
-	mysprintf(namefile, NAMESIZE, "poly_E3andE1_N%d", fit_info_E3_poly.N);
-	// struct fit_result fit_QC3_poly=fit_data(argv,  paramsj ,gjack, lhs_E3_m ,fit_info_E3_poly, namefile,myen   );
+	// mysprintf(namefile, NAMESIZE, "poly_E3andE1_N%d", fit_info_E3_poly.N);
+	// // struct fit_result fit_QC3_poly=fit_data(argv,  paramsj ,gjack, lhs_E3_m ,fit_info_E3_poly, namefile,myen   );
 
-	struct fit_result fit_QC3_poly = fit_data(argv, paramsj, gjack, lhs_E3orE1_m_complex, fit_info_E3_poly, namefile, myen);
-	print_fit_band_L_M(argv, gjack, fit_info_E3_poly, fit_info_m0, namefile, fit_QC3_poly, fit_m0, paramsj, myen, { 23,41 });
+	// struct fit_result fit_QC3_poly = fit_data(argv, paramsj, gjack, lhs_E3orE1_m_complex, fit_info_E3_poly, namefile, myen);
+	// print_fit_band_L_M(argv, gjack, fit_info_E3_poly, fit_info_m0, namefile, fit_QC3_poly, fit_m0, paramsj, myen, { 23,41 });
 	//      free_fit_result(fit_info,fit_QC3_poly);
 	//      fit_info_E3_poly.restore_default();
-
+/////////////////////////////////
 
 	printf("////////////////////  kiso const fit   ////////////////////////////////////\n");
 	// init_python_detQC();
@@ -863,8 +891,8 @@ int main(int argc, char** argv) {
 	fit_info.function = rhs_E3_m_QC3_pole;
 	fit_info.n_ext_P = 3;
 	fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
-	fit_info.ext_P[0] = deltaE2_m_quant_cond.P[0];
-	fit_info.ext_P[1] = deltaE2_m_quant_cond.P[1];
+	fit_info.ext_P[0] = deltaE2_m_QC2.P[0];
+	fit_info.ext_P[1] = deltaE2_m_QC2.P[1];
 	fit_info.ext_P[2] = fit_m0.P[0];
 
 	fit_info.lambda = 0.001;

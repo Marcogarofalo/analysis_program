@@ -3,7 +3,7 @@
 
 
 #include "global.hpp"
-
+#include "non_linear_fit.hpp"
 class generic_header {
 public:
     int T;
@@ -119,6 +119,51 @@ public:
     data_single* en;
     std::string resampling;
 
+    int Nfits=0;
+    struct fit_result* fits;
+
+    void add_fit(struct fit_result fit_out) {
+
+        int N = Nfits + 1;
+        Nfits = N;
+
+        fit_result *fit_tmp = (struct fit_result*)malloc(sizeof(struct fit_result) * N);
+        for (int i = 0;i < N - 1;i++) {
+            fit_tmp[i] = malloc_copy_fit_result(fits[i]);
+            for (int j = 0;j < fits[i].Npar;j++) {
+                free(fits[i].P[j]);
+                for (int k = 0;k < fits[i].Npar;k++) {
+                    free(fits[i].C[j][k]);
+                }
+                free(fits[i].C[j]);
+            }
+            free(fits[i].chi2);
+            free(fits[i].P);
+            free(fits[i].C);
+            if (i == N - 2) { free(fits); }
+        }
+
+        fit_tmp[N - 1] = malloc_copy_fit_result(fit_out);
+
+        fits = (struct fit_result*)malloc(sizeof(struct fit_result) * N);
+        for (int i = 0;i < N;i++) {
+            fits[i] = malloc_copy_fit_result(fit_tmp[i]);
+
+            for (int j = 0;j < fit_tmp[i].Npar;j++) {
+                free(fit_tmp[i].P[j]);
+                for (int k = 0;k < fit_tmp[i].Npar;k++) {
+                    free(fit_tmp[i].C[j][k]);
+                }
+                free(fit_tmp[i].C[j]);
+            }
+            free(fit_tmp[i].chi2);
+            free(fit_tmp[i].P);
+            free(fit_tmp[i].C);
+            if (i == N - 2) { free(fit_tmp); }
+        }
+
+    }
+
     // data_all(){};
 
     // data_all(int N) : ens(N) {
@@ -176,8 +221,9 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
     double lhs_fun(int, int, int, data_all, struct fit_type),
     struct fit_type fit_info, const char* label);
 
-// void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
-//     struct fit_type fit_info_m0, const char* label, const char* dir_name
-//     struct fit_result fit_out, struct fit_result fit_out_m0, int var, int en, int steps);
+
+void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
+    struct fit_type fit_info_m0, const char* label, const char* dir_name,
+    struct fit_result fit_out, struct fit_result fit_out_m0, int var, int en, double h);
 #endif
 

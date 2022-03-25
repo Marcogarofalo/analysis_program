@@ -481,6 +481,7 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
 
     free(en);
     free(guess);
+    fit_out.Npar=fit_info.Npar;
     return fit_out;
 }
 
@@ -615,6 +616,7 @@ struct fit_result fit_fun_to_corr(char** option, struct kinematic kinematic_2pt,
 
     corr_counter++;
 
+    fit_out.Npar=fit_info.Npar;
     return fit_out;
 }
 
@@ -733,6 +735,7 @@ struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic
      *plateaux_masses=open_file(kinematic_2pt.plateau_m_ll,"r");
 
     }*/
+    fit_out.Npar=fit_info.Npar;
     return fit_out;
 }
 
@@ -791,6 +794,7 @@ struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinemat
       *plateaux_masses=open_file(kinematic_2pt.plateau_m_ll,"r");
 
      }*/
+    fit_out.Npar=fit_info.Npar;
     return fit_out;
 }
 

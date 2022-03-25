@@ -138,6 +138,34 @@ void free_fit_result(struct  fit_type  fit_info, struct fit_result  out) {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+struct  fit_result   malloc_copy_fit_result(struct fit_result fit_out) {
+    struct  fit_result fit_tmp;
+    int i, j, k;
+    fit_tmp.Njack = fit_out.Njack;
+    fit_tmp.P = (double**)malloc(sizeof(double*) * fit_out.Npar);
+    fit_tmp.C = (double***)malloc(sizeof(double**) * fit_out.Npar);
+    fit_tmp.chi2 = (double*)malloc(sizeof(double) * fit_out.Njack);
+
+    for (i = 0;i < fit_out.Npar;i++) {
+        fit_tmp.P[i] = (double*)malloc(sizeof(double) * fit_out.Njack);
+        fit_tmp.C[i] = (double**)malloc(sizeof(double*) * fit_out.Npar);
+        for (j = 0;j < fit_out.Njack;j++) {
+            fit_tmp.P[i][j] = fit_out.P[i][j];
+        }
+        for (k = 0;k < fit_out.Npar;k++) {
+            fit_tmp.C[i][k] = (double*)malloc(sizeof(double) * fit_out.Njack);
+            for (j = 0;j < fit_out.Njack;j++)
+                fit_tmp.C[i][k][j] = fit_out.C[i][k][j];
+        }
+
+    }
+    for (j = 0;j < fit_out.Njack;j++) {
+        fit_tmp.chi2[j] = fit_out.chi2[j];
+    }
+    fit_tmp.Npar = fit_out.Npar;
+    return fit_tmp;
+}
+
 
 struct  fit_result   copy_fit_result(struct fit_result fit_out, struct fit_type fit_info) {
     struct  fit_result fit_tmp;
@@ -174,6 +202,15 @@ struct  fit_type   copy_fit_type(struct fit_result fit_out, struct fit_type fit_
     fit_tmp.function = fit_info.function;
 
     return fit_tmp;
+}
+
+void  copy_fit_type_into(struct  fit_type* fit_tmp, struct fit_type fit_info) {
+
+    fit_tmp->N = fit_info.N;
+    fit_tmp->Npar = fit_info.Npar;
+    fit_tmp->Nvar = fit_info.Nvar;
+    fit_tmp->function = fit_info.function;
+
 }
 
 struct fit_all   save_fit(struct fit_all fit_chi2_good, struct fit_type fit_info, struct fit_result fit_out) {
@@ -572,8 +609,8 @@ double compute_chi_non_linear_Nf(int N, int* ensemble, double** x, double** y, d
     for (n = 0;n < N;n++) {
         for (e = 0;e < ensemble[n];e++) {
             f = fun(n, Nvar, x[count], Npar, P) - y[count][0];
-                        // printf("e=%d  n=%d   f=%g  y=%g err=%g    dchi= %g  \n ",e,n,f+y[count][0],y[count][0],y[count][1],f*f/(y[count][1]* y[count][1]));
-                        //  for(int pp=0;pp<Npar; pp++) printf("P: %g  \t",P[pp]]); printf("\n");
+            // printf("e=%d  n=%d   f=%g  y=%g err=%g    dchi= %g  \n ",e,n,f+y[count][0],y[count][0],y[count][1],f*f/(y[count][1]* y[count][1]));
+            //  for(int pp=0;pp<Npar; pp++) printf("P: %g  \t",P[pp]]); printf("\n");
             f /= y[count][1];
             chi2 += f * f;
             count++;

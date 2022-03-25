@@ -13,10 +13,18 @@ IF(WITH_PYTHON)
     add_target_with_lib(fit_all_g1.5 fit_all_g1.5.cpp)
     add_target_with_lib(fit_all_g0.25_t1 fit_all_g0.25_t1.cpp)
     add_target_with_lib(fit_all_ising_g0.005 fit_all_ising_g0.005.cpp)
-    add_target_with_lib(fit_all_complex_g5 fit_all_complex_g5.cpp)
     #add_target_with_lib(fit_all_g fit_all_g.cpp)
     #add_target_with_lib(fit_all_phi4 fit_all_phi4.cpp)
-    
+    add_library(
+        extra_func_phi4 STATIC
+        extra_func_phi4.hpp 
+        extra_func_phi4.cpp
+    )
+    target_link_libraries(extra_func_phi4 PUBLIC fit_all)
+    target_include_directories(extra_func_phi4 PUBLIC  "${CMAKE_CURRENT_SOURCE_DIR}")
+
+    add_target_with_lib(fit_all_complex_g5 fit_all_complex_g5.cpp)
+    target_link_libraries(fit_all_complex_g5 PUBLIC extra_func_phi4)    
 ENDIF()
 add_target_with_lib(checks_phi4 checks_phi4.cpp)
 

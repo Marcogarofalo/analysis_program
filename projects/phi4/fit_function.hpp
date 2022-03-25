@@ -1473,7 +1473,7 @@ double lhs_deltaE2_m_latt_QC2(int n, int e, int j, data_all gjack, struct fit_ty
     hatp2 += 4. * sin(dvec2[1] * pi_greco / L) * sin(dvec2[1] * pi_greco / L);
     hatp2 += 4. * sin(dvec2[2] * pi_greco / L) * sin(dvec2[2] * pi_greco / L);
     E2fL += acosh(cosh(mass) + 0.5 * (+hatp2));
-    
+
     double Ef1 = sqrt(mass * mass + (2 * pi_greco / L) * (2 * pi_greco / L) * (dvec1[0] * dvec1[0] + dvec1[1] * dvec1[1] + dvec1[2] * dvec1[2]));
     double Ef2 = sqrt(mass * mass + (2 * pi_greco / L) * (2 * pi_greco / L) * (dvec2[0] * dvec2[0] + dvec2[1] * dvec2[1] + dvec2[2] * dvec2[2]));
     double E2f = Ef1 + Ef2;
@@ -1653,6 +1653,29 @@ double lhs_E3_m(int n, int e, int j, vector<cluster::IO_params> params, vector<d
     //     double Ef2=sqrt(mass*mass+(2*pi_greco/L)*(2*pi_greco/L)*(dvec2[0]*dvec2[0]+dvec2[1]*dvec2[1]+dvec2[2]*dvec2[2])   );
     //     double E2f=Ef1+Ef2;
     //     return (E2-E2fL+E2f)/mass;
+    return E3 / mass;
+}
+
+
+double lhs_E3_m_new(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double E3;
+    // double mass = gjack.en[e].jack[1][j];
+    double mass = gjack.fits[0].P[0][j];// infinite mass
+    int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
+    init_dvec(n, dvec, dvec1, dvec2, dmax1, dmax2);
+
+    if (n == 0) {//E2_0
+        E3 = gjack.en[e].jack[354][j];
+        //         dvec[0]=0; dvec[1]=0; dvec[2]=0;
+    }
+    else if (n == 1) {//E2_0_p1
+        E3 = gjack.en[e].jack[355][j];
+        //         dvec[0]=1; dvec[1]=0; dvec[2]=0;
+    }
+
+    else { E3 = 0; printf("%s n=%d not implemented\n", __func__, n); }
+
+
     return E3 / mass;
 }
 
@@ -2103,7 +2126,7 @@ void print_fit_output(char** argv, vector<data_phi> gjack, struct fit_type fit_i
     f = open_file(namefile, "w+");
     fprintf(f, "\\begin{gather}\n");
     printf("chi^2/d.o.f.=%g  \n", fit_out.chi2[Njack - 1]);//error_jackboot(argv[1], Njack, fit_out.chi2)
-    fprintf(f, "\\chi^2/d.o.f.=%g  \n", fit_out.chi2[Njack - 1]);//error_jackboot(argv[1], Njack, fit_out.chi2)
+    fprintf(f, "\\chi^2/d.o.f.=%g \\\\ \n", fit_out.chi2[Njack - 1]);//error_jackboot(argv[1], Njack, fit_out.chi2)
     for (int i = 0;i < Npar;i++) {
         fprintf(f, "P[%d]=%g\\pm (%.2g) \\\\ \n", i, fit_out.P[i][Njack - 1], error_jackboot(argv[1], Njack, fit_out.P[i]));
         printf("P[%d]=%g (%.2g) \n", i, fit_out.P[i][Njack - 1], error_jackboot(argv[1], Njack, fit_out.P[i]));
@@ -2368,7 +2391,7 @@ struct fit_result fit_data(char** argv, vector<cluster::IO_params> params, vecto
 
     ////// free end
 
-
+    fit_out.Npar = fit_info.Npar;
     return fit_out;
 
 
