@@ -30,7 +30,7 @@
 #endif
 //using namespace std;
 
-void printing_file_for_maxim_and_fernando(char** argv, std::vector<cluster::IO_params> paramsj, std::vector<data_all> gjack, std::vector<int> myen) {
+void printing_file_for_maxim_and_fernando(char** argv, std::vector<cluster::IO_params> paramsj, std::vector<data_phi> gjack, std::vector<int> myen) {
     int Njack = gjack[0].Njack;
     char resampling[NAMESIZE];
     mysprintf(resampling, NAMESIZE, "%s", argv[1]);
@@ -98,7 +98,7 @@ void printing_file_for_maxim_and_fernando(char** argv, std::vector<cluster::IO_p
     }
 }
 
-void printing_file_for_maxim_and_fernando_complex(char** argv, std::vector<cluster::IO_params> paramsj, std::vector<data_all> gjack, std::vector<int> myen) {
+void printing_file_for_maxim_and_fernando_complex(char** argv, std::vector<cluster::IO_params> paramsj, std::vector<data_phi> gjack, std::vector<int> myen) {
     int Njack = gjack[0].Njack;
     char resampling[NAMESIZE];
     mysprintf(resampling, NAMESIZE, "%s", argv[1]);
@@ -285,7 +285,7 @@ void init_dvec_QC3_pole(int n, int* dvec) {
     }
 }
 
-double get_E2_n(int n, int e, int j, std::vector<data_all> gjack) {
+double get_E2_n(int n, int e, int j, std::vector<data_phi> gjack) {
     double E2;
     if (n == 0) {//E2_0
         E2 = gjack[e].jack[4][j];
@@ -312,7 +312,7 @@ double get_E2_n(int n, int e, int j, std::vector<data_all> gjack) {
 
 }
 
-double get_E2_g_n(int n, int e, int j, vector<data_all> gjack) {
+double get_E2_g_n(int n, int e, int j, vector<data_phi> gjack) {
     double E2;
     if (n == 0) {//E2_0
         // if(gjack[e].jack[594][j]!=0) 
@@ -338,6 +338,28 @@ double get_E2_g_n(int n, int e, int j, vector<data_all> gjack) {
     return E2;
 
 }
+
+
+double get_E2_g_n_new(int n, int e, int j, data_all gjack) {
+    double E2;
+    if (n == 0) {//E2_0
+
+        E2 = gjack.en[e].jack[4][j];
+
+    }
+    else if (n == 1) {//E2_p1
+
+        E2 = gjack.en[e].jack[100][j];
+    }
+    else if (n == 2) {//E2_A1
+
+        E2 = gjack.en[e].jack[80][j];
+    }
+
+    else { printf("%s n=%d not implemented\n", __func__, n);  exit(1); }
+    return E2;
+
+}
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////kcotd
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -354,7 +376,7 @@ inline double kcotd(double E2, double mass, int* dvec, int L) {
     return  z[0] * 2 * pi_greco / (pow(pi_greco, 3. / 2.) * gamma * L);
 }
 
-double lhs_kcotd(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_kcotd(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double r;
     if (n == 0) {//E2_0
         int dvec[3] = { 0,0,0 };
@@ -383,7 +405,7 @@ double lhs_kcotd(int n, int e, int j, vector<cluster::IO_params> params, vector<
 
 
 
-double lhs_kcotd_g(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_kcotd_g(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double r;
     if (n == 0) {//E2_0
         int dvec[3] = { 0,0,0 };
@@ -407,7 +429,7 @@ double lhs_kcotd_g(int n, int e, int j, vector<cluster::IO_params> params, vecto
     return r;
 }
 
-double lhs_kcotd_m_g(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_kcotd_m_g(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double r;
 
     int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
@@ -418,7 +440,7 @@ double lhs_kcotd_m_g(int n, int e, int j, vector<cluster::IO_params> params, vec
 }
 
 
-double lhs_kcotd_m_deltaE_g(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_kcotd_m_deltaE_g(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double r;
 
     int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
@@ -450,7 +472,7 @@ double lhs_kcotd_m_deltaE_g(int n, int e, int j, vector<cluster::IO_params> para
 }
 
 
-double lhs_kcotd_Elatt(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_kcotd_Elatt(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
     init_dvec(n, dvec, dvec1, dvec2, dmax1, dmax2);
     double E2;
@@ -490,7 +512,7 @@ double lhs_kcotd_Elatt(int n, int e, int j, vector<cluster::IO_params> params, v
 }
 
 
-double lhs_delta(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_delta(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
     init_dvec(n, dvec, dvec1, dvec2, dmax1, dmax2);
     double E2;
@@ -514,7 +536,7 @@ double lhs_delta(int n, int e, int j, vector<cluster::IO_params> params, vector<
 
 }
 
-double lhs_delta_g(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_delta_g(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
     init_dvec_E2_g(n, dvec, dvec1, dvec2, dmax1, dmax2);
     double E2;
@@ -536,7 +558,7 @@ double lhs_delta_g(int n, int e, int j, vector<cluster::IO_params> params, vecto
     return  atan((pow(pi_greco, 3. / 2.) * gamma * L * k) / z[0] * 2 * pi_greco);
 
 }
-double lhs_delta_Elatt(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_delta_Elatt(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
     init_dvec(n, dvec, dvec1, dvec2, dmax1, dmax2);
     double E2;
@@ -584,7 +606,7 @@ double compute_hatp2(int* dvec, double L) {
 }
 
 
-double lhs_kcotd_ECM_latt(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_kcotd_ECM_latt(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
     init_dvec(n, dvec, dvec1, dvec2, dmax1, dmax2);
     double E2;
@@ -610,7 +632,7 @@ double lhs_kcotd_ECM_latt(int n, int e, int j, vector<cluster::IO_params> params
 
 }
 
-double lhs_delta_ECM_latt(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_delta_ECM_latt(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
     init_dvec(n, dvec, dvec1, dvec2, dmax1, dmax2);
     double E2;
@@ -635,7 +657,7 @@ double lhs_delta_ECM_latt(int n, int e, int j, vector<cluster::IO_params> params
 
 
 }
-double compute_k(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double compute_k(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double L = params[e].data.L[1];
     double mass = gjack[e].jack[1][j];
     if (gjack[e].Nobs >= 443 && gjack[e].jack[443][j] != 0) {
@@ -675,7 +697,7 @@ double compute_k(int n, int e, int j, vector<cluster::IO_params> params, vector<
 
 }
 
-double compute_k_m_g(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double compute_k_m_g(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double L = params[e].data.L[1];
     double mass = gjack[e].jack[1][j];
     // if (gjack[e].Nobs>=443 && gjack[e].jack[443][j]!=0){
@@ -1302,7 +1324,7 @@ double rhs_q_from_phase_shift(int n, int Nvar, double* x, int Npar, double* P) {
     return q;
 }
 
-double lhs_k(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_k(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double E2;
     int dvec[3];
     double mass = gjack[e].jack[1][j];
@@ -1333,7 +1355,7 @@ double lhs_k(int n, int e, int j, vector<cluster::IO_params> params, vector<data
 
 }
 
-double lhs_k_g(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_k_g(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double E2;
     int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
     double mass = gjack[e].jack[443][j];
@@ -1348,7 +1370,7 @@ double lhs_k_g(int n, int e, int j, vector<cluster::IO_params> params, vector<da
 
 }
 
-double lhs_deltaE2_m_latt(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_deltaE2_m_latt(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double E2;
     double mass = gjack[e].jack[1][j];
     int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
@@ -1402,7 +1424,7 @@ double lhs_deltaE2_m_latt(int n, int e, int j, vector<cluster::IO_params> params
 
 
 
-double lhs_deltaE2_m_latt_g(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_deltaE2_m_latt_g(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double E2;
     double mass = gjack[e].jack[1][j];
     // double mass=fit_info.ext_P[2][j];
@@ -1426,20 +1448,22 @@ double lhs_deltaE2_m_latt_g(int n, int e, int j, vector<cluster::IO_params> para
     double E2f = Ef1 + Ef2;
 
     double mass_inf = fit_info.ext_P[2][j];
+    if (n == 0 && e == 0 && j == 0) printf("E2=%g  %g  %g\n", E2, E2fL, E2f);
+
     return (E2 - E2fL + E2f) / mass_inf;
 
 }
 
 
 
-double lhs_deltaE2_m_latt_QC2(int n, int e, int j, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_deltaE2_m_latt_QC2(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double E2;
-    double mass = gjack[e].jack[1][j];
+    double mass = gjack.en[e].jack[1][j];
 
     int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
     init_dvec_E2_g(n, dvec, dvec1, dvec2, dmax1, dmax2);
-    E2 = get_E2_g_n(n, e, j, gjack);
-    double L = (double)gjack[e].header.L;
+    E2 = get_E2_g_n_new(n, e, j, gjack);
+    double L = (double)gjack.en[e].header.L;
     double hatp2 = 4. * sin(dvec1[0] * pi_greco / L) * sin(dvec1[0] * pi_greco / L);
     hatp2 += 4. * sin(dvec1[1] * pi_greco / L) * sin(dvec1[1] * pi_greco / L);
     hatp2 += 4. * sin(dvec1[2] * pi_greco / L) * sin(dvec1[2] * pi_greco / L);
@@ -1448,20 +1472,20 @@ double lhs_deltaE2_m_latt_QC2(int n, int e, int j, vector<data_all> gjack, struc
     hatp2 = 4. * sin(dvec2[0] * pi_greco / L) * sin(dvec2[0] * pi_greco / L);
     hatp2 += 4. * sin(dvec2[1] * pi_greco / L) * sin(dvec2[1] * pi_greco / L);
     hatp2 += 4. * sin(dvec2[2] * pi_greco / L) * sin(dvec2[2] * pi_greco / L);
-
-
-
+    E2fL += acosh(cosh(mass) + 0.5 * (+hatp2));
+    
     double Ef1 = sqrt(mass * mass + (2 * pi_greco / L) * (2 * pi_greco / L) * (dvec1[0] * dvec1[0] + dvec1[1] * dvec1[1] + dvec1[2] * dvec1[2]));
     double Ef2 = sqrt(mass * mass + (2 * pi_greco / L) * (2 * pi_greco / L) * (dvec2[0] * dvec2[0] + dvec2[1] * dvec2[1] + dvec2[2] * dvec2[2]));
     double E2f = Ef1 + Ef2;
 
     double mass_inf = fit_info.x[2][0][j];
+    if (n == 0 && e == 0 && j == 0) printf("E2=%g  %g  %g\n", E2, E2fL, E2f);
 
     return (E2 - E2fL + E2f) / mass_inf;
 
 }
 
-double lhs_k_p111(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_k_p111(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double E2;
     int dvec[3];
     double mass = gjack[e].jack[1][j];
@@ -1476,7 +1500,7 @@ double lhs_k_p111(int n, int e, int j, vector<cluster::IO_params> params, vector
 }
 
 
-double lhs_q(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_q(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double E2;
     int dvec[3];
     double mass = gjack[e].jack[1][j];
@@ -1512,7 +1536,7 @@ double lhs_q(int n, int e, int j, vector<cluster::IO_params> params, vector<data
 ///////  lhs E3/m
 //////////////////////////////////////////////////////////////////////////////////////////
 
-double lhs_E3orE1_g_m(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_E3orE1_g_m(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double E3;
     double mass = gjack[e].jack[443][j];
 
@@ -1531,7 +1555,7 @@ double lhs_E3orE1_g_m(int n, int e, int j, vector<cluster::IO_params> params, ve
 
 
 
-double lhs_E3orE1_m_complex(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_E3orE1_m_complex(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double E3;
     //double mass=gjack[e].jack[1][j];
     double mass = fit_info.ext_P[2][j];
@@ -1553,7 +1577,7 @@ double lhs_E3orE1_m_complex(int n, int e, int j, vector<cluster::IO_params> para
     return E3 / mass;
 }
 
-double lhs_E3orE1_m(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_E3orE1_m(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double E3;
     double mass = gjack[e].jack[1][j];
 
@@ -1586,7 +1610,7 @@ double lhs_E3orE1_m(int n, int e, int j, vector<cluster::IO_params> params, vect
     return E3 / mass;
 }
 
-double lhs_E3_m(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_E3_m(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double E3;
     double mass = gjack[e].jack[1][j];
     int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
@@ -1632,7 +1656,7 @@ double lhs_E3_m(int n, int e, int j, vector<cluster::IO_params> params, vector<d
     return E3 / mass;
 }
 
-double lhs_E3_m_g(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_E3_m_g(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double E3;
     double mass = gjack[e].jack[443][j];
     int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
@@ -1658,7 +1682,7 @@ double lhs_E3_m_g(int n, int e, int j, vector<cluster::IO_params> params, vector
 
 
 
-double lhs_E3_m_latt(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_E3_m_latt(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
 
     double E3 = lhs_E3_m(n, e, j, params, gjack, fit_info);
 
@@ -1694,50 +1718,50 @@ double lhs_E3_m_latt(int n, int e, int j, vector<cluster::IO_params> params, vec
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// functions lhs
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-double M0_finite_volume_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double M0_finite_volume_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     return gjack[e].jack[1][j];
 }
-double M0_g_finite_volume_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double M0_g_finite_volume_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     return gjack[e].jack[443][j];
 }
 
 
-double M1_finite_volume_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double M1_finite_volume_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     return gjack[e].jack[2][j];
 }
 template<int id>
-double M1_p_finite_volume_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double M1_p_finite_volume_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     return gjack[e].jack[id][j];
 }
 
 
-double DE_00_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double DE_00_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     return gjack[e].jack[4][j] - 2 * gjack[e].jack[1][j];
 }
 
-double muDE_00_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double muDE_00_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double DE = gjack[e].jack[4][j] - 2 * gjack[e].jack[1][j];
     return DE * gjack[e].jack[1][j] / 2.;
 }
 
-double muDE_00_g_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double muDE_00_g_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double DE = gjack[e].jack[594][j] - 2 * gjack[e].jack[443][j];
     return DE * gjack[e].jack[443][j] / 2.;
 }
-double muDE_00_infm_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double muDE_00_infm_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double DE = gjack[e].jack[4][j] - 2 * gjack[e].jack[1][j];
     double mu = fit_info.ext_P[0][j] * fit_info.ext_P[1][j] / (fit_info.ext_P[0][j] + fit_info.ext_P[1][j]);
     return DE * mu;
 }
 
 
-double muDE_01_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double muDE_01_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double DE = gjack[e].jack[19][j] - gjack[e].jack[1][j] - gjack[e].jack[2][j];
     double mu = gjack[e].jack[1][j] * gjack[e].jack[2][j] / (gjack[e].jack[1][j] + gjack[e].jack[2][j]);
     return DE * mu;
 }
 
-double muDE_01_div_shift_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double muDE_01_div_shift_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double DE = gjack[e].jack[85][j] - gjack[e].jack[1][j] - gjack[e].jack[2][j];
     double mu = gjack[e].jack[1][j] * gjack[e].jack[2][j] / (gjack[e].jack[1][j] + gjack[e].jack[2][j]);
     return DE * mu;
@@ -1745,7 +1769,7 @@ double muDE_01_div_shift_lhs(int n, int e, int j, vector<cluster::IO_params> par
 }
 
 
-double a_01_luescher_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double a_01_luescher_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
 
     double* a = scattering_len_luscher(fit_info.Njack, gjack[e].jack[1], gjack[e].jack[2], gjack[e].jack[19], params[e].data.L[1]);
     double r = a[j];
@@ -1755,25 +1779,25 @@ double a_01_luescher_lhs(int n, int e, int j, vector<cluster::IO_params> params,
 
 
 template<int id>
-double lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     return gjack[e].jack[id][j];
 }
 
 
 template<int id1, int id2>
-double lhs_diff(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_diff(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     return gjack[e].jack[id1][j] - gjack[e].jack[id2][j];
 }
 
 template<int idBH>
-double lhs_LminusBH(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_LminusBH(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double* a = scattering_len_luscher(fit_info.Njack, gjack[e].jack[1], gjack[e].jack[2], gjack[e].jack[19], params[e].data.L[1]);
     double r = a[j];
     free(a);
     return r - gjack[e].jack[idBH][j];
 }
 template<int id1, int id2>
-double lhs_L_C2_m_C2shifted(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_L_C2_m_C2shifted(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
 
     double* a = scattering_len_luscher(fit_info.Njack, gjack[e].jack[1], gjack[e].jack[2], gjack[e].jack[id1], params[e].data.L[1]);
     double r = a[j];
@@ -1787,7 +1811,7 @@ double lhs_L_C2_m_C2shifted(int n, int e, int j, vector<cluster::IO_params> para
 }
 
 template<int id>
-double lhs_Luescher_C(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double lhs_Luescher_C(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     double* a = scattering_len_luscher(fit_info.Njack, gjack[e].jack[1], gjack[e].jack[2], gjack[e].jack[id], params[e].data.L[1]);
     double r = a[j];
     free(a);
@@ -1795,16 +1819,16 @@ double lhs_Luescher_C(int n, int e, int j, vector<cluster::IO_params> params, ve
 }
 
 
-double a_01_BH_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double a_01_BH_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     //return gjack[e].jack[12][j];// 0t_8tT_2
     //return gjack[e].jack[23][j];//   03t16
     return gjack[e].jack[53][j];//   03t16_shifted1
 }
-double a_00_BH_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double a_00_BH_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     //return gjack[e].jack[10][j];
     return gjack[e].jack[21][j];//   03t16
 }
-double a_11_BH_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_all> gjack, struct fit_type fit_info) {
+double a_11_BH_lhs(int n, int e, int j, vector<cluster::IO_params> params, vector<data_phi> gjack, struct fit_type fit_info) {
     return gjack[e].jack[11][j];
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1856,7 +1880,7 @@ double a_luscher(int n, int Nvar, double* x, int Npar, double* P) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// print fit band
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void print_fit_band_L(char** argv, vector<data_all> gjack, struct fit_type fit_info, const char* label, struct fit_result fit_out, int* en, double*** x, double*** y, vector<cluster::IO_params> params, std::vector<int> myen) {
+void print_fit_band_L(char** argv, vector<data_phi> gjack, struct fit_type fit_info, const char* label, struct fit_result fit_out, int* en, double*** x, double*** y, vector<cluster::IO_params> params, std::vector<int> myen) {
 
     int Npar = fit_info.Npar;
     int Nvar = fit_info.Nvar + fit_info.n_ext_P;
@@ -1903,7 +1927,7 @@ void print_fit_band_L(char** argv, vector<data_all> gjack, struct fit_type fit_i
     free_2(Njack, tif);
 }
 
-void print_fit_band_T(char** argv, vector<data_all> gjack, struct fit_type fit_info, const char* label, struct fit_result fit_out, int* en, double*** x, double*** y, vector<cluster::IO_params> params, std::vector<int> myen) {
+void print_fit_band_T(char** argv, vector<data_phi> gjack, struct fit_type fit_info, const char* label, struct fit_result fit_out, int* en, double*** x, double*** y, vector<cluster::IO_params> params, std::vector<int> myen) {
 
     int Npar = fit_info.Npar;
     int Nvar = fit_info.Nvar + fit_info.n_ext_P;
@@ -1948,7 +1972,7 @@ void print_fit_band_T(char** argv, vector<data_all> gjack, struct fit_type fit_i
     free_2(Njack, tif);
 }
 
-void print_fit_band_k(char** argv, vector<data_all> gjack, struct fit_type fit_info, const char* label, struct fit_result fit_out, int* en, double*** x, double*** y, vector<cluster::IO_params> params, std::vector<int> myen) {
+void print_fit_band_k(char** argv, vector<data_phi> gjack, struct fit_type fit_info, const char* label, struct fit_result fit_out, int* en, double*** x, double*** y, vector<cluster::IO_params> params, std::vector<int> myen) {
 
     int Npar = fit_info.Npar;
     int Nvar = fit_info.Nvar + fit_info.n_ext_P;
@@ -1994,7 +2018,7 @@ void print_fit_band_k(char** argv, vector<data_all> gjack, struct fit_type fit_i
 }
 
 
-void print_fit_band_k_m(char** argv, vector<data_all> gjack, struct fit_type fit_info, const char* label, struct fit_result fit_out, int* en, double*** x, double*** y, vector<cluster::IO_params> params, std::vector<int> myen) {
+void print_fit_band_k_m(char** argv, vector<data_phi> gjack, struct fit_type fit_info, const char* label, struct fit_result fit_out, int* en, double*** x, double*** y, vector<cluster::IO_params> params, std::vector<int> myen) {
 
     int Npar = fit_info.Npar;
     int Nvar = fit_info.Nvar + fit_info.n_ext_P;
@@ -2048,7 +2072,7 @@ void print_fit_band_k_m(char** argv, vector<data_all> gjack, struct fit_type fit
 //// print output
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void print_fit_output(char** argv, vector<data_all> gjack, struct fit_type fit_info, const char* label, struct fit_result fit_out, int* en, double*** x, double*** y, vector<cluster::IO_params> params, std::vector<int> myen) {
+void print_fit_output(char** argv, vector<data_phi> gjack, struct fit_type fit_info, const char* label, struct fit_result fit_out, int* en, double*** x, double*** y, vector<cluster::IO_params> params, std::vector<int> myen) {
     int Npar = fit_info.Npar;
     int Nvar = fit_info.Nvar + fit_info.n_ext_P;
     int Njack = gjack[0].Njack;
@@ -2141,8 +2165,8 @@ void print_fit_output(char** argv, vector<data_all> gjack, struct fit_type fit_i
 }
 
 
-struct fit_result fit_data(char** argv, vector<cluster::IO_params> params, vector<data_all> gjack,
-    double lhs_fun(int, int, int, std::vector<cluster::IO_params>, std::vector<data_all>, struct fit_type),
+struct fit_result fit_data(char** argv, vector<cluster::IO_params> params, vector<data_phi> gjack,
+    double lhs_fun(int, int, int, std::vector<cluster::IO_params>, std::vector<data_phi>, struct fit_type),
     struct fit_type fit_info, const char* label, std::vector<int> myen) {
     int Npar = fit_info.Npar;
     int Nvar = fit_info.Nvar + fit_info.n_ext_P;

@@ -32,14 +32,14 @@
 #include "fit_function.hpp"
 
 #include <QC3_interface.hpp>
-
+#include "fit_all.hpp"
 
 
 using namespace std;
 int Ne = 0;
 
 
-void print_fit_band_L_M(char** argv, vector<data_all> gjack, struct fit_type fit_info, struct fit_type fit_info_m0, const char* label, struct fit_result fit_out, struct fit_result fit_out_m0, vector<cluster::IO_params> params, std::vector<int> myen, std::vector<int> Lrange = { 16,50 }) {
+void print_fit_band_L_M(char** argv, vector<data_phi> gjack, struct fit_type fit_info, struct fit_type fit_info_m0, const char* label, struct fit_result fit_out, struct fit_result fit_out_m0, vector<cluster::IO_params> params, std::vector<int> myen, std::vector<int> Lrange = { 16,50 }) {
 	int Npar = fit_info.Npar;
 	int Nvar = fit_info.Nvar + fit_info.n_ext_P;
 	int Njack = gjack[0].Njack;
@@ -147,7 +147,7 @@ void print_fit_band_L_M(char** argv, vector<data_all> gjack, struct fit_type fit
 
 
 
-void print_fit_band_E3_vs_L(char** argv, vector<data_all> gjack, struct fit_type fit_info, struct fit_type fit_info_m0, const char* label, struct fit_result fit_out, struct fit_result fit_out_m0, vector<cluster::IO_params> params, std::vector<int> myen, struct fit_type fit_info_E3_poly, fit_result fit_E3_poly, std::vector<int> Lrange = { 16,50 }) {
+void print_fit_band_E3_vs_L(char** argv, vector<data_phi> gjack, struct fit_type fit_info, struct fit_type fit_info_m0, const char* label, struct fit_result fit_out, struct fit_result fit_out_m0, vector<cluster::IO_params> params, std::vector<int> myen, struct fit_type fit_info_E3_poly, fit_result fit_E3_poly, std::vector<int> Lrange = { 16,50 }) {
 	int Npar = fit_info.Npar;
 	int Nvar = fit_info.Nvar + fit_info.n_ext_P;
 	int Njack = gjack[0].Njack;
@@ -246,7 +246,7 @@ void print_fit_band_E3_vs_L(char** argv, vector<data_all> gjack, struct fit_type
 
 
 
-void print_kiso_P0_inf_L_M(char** argv, vector<data_all> gjack, struct fit_type fit_info, struct fit_type fit_info_m0, const char* label, struct fit_result fit_out, struct fit_result fit_out_m0, vector<cluster::IO_params> params, std::vector<int> myen, struct fit_type fit_info_E3_poly, fit_result fit_E3_poly, std::vector<int> Lrange = { 16,50 }) {
+void print_kiso_P0_inf_L_M(char** argv, vector<data_phi> gjack, struct fit_type fit_info, struct fit_type fit_info_m0, const char* label, struct fit_result fit_out, struct fit_result fit_out_m0, vector<cluster::IO_params> params, std::vector<int> myen, struct fit_type fit_info_E3_poly, fit_result fit_E3_poly, std::vector<int> Lrange = { 16,50 }) {
 	int Npar = fit_info.Npar;
 	int Nvar = fit_info.Nvar + fit_info.n_ext_P;
 	int Njack = gjack[0].Njack;
@@ -368,7 +368,7 @@ void print_kiso_P0_inf_L_M(char** argv, vector<data_all> gjack, struct fit_type 
 	free_2(Njack, tif_E3_poly);
 }
 
-void print_phase_shift(char** argv, vector<data_all> gjack, struct fit_type fit_info, const char* label, struct fit_result fit_out) {
+void print_phase_shift(char** argv, vector<data_phi> gjack, struct fit_type fit_info, const char* label, struct fit_result fit_out) {
 
 	char namefile[NAMESIZE];
 	mysprintf(namefile, NAMESIZE, "%s/%s_fit_phase_shift.txt", argv[3], label);
@@ -401,6 +401,64 @@ void print_phase_shift(char** argv, vector<data_all> gjack, struct fit_type fit_
 }
 
 
+void read_single_Njack_Nobs(FILE* stream, int header_size, int& Njack, int& Nobs) {
+
+	long int tmp;
+	int s = header_size;
+
+	size_t i = fread(&Njack, sizeof(int), 1, stream);
+
+
+	fseek(stream, 0, SEEK_END);
+	tmp = ftell(stream);
+	tmp -= header_size + sizeof(int);
+
+	s = Njack;
+
+	Nobs = (tmp) / ((s) * sizeof(double));
+
+	fseek(stream, header_size + sizeof(int), SEEK_SET);
+
+
+
+}
+
+void read_single_dataj(FILE* stream, cluster::IO_params params, data_single* dj) {
+
+	int Njack;
+	int Nobs;
+	read_single_Njack_Nobs(stream, params.data.header_size, Njack, Nobs);
+
+	dj->jack = double_malloc_2(Nobs, Njack);
+	dj->Njack = Njack;
+	dj->Nobs = Nobs;
+
+	size_t i = 0;
+	for (int obs = 0; obs < dj->Nobs; obs++) {
+		i += fread(dj->jack[obs], sizeof(double), dj->Njack, stream);
+	}
+	dj->header.L = params.data.L[1];
+	dj->header.T = params.data.L[0];
+
+}
+
+void read_all_the_files(std::vector<std::string> files, const char* resampling, data_all* jackall) {
+	jackall->resampling = resampling;
+	jackall->en = (data_single*)malloc(sizeof(data_single) * files.size());
+
+	jackall->ens = files.size();
+	int count = 0;
+	for (std::string s : files) {
+		cluster::IO_params params;
+		FILE* f = open_file(s.c_str(), "r");
+		read_header_phi4(f, params);
+		read_single_dataj(f, params, &(jackall->en[count]));
+		count++;
+		fclose(f);
+	}
+
+}
+
 int main(int argc, char** argv) {
 	error(argc != 4, 1, "main ",
 		"usage:./fit_all_phi4  jack/boot   path_to_jack   output_dir");
@@ -409,8 +467,8 @@ int main(int argc, char** argv) {
 	/*cluster::IO_params *params=(cluster::IO_params*) malloc(sizeof(cluster::IO_params)*Ne);
 
 
-	data_all data;
-	data_all *dataj=(data_all*) malloc(sizeof(data_all*)*Ne);
+	data_phi data;
+	data_phi *dataj=(data_phi*) malloc(sizeof(data_phi*)*Ne);
 
 
 	char namefile[NAMESIZE];
@@ -422,7 +480,7 @@ int main(int argc, char** argv) {
 	*/
 
 	vector<cluster::IO_params> paramsj;
-	vector<data_all> dataj;
+	vector<data_phi> dataj;
 
 	int Ne = 0;
 	cluster::IO_params params;
@@ -437,28 +495,39 @@ int main(int argc, char** argv) {
 	//emplace_back_par_data(namefile,paramsj,dataj);
 
 	//0
+	std::vector<std::string> files;
 	mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L14_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0", argv[2], argv[1]);
 	emplace_back_par_data(namefile, paramsj, dataj);
-
+	files.emplace_back(namefile);
 	mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L15_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0", argv[2], argv[1]);
 	emplace_back_par_data(namefile, paramsj, dataj);
+	files.emplace_back(namefile);
 	mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L16_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0", argv[2], argv[1]);
 	emplace_back_par_data(namefile, paramsj, dataj);
+	files.emplace_back(namefile);
 	mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L17_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0", argv[2], argv[1]);
 	emplace_back_par_data(namefile, paramsj, dataj);
+	files.emplace_back(namefile);
 	mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L18_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0", argv[2], argv[1]);
 	emplace_back_par_data(namefile, paramsj, dataj);
+	files.emplace_back(namefile);
 	mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L19_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0", argv[2], argv[1]);
 	emplace_back_par_data(namefile, paramsj, dataj);
+	files.emplace_back(namefile);
 	mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L20_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0", argv[2], argv[1]);
 	emplace_back_par_data(namefile, paramsj, dataj);
+	files.emplace_back(namefile);
 
+
+	data_all jackall;
+	read_all_the_files(files, argv[1], &jackall);
 
 	printf("E1_0 =%f   %f\n", dataj[0].jack[1][dataj[0].Njack - 1], error_jackboot(argv[1], dataj[0].Njack, dataj[0].jack[1]));
 
 
-	vector<data_all> gjack = create_generalised_resampling_phi(dataj, paramsj);
+	vector<data_phi> gjack = create_generalised_resampling_phi(dataj, paramsj);
 	printf("GEVP_E2_01 =%f   %f\n", gjack[1].jack[19][gjack[1].Njack - 1], error_jackboot(argv[1], gjack[1].Njack, gjack[1].jack[19]));
+	printf("GEVP_E2_01 =%f   %f\n", jackall.en[1].jack[19][jackall.en[1].Njack - 1], error_jackboot(argv[1], jackall.en[1].Njack, jackall.en[1].jack[19]));
 	Ne = gjack.size();
 	printf("number of ensembles = %d\n", Ne);
 
@@ -583,7 +652,6 @@ int main(int argc, char** argv) {
 	struct fit_result fit_kcotd_DeltaE = fit_data(argv, paramsj, gjack, lhs_kcotd_m_deltaE_g, fit_info, "kcotd_m_deltaE", myen);
 
 
-
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	printf("\n/////////////////////////////////   fit  k  form from_phase_shift    //////////////////\n");
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -639,28 +707,41 @@ int main(int argc, char** argv) {
 	print_fit_band_L_M(argv, gjack, fit_info, fit_info_m0, "deltaE2_m_quant_cond", deltaE2_m_quant_cond, fit_m0, paramsj, myen, { 13,26 });
 
 	print_phase_shift(argv, gjack, fit_info, "deltaE2_m_quant_cond", deltaE2_m_quant_cond);
-	fit_info.restore_default();
+	// fit_info.restore_default();
 	///////////////////////////////////////////////////////////////////////////////////////////////////
-	printf("\n/////////////////////////////////   fit  deltaE2_m_quant_cond  //////////////////\n");
+	printf("\n/////////////////////////////////   fit  deltaE2_m_QC3  //////////////////\n");
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	fit_info.Npar = 2;
 	fit_info.N = 3;
-	fit_info.Nvar = 2;
-	fit_info.Njack = gjack[0].Njack;
+	fit_info.Nvar = 3;
+	fit_info.Njack = jackall.en[0].Njack;
 	fit_info.myen = myen;
-	fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size(), fit_info.Njack);
-	for (int e = 0;e < fit_info.myen.size();e++) {
-		for (int j = 0;j < Njack;j++) {
-			fit_info.x[0][e][j] = paramsj[e].data.L[1];
-			fit_info.x[1][e][j] = gjack[fit_info.myen[e]].jack[1][j];
-			fit_info.x[2][e][j] = fit_m0.P[0][j];
+	fit_info.precision_sum = 2;
+	fit_info.verbosity = 0;
+	fit_info.guess = { -0.141739, -2.89287 };
+	fit_info.lambda = 0.001;
+	fit_info.acc = 0.001;
+	fit_info.h = 1e-3;
+	fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+	int count = 0;
+	for (int n = 0;n < fit_info.N;n++) {
+		for (int e = 0;e < fit_info.myen.size();e++) {
+			for (int j = 0;j < Njack;j++) {
+				fit_info.x[0][count][j] = paramsj[e].data.L[1];
+				fit_info.x[1][count][j] = jackall.en[fit_info.myen[e]].jack[1][j];
+				fit_info.x[2][count][j] = fit_m0.P[0][j];
+			}
+			count++;
 		}
 	}
-
 	fit_info.function = rhs_deltaE2_m_QC2;
-	fit_result deltaE2_m_QC2 =fit_all_data(argv,  gjack, lhs_deltaE2_m_latt_QC2 , fit_info, "deltaE2_m_QC2" );
-
-
+	fit_result deltaE2_m_QC2 = fit_all_data(argv, jackall, lhs_deltaE2_m_latt_QC2, fit_info, "deltaE2_m_QC2");
+	// print_fit_band_L_M(argv, gjack, fit_info, fit_info_m0, "deltaE2_m_QC2",
+	// 				 deltaE2_m_quant_cond, fit_m0, paramsj, myen, { 13,26 });
+	print_fit_band( argv,  jackall,   fit_info,
+		 fit_info_m0, "deltaE2_m_QC2", "L"
+		 fit_out,   fit_out_m0, 0, 0, int steps);
+	fit_info.restore_default();
 	exit(1);
 
 

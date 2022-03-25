@@ -22,15 +22,86 @@
 #include "mutils.hpp"
 #include "resampling.hpp"
 
+
+
+// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// //// print band
+// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
+//     struct fit_type fit_info_m0, const char* label, const char* dir_name
+//     struct fit_result fit_out, struct fit_result fit_out_m0, int var, int en, int steps) {
+
+//     std::vector<int>& myen = fit_info.myen;
+//     int Npar = fit_info.Npar;
+//     int Nvar = fit_info.Nvar + fit_info.n_ext_P;
+//     int Njack = gjack.en[0].Njack;
+//     int N = fit_info.N;
+//     char namefile[NAMESIZE];
+//     FILE* f;
+
+//     double** tif = swap_indices(fit_info.Npar, Njack, fit_out.P);
+//     double** tif_m0 = swap_indices(fit_info_m0.Npar, Njack, fit_out_m0.P);
+//     double min, max, h;
+//     if (fit_info.band_range.size() != 2) {
+//         min = fit_info.x[var][0][Njack - 1];
+//         max = fit_info.x[var][0][Njack - 1];
+//         for (int e = 1; e < myen.size() * N;e++) {
+//             if (fit_info.x[var][e][Njack - 1] < min)
+//                 min = fit_info.x[var][e][Njack - 1];
+//             if (fit_info.x[var][e][Njack - 1] > max)
+//                 max = fit_info.x[var][e][Njack - 1];
+//         }
+//         if (min = max)  print("no variation in this direction\n");
+//         min -= (max - min) / 10.0
+//             max += (max - min) / 10.0
+
+//     }
+//     else {
+//         min = fit_info.band_range[0];
+//         max = fit_info.band_range[1];
+//     }
+//     h = (max - min) / ((double)steps);
+//     max += h;
+
+//     for (int n = 0;n < N; n++) {
+
+//         mysprintf(namefile, NAMESIZE, "%s/%s_fit_out_n%d_%d.txt", argv[3], label, n, direction);
+//         f = open_file(namefile, "w+");
+//         double* tmpx = (double*)malloc(sizeof(double) * Nvar);
+//         double* tmpy = (double*)malloc(sizeof(double) * Njack);
+//         printf("writing: %s\n", namefile);
+//         // band range
+//         pos = min;
+//         while (pos < max) {
+//             for (int j = 0;j < Njack;j++) {
+//                 for (int i = 0; i < Nvar; i++) {
+//                     tmpx[i] = fit_info.x[i][en + n * myen.size()][j];
+//                 }
+//                 tmpx[var] = pos;
+//                 tmpy[j] = fit_info.function(n, Nvar, tmpx, Npar, tif[j]);
+//             }
+//             fprintf(f, "%g  \t %g  %g\n", finalL, tmpy[Njack - 1], error_jackboot(argv[1], Njack, tmpy));
+//             pos += h;
+//         }
+//         free(tmpy);free(tmpx);
+//         fclose(f);
+//     }
+//     free_2(Njack, tif);
+//     free_2(Njack, tif_m0);
+    
+// }
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// print output
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void print_fit_output(char** argv, std::vector<data_all> gjack, struct fit_type fit_info,
+void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
     const char* label, struct fit_result fit_out, int* en, double*** x, double*** y, std::vector<int> myen) {
     int Npar = fit_info.Npar;
     int Nvar = fit_info.Nvar;
-    int Njack = gjack[0].Njack;
+    int Njack = gjack.en[0].Njack;
     int N = fit_info.N;
 
     char namefile[NAMESIZE];
@@ -88,10 +159,12 @@ void print_fit_output(char** argv, std::vector<data_all> gjack, struct fit_type 
 }
 
 
-struct fit_result fit_all_data(char** argv, std::vector<data_all> gjack, double lhs_fun(int, int, int, std::vector<data_all>, struct fit_type), struct fit_type fit_info, const char* label) {
+struct fit_result fit_all_data(char** argv, data_all gjack,
+    double lhs_fun(int, int, int, data_all, struct fit_type),
+    struct fit_type fit_info, const char* label) {
     int Npar = fit_info.Npar;
     int Nvar = fit_info.Nvar;
-    int Njack = gjack[0].Njack;
+    int Njack = gjack.en[0].Njack;
     int N = fit_info.N;
     auto myen = fit_info.myen;
     ////// allocation
@@ -128,7 +201,7 @@ struct fit_result fit_all_data(char** argv, std::vector<data_all> gjack, double 
         for (int n = 0;n < N;n++) {
             for (int e = 0;e < en[n];e++) {
                 for (int i = 0; i < fit_info.Nvar; i++) {
-                    x[j][count][i] = fit_info.x[i][e][j];
+                    x[j][count][i] = fit_info.x[i][count][j];
                 }
 
                 count++;
@@ -138,6 +211,8 @@ struct fit_result fit_all_data(char** argv, std::vector<data_all> gjack, double 
 
 
     ////////////////////////////////////////// y
+    for (int i = 0; i < fit_info.Nvar; i++)  printf("x%-12d", i);
+    printf("y            dy           n\n");
     int count = 0;
     for (int n = 0;n < N;n++) {
         for (int e = 0;e < en[n];e++) {
@@ -150,7 +225,10 @@ struct fit_result fit_all_data(char** argv, std::vector<data_all> gjack, double 
                 y[j][e + count][0] = tmpj[j];
                 y[j][e + count][1] = err;
             }
-            printf(" %g   %g   %g\n", x[Njack - 1][e + count][0], y[Njack - 1][e + count][0], y[Njack - 1][e + count][1]);
+
+            for (int i = 0; i < fit_info.Nvar; i++)  printf("%-13g", x[Njack - 1][e + count][i]);
+
+            printf("%-13g%-13g%-4d\n", y[Njack - 1][e + count][0], y[Njack - 1][e + count][1], n);
             free(tmpj);
         }
         count += en[n];

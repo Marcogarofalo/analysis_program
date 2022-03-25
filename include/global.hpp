@@ -240,7 +240,9 @@ struct  fit_type {
   std::string resampling;
   int verbosity = 0;
 
-  
+  //
+  std::vector<double> band_range{};
+   
   void restore_default() {
     custom = false; // 1 means default fit , 0 custom fit options
     lambda = 0.001;
@@ -278,6 +280,8 @@ struct  fit_type {
       free(ext_P);
       n_ext_P = 0;
     }
+
+    band_range = std::vector<double>();
     //      f_plateaux_scan=NULL;
     //      name_plateaux_scan="\0";
   }
