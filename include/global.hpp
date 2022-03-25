@@ -240,10 +240,11 @@ struct  fit_type {
 
   std::string resampling;
   int verbosity = 0;
+  double mu = 0;
 
   //
   std::vector<double> band_range{};
-   
+
   void restore_default() {
     custom = false; // 1 means default fit , 0 custom fit options
     lambda = 0.001;
@@ -254,7 +255,7 @@ struct  fit_type {
     corr_id = std::vector<int>();
     devorder = 4;
     repeat_start = 1;
-    
+
     myen = std::vector<int>();
 
     mean_only = false;
@@ -265,7 +266,7 @@ struct  fit_type {
 
     precision_sum = 0;
     verbosity = 0;
-
+    mu = 0;
 
     t0_GEVP = 3;
     value_or_vector = 0;
@@ -301,7 +302,7 @@ struct fit_result {
 
 
 struct fit_all {
-  int Nfits=0;
+  int Nfits = 0;
   struct fit_type* info;
   struct fit_result* out;
 };

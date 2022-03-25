@@ -21,6 +21,7 @@
 #include "eigensystem.hpp"
 #include "non_linear_fit.hpp"
 #include "tower.hpp"
+#include "fit_all.hpp"
 // #include "lhs_functions.hpp"
 
 #include <string>
@@ -70,7 +71,7 @@ public:
         // for (int i = 0; i < iconfs.size(); i++) {
         //     printf("%s   %d    %d\n", iconfs[i].c_str(), to_bin[i], next_to_bin[i]);
         // }
-        
+
     }
 
 
@@ -161,7 +162,7 @@ void line_read_param(char** option, const char* corr, double& tmin, double& tmax
         printf("looking for a line:\n %s  %s\n", option[6], corr);
         exit(1);
     }
-    if (match > 1){
+    if (match > 1) {
         printf("multiple lines line:\n %s  %s\n", option[6], corr);
         exit(1);
     }
@@ -222,10 +223,10 @@ void return_conf_binned(double* tmp_b, double** tmp, configuration_class confs, 
         tmp_b[t] /= N;
 
     // printf("\n");
-    
+
 }
 
-void read_twopt(const char namefile[NAMESIZE], configuration_class confs, int T, double**** to_write, int id) {
+void read_twopt(const char namefile[NAMESIZE], configuration_class confs, int T, double**** to_write, int id, int Nb) {
     // char tmp[NAMESIZE];
     int sd = 0;
     std::fstream newfile;
@@ -255,21 +256,34 @@ void read_twopt(const char namefile[NAMESIZE], configuration_class confs, int T,
             "unable to open %s", namefile);
     }
 
+    double** data = double_calloc_2(confs.iconfs.size(), T / 2 + 1);
     int count = 0;
     for (int i = 0;i < confs.iconfs.size();i++) {
         if (confs.to_bin[i] == 1 || confs.to_bin[i] == 2) { // if it is alone or it is first of the list
             double* tmp_b = (double*)calloc((T / 2 + 2), sizeof(double));
             return_conf_binned(tmp_b, tmp, confs, i, T);
             for (int t = 0;t < T / 2 + 1;t++) {
-                to_write[count][id][t][0] = tmp_b[t];
+                data[count][t] = tmp_b[t];
             }
             free(tmp_b);
             count++;
         }
     }
+    int bin = confs.iconfs.size() / Nb;
+    for (int t = 0;t < T / 2 + 1;t++) {
+        int l = 0;
+        for (int i = 0;i < bin;i++) {
+            for (int l = 0;l < Nb;l++) {
+                to_write[l][id][t][0] += data[i + l * bin][t];
 
+            }
+        }
+        for (l = 0;l < Nb;l++) {
+            to_write[l][id][t][0] /= ((double)bin);
+        }
 
-
+    }
+    free_2(confs.iconfs.size(), data);
 
 }
 
@@ -383,9 +397,9 @@ int main(int argc, char** argv) {
 
 
 
-    error(argc != 12, 1, "main ",
+    error(argc != 14, 1, "main ",
         "usage:./g-2  blind/see/read_plateaux -p path basename -bin $bin"
-        "  -mu mu -L L jack/boot  ");
+        "   -L L jack/boot  -mu mu  mus mus ");
     error(strcmp(argv[1], "blind") != 0 && strcmp(argv[1], "see") != 0 && strcmp(argv[1], "read_plateaux") != 0, 1, "main ",
         "argv[1] only options:  blind/see/read_plateaux ");
 
@@ -398,11 +412,11 @@ int main(int argc, char** argv) {
 
 
     error(strcmp(argv[5], "-bin") != 0, 1, "main", "argv[5] must be: -bin");
-    error(strcmp(argv[7], "-mu") != 0, 1, "main", "argv[7] must be: -mu");
-    error(strcmp(argv[9], "-L") != 0, 1, "main", "argv[9] must be: -L");
-    error(strcmp(argv[11], "jack") != 0 && strcmp(argv[7], "boot") != 0, 1, "main",
+
+    error(strcmp(argv[7], "-L") != 0, 1, "main", "argv[7] must be: -L");
+    error(strcmp(argv[9], "jack") != 0 && strcmp(argv[9], "boot") != 0, 1, "main",
         "argv[6] only options: jack/boot");
-    
+    error(strcmp(argv[10], "-mu") != 0, 1, "main", "argv[7] must be: -mu");
 
     char** option;
     option = (char**)malloc(sizeof(char*) * 7);
@@ -417,16 +431,21 @@ int main(int argc, char** argv) {
     mysprintf(option[1], NAMESIZE, argv[1]); // blind/see/read_plateaux
     mysprintf(option[2], NAMESIZE, "-p"); // -p
     mysprintf(option[3], NAMESIZE, argv[3]); // path
-    mysprintf(option[4], NAMESIZE, argv[11]); //resampling
+    mysprintf(option[4], NAMESIZE, argv[9]); //resampling
     mysprintf(option[5], NAMESIZE, "no"); // pdf
 
-    file_head.l1 = atoi(argv[10]);
+    file_head.l1 = atoi(argv[8]);
     file_head.l0 = file_head.l1 * 2;
     file_head.l2 = file_head.l1;
     file_head.l3 = file_head.l1;
 
-    double mu = atof(argv[8]);
-
+    double mu = atof(argv[11]);
+    double mus1 = atof(argv[12]);
+    double mus2 = atof(argv[13]);
+    generic_header header;
+    header.L = file_head.l1;
+    header.T = file_head.l0;
+    header.mus = { mu, mus1, mus2 };
 
     mysprintf(namefile, NAMESIZE, "%s_mu.%f", argv[4], mu);
 
@@ -435,7 +454,7 @@ int main(int argc, char** argv) {
 
     printf("resampling %s\n", option[4]);
     char resampling[NAMESIZE];
-    mysprintf(resampling, NAMESIZE, argv[11]);
+    mysprintf(resampling, NAMESIZE, argv[9]);
     int T = file_head.l0;
 
     file_head.nk = 2;
@@ -478,23 +497,55 @@ int main(int argc, char** argv) {
     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);//5
     correlators.emplace_back(namefile);
 
-    printf("reading confs from file: %s", correlators[0].c_str());
+
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.3f_P5A0.txt", argv[3], argv[4], mus1);//6
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.3f_P5P5.txt", argv[3], argv[4], mus1);//7
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.3f_VKVK.txt", argv[3], argv[4], mus1);//8
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.3f_P5A0.txt", argv[3], argv[4], mus1);//9
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.3f_P5P5.txt", argv[3], argv[4], mus1);//10
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.3f_VKVK.txt", argv[3], argv[4], mus1);//11
+    correlators.emplace_back(namefile);
+
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.3f_P5A0.txt", argv[3], argv[4], mus2);//12
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.3f_P5P5.txt", argv[3], argv[4], mus2);//13
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.3f_VKVK.txt", argv[3], argv[4], mus2);//14
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.3f_P5A0.txt", argv[3], argv[4], mus2);//15
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.3f_P5P5.txt", argv[3], argv[4], mus2);//16
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.3f_VKVK.txt", argv[3], argv[4], mus2);//17
+    correlators.emplace_back(namefile);
+
+
+
+    // printf("reading confs from file: %s", correlators[0].c_str());
     // auto iconfs = read_nconfs(correlators[0].c_str());
-    configuration_class myconfs(correlators[0].c_str());
-    confs = myconfs.iconfs.size();
-    cout << "confs =" << confs << endl;
+    std::vector<configuration_class> myconfs;
+
+    // confs = myconfs[0].iconfs.size();
+    int count = 0;
     for (auto name : correlators) {
-        printf("checking confs from file: %s\n", name.c_str());
-        // auto check_iconfs = read_nconfs(name.c_str());
-        configuration_class check_confs(name.c_str());
-        for (int i = 0;i < confs;i++) {
-            error(myconfs.iconfs[i] != check_confs.iconfs[i], 1, "configurations id do not match", "");
-        }
-        error(confs != check_confs.iconfs.size(), 1, "reading number of configuration", "not all the files have the same confs");
+        printf("reading  confs from file: %s\n", name.c_str());
+        myconfs.emplace_back(name.c_str());
+        myconfs[count].check_binnign();
+        cout << "number of different configurations:" << myconfs[count].confs_after_binning << endl;
+        count++;
+        // printf("checking confs from file: %s\n", name.c_str());
+        // // auto check_iconfs = read_nconfs(name.c_str());
+        // configuration_class check_confs(name.c_str());
+        // for (int i = 0;i < confs;i++) {
+        //     error(myconfs.iconfs[i] != check_confs.iconfs[i], 1, "configurations id do not match", "");
+        // }
+        // error(confs != check_confs.iconfs.size(), 1, "reading number of configuration", "not all the files have the same confs");
     }
-    myconfs.check_binnign();
-    confs = myconfs.confs_after_binning;
-    cout << "number of different configurations:" << confs << endl;
     // which_confs_are_the_same(std::vector<std::string> iconfs);
 
     // FILE* infile_equal_P5A0 = open_file(namefile, "r+");
@@ -504,17 +555,17 @@ int main(int argc, char** argv) {
     //confs=confs/10;
     // compute what will be the neff after the binning 
     int bin = atoi(argv[6]);
-    int Neff =  bin;
-    cout << "effective configurations after binning ( bin size " << confs/bin << "):  " << Neff << endl;
+    int Neff = bin;
+    // cout << "effective configurations after binning ( bin size " << confs / bin << "):  " << Neff << endl;
 
     int Njack;
-    if (strcmp(argv[11], "jack") == 0)
+    if (strcmp(argv[9], "jack") == 0)
         Njack = Neff + 1;
-    else if (strcmp(argv[11], "boot") == 0)
+    else if (strcmp(argv[9], "boot") == 0)
         Njack = Nbootstrap + 1;
     else {
         Njack = 0;
-        error(1 == 1, 1, "main", "argv[11]= %s is not jack or boot", argv[11]);
+        error(1 == 1, 1, "main", "argv[9]= %s is not jack or boot", argv[9]);
     }
     fwrite(&Njack, sizeof(int), 1, jack_file);
 
@@ -522,34 +573,58 @@ int main(int argc, char** argv) {
     get_kinematic(0, 0, 1, 0, 0, 0);
 
     int var = correlators.size();
-    data = calloc_corr(confs, var, file_head.l0);
+    data = calloc_corr(bin, var, file_head.l0);
 
     for (int i = 0; i < var; i++) {
         // read correlators[i] and store in data[conf][i][t][re/im]
-        read_twopt(correlators[i].c_str(), myconfs, T, data, i);
+        read_twopt(correlators[i].c_str(), myconfs[i], T, data, i, bin);
     }
 
     // data_bin = binning(confs, var, file_head.l0, data, bin);
-    data_bin = binning_toNb(confs, var, file_head.l0, data, bin);
+    // data_bin = binning_toNb(confs, var, file_head.l0, data, bin);
     // //if you want to do the gamma analysis you need to do before freeing the raw data
     // // effective_mass_phi4_gamma(option, kinematic_2pt, (char*)"P5P5", data_bin, Neff, namefile_plateaux, out_gamma, 0, "M_{PS}^{ll}");
     // // effective_mass_phi4_gamma(option, kinematic_2pt, (char*)"P5P5", data_bin, Neff, namefile_plateaux, out_gamma, 1, "M_{PS1}^{ll}");
     // //effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,namefile_plateaux,out_gamma,3,"M_{PS}^{ll}");
-    free_corr(confs, var, file_head.l0, data);
+    // free_corr(bin, var, file_head.l0, data);
 
-    conf_jack = create_resampling(option[4], Neff, var, file_head.l0, data_bin);
-    free_corr(Neff, var, file_head.l0, data_bin);
+    conf_jack = create_resampling(option[4], Neff, var, file_head.l0, data);
+    free_corr(Neff, var, file_head.l0, data);
 
     // ////////////////// symmetrization/////////////////////////////////////////////
     // for (int i = 0;i <= 7;i++) { symmetrise_jackboot(Njack, i, file_head.l0, conf_jack); }
 
     ////////////////////////////////////////////////
     corr_counter = -1;
-    double* M_PS = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 1, "M_{PS}", M_eff_T, jack_file);
+    double* M_PS = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 1, "M_{PS}^{eq}", M_eff_T, jack_file);
     check_correlatro_counter(0);
 
-    double* M_PS_OS = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 4, "M_{PS}^{OS}", M_eff_T, jack_file);
+    double* M_PS_op = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 4, "M_{PS}^{op}", M_eff_T, jack_file);
     check_correlatro_counter(1);
+
+    double* M_eta = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 1 + 6, "M_{eta}^{eq}", M_eff_T, jack_file);
+    check_correlatro_counter(2);
+
+    double* M_eta_op = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 4 + 6, "M_{eta}^{op}", M_eff_T, jack_file);
+    check_correlatro_counter(3);
+
+    double* M_phi = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 2 + 6, "M_{phi}^{eq}", M_eff_T, jack_file);
+    check_correlatro_counter(4);
+
+    double* M_phi_op = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 5 + 6, "M_{phi}^{op}", M_eff_T, jack_file);
+    check_correlatro_counter(5);
+
+    double* M_eta1 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 1 + 12, "M_{eta1}^{eq}", M_eff_T, jack_file);
+    check_correlatro_counter(6);
+
+    double* M_eta1_op = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 4 + 12, "M_{eta1}^{op}", M_eff_T, jack_file);
+    check_correlatro_counter(7);
+
+    double* M_phi1 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 2 + 12, "M_{phi1}^{eq}", M_eff_T, jack_file);
+    check_correlatro_counter(8);
+
+    double* M_phi1_op = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 5 + 12, "M_{phi1}^{op}", M_eff_T, jack_file);
+    check_correlatro_counter(9);
 
 
     fit_type fit_info;
@@ -561,77 +636,125 @@ int main(int argc, char** argv) {
     fit_info.Njack = Njack;
     fit_info.n_ext_P = 1;
     fit_info.ext_P = (double**)malloc(sizeof(double*) * 1);
-    fit_info.ext_P[0] = M_PS;
     fit_info.function = constant_fit;
 
-    fit_result G_PS = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, GPS_lhs, "G_{PS}", fit_info, jack_file);
-    check_correlatro_counter(2);
+    fit_info.ext_P[0] = M_PS;
+    fit_result G_PS = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, GPS_lhs<1>, "G_{PS}^{eq}", fit_info, jack_file);
+    check_correlatro_counter(10);
 
 
-    fit_info.ext_P[0] = M_PS_OS;
-    fit_result G_PS_OS = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, GPS_OS_lhs, "G_{PS}^{OS}", fit_info, jack_file);
-    check_correlatro_counter(3);
+    fit_info.ext_P[0] = M_PS_op;
+    fit_result G_PS_OS = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, GPS_OS_lhs<4>, "G_{PS}^{op}", fit_info, jack_file);
+    check_correlatro_counter(11);
 
+    fit_info.ext_P[0] = M_eta;
+    fit_result G_eta = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, GPS_lhs<1 + 6>, "G_{eta}^{eq}", fit_info, jack_file);
+    check_correlatro_counter(12);
+
+
+    fit_info.ext_P[0] = M_eta_op;
+    fit_result G_eta_OS = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, GPS_OS_lhs<4 + 6>, "G_{eta}^{op}", fit_info, jack_file);
+    check_correlatro_counter(13);
+
+    fit_info.ext_P[0] = M_eta1;
+    fit_result G_eta1 = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, GPS_lhs<1 + 12>, "G_{eta1}^{eq}", fit_info, jack_file);
+    check_correlatro_counter(14);
+
+
+    fit_info.ext_P[0] = M_eta1_op;
+    fit_result G_eta1_OS = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, GPS_OS_lhs<4 + 12>, "G_{eta1}^{op}", fit_info, jack_file);
+    check_correlatro_counter(15);
+
+    //////////////////////////////////////////////////
     fit_info.n_ext_P = 0;
-    fit_result ZVl = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, ZVl_lhs, "Z_V(l)", fit_info, jack_file);
-    check_correlatro_counter(4);
+    fit_info.mu = mu;
+    fit_result ZVl = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, ZVl_lhs<4, 3>, "Z_V(l)", fit_info, jack_file);
+    check_correlatro_counter(16);
+    fit_info.mu = mus1;
+    fit_result ZVs = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, ZVl_lhs<4 + 6, 3 + 6>, "Z_V(s)", fit_info, jack_file);
+    check_correlatro_counter(17);
+    fit_info.mu = mus2;
+    fit_result ZVs1 = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, ZVl_lhs<4 + 12, 3 + 12>, "Z_V(s1)", fit_info, jack_file);
+    check_correlatro_counter(18);
 
 
     fit_info.ext_P[0] = nullptr;
     free(fit_info.ext_P);
     fit_info.n_ext_P = 4;
     fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
-    fit_info.ext_P[0] = M_PS;
-    fit_info.ext_P[1] = M_PS_OS;
-    fit_info.ext_P[2] = G_PS.P[0];
-    fit_info.ext_P[3] = G_PS_OS.P[0];
 
-    fit_result ZAl = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, ZAl_lhs, "Z_A(l)", fit_info, jack_file);
-    check_correlatro_counter(5);
+    fit_info.ext_P[0] = M_PS_op;
+    fit_info.ext_P[1] = M_PS;
+    fit_info.ext_P[2] = G_PS_OS.P[0];
+    fit_info.ext_P[3] = G_PS.P[0];
+    fit_info.mu = mu;
+    fit_result ZAl = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, ZAl_lhs<1, 0>, "Z_A(l)", fit_info, jack_file);
+    check_correlatro_counter(19);
+
+
+    fit_info.ext_P[0] = M_eta_op;
+    fit_info.ext_P[1] = M_eta;
+    fit_info.ext_P[2] = G_eta_OS.P[0];
+    fit_info.ext_P[3] = G_eta.P[0];
+    fit_info.mu = mus1;
+    fit_result ZAs = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, ZAl_lhs<1 + 6, 0 + 6>, "Z_A(s)", fit_info, jack_file);
+    check_correlatro_counter(20);
+
+    fit_info.ext_P[0] = M_eta1_op;
+    fit_info.ext_P[1] = M_eta1;
+    fit_info.ext_P[2] = G_eta1_OS.P[0];
+    fit_info.ext_P[3] = G_eta1.P[0];
+    fit_info.mu = mus2;
+    fit_result ZAs1 = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, ZAl_lhs<1 + 12, 0 + 12>, "Z_A(s1)", fit_info, jack_file);
+    check_correlatro_counter(21);
 
     fit_info.restore_default();
 
     // double* amu_sd = (double*)malloc(sizeof(double) * Njack);
     double* VV = (double*)malloc(sizeof(double) * file_head.l0);
-    double mean,err;
+    double mean, err;
     int seed;
-    line_read_param(option, "a", mean, err, seed,  namefile_plateaux);
+    line_read_param(option, "a", mean, err, seed, namefile_plateaux);
     double* a = fake_sampling(resampling, mean, err, Njack, seed);
-    line_read_param(option, "ZA", mean, err, seed,  namefile_plateaux);
+    line_read_param(option, "ZA", mean, err, seed, namefile_plateaux);
     double* ZA = fake_sampling(resampling, mean, err, Njack, seed);
-    line_read_param(option, "ZV", mean, err, seed,  namefile_plateaux);
+    line_read_param(option, "ZV", mean, err, seed, namefile_plateaux);
     double* ZV = fake_sampling(resampling, mean, err, Njack, seed);
-    
-    
-   
+
+
+
     double (*int_scheme)(int, int, double*);
 
-   
+
     int_scheme = integrate_reinman;
-    double *amu_sd = compute_amu_sd(conf_jack,2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile,"amu_{sd}(eq,l)",resampling);
-    write_jack(amu_sd,  Njack,  jack_file);
+    double* amu_sd = compute_amu_sd(conf_jack, 2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "amu_{sd}(eq,l)", resampling);
+    write_jack(amu_sd, Njack, jack_file);
+    check_correlatro_counter(22);
     printf("amu_sd(eq,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
     free(amu_sd);
 
-    amu_sd = compute_amu_sd(conf_jack,5, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile,"amu_{sd}(op,l)",resampling);
-    write_jack(amu_sd,  Njack,  jack_file); 
+    amu_sd = compute_amu_sd(conf_jack, 5, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "amu_{sd}(op,l)", resampling);
+    write_jack(amu_sd, Njack, jack_file);
+    check_correlatro_counter(23);
     printf("amu_sd(op,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
     free(amu_sd);
 
 
     int_scheme = integrate_simpson38;
-    amu_sd = compute_amu_sd(conf_jack,2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile,"amu_{sd,simpson38}(eq,l)",resampling);
-    write_jack(amu_sd,  Njack,  jack_file);
+    amu_sd = compute_amu_sd(conf_jack, 2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "amu_{sd,simpson38}(eq,l)", resampling);
+    write_jack(amu_sd, Njack, jack_file);
+    check_correlatro_counter(24);
     printf("amu_sd_simpson38(eq,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
     free(amu_sd);
 
-    amu_sd = compute_amu_sd(conf_jack,5, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile,"amu_{sd,simpson38}(op,l)",resampling);
-    write_jack(amu_sd,  Njack,  jack_file); 
+    amu_sd = compute_amu_sd(conf_jack, 5, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "amu_{sd,simpson38}(op,l)", resampling);
+    write_jack(amu_sd, Njack, jack_file);
+    check_correlatro_counter(25);
     printf("amu_sd_simpson38(op,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
     free(amu_sd);
-    
 
-    free(M_PS);free(M_PS_OS);
+
+    free(M_PS);free(M_PS_op);
     free_fit_result(fit_info, G_PS);free_fit_result(fit_info, G_PS_OS);
     free_fit_result(fit_info, ZVl);free_fit_result(fit_info, ZAl);
 }
