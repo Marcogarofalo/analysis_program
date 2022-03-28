@@ -256,7 +256,7 @@ void read_twopt(const char namefile[NAMESIZE], configuration_class confs, int T,
             "unable to open %s", namefile);
     }
 
-    double** data = double_calloc_2(confs.iconfs.size(), T / 2 + 1);
+    double** data = double_calloc_2(confs.confs_after_binning, T / 2 + 1);
     int count = 0;
     for (int i = 0;i < confs.iconfs.size();i++) {
         if (confs.to_bin[i] == 1 || confs.to_bin[i] == 2) { // if it is alone or it is first of the list
@@ -269,7 +269,7 @@ void read_twopt(const char namefile[NAMESIZE], configuration_class confs, int T,
             count++;
         }
     }
-    int bin = confs.iconfs.size() / Nb;
+    int bin = confs.confs_after_binning / Nb;
     for (int t = 0;t < T / 2 + 1;t++) {
         int l = 0;
         for (int i = 0;i < bin;i++) {
@@ -283,7 +283,7 @@ void read_twopt(const char namefile[NAMESIZE], configuration_class confs, int T,
         }
 
     }
-    free_2(confs.iconfs.size(), data);
+    free_2(confs.confs_after_binning, data);
 
 }
 
@@ -535,6 +535,7 @@ int main(int argc, char** argv) {
     for (auto name : correlators) {
         printf("reading  confs from file: %s\n", name.c_str());
         myconfs.emplace_back(name.c_str());
+        // myconfs[cout]=read_nconfs(name.c_str());
         myconfs[count].check_binnign();
         cout << "number of different configurations:" << myconfs[count].confs_after_binning << endl;
         count++;
