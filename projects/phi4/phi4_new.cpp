@@ -5870,8 +5870,8 @@ int main(int argc, char** argv) {
         // }
         // check_correlatro_counter(359);
     }
-    else { for (int i = 618;i <= 623;i++)  zero_corr(zeros, Njack, jack_file); }
-    check_correlatro_counter(623);
+    else { for (int i = 618;i <= 625;i++)  zero_corr(zeros, Njack, jack_file); }
+    check_correlatro_counter(625);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
     // free(E1_0_p1);

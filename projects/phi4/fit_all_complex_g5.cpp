@@ -424,41 +424,71 @@ void read_single_Njack_Nobs(FILE* stream, int header_size, int& Njack, int& Nobs
 
 }
 
-void read_single_dataj(FILE* stream, cluster::IO_params params, data_single* dj) {
+// void read_single_dataj(FILE* stream, cluster::IO_params params, data_single* dj) {
 
+// 	int Njack;
+// 	int Nobs;
+// 	read_single_Njack_Nobs(stream, params.data.header_size, Njack, Nobs);
+
+// 	dj->jack = double_malloc_2(Nobs, Njack);
+// 	dj->Njack = Njack;
+// 	dj->Nobs = Nobs;
+
+// 	size_t i = 0;
+// 	for (int obs = 0; obs < dj->Nobs; obs++) {
+// 		i += fread(dj->jack[obs], sizeof(double), dj->Njack, stream);
+// 	}
+// 	dj->header.L = params.data.L[1];
+// 	dj->header.T = params.data.L[0];
+
+// }
+
+data_single read_single_dataj(FILE* stream, cluster::IO_params params) {
+	
 	int Njack;
 	int Nobs;
 	read_single_Njack_Nobs(stream, params.data.header_size, Njack, Nobs);
-
-	dj->jack = double_malloc_2(Nobs, Njack);
-	dj->Njack = Njack;
-	dj->Nobs = Nobs;
-
+	// data_single dj(Nobs,Njack);
+	data_single dj;
+	dj.jack = double_malloc_2(Nobs, Njack);
+	dj.Nobs=Nobs;
+	dj.Njack=Njack;
+	//
 	size_t i = 0;
-	for (int obs = 0; obs < dj->Nobs; obs++) {
-		i += fread(dj->jack[obs], sizeof(double), dj->Njack, stream);
+	for (int obs = 0; obs < dj.Nobs; obs++) {
+		i += fread(dj.jack[obs], sizeof(double), dj.Njack, stream);
 	}
-	dj->header.L = params.data.L[1];
-	dj->header.T = params.data.L[0];
+	dj.header.L = params.data.L[1];
+	dj.header.T = params.data.L[0];
+	return dj;
 
 }
 
 void read_all_the_files(std::vector<std::string> files, const char* resampling, data_all* jackall) {
 	jackall->resampling = resampling;
-	jackall->en = (data_single*)malloc(sizeof(data_single) * files.size());
-
+	//jackall->en = (data_single*)malloc(sizeof(data_single) * files.size());
+	jackall->en = new data_single[files.size()];
 	jackall->ens = files.size();
 	int count = 0;
 	for (std::string s : files) {
 		cluster::IO_params params;
 		FILE* f = open_file(s.c_str(), "r");
 		read_header_phi4(f, params);
-		read_single_dataj(f, params, &(jackall->en[count]));
+		// read_single_dataj(f, params, &(jackall->en[count]));
+		jackall->en[count]=read_single_dataj(f, params);
 		count++;
 		fclose(f);
 	}
 
 }
+void print_test(data_all jackall){
+
+	printf("GEVP_E2_01 =%f   %f\n", jackall.en[1].jack[19][jackall.en[1].Njack - 1], error_jackboot("jack", jackall.en[1].Njack, jackall.en[1].jack[19]));
+	for(int e=0; e<jackall.ens; e++){
+		printf("%d  %d\n",jackall.en[e].header.T, jackall.en[e].header.L);
+	}
+}
+
 
 int main(int argc, char** argv) {
 	error(argc != 4, 1, "main ",
@@ -528,7 +558,7 @@ int main(int argc, char** argv) {
 
 	vector<data_phi> gjack = create_generalised_resampling_phi(dataj, paramsj);
 	printf("GEVP_E2_01 =%f   %f\n", gjack[1].jack[19][gjack[1].Njack - 1], error_jackboot(argv[1], gjack[1].Njack, gjack[1].jack[19]));
-	printf("GEVP_E2_01 =%f   %f\n", jackall.en[1].jack[19][jackall.en[1].Njack - 1], error_jackboot(argv[1], jackall.en[1].Njack, jackall.en[1].jack[19]));
+	print_test(jackall);
 	Ne = gjack.size();
 	printf("number of ensembles = %d\n", Ne);
 
