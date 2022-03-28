@@ -159,7 +159,7 @@ double ZAl_lhs(int j, double**** in, int t, struct fit_type fit_info) {
     
 
     double num = in[j][idn][t][0];
-    double den = in[j][idd][t + 1][0] - in[j][idd][t][0];
+    double den = (in[j][idd][t + 1][0] - in[j][idd][t-1][0])/2.0;
     double RA = (2 * fit_info.mu * num / (den));
 
     return RA * M_PS_OS * sinh(M_PS_OS) * GPS / (M_PS * sinh(M_PS) * GPS_OS);
@@ -170,7 +170,7 @@ double ZVl_lhs(int j, double**** in, int t, struct fit_type fit_info) {
     int T = file_head.l0;
 
     double num = in[j][idn][t][0];
-    double den = in[j][idd][t + 1][0] - in[j][idd][t][0];
+    double den = (in[j][idd][t + 1][0] - in[j][idd][t-1][0])/2.0;
     return (2 * fit_info.mu * num / (den));
 
 }
