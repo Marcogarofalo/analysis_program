@@ -9,6 +9,8 @@
 
 class generic_header {
 public:
+    int struct_size;
+    int Njack;
     int T;
     int L;
     std::vector<double> mus{};
