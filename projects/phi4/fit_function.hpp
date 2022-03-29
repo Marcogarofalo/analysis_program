@@ -1,5 +1,5 @@
-#ifndef fit_function_H
-#define fit_function_H
+#ifndef fit_function_phi4_H
+#define fit_function_phi4_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -1033,6 +1033,7 @@ double rhs_deltaE2_m_quant_cond_g(int n, int Nvar, double* x, int Npar, double* 
 double rhs_deltaE2_m_QC2(int n, int Nvar, double* x, int Npar, double* P) {
 
     double mass = x[1];
+    // double mass =x[2];
     double xx[3] = { x[0],mass,1 }; //{L,mass,   k to be find by the bisection}
 
 
@@ -1459,6 +1460,7 @@ double lhs_deltaE2_m_latt_g(int n, int e, int j, vector<cluster::IO_params> para
 double lhs_deltaE2_m_latt_QC2(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double E2;
     double mass = gjack.en[e].jack[1][j];
+    // double mass = fit_info.x[2][0][j];
 
     int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
     init_dvec_E2_g(n, dvec, dvec1, dvec2, dmax1, dmax2);

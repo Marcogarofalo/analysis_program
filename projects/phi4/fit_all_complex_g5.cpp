@@ -28,7 +28,7 @@
 
 
 //local folder
-#include "mass_phi4.hpp"
+// #include "mass_phi4.hpp"
 #include "fit_function.hpp"
 
 #include <QC3_interface.hpp>
@@ -666,21 +666,91 @@ int main(int argc, char** argv) {
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	 // kcot  deltaE
-	 //////////////////////////////////////////////////////////////////////////////////////////////////
-	printf("\n/////////////////////////////////     k cot delta deltaE    //////////////////\n");
+	//  //////////////////////////////////////////////////////////////////////////////////////////////////
+	// printf("\n/////////////////////////////////     k cot delta deltaE    //////////////////\n");
 
 
+	// fit_info.Npar = 2;
+	// fit_info.N = 3;
+	// fit_info.Njack = gjack[0].Njack;
+	// fit_info.n_ext_P = 3;
+	// fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
+	// fit_info.ext_P[0] = fit_m0.P[0];
+	// fit_info.ext_P[1] = fit_m0.P[0];
+	// fit_info.ext_P[2] = fit_m0.P[0];	 //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
+	// fit_info.function = rhs_kcotd_m;
+
+	// struct fit_result fit_kcotd_DeltaE = fit_data(argv, paramsj, gjack, lhs_kcotd_m_deltaE_g, fit_info, "kcotd_m_deltaE", myen);
+
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+		printf("\n/////////////////////////////////     k cot delta deltaE    //////////////////\n");
+	//////////////////////////////////////////////////////////////////////////////////////////////////
 	fit_info.Npar = 2;
 	fit_info.N = 3;
-	fit_info.Njack = gjack[0].Njack;
-	fit_info.n_ext_P = 3;
-	fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
-	fit_info.ext_P[0] = fit_m0.P[0];
-	fit_info.ext_P[1] = fit_m0.P[0];
-	fit_info.ext_P[2] = fit_m0.P[0];	 //fit_info.ext_P=(double**) malloc(sizeof(double*)*fit_info.n_ext_P);
-	fit_info.function = rhs_kcotd_m;
+	fit_info.Nvar = 2;
+	fit_info.Njack = jackall.en[0].Njack;
+	fit_info.myen = myen;
+	fit_info.precision_sum = 2;
+	fit_info.verbosity = 0;
+	fit_info.guess = { -0.141739, -2.89287 };
+	fit_info.lambda = 0.001;
+	fit_info.acc = 0.001;
+	fit_info.h = 1e-3;
+	fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+	int count = 0;
+	for (int n = 0;n < fit_info.N;n++) {
+		for (int e = 0;e < fit_info.myen.size();e++) {
+			for (int j = 0;j < Njack;j++) {
+				fit_info.x[0][count][j] = jackall.en[e].jack[1][j];
+				fit_info.x[1][count][j] = compute_k_m_g_new(n, myen[e], j, jackall, fit_info);
+				
+			}
+			count++;
+		}
+	}
+	fit_info.function = rhs_kcotd_m_new;
+	fit_result fit_kcotd_DeltaE = fit_all_data(argv, jackall, lhs_kcotd_m_deltaE_g_new, fit_info, "kcotd_m_deltaE");
+	fit_info.band_range = { };
+	// print_fit_band_phi4(argv, jackall, fit_info, fit_info_m0, "kcotd_m_deltaE", "L", deltaE2_m_QC2, fit_m0, 0, 0, 1);
+	print_fit_band(argv, jackall, fit_info, fit_info_m0, "kcotd_m_deltaE", "k_m", fit_kcotd_DeltaE, fit_m0,1, myen.size()-1, 0.1);
 
-	struct fit_result fit_kcotd_DeltaE = fit_data(argv, paramsj, gjack, lhs_kcotd_m_deltaE_g, fit_info, "kcotd_m_deltaE", myen);
+	fit_info.restore_default();
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+		printf("\n/////////////////////////////////     k cot delta deltaE_infm    //////////////////\n");
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	fit_info.Npar = 2;
+	fit_info.N = 3;
+	fit_info.Nvar = 2;
+	fit_info.Njack = jackall.en[0].Njack;
+	fit_info.myen = myen;
+	fit_info.precision_sum = 2;
+	fit_info.verbosity = 0;
+	fit_info.guess = { -0.141739, -2.89287 };
+	fit_info.lambda = 0.001;
+	fit_info.acc = 0.001;
+	fit_info.h = 1e-3;
+	fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+	count = 0;
+	for (int n = 0;n < fit_info.N;n++) {
+		for (int e = 0;e < fit_info.myen.size();e++) {
+			for (int j = 0;j < Njack;j++) {
+				fit_info.x[0][count][j] = fit_m0.P[0][j];
+				fit_info.x[1][count][j] = compute_k_m_g_new(n, myen[e], j, jackall, fit_info);
+				
+			}
+			count++;
+		}
+	}
+	fit_info.function = rhs_kcotd_m_new;
+	fit_result fit_kcotd_DeltaE_infm = fit_all_data(argv, jackall, lhs_kcotd_m_deltaE_g_new, fit_info, "kcotd_m_deltaE_infm");
+	fit_info.band_range = { };
+	// print_fit_band_phi4(argv, jackall, fit_info, fit_info_m0, "kcotd_m_deltaE", "L", deltaE2_m_QC2, fit_m0, 0, 0, 1);
+	print_fit_band(argv, jackall, fit_info, fit_info_m0, "kcotd_m_deltaE_infm", "k_m", fit_kcotd_DeltaE_infm, fit_m0, 1, myen.size()-1, 0.1);
+
+	fit_info.restore_default();
+
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -754,7 +824,7 @@ int main(int argc, char** argv) {
 	fit_info.acc = 0.001;
 	fit_info.h = 1e-3;
 	fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
-	int count = 0;
+	count = 0;
 	for (int n = 0;n < fit_info.N;n++) {
 		for (int e = 0;e < fit_info.myen.size();e++) {
 			for (int j = 0;j < Njack;j++) {
