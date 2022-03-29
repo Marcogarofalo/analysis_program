@@ -1,15 +1,13 @@
 #define extra_func_phi4_C
 
-// #include "extra_func_phi4.hpp"
+#include "extra_func_phi4.hpp"
 #include "mutils.hpp"
 #include "tower.hpp"
 #include "resampling.hpp"
 extern "C" { 
     #include "../external/rzeta/src/dzeta_function.h"
 }
-// #ifdef PYTHON
-// #include <QC3_interface.hpp>
-// #endif
+
 
 #include "fit_all.hpp"
 

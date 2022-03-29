@@ -305,6 +305,7 @@ if(WITH_PYTHON)
     add_library(
         QC3_interface STATIC
         QC3_interface.hpp
+        ../modules/QC3_interface.cpp
     )
     set_target_properties(QC3_interface PROPERTIES LINKER_LANGUAGE CXX)
     target_link_libraries(QC3_interface PUBLIC  ${PYTHON_LIBRARIES})

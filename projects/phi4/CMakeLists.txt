@@ -21,6 +21,7 @@ IF(WITH_PYTHON)
         extra_func_phi4.cpp
     )
     target_link_libraries(extra_func_phi4 PUBLIC fit_all)
+    # target_link_libraries(extra_func_phi4 PUBLIC QC3_interface)
     target_include_directories(extra_func_phi4 PUBLIC  "${CMAKE_CURRENT_SOURCE_DIR}")
 
     add_target_with_lib(fit_all_complex_g5 fit_all_complex_g5.cpp)

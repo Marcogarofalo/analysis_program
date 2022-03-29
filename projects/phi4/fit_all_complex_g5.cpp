@@ -26,7 +26,6 @@
 #include <fstream>
 #include <memory>
 
-#include "extra_func_phi4.hpp"
 
 //local folder
 // #include "mass_phi4.hpp"
@@ -34,6 +33,7 @@
 
 #include <QC3_interface.hpp>
 #include "fit_all.hpp"
+#include "extra_func_phi4.hpp"
 
 
 using namespace std;
