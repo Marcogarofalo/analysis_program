@@ -1,14 +1,17 @@
 #define extra_func_phi4_C
 
-#include "extra_func_phi4.hpp"
+// #include "extra_func_phi4.hpp"
 #include "mutils.hpp"
 #include "tower.hpp"
 #include "resampling.hpp"
 extern "C" { 
     #include "../external/rzeta/src/dzeta_function.h"
 }
+// #ifdef PYTHON
+// #include <QC3_interface.hpp>
+// #endif
 
-// #include "fit_function.hpp"
+#include "fit_all.hpp"
 
 
 void print_fit_band_phi4(char** argv, data_all gjack, struct fit_type fit_info,
@@ -211,3 +214,64 @@ double compute_k_m_g_new(int n, int e, int j, data_all gjack, struct fit_type fi
     return sqrt(E2_CM * E2_CM / 4. - mass * mass) / mass;
 
 }
+
+
+/////////////////////////////////////////////
+//// QC3
+////////////////////////////////////////////////
+
+
+// void init_dvec_QC3_pole_new(int n, int* dvec) {
+//     if (n == 0) {//E1_1
+//         dvec[0] = 0; dvec[1] = 0; dvec[2] = 0;
+//     }
+//     else if (n == 1) {// E3_0
+//         dvec[0] = 0; dvec[1] = 0; dvec[2] = 0;
+//     }
+//     else if (n == 2) {//E2_0_p11
+//         dvec[0] = 1; dvec[1] = 0; dvec[2] = 0;
+//     }
+//     else if (n == 3) {//E2_0_p1
+//         dvec[0] = 1; dvec[1] = 0; dvec[2] = 0;
+//     }
+//     else if (n == 4) {//E2_0_p1
+//         dvec[0] = 1; dvec[1] = 1; dvec[2] = 0;
+//     }
+//     else if (n == 5) {//E2_0_p1
+//         dvec[0] = 1; dvec[1] = 1; dvec[2] = 0;
+//     }
+
+//     else {
+//         printf("init_dvec n=%d not implemented\n", n); exit(1);
+//     }
+// }
+
+// #ifdef PYTHON
+// double rhs_E3_m_QC3_pole_new(int n, int Nvar, double* x, int Npar, double* P) {
+
+//     double Pkcot[2];
+//         Pkcot[0] = x[1];
+//         Pkcot[1] = x[2];
+
+//     int Nkcot = 2;
+//     int Nkiso = Npar;
+//     int dvec[3];//,dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+//     init_dvec_QC3_pole_new(n, dvec);
+//     //init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
+//     double nnP[3];
+//     nnP[0] = (double)dvec[0]; nnP[1] = (double)dvec[1]; nnP[2] = (double)dvec[2];
+    
+//     double Lm = x[0];// L* M
+//     int steps = 4;
+
+    
+
+//     double Estart = x[3] - x[4]; // E3/m_inf +- error
+//     double Eend = x[3] + x[4];
+
+//     // printf("E=[%g , %g]   E1f=%g   E2f=%g  m=%g\n",Estart,Eend,Estart,Eend,mass);
+//     double r = python_detQC_call(Estart, Eend, steps, Lm, nnP, Nkcot, Pkcot, Nkiso, P);
+//     //     printf("res=%g\n",r);
+//     return r;
+// }
+// #endif

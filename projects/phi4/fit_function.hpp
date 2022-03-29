@@ -2399,5 +2399,4 @@ struct fit_result fit_data(char** argv, vector<cluster::IO_params> params, vecto
 
 }
 
-
 #endif

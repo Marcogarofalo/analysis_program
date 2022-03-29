@@ -4,7 +4,7 @@
 
 #include "fit_all.hpp"
 #include <cstdlib>
-
+// #include "mass_phi4.hpp"
 
 void print_fit_band_phi4(char** argv, data_all gjack, struct fit_type fit_info,
     struct fit_type fit_info_m0, const char* label, const char* dir_name,

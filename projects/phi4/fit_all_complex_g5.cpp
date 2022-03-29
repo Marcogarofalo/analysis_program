@@ -26,6 +26,7 @@
 #include <fstream>
 #include <memory>
 
+#include "extra_func_phi4.hpp"
 
 //local folder
 // #include "mass_phi4.hpp"
@@ -33,7 +34,6 @@
 
 #include <QC3_interface.hpp>
 #include "fit_all.hpp"
-#include "extra_func_phi4.hpp"
 
 
 using namespace std;
@@ -840,6 +840,7 @@ int main(int argc, char** argv) {
 	fit_info.band_range = { 13, 21 };
 	print_fit_band_phi4(argv, jackall, fit_info, fit_info_m0, "deltaE2_m_QC2", "L", deltaE2_m_QC2, fit_m0, 0, 0, 1);
 
+	jackall.add_fit(deltaE2_m_QC2);
 	fit_info.restore_default();
 
 
@@ -985,7 +986,7 @@ exit(1);
 	fit_info.N = 2;
 	fit_info.Njack = jackall.en[0].Njack;
 
-	fit_info.function = rhs_E3_m_QC3_pole;
+	// fit_info.function = rhs_E3_m_QC3_pole_new;
 	fit_info.n_ext_P = 0;
 	fit_info.x = double_malloc_3(fit_info_E3_poly.Nvar, fit_info_E3_poly.myen.size() * fit_info_E3_poly.N, fit_info_E3_poly.Njack);
 
@@ -993,7 +994,10 @@ exit(1);
 	for (int n = 0;n < fit_info_E3_poly.N;n++) {
 		for (int e = 0;e < fit_info_E3_poly.myen.size();e++) {
 			for (int j = 0;j < Njack;j++) {
-				fit_info.x[0][count][j] = jackall.en[e].header.L/jackall.en[e].jack[1][j];
+				fit_info.x[0][count][j] = jackall.en[e].header.L * jackall.en[e].jack[1][j];
+				fit_info.x[1][count][j]= jackall.fits[1].P[0][j];
+				fit_info.x[2][count][j]= jackall.fits[1].P[1][j];
+				// fit_info.x[3][count][j]= 
 			}
 			count++;
 		}

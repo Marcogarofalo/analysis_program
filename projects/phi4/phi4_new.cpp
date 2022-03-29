@@ -4355,6 +4355,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
+        fit_info.N = 5;
         for (int i = 0; i < fit_info.N; i++) {
             char name_v[NAMESIZE];
             mysprintf(name_v, NAMESIZE, "GEVP_0_3_1_A1_5_l%d", i);
@@ -4364,6 +4365,7 @@ int main(int argc, char** argv) {
         }
 
         check_correlatro_counter(270);
+        fit_info.N = 5;
         for (int i = 0; i < fit_info.N; i++) {
             char name_v[NAMESIZE];
             mysprintf(name_v, NAMESIZE, "GEVP_0_3_1_A1_5_meffl%d", i);
@@ -4550,7 +4552,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
-
+        fit_info.N = 3;
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_0_d0_1_l%d", i);
             double* l0_GEVP = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, ncorr_new - fit_info.N + i, name_v, identity, jack_file);
@@ -4615,6 +4617,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
+        fit_info.N = 3;
 
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_0_3_5_l%d", i);
@@ -4677,6 +4680,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
+        fit_info.N = 2;
 
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_0_3_l%d", i);
@@ -4735,7 +4739,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
-
+        fit_info.N = 2;
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_3_1_l%d", i);
             double* l0_GEVP = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, ncorr_new - fit_info.N + i, name_v, identity, jack_file);
@@ -4793,7 +4797,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
-
+fit_info.N = 2;
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_0_1_l%d", i);
             double* l0_GEVP = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, ncorr_new - fit_info.N + i, name_v, identity, jack_file);
@@ -4884,6 +4888,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
+        fit_info.N = 3;
 
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "H2_GEVP_0_3_1_l%d", i);
@@ -4937,7 +4942,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
-
+fit_info.N = 4;
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_0_3_1_d0_l%d", i);
             double* l0_GEVP = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, ncorr_new - fit_info.N + i, name_v, identity, jack_file);
@@ -5008,6 +5013,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVPn %d\n", ncorr_new);
 
         fit_info.restore_default();
+        fit_info.N = 3;
 
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVPn_0_3_1_l%d", i);
@@ -5072,6 +5078,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
+        fit_info.N = 4;
 
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_0_3_1_001_l%d", i);
@@ -5141,6 +5148,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
+        fit_info.N = 5;
 
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_0_3_1_001_011_l%d", i);
@@ -5215,6 +5223,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
+        fit_info.N = 6;
 
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_0_3_1_001_011_111_l%d", i);
@@ -5287,6 +5296,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
+        fit_info.N = 4;
 
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_0_3_1_phi3nl_l%d", i);
@@ -5358,6 +5368,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
+        fit_info.N = 6;
 
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_0_3_1_001_011_A1_l%d", i);
@@ -5395,6 +5406,7 @@ int main(int argc, char** argv) {
 
         fit_info.restore_default();
         //id_GEVP_031_p1=ncorr_new;
+        fit_info.N = 6;
 
         for (int i = 0; i < N; i++) {
             int comp = i % sqrtN;
@@ -5461,6 +5473,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
+        fit_info.N = 3;
 
         // for (int i=0; i< fit_info.N; i++){
         //     mysprintf(name_v,NAMESIZE,"GEVP_00_11_l%d",i   );
@@ -5522,6 +5535,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
+        fit_info.N = 4;
 
         // for (int i=0; i< fit_info.N; i++){
         //     mysprintf(name_v,NAMESIZE,"GEVP_00_11_l%d",i   );
@@ -5589,6 +5603,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
+        fit_info.N = 3;
 
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_00_11_01_A1_meffl%d", i);
@@ -5626,6 +5641,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
+        fit_info.N = 6;
 
 
         for (int i = 0; i < fit_info.N; i++) {
@@ -5746,6 +5762,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
+        fit_info.N = 6;
 
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_00_11_01_00A1_11A1_01A1_meffl%d", i);
@@ -5793,6 +5810,7 @@ int main(int argc, char** argv) {
         add_correlators(option, ncorr_new, conf_jack, GEVP_matrix, fit_info);
         printf(" ncorr after GEVP %d\n", ncorr_new);
         fit_info.restore_default();
+        fit_info.N = 2;
 
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_00_11_meffl%d", i);
@@ -5824,6 +5842,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
+        fit_info.N = 3;
 
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_3_1_00d1_l%d", i);
@@ -5843,7 +5862,7 @@ int main(int argc, char** argv) {
 
         tmp_imag = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 272, "imag_1_00d1", identity, jack_file);
         free(tmp_imag);
-        
+
 
         // int sqrtN = 2;
         // int N = sqrtN * sqrtN;
