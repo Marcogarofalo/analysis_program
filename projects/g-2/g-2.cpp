@@ -31,6 +31,9 @@
 #include <memory>
 
 #include <gsl/gsl_integration.h>
+
+constexpr double Metas_MeV = 689.89;
+constexpr double Metas_MeV_err = 0.49;
 using namespace std;
 
 
@@ -354,14 +357,22 @@ void setup_file_jack(char** argv, int Njack) {
 
 
 
-void write_header_g2(FILE* stream) {
+void write_header_g2(FILE* stream, generic_header header) {
 
-    fwrite(&file_head.l0, sizeof(int), 1, stream);
-    fwrite(&file_head.l1, sizeof(int), 1, stream);
-    fwrite(&file_head.l2, sizeof(int), 1, stream);
-    fwrite(&file_head.l3, sizeof(int), 1, stream);
-    fwrite(&file_head.musea, sizeof(double), 1, stream);
+    fwrite(&header.T, sizeof(int), 1, stream);
+    fwrite(&header.L, sizeof(int), 1, stream);
+    int s = header.mus.size();
+    fwrite(&s, sizeof(int), 1, stream);
+    for (double mu : header.mus) {
+        fwrite(&mu, sizeof(double), 1, stream);
+    }
+    s = header.thetas.size();
+    fwrite(&s, sizeof(int), 1, stream);
+    for (double theta : header.thetas) {
+        fwrite(&theta, sizeof(double), 1, stream);
+    }
 
+    header.struct_size = ftell(stream);
 
 }
 
@@ -446,6 +457,7 @@ int main(int argc, char** argv) {
     header.L = file_head.l1;
     header.T = file_head.l0;
     header.mus = { mu, mus1, mus2 };
+    header.thetas = {};
 
     mysprintf(namefile, NAMESIZE, "%s_mu.%f", argv[4], mu);
 
@@ -481,7 +493,7 @@ int main(int argc, char** argv) {
 
     mysprintf(namefile, NAMESIZE, "%s/jackknife/%s_%s", argv[3], option[4], option[6]);
     FILE* jack_file = open_file(namefile, "w+");
-    write_header_g2(jack_file);
+    write_header_g2(jack_file, header);
 
     std::vector<std::string>  correlators;
     mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);//0
@@ -557,6 +569,7 @@ int main(int argc, char** argv) {
     // compute what will be the neff after the binning 
     int bin = atoi(argv[6]);
     int Neff = bin;
+    
     // cout << "effective configurations after binning ( bin size " << confs / bin << "):  " << Neff << endl;
 
     int Njack;
@@ -569,6 +582,7 @@ int main(int argc, char** argv) {
         error(1 == 1, 1, "main", "argv[9]= %s is not jack or boot", argv[9]);
     }
     fwrite(&Njack, sizeof(int), 1, jack_file);
+    header.Njack = Njack;
 
     setup_file_jack(option, Njack);
     get_kinematic(0, 0, 1, 0, 0, 0);
@@ -717,12 +731,44 @@ int main(int argc, char** argv) {
     int seed;
     line_read_param(option, "a", mean, err, seed, namefile_plateaux);
     double* a = fake_sampling(resampling, mean, err, Njack, seed);
-    line_read_param(option, "ZA", mean, err, seed, namefile_plateaux);
-    double* ZA = fake_sampling(resampling, mean, err, Njack, seed);
-    line_read_param(option, "ZV", mean, err, seed, namefile_plateaux);
-    double* ZV = fake_sampling(resampling, mean, err, Njack, seed);
+
+    double* jack_Metas_MeV_exp = fake_sampling(resampling, Metas_MeV, Metas_MeV_err, Njack, seed + 1000);
+
+    // line_read_param(option, "ZA", mean, err, seed, namefile_plateaux);
+    // double* ZA = fake_sampling(resampling, mean, err, Njack, seed);
+    // line_read_param(option, "ZV", mean, err, seed, namefile_plateaux);
+    // double* ZV = fake_sampling(resampling, mean, err, Njack, seed);
+
+    double* jack_aMetas_MeV_exp = (double*)malloc(sizeof(double) * Njack);
+    for (int j = 0;j < Njack;j++) {
+        jack_aMetas_MeV_exp[j]=jack_Metas_MeV_exp[j]*a[j]/ 197.326963;
+    }
+    int Nstrange=2;
+    double** Meta=(double**) malloc(sizeof(double*)*Nstrange);
+    Meta[0]=M_eta_op;
+    Meta[1]=M_eta1_op;
+    double** Z=(double**) malloc(sizeof(double*)*Nstrange);
+    Z[0]=ZVs.P[0];
+    Z[1]=ZVs1.P[0];
+
+    double *ZV=interpol_Z(Nstrange,  Njack, Meta,  Z, jack_aMetas_MeV_exp,  outfile, "Z_V",  resampling) ;
+    write_jack(ZV, Njack, jack_file);
+    check_correlatro_counter(22);
 
 
+    Z[0]=ZAs.P[0];
+    Z[1]=ZAs1.P[0];
+    double *ZA=interpol_Z(Nstrange,  Njack, Meta,  Z, jack_aMetas_MeV_exp,  outfile, "Z_A",  resampling) ;
+    write_jack(ZA, Njack, jack_file);
+    check_correlatro_counter(23);
+    for (int i=0;i<Nstrange;i++){
+        Z[i]=nullptr;
+        Meta[i]=nullptr;
+    }
+    free(Meta);free(Z);
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // a_SD
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     double (*int_scheme)(int, int, double*);
 
@@ -730,13 +776,13 @@ int main(int argc, char** argv) {
     int_scheme = integrate_reinman;
     double* amu_sd = compute_amu_sd(conf_jack, 2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "amu_{sd}(eq,l)", resampling);
     write_jack(amu_sd, Njack, jack_file);
-    check_correlatro_counter(22);
+    check_correlatro_counter(24);
     printf("amu_sd(eq,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
     free(amu_sd);
 
     amu_sd = compute_amu_sd(conf_jack, 5, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "amu_{sd}(op,l)", resampling);
     write_jack(amu_sd, Njack, jack_file);
-    check_correlatro_counter(23);
+    check_correlatro_counter(25);
     printf("amu_sd(op,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
     free(amu_sd);
 
@@ -744,13 +790,13 @@ int main(int argc, char** argv) {
     int_scheme = integrate_simpson38;
     amu_sd = compute_amu_sd(conf_jack, 2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "amu_{sd,simpson38}(eq,l)", resampling);
     write_jack(amu_sd, Njack, jack_file);
-    check_correlatro_counter(24);
+    check_correlatro_counter(26);
     printf("amu_sd_simpson38(eq,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
     free(amu_sd);
 
     amu_sd = compute_amu_sd(conf_jack, 5, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "amu_{sd,simpson38}(op,l)", resampling);
     write_jack(amu_sd, Njack, jack_file);
-    check_correlatro_counter(25);
+    check_correlatro_counter(27);
     printf("amu_sd_simpson38(op,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
     free(amu_sd);
 

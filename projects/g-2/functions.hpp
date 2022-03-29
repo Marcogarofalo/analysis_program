@@ -156,10 +156,10 @@ double ZAl_lhs(int j, double**** in, int t, struct fit_type fit_info) {
     double M_PS_OS = fit_info.ext_P[1][j];
     double GPS = fit_info.ext_P[2][j];
     double GPS_OS = fit_info.ext_P[3][j];
-    
+
 
     double num = in[j][idn][t][0];
-    double den = (in[j][idd][t + 1][0] - in[j][idd][t-1][0])/2.0;
+    double den = (in[j][idd][t + 1][0] - in[j][idd][t - 1][0]) / 2.0;
     double RA = (2 * fit_info.mu * num / (den));
 
     return RA * M_PS_OS * sinh(M_PS_OS) * GPS / (M_PS * sinh(M_PS) * GPS_OS);
@@ -170,7 +170,7 @@ double ZVl_lhs(int j, double**** in, int t, struct fit_type fit_info) {
     int T = file_head.l0;
 
     double num = in[j][idn][t][0];
-    double den = (in[j][idd][t + 1][0] - in[j][idd][t-1][0])/2.0;
+    double den = (in[j][idd][t + 1][0] - in[j][idd][t - 1][0]) / 2.0;
     return (2 * fit_info.mu * num / (den));
 
 }
@@ -195,4 +195,40 @@ double GPS_lhs(int j, double**** in, int t, struct fit_type fit_info) {
     double GPS_OS = sqrt(in[j][id][t][0] * 2 * mass / (exp(-mass * t) + exp(-mass * (T - t))));
 
     return GPS_OS;
+}
+
+
+double* interpol_Z(int Nmus, int Njack, double** Meta, double** Z, double* aMetas_exp,
+    FILE* outfile, const char* description, const char* resampling) {
+    //  Z(s1) = ( 1  Meta(s1) )  (P[0])
+    //  Z(s1) = ( 1  Meta(s2) )  (P[1])
+
+    double** matrix = double_malloc_2(Nmus, Nmus);
+    double* Zj = (double*)malloc(sizeof(double) * Nmus);
+    double* Zint = (double*)malloc(sizeof(double) * Njack);
+    for (int j = 0;j < Njack;j++) {
+        for (int i = 0;i < Nmus;i++) {
+            Zj[i] = Z[i][j];
+            for (int k = 0;k < Nmus;k++) {
+                matrix[i][k] = pow(Meta[i][j], k);
+            }
+        }
+        double* P = LU_decomposition_solver(Nmus, matrix, Zj);
+        Zint[j] = 0;
+        for (int k = 0;k < Nmus;k++) {
+            Zint[j] += pow(aMetas_exp[j], k) * P[k];
+        }
+        free(P);
+    }
+    free(Zj);
+    free_2(Nmus, matrix);
+    fprintf(outfile, " \n\n# aMetas_exp  Zint  err\n");
+
+    fprintf(outfile, "%.15g   %.15g   %.15g\t", aMetas_exp[Njack - 1], Zint[Njack - 1], error_jackboot(resampling, Njack, Zint));
+
+    fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 0, 0, 0.0, 0.0);
+    fprintf(outfile, "   %.15g   %15.g\n", Zint[Njack - 1], error_jackboot(resampling, Njack, Zint));
+    printf("%s (%.15g) =  %.15g   %15.g\n", description, aMetas_exp[Njack - 1], Zint[Njack - 1], error_jackboot(resampling, Njack, Zint));
+
+    return(Zint);
 }
