@@ -897,8 +897,7 @@ int main(int argc, char** argv) {
 	print_fit_band(argv, jackall, fit_info_E3_poly, fit_info_m0, "fit_QC3_poly", "L", fit_QC3_poly, fit_m0, 0, 0, 1);
 
 	fit_info.restore_default();
-	exit(1);
-
+exit(1);
 #ifdef PYTHON
 	//// we need python
 	wchar_t* program = Py_DecodeLocale(argv[0], NULL);
@@ -977,7 +976,6 @@ int main(int argc, char** argv) {
 
 	// fit_info.restore_default();
 	// exit(1);
-
 	printf("////////////////////  kiso pole fit   ////////////////////////////////////\n");
 	init_python_detQC();
 	init_python_detQC_kcot_kiso("kcot_2par", "kiso_pole", "find_sol");
@@ -985,32 +983,75 @@ int main(int argc, char** argv) {
 	//      init_python_detQC_kcot_kiso("kcot_2par", "kiso_1par");
 	fit_info.Npar = 2;
 	fit_info.N = 2;
-	fit_info.Njack = gjack[0].Njack;
-
+	fit_info.Njack = jackall.en[0].Njack;
 
 	fit_info.function = rhs_E3_m_QC3_pole;
-	fit_info.n_ext_P = 3;
-	fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
-	fit_info.ext_P[0] = deltaE2_m_QC2.P[0];
-	fit_info.ext_P[1] = deltaE2_m_QC2.P[1];
-	fit_info.ext_P[2] = fit_m0.P[0];
+	fit_info.n_ext_P = 0;
+	fit_info.x = double_malloc_3(fit_info_E3_poly.Nvar, fit_info_E3_poly.myen.size() * fit_info_E3_poly.N, fit_info_E3_poly.Njack);
 
-	fit_info.lambda = 0.001;
-	fit_info.acc = 10;
-	fit_info.h = 1e-2;
-	//fit_info.Prange={1000,10000};
-	fit_info.devorder = 2;
-	fit_info.verbosity = 100;
-	fit_info.repeat_start = 2;
-	fit_info.guess = { -0.142262, -2.96471 };
-	fit_info.mean_only = true;
+	count = 0;
+	for (int n = 0;n < fit_info_E3_poly.N;n++) {
+		for (int e = 0;e < fit_info_E3_poly.myen.size();e++) {
+			for (int j = 0;j < Njack;j++) {
+				fit_info.x[0][count][j] = jackall.en[e].header.L/jackall.en[e].jack[1][j];
+			}
+			count++;
+		}
+	}
+	// fit_info.ext_P[0] = deltaE2_m_QC2.P[0];
+	// fit_info.ext_P[1] = deltaE2_m_QC2.P[1];
+	// fit_info.ext_P[2] = fit_m0.P[0];
 
-	mysprintf(namefile, NAMESIZE, "QC3_N%d_%dpar_pole", fit_info.N, fit_info.Npar);
-	struct fit_result fit_QC3_1par = fit_data(argv, paramsj, gjack, lhs_E3orE1_m_complex, fit_info, namefile,
-		/*myen*/{ 2,3,4 });
-	print_fit_band_E3_vs_L(argv, gjack, fit_info, fit_info_m0, namefile, fit_QC3_1par, fit_m0, paramsj, myen, fit_info_E3_poly, fit_QC3_poly, { 14,22 });
+	// fit_info.lambda = 0.001;
+	// fit_info.acc = 10;
+	// fit_info.h = 1e-2;
+	// //fit_info.Prange={1000,10000};
+	// fit_info.devorder = 2;
+	// fit_info.verbosity = 100;
+	// fit_info.repeat_start = 2;
+	// fit_info.guess = { -0.142262, -2.96471 };
+	// fit_info.mean_only = true;
 
-	fit_info.restore_default();
+	// mysprintf(namefile, NAMESIZE, "QC3_N%d_%dpar_pole", fit_info.N, fit_info.Npar);
+	// struct fit_result fit_QC3_1par = fit_data(argv, paramsj, gjack, lhs_E3orE1_m_complex, fit_info, namefile,
+	// 	/*myen*/{ 2,3,4 });
+	// print_fit_band_E3_vs_L(argv, gjack, fit_info, fit_info_m0, namefile, fit_QC3_1par, fit_m0, paramsj, myen, fit_info_E3_poly, fit_QC3_poly, { 14,22 });
+
+	// fit_info.restore_default();
+
+	printf("////////////////////  kiso pole fit   ////////////////////////////////////\n");
+	init_python_detQC();
+	init_python_detQC_kcot_kiso("kcot_2par", "kiso_pole", "find_sol");
+	//     init_python_detQC_kcot_kiso("kcot_2par", "kiso_2par");
+	//      init_python_detQC_kcot_kiso("kcot_2par", "kiso_1par");
+	// fit_info.Npar = 2;
+	// fit_info.N = 2;
+	// fit_info.Njack = gjack[0].Njack;
+
+
+	// fit_info.function = rhs_E3_m_QC3_pole;
+	// fit_info.n_ext_P = 3;
+	// fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
+	// fit_info.ext_P[0] = deltaE2_m_QC2.P[0];
+	// fit_info.ext_P[1] = deltaE2_m_QC2.P[1];
+	// fit_info.ext_P[2] = fit_m0.P[0];
+
+	// fit_info.lambda = 0.001;
+	// fit_info.acc = 10;
+	// fit_info.h = 1e-2;
+	// //fit_info.Prange={1000,10000};
+	// fit_info.devorder = 2;
+	// fit_info.verbosity = 100;
+	// fit_info.repeat_start = 2;
+	// fit_info.guess = { -0.142262, -2.96471 };
+	// fit_info.mean_only = true;
+
+	// mysprintf(namefile, NAMESIZE, "QC3_N%d_%dpar_pole", fit_info.N, fit_info.Npar);
+	// struct fit_result fit_QC3_1par = fit_data(argv, paramsj, gjack, lhs_E3orE1_m_complex, fit_info, namefile,
+	// 	/*myen*/{ 2,3,4 });
+	// print_fit_band_E3_vs_L(argv, gjack, fit_info, fit_info_m0, namefile, fit_QC3_1par, fit_m0, paramsj, myen, fit_info_E3_poly, fit_QC3_poly, { 14,22 });
+
+	// fit_info.restore_default();
 
 
 	///// close python

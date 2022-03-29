@@ -256,6 +256,17 @@ struct  fit_type {
     devorder = 4;
     repeat_start = 1;
 
+    if (myen.size() >0 && N>0 && Nvar>0){
+      for (int i = 0;i < Nvar;i++) {
+        for (int j = 0;j < myen.size() * N;j++) {
+          free(x[i][j]);
+        }
+        free(x[i]);
+      }
+      free(x);
+    }
+    // Nvar = 0;
+    N = 0;
     myen = std::vector<int>();
 
     mean_only = false;
