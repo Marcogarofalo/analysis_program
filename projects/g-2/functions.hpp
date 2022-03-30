@@ -227,8 +227,8 @@ double* interpol_Z(int Nmus, int Njack, double** Meta, double** Z, double* aMeta
     fprintf(outfile, "%.15g   %.15g   %.15g\t", aMetas_exp[Njack - 1], Zint[Njack - 1], error_jackboot(resampling, Njack, Zint));
 
     fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 0, 0, 0.0, 0.0);
-    fprintf(outfile, "   %.15g   %15.g\n", Zint[Njack - 1], error_jackboot(resampling, Njack, Zint));
-    printf("%s (%.15g) =  %.15g   %15.g\n", description, aMetas_exp[Njack - 1], Zint[Njack - 1], error_jackboot(resampling, Njack, Zint));
+    fprintf(outfile, "   %.15g   %.15g\n", Zint[Njack - 1], error_jackboot(resampling, Njack, Zint));
+    printf("%s (%.15g) =  %.15g   %.15g\n", description, aMetas_exp[Njack - 1], Zint[Njack - 1], error_jackboot(resampling, Njack, Zint));
 
     return(Zint);
 }

@@ -219,221 +219,56 @@ int main(int argc, char** argv) {
 
     free_fit_result(fit_info, fit_critical);
     fit_info.restore_default();
+
+    printf("/////////////////////////////////////  r_AWI_tau2///////////////////////////////////// ");
+    fit_info.Nvar = 7;
+    fit_info.Npar = 3;
+    fit_info.N = 1;
+    fit_info.Njack = gjack[0].Njack;
+    fit_info.n_ext_P = 0;
+    fit_info.function = rhs_critical_eta_mu;
+    fit_info.corr_id={ 13,4 };
+
+
+    fit_critical = fit_data(argv, paramsj, gjack, lhs_fit_two_func, fit_info, "eta_critical_tau2_b585", myenW);
+    print_fit_band_eta(argv, gjack, fit_info, "eta_critical_tau2_b585", fit_critical, paramsj, myenW);
+
+    free_fit_result(fit_info, fit_critical);
+    fit_info.restore_default();
+    printf("/////////////////////////////////////  r_AWI_tau3///////////////////////////////////// ");
+    fit_info.Nvar = 7;
+    fit_info.Npar = 3;
+    fit_info.N = 1;
+    fit_info.Njack = gjack[0].Njack;
+    fit_info.n_ext_P = 0;
+    fit_info.function = rhs_critical_eta_mu;
+    fit_info.corr_id={ 14,4 };
+
+
+    fit_critical = fit_data(argv, paramsj, gjack, lhs_fit_two_func, fit_info, "eta_critical_tau3_b585", myenW);
+    print_fit_band_eta(argv, gjack, fit_info, "eta_critical_tau3_b585", fit_critical, paramsj, myenW);
+
+    free_fit_result(fit_info, fit_critical);
+    fit_info.restore_default();
+     printf("/////////////////////////////////////  r_AWI_tau4///////////////////////////////////// ");
+    fit_info.Nvar = 7;
+    fit_info.Npar = 3;
+    fit_info.N = 1;
+    fit_info.Njack = gjack[0].Njack;
+    fit_info.n_ext_P = 0;
+    fit_info.function = rhs_critical_eta_mu;
+    fit_info.corr_id={ 15,4 };
+
+
+    fit_critical = fit_data(argv, paramsj, gjack, lhs_fit_two_func, fit_info, "eta_critical_tau4_b585", myenW);
+    print_fit_band_eta(argv, gjack, fit_info, "eta_critical_tau4_b585", fit_critical, paramsj, myenW);
+
+    free_fit_result(fit_info, fit_critical);
+    fit_info.restore_default();
+
+
  exit(1);
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    // start fitting
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-
-    fit_info.Nvar = 7;
-    fit_info.Npar = 8;
-    fit_info.N = 2;
-    fit_info.Njack = gjack[0].Njack;
-    fit_info.n_ext_P = 0;
-    fit_info.function = rhs_critical_eta_mu_m0_shifted;
-
-
-    mysprintf(namefit, NAMESIZE, "eta_m0_critical_b585_shifted");
-    fit_critical = fit_data(argv, paramsj, gjack, lhs_critical_eta_mu_m0, fit_info, namefit, myenW);
-    print_fit_band_eta(argv, gjack, fit_info, namefit, fit_critical, paramsj, myenW);
-
-    printf("eta_cr=%g  +-  %g\n", fit_critical.P[0][Njack - 1], error_jackboot(argv[1], Njack, fit_critical.P[0]));
-    printf("m0_cr =%g  +-  %g\n", fit_critical.P[1][Njack - 1], error_jackboot(argv[1], Njack, fit_critical.P[1]));
-
-    free_fit_result(fit_info, fit_critical);
-    fit_info.restore_default();
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    // start fitting
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-
-    fit_info.Nvar = 7;
-    fit_info.Npar = 6;
-    fit_info.N = 2;
-    fit_info.Njack = gjack[0].Njack;
-    fit_info.n_ext_P = 0;
-    fit_info.function = rhs_critical_eta_mu_m0_simple;
-
-
-    mysprintf(namefit, NAMESIZE, "eta_m0_critical_b585_simple");
-    fit_critical = fit_data(argv, paramsj, gjack, lhs_critical_eta_mu_m0, fit_info, namefit, myenW);
-    print_fit_band_eta(argv, gjack, fit_info, namefit, fit_critical, paramsj, myenW);
-
-    printf("eta_cr=%g  +-  %g\n", fit_critical.P[0][Njack - 1], error_jackboot(argv[1], Njack, fit_critical.P[0]));
-    printf("m0_cr =%g  +-  %g\n", fit_critical.P[1][Njack - 1], error_jackboot(argv[1], Njack, fit_critical.P[1]));
-    free_fit_result(fit_info, fit_critical);
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    // local quantities fitting
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-
-    fit_info.Nvar = 7;
-    fit_info.Npar = 6;
-    fit_info.N = 2;
-    fit_info.Njack = gjack[0].Njack;
-    fit_info.n_ext_P = 0;
-    fit_info.function = rhs_critical_eta_mu_m0_simple;
-
-
-    mysprintf(namefit, NAMESIZE, "eta_m0_loc_critical_b585_simple");
-    fit_critical = fit_data(argv, paramsj, gjack, lhs_critical_eta_mu_m0_loc, fit_info, namefit, myenW);
-    print_fit_band_eta(argv, gjack, fit_info, namefit, fit_critical, paramsj, myenW);
-
-    printf("eta_cr=%g  +-  %g\n", fit_critical.P[0][Njack - 1], error_jackboot(argv[1], Njack, fit_critical.P[0]));
-    printf("m0_cr =%g  +-  %g\n", fit_critical.P[1][Njack - 1], error_jackboot(argv[1], Njack, fit_critical.P[1]));
-    free_fit_result(fit_info, fit_critical);
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    // simple fit tau2 
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    printf("\n r_awi tau2\n\n");
-    fit_info.Nvar = 7;
-    fit_info.Npar = 6;
-    fit_info.N = 2;
-    fit_info.Njack = gjack[0].Njack;
-    fit_info.n_ext_P = 0;
-    fit_info.function = rhs_critical_eta_mu_m0_simple;
-    fit_info.corr_id = { 13,4 }; //r_awi_tau2 m_pcac
-
-    mysprintf(namefit, NAMESIZE, "r_awi_tau2_critical_b585_simple");
-    fit_critical = fit_data(argv, paramsj, gjack, lhs_fit_two_func, fit_info, namefit, myenW);
-    print_fit_band_eta(argv, gjack, fit_info, namefit, fit_critical, paramsj, myenW);
-
-    printf("eta_cr=%g  +-  %g\n", fit_critical.P[0][Njack - 1], error_jackboot(argv[1], Njack, fit_critical.P[0]));
-    printf("m0_cr =%g  +-  %g\n", fit_critical.P[1][Njack - 1], error_jackboot(argv[1], Njack, fit_critical.P[1]));
-    free_fit_result(fit_info, fit_critical);
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    // simple fit tau2  loc
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    printf("\n r_awi tau2 loc\n\n");
-    fit_info.Nvar = 7;
-    fit_info.Npar = 6;
-    fit_info.N = 2;
-    fit_info.Njack = gjack[0].Njack;
-    fit_info.n_ext_P = 0;
-    fit_info.function = rhs_critical_eta_mu_m0_simple;
-    fit_info.corr_id = { 17,4 }; //r_awi_tau2 m_pcac
-
-    mysprintf(namefit, NAMESIZE, "r_awi_loc_tau2_critical_b585_simple");
-    fit_critical = fit_data(argv, paramsj, gjack, lhs_fit_two_func, fit_info, namefit, myenW);
-    print_fit_band_eta(argv, gjack, fit_info, namefit, fit_critical, paramsj, myenW);
-
-    printf("eta_cr=%g  +-  %g\n", fit_critical.P[0][Njack - 1], error_jackboot(argv[1], Njack, fit_critical.P[0]));
-    printf("m0_cr =%g  +-  %g\n", fit_critical.P[1][Njack - 1], error_jackboot(argv[1], Njack, fit_critical.P[1]));
-    // free_fit_result(fit_info, fit_critical);
-
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    // NG
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-
-    fit_info.Nvar = 7;
-    fit_info.Npar = 7;
-    fit_info.N = 2;
-    fit_info.Njack = gjack[0].Njack;
-    fit_info.n_ext_P = 2;
-    fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
-    fit_info.ext_P[0] = fit_critical.P[0];
-    fit_info.ext_P[1] = fit_critical.P[1];
-    fit_info.function = rhs_NG_mpcac_MPS2;
-
-
-    mysprintf(namefit, NAMESIZE, "fit_NG_mpcac_MPS_b585");
-    fit_result fit_NG = fit_data(argv, paramsj, gjack, lhs_mpcac_MPS2, fit_info, namefit, myenNG);
-    print_fit_band_eta(argv, gjack, fit_info, namefit, fit_NG, paramsj, myenNG);
-
-    printf("m_pcac(eta_cr)=%g  +-  %g\n", fit_NG.P[0][Njack - 1], error_jackboot(argv[1], Njack, fit_NG.P[0]));
-    printf("M_PS(eta_cr) =%g  +-  %g\n", fit_NG.P[1][Njack - 1], error_jackboot(argv[1], Njack, fit_NG.P[1]));
-
-    fit_info.restore_default();
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    printf("\n rho=3 \n\n");
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    // simple fit tau2  loc
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    printf("\n r_awi tau2 loc rho3\n\n");
-    fit_info.Nvar = 7;
-    fit_info.Npar = 6;
-    fit_info.N = 2;
-    fit_info.Njack = gjack[0].Njack;
-    fit_info.n_ext_P = 0;
-    fit_info.function = rhs_critical_eta_mu_m0_simple;
-    fit_info.corr_id = { 17,4 }; //r_awi_tau2 m_pcac
-
-    mysprintf(namefit, NAMESIZE, "r_awi_loc_tau2_critical_b585_rho3_simple");
-    fit_critical = fit_data(argv, paramsj, gjack, lhs_fit_two_func, fit_info, namefit, myenW3);
-    print_fit_band_eta(argv, gjack, fit_info, namefit, fit_critical, paramsj, myenW3, { -2.5,-1.5 });
-
-    printf("eta_cr=%g  +-  %g\n", fit_critical.P[0][Njack - 1], error_jackboot(argv[1], Njack, fit_critical.P[0]));
-    printf("m0_cr =%g  +-  %g\n", fit_critical.P[1][Njack - 1], error_jackboot(argv[1], Njack, fit_critical.P[1]));
-    free_fit_result(fit_info, fit_critical);
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    // simple fit tau2  loc
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    printf("\n r_awi tau2 loc rho3\n\n");
-    fit_info.Nvar = 7;
-    fit_info.Npar = 7;
-    fit_info.N = 2;
-    fit_info.Njack = gjack[0].Njack;
-    fit_info.n_ext_P = 0;
-    fit_info.function = rhs_critical_eta_mu_m0_7par;
-    fit_info.corr_id = { 17,4 }; //r_awi_tau2 m_pcac
-
-    mysprintf(namefit, NAMESIZE, "r_awi_loc_tau2_critical_b585_rho3_7par");
-    fit_critical = fit_data(argv, paramsj, gjack, lhs_fit_two_func, fit_info, namefit, myenW3);
-    print_fit_band_eta(argv, gjack, fit_info, namefit, fit_critical, paramsj, myenW3, { -2.5,-1.5 });
-
-    printf("eta_cr=%g  +-  %g\n", fit_critical.P[0][Njack - 1], error_jackboot(argv[1], Njack, fit_critical.P[0]));
-    printf("m0_cr =%g  +-  %g\n", fit_critical.P[1][Njack - 1], error_jackboot(argv[1], Njack, fit_critical.P[1]));
-    //free_fit_result(fit_info, fit_critical);
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    printf("\n   NG rho 3  \n");
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-
-    fit_info.Nvar = 7;
-    
-    fit_info.N = 2;
-    fit_info.Njack = gjack[0].Njack;
-    fit_info.n_ext_P = 2;
-    fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
-    fit_info.ext_P[0] = fit_critical.P[0];
-    fit_info.ext_P[1] = fit_critical.P[1];
-    // fit_info.Npar = 9;
-    // fit_info.function = rhs_NG_mpcac_MPS2_m0_eta2;
-    fit_info.Npar = 10;
-    fit_info.function = rhs_NG_mpcac_MPS2_m0_eta2_mueta;
-
-
-        mysprintf(namefit, NAMESIZE, "fit_NG_mpcac_MPS_b585_rho3_lines");
-    fit_result fit_NG3 = fit_data(argv, paramsj, gjack, lhs_mpcac_MPS2, fit_info, namefit, myenNG3);
-    print_fit_band_eta(argv, gjack, fit_info, namefit, fit_NG3, paramsj, myenNG3, { -2.5,-1.5 });
-
-    printf("m_pcac(eta_cr)=%g  +-  %g\n", fit_NG3.P[0][Njack - 1], error_jackboot(argv[1], Njack, fit_NG3.P[0]));
-    printf("M_PS(eta_cr)  =%g  +-  %g\n", fit_NG3.P[1][Njack - 1], error_jackboot(argv[1], Njack, fit_NG3.P[1]));
-
-    fit_info.restore_default();
-
-    double* diff_mpcac_rho3 = (double*)malloc(sizeof(double) * Njack);
-    double* diff_M_PS_rho3 = (double*)malloc(sizeof(double) * Njack);
-    for (int j = 0;j < Njack;j++) {
-        diff_mpcac_rho3[j] = fit_NG3.P[0][j] - fit_NG.P[0][j];
-        diff_M_PS_rho3[j] = fit_NG3.P[1][j] - fit_NG.P[1][j];
-    }
-
-    printf("m_pcac(rho3)-m_pcac(rho1.96)|_eta_cr=%g  +-  %g\n", diff_mpcac_rho3[Njack - 1], error_jackboot(argv[1], Njack, diff_mpcac_rho3));
-    printf("M_PS(rho3)-M_PS(rho1.96)|_eta_cr  =%g  +-  %g\n", diff_M_PS_rho3[Njack - 1], error_jackboot(argv[1], Njack, diff_M_PS_rho3));
-
-
+  
 
 
 
