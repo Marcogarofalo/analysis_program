@@ -272,21 +272,58 @@ void read_twopt(const char namefile[NAMESIZE], configuration_class confs, int T,
             count++;
         }
     }
-    int bin = confs.confs_after_binning / Nb;
-    for (int t = 0;t < T / 2 + 1;t++) {
-        int l = 0;
-        for (int i = 0;i < bin;i++) {
-            for (int l = 0;l < Nb;l++) {
-                to_write[l][id][t][0] += data[i + l * bin][t];
+    // int bin = confs.confs_after_binning / Nb;
+    // int leftover = confs.confs_after_binning - bin * Nb;
+    // printf("confs=%d Nb=%d  bin=%d  lefover=%d\n",confs.confs_after_binning ,Nb,bin,leftover);
+    // for (int t = 0;t < T / 2 + 1;t++) {
+    //     int binsize;
+    //     int count=0;
+    //     for (int l = 0;l < Nb;l++) {
+    //         if (l<leftover) binsize=bin+1;
+    //         else binsize=bin;
+    //         for (int i = 0;i < binsize;i++){
+    //             to_write[l][id][t][0] += data[count][t];
+    //             count++;
+    //         }
+    //         to_write[l][id][t][0] /= ((double)binsize);
+    //     }
+    // }
 
+    double clustSize = ((double)confs.confs_after_binning) / ((double)Nb);
+    for (size_t iClust = 0;iClust < Nb;iClust++) {
+        /// Initial time of the bin
+        const double binBegin = iClust * clustSize;
+        /// Final time of the bin
+        const double binEnd = binBegin + clustSize;
+        double binPos = binBegin;
+        do {
+            /// Index of the configuration related to the time
+            const size_t iConf = floor(binPos + 1e-10);
+
+            ///Rectangle left point
+            const double beg = binPos;
+
+            /// Rectangle right point
+            const double end = std::min(binEnd, beg + 1.0);
+
+            /// Rectangle horizontal size
+            const double weight = end - beg;
+
+            // Perform the operation passing the info
+            for (int t = 0;t < T / 2 + 1;t++) {
+                to_write[iClust][id][t][0] += weight * data[iConf][t];
             }
-        }
-        for (l = 0;l < Nb;l++) {
-            to_write[l][id][t][0] /= ((double)bin);
+            // Updates the position
+            binPos = end;
+        } while (binEnd - binPos > 1e-10);
+        for (int t = 0;t < T / 2 + 1;t++) {
+            to_write[iClust][id][t][0] /= ((double)clustSize);
         }
 
     }
+
     free_2(confs.confs_after_binning, data);
+    free_2(confs.iconfs.size(), tmp);
 
 }
 
@@ -569,7 +606,7 @@ int main(int argc, char** argv) {
     // compute what will be the neff after the binning 
     int bin = atoi(argv[6]);
     int Neff = bin;
-    
+
     // cout << "effective configurations after binning ( bin size " << confs / bin << "):  " << Neff << endl;
 
     int Njack;
@@ -741,31 +778,47 @@ int main(int argc, char** argv) {
 
     double* jack_aMetas_MeV_exp = (double*)malloc(sizeof(double) * Njack);
     for (int j = 0;j < Njack;j++) {
-        jack_aMetas_MeV_exp[j]=jack_Metas_MeV_exp[j]*a[j]/ 197.326963;
+        jack_aMetas_MeV_exp[j] = jack_Metas_MeV_exp[j] * a[j] / 197.326963;
     }
-    int Nstrange=2;
-    double** Meta=(double**) malloc(sizeof(double*)*Nstrange);
-    Meta[0]=M_eta_op;
-    Meta[1]=M_eta1_op;
-    double** Z=(double**) malloc(sizeof(double*)*Nstrange);
-    Z[0]=ZVs.P[0];
-    Z[1]=ZVs1.P[0];
+    int Nstrange = 2;
+    double** Meta = (double**)malloc(sizeof(double*) * Nstrange);
+    Meta[0] = M_eta_op;
+    Meta[1] = M_eta1_op;
+    double** Z = (double**)malloc(sizeof(double*) * Nstrange);
+    Z[0] = ZVs.P[0];
+    Z[1] = ZVs1.P[0];
 
-    double *ZV=interpol_Z(Nstrange,  Njack, Meta,  Z, jack_aMetas_MeV_exp,  outfile, "Z_V",  resampling) ;
+    double* ZV = interpol_Z(Nstrange, Njack, Meta, Z, jack_aMetas_MeV_exp, outfile, "Z_V", resampling);
     write_jack(ZV, Njack, jack_file);
     check_correlatro_counter(22);
 
 
-    Z[0]=ZAs.P[0];
-    Z[1]=ZAs1.P[0];
-    double *ZA=interpol_Z(Nstrange,  Njack, Meta,  Z, jack_aMetas_MeV_exp,  outfile, "Z_A",  resampling) ;
+    Z[0] = ZAs.P[0];
+    Z[1] = ZAs1.P[0];
+    double* ZA = interpol_Z(Nstrange, Njack, Meta, Z, jack_aMetas_MeV_exp, outfile, "Z_A", resampling);
     write_jack(ZA, Njack, jack_file);
     check_correlatro_counter(23);
-    for (int i=0;i<Nstrange;i++){
-        Z[i]=nullptr;
-        Meta[i]=nullptr;
+
+
+    ///
+    double** musj = double_malloc_2(Nstrange, Njack);
+    for (int i = 0;i < Nstrange;i++) {
+        for (int j = 0;j < Njack;j++) {
+            musj[i][j] = header.mus[i + 1];
+        }
+
+    }
+    double* mus_phys = interpol_Z(Nstrange, Njack, Meta, musj, jack_aMetas_MeV_exp, outfile, "mu_s_phys", resampling);
+    write_jack(mus_phys, Njack, jack_file);
+    check_correlatro_counter(24);
+
+    free_2(Nstrange, musj);
+    for (int i = 0;i < Nstrange;i++) {
+        Z[i] = nullptr;
+        Meta[i] = nullptr;
     }
     free(Meta);free(Z);
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // a_SD
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -776,13 +829,13 @@ int main(int argc, char** argv) {
     int_scheme = integrate_reinman;
     double* amu_sd = compute_amu_sd(conf_jack, 2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "amu_{sd}(eq,l)", resampling);
     write_jack(amu_sd, Njack, jack_file);
-    check_correlatro_counter(24);
+    check_correlatro_counter(25);
     printf("amu_sd(eq,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
     free(amu_sd);
 
     amu_sd = compute_amu_sd(conf_jack, 5, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "amu_{sd}(op,l)", resampling);
     write_jack(amu_sd, Njack, jack_file);
-    check_correlatro_counter(25);
+    check_correlatro_counter(26);
     printf("amu_sd(op,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
     free(amu_sd);
 
@@ -790,13 +843,13 @@ int main(int argc, char** argv) {
     int_scheme = integrate_simpson38;
     amu_sd = compute_amu_sd(conf_jack, 2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "amu_{sd,simpson38}(eq,l)", resampling);
     write_jack(amu_sd, Njack, jack_file);
-    check_correlatro_counter(26);
+    check_correlatro_counter(27);
     printf("amu_sd_simpson38(eq,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
     free(amu_sd);
 
     amu_sd = compute_amu_sd(conf_jack, 5, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "amu_{sd,simpson38}(op,l)", resampling);
     write_jack(amu_sd, Njack, jack_file);
-    check_correlatro_counter(27);
+    check_correlatro_counter(28);
     printf("amu_sd_simpson38(op,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
     free(amu_sd);
 
