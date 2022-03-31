@@ -6,6 +6,7 @@
 #include "non_linear_fit.hpp"
 #include "tower.hpp"
 #include <iostream>
+#include "resampling.hpp"
 
 class generic_header {
 public:
@@ -57,6 +58,12 @@ public:
 
 class data_single {
 
+private:
+    bool  init_err = false;
+    double* errors;
+    bool* computed;
+    double* (*compute_mean_and_error)(int, double*);
+
 public:
     int Nobs;
     int Njack;
@@ -64,6 +71,33 @@ public:
     generic_header header;
 
     double** jack;//[obs][jack]
+
+    std::string resampling;
+
+    void init_error() {
+        if (!init_err) {
+            errors = (double*)malloc(sizeof(double) * Nobs);
+            computed = (bool*)malloc(sizeof(bool) * Nobs);
+            if (strcmp(resampling.c_str(), "jack") == 0)
+                compute_mean_and_error = mean_and_error_jack_biased;
+            else if (strcmp(resampling.c_str(), "boot") == 0)
+                compute_mean_and_error = mean_and_error_boot;
+            for (int j = 0;j < Nobs;j++) {
+                computed[j] = false;
+            }
+            init_err == true;
+        }
+    }
+
+    double error_jack(int i) {
+        if (!computed[i]) {
+            double* r = mean_and_error_jack_biased(Njack, jack[i]);
+            errors[i] = r[1];
+            free(r);
+            computed[i] = true;
+        }
+        return errors[i];
+    }
 
     // data_single() {};
     // data_single(int Nj, int No, generic_header he) : Nobs(No), Njack(Nj), header(he) {
@@ -114,8 +148,8 @@ public:
     //     if (this == &rhs) { printf("jackknife move assignment by itself\n");exit(-10); }
     //     Njack = rhs.Njack;
     //     Nobs = rhs.Nobs;
-        
-        
+
+
     //     jack = rhs.jack;
     //     // jack = (double**)malloc(sizeof(double*) * Nobs);
     //     // for (int i = 0; i < Nobs;i++)
@@ -145,7 +179,10 @@ public:
 
     int Nfits = 0;
     struct fit_result* fits;
-
+    void init_error() {
+        for (int e = 0;e < ens;e++)
+            en[e].init_error();
+    }
     void add_fit(struct fit_result fit_out) {
 
         int N = Nfits + 1;

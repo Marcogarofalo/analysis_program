@@ -214,7 +214,7 @@ struct  fit_type {
   int guess_per_jack = 3;
   int precision_sum = 0;// 0 float, 1 float kahan,  >1 long double
   bool mean_only = false;
-
+  bool unstable = false; // if true avoid thing that may return error
 
   std::vector<int> corr_id = {};
   std::vector<double>  Prange = {};
@@ -256,7 +256,7 @@ struct  fit_type {
     devorder = 4;
     repeat_start = 1;
 
-    if (myen.size() >0 && N>0 && Nvar>0){
+    if (myen.size() > 0 && N > 0 && Nvar > 0) {
       for (int i = 0;i < Nvar;i++) {
         for (int j = 0;j < myen.size() * N;j++) {
           free(x[i][j]);

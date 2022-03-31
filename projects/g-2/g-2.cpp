@@ -532,6 +532,10 @@ int main(int argc, char** argv) {
     FILE* jack_file = open_file(namefile, "w+");
     write_header_g2(jack_file, header);
 
+    mysprintf(namefile, NAMESIZE, "%s/jackknife/jack_%s_Z.txt", argv[3], argv[4]);
+    FILE* ASCII_Z = open_file(namefile, "w+");
+
+
     std::vector<std::string>  correlators;
     mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);//0
     correlators.emplace_back(namefile);
@@ -818,6 +822,15 @@ int main(int argc, char** argv) {
         Meta[i] = nullptr;
     }
     free(Meta);free(Z);
+
+    fprintf(ASCII_Z, "mu %g  %g  %g\n", header.mus[0], header.mus[1], header.mus[2]);
+    fprintf(ASCII_Z, "ZAl  ZAms1  ZAms2  ZA   ZVl  ZVms1  ZVms2  ZV\n");
+    for (int j = 0;j < Njack;j++) {
+        fprintf(ASCII_Z, "%-16.12g%-16.12g%-16.12g%-16.12g%-16.12g%-16.12g%-16.12g%-16.12g\n"
+            , ZAl.P[0][j], ZAs.P[0][j], ZAs1.P[0][j], ZA[j]
+            , ZVl.P[0][j], ZVs.P[0][j], ZVs1.P[0][j], ZV[j] );
+    }
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // a_SD
