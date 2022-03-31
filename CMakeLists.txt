@@ -12,7 +12,7 @@ project(analysis_program CXX C)
 #-g # then compile , then open gdb, write the commands : file $namefile; run  $options ; bt
 # valgrind --leak-check=yes --track-origins=yes  ./program   #compile with -g to have line number
 
-
+MESSAGE("using CXX:" ${CMAKE_CXX_STANDARD} )
 # no need to install Eigen with cmake and use find package
 #SET( EIGEN3_INCLUDE_DIR /home/marco/library/eigen )
 #IF( NOT EIGEN3_INCLUDE_DIR )
