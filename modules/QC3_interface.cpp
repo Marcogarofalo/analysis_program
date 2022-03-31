@@ -74,8 +74,9 @@ double python_detQC(  double Estart,double Eend,int steps, double L, double *nnP
 //     static CPyObject pArgs, pArgs1, pArgs2, pkcot_params, pkiso_params ;
     if(!pName){
         PyRun_SimpleString("import sys");
-        PyRun_SimpleString("sys.path.insert(0, \"/home/marco/analysis/analysis_program/external/qc3/QC3_swave/\")");
-        PyRun_SimpleString("sys.path.append(\"/home/marco/analysis/analysis_program/external/qc3/QC3_swave/F3\")");
+        // PyRun_SimpleString("sys.path.insert(0, \"/home/marco/analysis/analysis_program/external/qc3/QC3_swave/\")");
+        PyRun_SimpleString("sys.path.insert(0, \"../../external/qc3/QC3_swave/\")");
+        PyRun_SimpleString("sys.path.append(\"../../external/qc3/QC3_swave/F3\")");
         pName = PyUnicode_FromString("detQC");
         pName = PyUnicode_DecodeFSDefault("detQC");
         printf("importing file\n");
@@ -172,8 +173,8 @@ void init_python_detQC( ){
 
     if(!pName){
         PyRun_SimpleString("import sys");
-        PyRun_SimpleString("sys.path.insert(0, \"/home/marco/analysis/analysis_program/external/qc3/QC3_swave/\")");
-        PyRun_SimpleString("sys.path.append(\"/home/marco/analysis/analysis_program/external/qc3/QC3_swave/F3\")");
+        PyRun_SimpleString("sys.path.insert(0, \"../../external/qc3/QC3_swave/\")");
+        PyRun_SimpleString("sys.path.append(\"../../external/qc3/QC3_swave/F3\")");
         pName = PyUnicode_FromString("detQC");
         pName = PyUnicode_DecodeFSDefault("detQC");
         printf("importing file\n");
