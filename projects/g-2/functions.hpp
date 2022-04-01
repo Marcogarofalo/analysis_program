@@ -1,5 +1,6 @@
 #include <gsl/gsl_integration.h>
 #include "tower.hpp"
+#include "fit_all.hpp"
 constexpr double muon_mass_MeV = 105.6583755;
 constexpr double alpha_em = 0.0072973525693;
 constexpr double muon_mass_fm = muon_mass_MeV * 197.326963;
@@ -231,4 +232,31 @@ double* interpol_Z(int Nmus, int Njack, double** Meta, double** Z, double* aMeta
     printf("%s (%.15g) =  %.15g   %.15g\n", description, aMetas_exp[Njack - 1], Zint[Njack - 1], error_jackboot(resampling, Njack, Zint));
 
     return(Zint);
+}
+
+
+///////////////
+double rhs_amu_common(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a = x[0];
+    if (n == 0)      r = P[0] + a * P[1];
+    else if (n == 1) r = P[0] + a * P[2];
+
+    return r;
+}
+double rhs_amu_common_a4(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    if (n == 0)      r = P[0] + a2 * P[1] + a2 * a2 * P[3];
+    else if (n == 1) r = P[0] + a2 * P[2] + a2 * a2 * P[4];
+
+    return r;
+}
+
+template<int ieq, int iop>
+double lhs_amu_common(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double r;
+    if (n == 0)        r = gjack.en[e].jack[ieq][j];
+    else if (n == 1)   r = gjack.en[e].jack[iop][j];
+    return r;
 }

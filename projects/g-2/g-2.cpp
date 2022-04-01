@@ -819,21 +819,20 @@ int main(int argc, char** argv) {
     free_2(Nstrange, musj);
     for (int i = 0;i < Nstrange;i++) {
         Z[i] = nullptr;
-        Meta[i] = nullptr;
     }
-    free(Meta);free(Z);
+    free(Z);
 
     fprintf(ASCII_Z, "mu %g  %g  %g\n", header.mus[0], header.mus[1], header.mus[2]);
     fprintf(ASCII_Z, "ZAl  ZAms1  ZAms2  ZA   ZVl  ZVms1  ZVms2  ZV\n");
     for (int j = 0;j < Njack;j++) {
         fprintf(ASCII_Z, "%-16.12g%-16.12g%-16.12g%-16.12g%-16.12g%-16.12g%-16.12g%-16.12g\n"
             , ZAl.P[0][j], ZAs.P[0][j], ZAs1.P[0][j], ZA[j]
-            , ZVl.P[0][j], ZVs.P[0][j], ZVs1.P[0][j], ZV[j] );
+            , ZVl.P[0][j], ZVs.P[0][j], ZVs1.P[0][j], ZV[j]);
     }
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // a_SD
+    // a_SD_l
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     double (*int_scheme)(int, int, double*);
@@ -866,6 +865,123 @@ int main(int argc, char** argv) {
     printf("amu_sd_simpson38(op,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
     free(amu_sd);
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // a_SD_s_eq reinman
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+    constexpr double q2s=1.0/9.0;
+    int_scheme = integrate_reinman;
+    double* amu_sd_s = compute_amu_sd(conf_jack, 2 + 6, Njack, ZVs.P[0], a, q2s, int_scheme, outfile, "amu_{sd}(eq,s)", resampling);
+    write_jack(amu_sd_s, Njack, jack_file);
+    check_correlatro_counter(29);
+    printf("amu_sd(eq,s) = %g  %g\n", amu_sd_s[Njack - 1], error_jackboot(resampling, Njack, amu_sd_s));
+
+
+    int_scheme = integrate_reinman;
+    double* amu_sd_s1 = compute_amu_sd(conf_jack, 2 + 12, Njack, ZVs1.P[0], a, q2s, int_scheme, outfile, "amu_{sd}(eq,s1)", resampling);
+    write_jack(amu_sd_s1, Njack, jack_file);
+    check_correlatro_counter(30);
+    printf("amu_sd(eq,s1) = %g  %g\n", amu_sd_s1[Njack - 1], error_jackboot(resampling, Njack, amu_sd_s1));
+
+    double** asd_vec = (double**)malloc(sizeof(double*) * Nstrange);
+    asd_vec[0] = amu_sd_s;
+    asd_vec[1] = amu_sd_s1;
+
+    double* amu_sd_sphys = interpol_Z(Nstrange, Njack, Meta, asd_vec, jack_aMetas_MeV_exp, outfile, "amu_{sd}(eq,sphys)", resampling);
+    write_jack(amu_sd_sphys, Njack, jack_file);
+    printf("amu_sd(eq,shys) = %g  %g\n", amu_sd_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_sd_sphys));
+
+    check_correlatro_counter(31);
+    free(amu_sd_s);free(amu_sd_s1);free(amu_sd_sphys);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // a_SD_s_op reinman
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    int_scheme = integrate_reinman;
+    amu_sd_s = compute_amu_sd(conf_jack, 5 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{sd}(op,s)", resampling);
+    write_jack(amu_sd_s, Njack, jack_file);
+    check_correlatro_counter(32);
+    printf("amu_sd(op,l) = %g  %g\n", amu_sd_s[Njack - 1], error_jackboot(resampling, Njack, amu_sd_s));
+
+
+    int_scheme = integrate_reinman;
+    amu_sd_s1 = compute_amu_sd(conf_jack, 5 + 12, Njack, ZAs1.P[0], a, q2s, int_scheme, outfile, "amu_{sd}(op,s1)", resampling);
+    write_jack(amu_sd_s1, Njack, jack_file);
+    check_correlatro_counter(33);
+    printf("amu_sd(op,l) = %g  %g\n", amu_sd_s1[Njack - 1], error_jackboot(resampling, Njack, amu_sd_s1));
+
+
+    asd_vec[0] = amu_sd_s;
+    asd_vec[1] = amu_sd_s1;
+    amu_sd_sphys = interpol_Z(Nstrange, Njack, Meta, asd_vec, jack_aMetas_MeV_exp, outfile, "amu_{sd}(op,sphys)", resampling);
+    write_jack(amu_sd_sphys, Njack, jack_file);
+    printf("amu_sd(op,shys) = %g  %g\n", amu_sd_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_sd_sphys));
+
+    check_correlatro_counter(34);
+    free(amu_sd_s);free(amu_sd_s1);free(amu_sd_sphys);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // a_SD_s_eq simpson38
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    int_scheme = integrate_simpson38;
+    amu_sd_s = compute_amu_sd(conf_jack, 2 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{sd}_simpson38(eq,s)", resampling);
+    write_jack(amu_sd_s, Njack, jack_file);
+    check_correlatro_counter(35);
+    printf("amu_sd_simpson38(eq,s) = %g  %g\n", amu_sd_s[Njack - 1], error_jackboot(resampling, Njack, amu_sd_s));
+
+
+    int_scheme = integrate_simpson38;
+    amu_sd_s1 = compute_amu_sd(conf_jack, 2 + 12, Njack, ZAs1.P[0], a, q2s, int_scheme, outfile, "amu_{sd}_simpson38(eq,s1)", resampling);
+    write_jack(amu_sd_s1, Njack, jack_file);
+    check_correlatro_counter(36);
+    printf("amu_sd_simpson38(eq,s1) = %g  %g\n", amu_sd_s1[Njack - 1], error_jackboot(resampling, Njack, amu_sd_s1));
+
+    asd_vec = (double**)malloc(sizeof(double*) * Nstrange);
+    asd_vec[0] = amu_sd_s;
+    asd_vec[1] = amu_sd_s1;
+
+    amu_sd_sphys = interpol_Z(Nstrange, Njack, Meta, asd_vec, jack_aMetas_MeV_exp, outfile, "amu_{sd}_simpson38(eq,sphys)", resampling);
+    write_jack(amu_sd_sphys, Njack, jack_file);
+    printf("amu_sd(eq,shys) = %g  %g\n", amu_sd_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_sd_sphys));
+
+    check_correlatro_counter(37);
+    free(amu_sd_s);free(amu_sd_s1);free(amu_sd_sphys);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // a_SD_s_op simpson38
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    int_scheme = integrate_simpson38;
+    amu_sd_s = compute_amu_sd(conf_jack, 5 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{sd}_simpson38(op,s)", resampling);
+    write_jack(amu_sd, Njack, jack_file);
+    check_correlatro_counter(38);
+    printf("amu_sd_simpson38(op,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
+
+
+    int_scheme = integrate_simpson38;
+    amu_sd_s1 = compute_amu_sd(conf_jack, 5 + 12, Njack, ZAs1.P[0], a, q2s, int_scheme, outfile, "amu_{sd}_simpson38(op,s1)", resampling);
+    write_jack(amu_sd_s1, Njack, jack_file);
+    check_correlatro_counter(39);
+    printf("amu_sd_simpson38(op,l) = %g  %g\n", amu_sd_s1[Njack - 1], error_jackboot(resampling, Njack, amu_sd_s1));
+
+
+    asd_vec[0] = amu_sd_s;
+    asd_vec[1] = amu_sd_s1;
+    amu_sd_sphys = interpol_Z(Nstrange, Njack, Meta, asd_vec, jack_aMetas_MeV_exp, outfile, "amu_{sd}_simpson38(op,sphys)", resampling);
+    write_jack(ZV, Njack, jack_file);
+    printf("amu_sd_simpson38(op,shys) = %g  %g\n", amu_sd_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_sd_sphys));
+    check_correlatro_counter(40);
+    free(amu_sd_s);free(amu_sd_s1);free(amu_sd_sphys);
+
+
+    write_jack(a, Njack, jack_file);
+    check_correlatro_counter(41);
+
+    for (int i = 0;i < Nstrange;i++) {
+        Meta[i] = nullptr;
+    }
+    free(Meta);
 
     free(M_PS);free(M_PS_op);
     free_fit_result(fit_info, G_PS);free_fit_result(fit_info, G_PS_OS);
