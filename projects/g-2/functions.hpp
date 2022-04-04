@@ -147,6 +147,64 @@ double* compute_amu_sd(double**** in, int id, int Njack, double* Z, double* a, d
 }
 
 
+
+double* compute_amu_W(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling) {
+    constexpr double d = 0.15;
+    constexpr double t0_d = 0.4 / d;
+    constexpr double t1_d = 1.0 / d;
+    int T = file_head.l0;
+    double** fi = double_malloc_2(T / 2, Njack);
+    double* amu = (double*)malloc(sizeof(double) * Njack);
+    double* ft = (double*)malloc(sizeof(double) * T / 2);
+
+    double** Kt = double_malloc_2(T / 2, Njack);
+    double** thetat = double_malloc_2(T / 2, Njack);
+    double** corr_sub = double_malloc_2(T / 2, Njack);
+
+
+    for (int j = 0;j < Njack;j++) {
+
+        ft[0] = 0;
+        for (int t_a = 1; t_a < T / 2; t_a++) {
+            double t = t_a * a[j]; // time in fm.
+            double z = muon_mass_MeV * (t / 197.326963);
+            double K = z * z * kernel_K(z);
+            double theta = gm2_step_function(t / 0.15, t0_d) - gm2_step_function(t / 0.15, t1_d);
+            double VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] - (1.0 / (2.0 * M_PI * M_PI * pow(t_a, 5)));
+            ft[t_a] = K * VV_sub *  theta;
+
+            fi[t_a][j] = ft[t_a];
+            Kt[t_a][j] = K;
+            thetat[t_a][j] = theta;
+            corr_sub[t_a][j] = VV_sub;
+            // printf("t=%d  K=%g   VV=%g  1-theta=%g  amu=%g\n",t_a,K, VV[t_a],1-theta, amu);
+        }
+
+        amu[j] = int_scheme(0, T / 2 - 1, ft);
+
+        amu[j] *= 4 * alpha_em * alpha_em *
+            q2 / (muon_mass_MeV * muon_mass_MeV * (a[j] / 197.326963) * (a[j] / 197.326963));
+    }
+
+    fprintf(outfile, " \n\n");
+    fprintf(outfile, "#\n");
+    for (int t = 1; t < T / 2; t++) {
+        fprintf(outfile, "%d   %.15g   %.15g\t", t, fi[t][Njack - 1], error_jackboot(resampling, Njack, fi[t]));
+        fprintf(outfile, "%.15g   %.15g\t", Kt[t][Njack - 1], error_jackboot(resampling, Njack, Kt[t]));
+        fprintf(outfile, "%.15g   %.15g\t", thetat[t][Njack - 1], error_jackboot(resampling, Njack, thetat[t]));
+        fprintf(outfile, "%.15g   %.15g\n", corr_sub[t][Njack - 1], error_jackboot(resampling, Njack, corr_sub[t]));
+    }
+    fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 0, T / 2, 0.0, 0.0);
+    fprintf(outfile, "   %.15g   %15.g\n", amu[Njack - 1], error_jackboot(resampling, Njack, amu));
+
+    free(ft);
+    free_2(T / 2, fi);
+    free_2(T / 2, Kt);
+    free_2(T / 2, thetat);
+    free_2(T / 2, corr_sub);
+    return amu;
+}
+
 /********************************************************************************
  * Z
  ********************************************************************************/

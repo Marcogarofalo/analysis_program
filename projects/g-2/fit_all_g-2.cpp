@@ -176,7 +176,7 @@ int main(int argc, char** argv) {
     fit_info.function = rhs_amu_common;
     fit_result amu_SD_l_common = fit_all_data(argv, jackall, lhs_amu_common<25, 26>, fit_info, "amu_SD_l_common");
     fit_info.band_range = { 0,0.0081 };
-    print_fit_band(argv, jackall, fit_info, fit_info, "amu_SD_l_common", "afm", amu_SD_l_common, amu_SD_l_common, 0, myen.size() - 1, 0.005);
+    print_fit_band(argv, jackall, fit_info, fit_info, "amu_SD_l_common", "afm", amu_SD_l_common, amu_SD_l_common, 0, myen.size() - 1, 0.001);
 
     fit_info.restore_default();
 
@@ -202,7 +202,7 @@ int main(int argc, char** argv) {
     fit_info.function = rhs_amu_common_a4;
     fit_result amu_SD_l_common_a4 = fit_all_data(argv, jackall, lhs_amu_common<25, 26>, fit_info, "amu_SD_l_common_a4");
     fit_info.band_range = { 0,0.0081 };
-    print_fit_band(argv, jackall, fit_info, fit_info, "amu_SD_l_common_a4", "afm", amu_SD_l_common_a4, amu_SD_l_common_a4, 0, myen.size() - 1, 0.001);
+    print_fit_band(argv, jackall, fit_info, fit_info, "amu_SD_l_common_a4", "afm", amu_SD_l_common_a4, amu_SD_l_common_a4, 0, myen.size() - 1, 0.0005);
 
     fit_info.restore_default();
 
@@ -228,7 +228,7 @@ int main(int argc, char** argv) {
     fit_info.function = rhs_amu_common;
     fit_result amu_SD_s_common = fit_all_data(argv, jackall, lhs_amu_common<31, 34>, fit_info, "amu_SD_s_common");
     fit_info.band_range = { 0,0.0081 };
-    print_fit_band(argv, jackall, fit_info, fit_info, "amu_SD_s_common", "afm", amu_SD_s_common, amu_SD_s_common, 0, myen.size() - 1, 0.005);
+    print_fit_band(argv, jackall, fit_info, fit_info, "amu_SD_s_common", "afm", amu_SD_s_common, amu_SD_s_common, 0, myen.size() - 1, 0.001);
 
     fit_info.restore_default();
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -252,8 +252,60 @@ int main(int argc, char** argv) {
     fit_info.function = rhs_amu_common_a4;
     fit_result amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu_common<31, 34>, fit_info, "amu_SD_s_common_a4");
     fit_info.band_range = { 0,0.0081 };
-    print_fit_band(argv, jackall, fit_info, fit_info, "amu_SD_s_common_a4", "afm", amu_SD_s_common_a4, amu_SD_s_common_a4, 0, myen.size() - 1, 0.005);
+    print_fit_band(argv, jackall, fit_info, fit_info, "amu_SD_s_common_a4", "afm", amu_SD_s_common_a4, amu_SD_s_common_a4, 0, myen.size() - 1, 0.001);
 
     fit_info.restore_default();
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    printf("\n/////////////////////////////////     amu_W_l_common    a^2+a^4//////////////////\n");
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    fit_info.Npar = 5;
+    fit_info.N = 2;
+    fit_info.Nvar = 1;
+    fit_info.Njack = Njack;
+    fit_info.myen = myen;
+    fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+    count = 0;
+    for (int n = 0;n < fit_info.N;n++) {
+        for (int e = 0;e < fit_info.myen.size();e++) {
+            for (int j = 0;j < Njack;j++) {
+                fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2);
+            }
+            count++;
+        }
+    }
+    fit_info.function = rhs_amu_common_a4;
+    fit_result amu_W_l_common_a4 = fit_all_data(argv, jackall, lhs_amu_common<42, 43>, fit_info, "amu_W_l_common_a4");
+    fit_info.band_range = { 0,0.0081 };
+    print_fit_band(argv, jackall, fit_info, fit_info, "amu_W_l_common_a4", "afm", amu_W_l_common_a4, amu_W_l_common_a4, 0, myen.size() - 1, 0.0005);
+
+    fit_info.restore_default();
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    printf("\n/////////////////////////////////     amu_W_s_common_a4    //////////////////\n");
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    fit_info.Npar = 5;
+    fit_info.N = 2;
+    fit_info.Nvar = 1;
+    fit_info.Njack = Njack;
+    fit_info.myen = myen;
+    fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+    count = 0;
+    for (int n = 0;n < fit_info.N;n++) {
+        for (int e = 0;e < fit_info.myen.size();e++) {
+            for (int j = 0;j < Njack;j++) {
+                fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2);
+            }
+            count++;
+        }
+    }
+    fit_info.function = rhs_amu_common_a4;
+    fit_result amu_W_s_common_a4 = fit_all_data(argv, jackall, lhs_amu_common<48, 51>, fit_info, "amu_W_s_common_a4");
+    fit_info.band_range = { 0,0.0081 };
+    print_fit_band(argv, jackall, fit_info, fit_info, "amu_W_s_common_a4", "afm", amu_W_s_common_a4, amu_W_s_common_a4, 0, myen.size() - 1, 0.001);
+
+    fit_info.restore_default();
+
 
 }
