@@ -262,6 +262,52 @@ double lhs_kcotd_m_deltaE_g_new(int n, int e, int j, data_all gjack, struct fit_
 }
 
 
+double lhs_kcotd_m_new(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double r;
+
+    int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
+    init_dvec_E2_g_extra(n, dvec, dvec1, dvec2, dmax1, dmax2);
+    double E2 = get_E2_g_n_extra(n, e, j, gjack);
+    // double mass = gjack.en[e].jack[1][j];
+    double mass = fit_info.x[0][e][j];
+    double L = gjack.en[e].header.L;
+
+     r = kcotd_extra(E2, mass, dvec, L);
+    return r / mass;
+}
+
+double lhs_kcotd_minf_deltaE_g_new(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double r;
+
+    int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
+    init_dvec_E2_g_extra(n, dvec, dvec1, dvec2, dmax1, dmax2);
+    double E2 = get_E2_g_n_extra(n, e, j, gjack);
+    // double mass = gjack.en[e].jack[1][j];
+    double mass = fit_info.x[0][e][j];
+    double L = gjack.en[e].header.L;
+
+    double hatp2 = 4. * sin(dvec1[0] * pi_greco / L) * sin(dvec1[0] * pi_greco / L);
+    hatp2 += 4. * sin(dvec1[1] * pi_greco / L) * sin(dvec1[1] * pi_greco / L);
+    hatp2 += 4. * sin(dvec1[2] * pi_greco / L) * sin(dvec1[2] * pi_greco / L);
+
+    double E2fL = acosh(cosh(mass) + 0.5 * (hatp2));
+    hatp2 = 4. * sin(dvec2[0] * pi_greco / L) * sin(dvec2[0] * pi_greco / L);
+    hatp2 += 4. * sin(dvec2[1] * pi_greco / L) * sin(dvec2[1] * pi_greco / L);
+    hatp2 += 4. * sin(dvec2[2] * pi_greco / L) * sin(dvec2[2] * pi_greco / L);
+    E2fL += acosh(cosh(mass) + 0.5 * (+hatp2));
+
+
+    double Ef1 = sqrt(mass * mass + (2 * pi_greco / L) * (2 * pi_greco / L) * (dvec1[0] * dvec1[0] + dvec1[1] * dvec1[1] + dvec1[2] * dvec1[2]));
+    double Ef2 = sqrt(mass * mass + (2 * pi_greco / L) * (2 * pi_greco / L) * (dvec2[0] * dvec2[0] + dvec2[1] * dvec2[1] + dvec2[2] * dvec2[2]));
+    double E2f = Ef1 + Ef2;
+
+    E2 = E2 - E2fL + E2f;
+
+    r = kcotd_extra(E2, mass, dvec, L);
+    double mass_inf=fit_info.x[2][e][j];
+    return r / mass_inf;
+}
+
 double rhs_kcotd_m_new(int n, int Nvar, double* x, int Npar, double* P) {
     double a0m = P[0], r0m = P[1];
     double k_m = x[1];

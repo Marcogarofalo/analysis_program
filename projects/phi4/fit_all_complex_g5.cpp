@@ -719,7 +719,40 @@ int main(int argc, char** argv) {
 	print_fit_band(argv, jackall, fit_info, fit_info_m0, "kcotd_m_deltaE", "k_m", fit_kcotd_DeltaE, fit_m0, 1, myen.size() - 1, 0.1);
 
 	fit_info.restore_default();
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	printf("\n/////////////////////////////////     k cot delta / m_inf deltaE    //////////////////\n");
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	fit_info.Npar = 2;
+	fit_info.N = 3;
+	fit_info.Nvar = 3;
+	fit_info.Njack = jackall.en[0].Njack;
+	fit_info.myen = myen;
+	fit_info.precision_sum = 2;
+	fit_info.verbosity = 0;
+	fit_info.guess = { -0.141739, -2.89287 };
+	fit_info.lambda = 0.001;
+	fit_info.acc = 0.001;
+	fit_info.h = 1e-3;
+	fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+	count = 0;
+	for (int n = 0;n < fit_info.N;n++) {
+		for (int e = 0;e < fit_info.myen.size();e++) {
+			for (int j = 0;j < Njack;j++) {
+				fit_info.x[0][count][j] = jackall.en[e].jack[1][j];
+				fit_info.x[1][count][j] = compute_k_m_g_new(n, myen[e], j, jackall, fit_info);
+				fit_info.x[2][count][j] = fit_m0.P[0][j];
 
+			}
+			count++;
+		}
+	}
+	fit_info.function = rhs_kcotd_m_new;
+	fit_result fit_kcotd_minf_DeltaE = fit_all_data(argv, jackall, lhs_kcotd_minf_deltaE_g_new, fit_info, "kcotd_minf_deltaE");
+	fit_info.band_range = { };
+	// print_fit_band_phi4(argv, jackall, fit_info, fit_info_m0, "kcotd_m_deltaE", "L", deltaE2_m_QC2, fit_m0, 0, 0, 1);
+	print_fit_band(argv, jackall, fit_info, fit_info_m0, "kcotd_minf_deltaE", "k_m", fit_kcotd_minf_DeltaE, fit_m0, 1, myen.size() - 1, 0.1);
+
+	fit_info.restore_default();
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	printf("\n/////////////////////////////////     k cot delta deltaE_infm    //////////////////\n");
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -870,7 +903,7 @@ int main(int argc, char** argv) {
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
-	printf("\n/////////////////////////////////   fit  E3 quant cond  //////////////////\n");
+	printf("\n/////////////////////////////////   fit  E3 poly  //////////////////\n");
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 	printf("//////////////////// poly fit E3   ////////////////////////////////////\n");
@@ -901,7 +934,7 @@ int main(int argc, char** argv) {
 	print_fit_band(argv, jackall, fit_info_E3_poly, fit_info_m0, "fit_QC3_poly", "L", fit_QC3_poly, fit_m0, 0, 0, 1);
 
 	//fit_info.restore_default();
-
+exit(1);
 #ifdef PYTHON
 	//// we need python
 	wchar_t* program = Py_DecodeLocale(argv[0], NULL);
