@@ -34,6 +34,16 @@
 
 constexpr double Metas_MeV = 689.89;
 constexpr double Metas_MeV_err = 0.49;
+
+constexpr double Mrho_MeV = 775.4;
+constexpr double Mrho_MeV_err = 0.4;
+
+constexpr double grhopipi = 6.06;
+constexpr double grhopipi_err = 0.03;
+
+constexpr double Mpi_MeV = 134.80;
+constexpr double Mpi_MeV_err = 0.2;
+
 using namespace std;
 
 
@@ -774,6 +784,9 @@ int main(int argc, char** argv) {
     double* a = fake_sampling(resampling, mean, err, Njack, seed);
 
     double* jack_Metas_MeV_exp = fake_sampling(resampling, Metas_MeV, Metas_MeV_err, Njack, seed + 1000);
+    double* jack_Mrho_MeV_exp = fake_sampling(resampling, Mrho_MeV, Mrho_MeV_err, Njack, seed + 1001);
+    double* jack_grhopipi = fake_sampling(resampling, grhopipi, grhopipi_err, Njack, seed + 1002);
+    double* jack_Mpi_MeV_exp = fake_sampling(resampling, Mpi_MeV, Mpi_MeV_err, Njack, seed + 1003);
 
     // line_read_param(option, "ZA", mean, err, seed, namefile_plateaux);
     // double* ZA = fake_sampling(resampling, mean, err, Njack, seed);
@@ -868,7 +881,7 @@ int main(int argc, char** argv) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // a_SD_s_eq reinman
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    constexpr double q2s=1.0/9.0;
+    constexpr double q2s = 1.0 / 9.0;
     int_scheme = integrate_reinman;
     double* amu_sd_s = compute_amu_sd(conf_jack, 2 + 6, Njack, ZVs.P[0], a, q2s, int_scheme, outfile, "amu_{sd}(eq,s)", resampling);
     write_jack(amu_sd_s, Njack, jack_file);
@@ -953,9 +966,9 @@ int main(int argc, char** argv) {
 
     int_scheme = integrate_simpson38;
     amu_sd_s = compute_amu_sd(conf_jack, 5 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{sd}_simpson38(op,s)", resampling);
-    write_jack(amu_sd, Njack, jack_file);
+    write_jack(amu_sd_s, Njack, jack_file);
     check_correlatro_counter(38);
-    printf("amu_sd_simpson38(op,l) = %g  %g\n", amu_sd[Njack - 1], error_jackboot(resampling, Njack, amu_sd));
+    printf("amu_sd_simpson38(op,l) = %g  %g\n", amu_sd_s[Njack - 1], error_jackboot(resampling, Njack, amu_sd_s));
 
 
     int_scheme = integrate_simpson38;
@@ -968,7 +981,7 @@ int main(int argc, char** argv) {
     asd_vec[0] = amu_sd_s;
     asd_vec[1] = amu_sd_s1;
     amu_sd_sphys = interpol_Z(Nstrange, Njack, Meta, asd_vec, jack_aMetas_MeV_exp, outfile, "amu_{sd}_simpson38(op,sphys)", resampling);
-    write_jack(ZV, Njack, jack_file);
+    write_jack(amu_sd_sphys, Njack, jack_file);
     printf("amu_sd_simpson38(op,shys) = %g  %g\n", amu_sd_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_sd_sphys));
     check_correlatro_counter(40);
     free(amu_sd_s);free(amu_sd_s1);free(amu_sd_sphys);
@@ -976,16 +989,16 @@ int main(int argc, char** argv) {
 
     write_jack(a, Njack, jack_file);
     check_correlatro_counter(41);
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                                printf("\n WINDOW \n\n");
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    printf("\n WINDOW \n\n");
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // a_W_l
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // a_W_l
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     int_scheme = integrate_reinman;
     double* amu_W = compute_amu_W(conf_jack, 2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "amu_{W}(eq,l)", resampling);
@@ -1101,7 +1114,7 @@ int main(int argc, char** argv) {
 
     int_scheme = integrate_simpson38;
     amu_W_s = compute_amu_W(conf_jack, 5 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{W}_simpson38(op,s)", resampling);
-    write_jack(amu_W, Njack, jack_file);
+    write_jack(amu_W_s, Njack, jack_file);
     check_correlatro_counter(55);
     printf("amu_W_simpson38(op,l) = %g  %g\n", amu_W[Njack - 1], error_jackboot(resampling, Njack, amu_W));
 
@@ -1116,13 +1129,21 @@ int main(int argc, char** argv) {
     asd_vec[0] = amu_W_s;
     asd_vec[1] = amu_W_s1;
     amu_W_sphys = interpol_Z(Nstrange, Njack, Meta, asd_vec, jack_aMetas_MeV_exp, outfile, "amu_{W}_simpson38(op,sphys)", resampling);
-    write_jack(ZV, Njack, jack_file);
+    write_jack(amu_W_sphys, Njack, jack_file);
     printf("amu_W_simpson38(op,shys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
     check_correlatro_counter(57);
     free(amu_W_s);free(amu_W_s1);free(amu_W_sphys);
 
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // DV
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+    double* DV = compute_DV(header.L, Njack, jack_Mpi_MeV_exp, jack_Mrho_MeV_exp, a, jack_grhopipi, outfile, "DV", resampling);
+    write_jack(DV, Njack, jack_file);
+    printf("DV = %g  %g\n", DV[Njack - 1], error_jackboot(resampling, Njack, DV));
+    check_correlatro_counter(58);
 
     for (int i = 0;i < Nstrange;i++) {
         Meta[i] = nullptr;

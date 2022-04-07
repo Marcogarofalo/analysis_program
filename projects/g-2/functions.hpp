@@ -1,6 +1,10 @@
 #include <gsl/gsl_integration.h>
 #include "tower.hpp"
 #include "fit_all.hpp"
+extern "C" {
+#include "../external/rzeta/src/dzeta_function.h"
+}
+
 constexpr double muon_mass_MeV = 105.6583755;
 constexpr double alpha_em = 0.0072973525693;
 constexpr double muon_mass_fm = muon_mass_MeV * 197.326963;
@@ -170,8 +174,8 @@ double* compute_amu_W(double**** in, int id, int Njack, double* Z, double* a, do
             double z = muon_mass_MeV * (t / 197.326963);
             double K = z * z * kernel_K(z);
             double theta = gm2_step_function(t / 0.15, t0_d) - gm2_step_function(t / 0.15, t1_d);
-            double VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] - (1.0 / (2.0 * M_PI * M_PI * pow(t_a, 5)));
-            ft[t_a] = K * VV_sub *  theta;
+            double VV_sub = Z[j] * Z[j] * in[j][id][t_a][0];//- (1.0 / (2.0 * M_PI * M_PI * pow(t_a, 5)));
+            ft[t_a] = K * VV_sub * theta;
 
             fi[t_a][j] = ft[t_a];
             Kt[t_a][j] = K;
@@ -291,6 +295,86 @@ double* interpol_Z(int Nmus, int Njack, double** Meta, double** Z, double* aMeta
 
     return(Zint);
 }
+/////////////////////////////////////////////////////////////////////////
+// compute_DV
+/////////////////////////////////////////////////////////////////////////
+
+double compute_cotd(int Nvar, double* x) {
+    double omega = x[0];
+    double mass = x[1];
+    double L = x[2];
+    double Mrho = x[3];
+    double grhopipi = x[4];
+    double a = x[5];
+
+    double k = sqrt(omega * omega / 4 - mass * mass);
+
+    double ho = (grhopipi * grhopipi * k * k * k * 2) * log((omega + 2 * k) / (2 * mass)) / (6.0 * M_PI * M_PI * omega);
+    double hM = (grhopipi * grhopipi * k * k * k * 2) * log((Mrho + 2 * k) / (2 * mass)) / (6.0 * M_PI * M_PI * Mrho);
+    double h1 = (grhopipi * grhopipi * k * k) * (1 + (1 + 2 * mass * mass / (Mrho * Mrho) * (Mrho / k) * log((Mrho + 2 * k) / (2 * mass)))) / (6.0 * M_PI * M_PI * Mrho);
+    double gamma = (grhopipi * grhopipi * k * k * k) / (6.0 * M_PI * omega * omega);
+
+    double cotd = Mrho * Mrho - omega * omega - hM - (omega * omega - Mrho * Mrho) * h1 / (2 * Mrho) + ho;
+    cotd /= omega * gamma;
+    return cotd;
+}
+
+double omega_QC2(int n, int Nvar, double* x, int Npar, double* P) {
+    double omega = x[0];
+    double mass = x[1];
+    double L = x[2];
+    double Mrho = x[3];
+    double grhopipi = x[4];
+    double a = x[5];
+    double k = sqrt(omega * omega / 4 - mass * mass);
+    double qsq = k * (L * (a / 197.326963) / (2 * pi_greco));
+    qsq = qsq * qsq;
+    double gamma = 1; // consider only the rest frame;
+    int dvec[3] = { 0,0,0 };
+    double A = 1.;
+    double z[2];
+    // printf("%g %g %g\n", omega,k,qsq);exit(1);
+    dzeta_function(z, qsq, 0, 0, dvec, gamma, A, 1.e-3, 1.e+6, 5);
+    std::complex<double>  zc(z[0], z[1]);
+    double r = real(zc * 2. * pi_greco / (pow(pi_greco, 3. / 2.) * L * (a / 197.326963) * gamma * mass));
+
+    double cotd = compute_cotd(Nvar, x);
+    return cotd * k / mass - r;
+
+}
+
+double* compute_DV(int L, int Njack, double* Mpi, double* Mrho, double* a, double* grhopipi, FILE* outfile, const char* description, const char* resampling) {
+
+    int T = file_head.l0;
+    double* omega = (double*)malloc(sizeof(double) * Njack);
+    for (int j = 0;j < Njack;j++) {
+        double x[3];
+        x[0] = 1;
+        x[1] = Mpi[j];
+        x[2] = L;
+        x[3] = Mrho[j];
+        x[4] = grhopipi[j];
+        x[5] = a[j];
+        double xmin = 2 * x[1];
+        double xmax = x[1] + sqrt(x[1] * x[1] + 2 * M_PI / ((double)L * (x[5] / 197.326963)));
+        omega[j] = rtsafe(omega_QC2, 0/*n*/, 6, x, 0/* Npar */, nullptr/* Pkcot */, 0/*ivar*/, 0. /*input*/, xmin, xmax, 1e-5, 100, 1e-4);
+
+
+    }
+
+    printf("omega=%g  %g\n", omega[Njack - 1], error_jackboot(resampling, Njack, omega));
+    // fprintf(outfile, " \n\n");
+    // fprintf(outfile, "#\n");
+    // for (int t = 1; t < T / 2; t++) {
+    //     fprintf(outfile, "%d   %.15g   %.15g\t", t, fi[t][Njack - 1], error_jackboot(resampling, Njack, fi[t]));
+    // }
+    // fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 0, T / 2, 0.0, 0.0);
+    // fprintf(outfile, "   %.15g   %15.g\n", amu[Njack - 1], error_jackboot(resampling, Njack, amu));
+
+
+    return omega;
+}
+
 
 
 ///////////////

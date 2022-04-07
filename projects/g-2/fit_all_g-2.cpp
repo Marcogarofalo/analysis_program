@@ -118,6 +118,41 @@ data_all read_all_the_files(std::vector<std::string> files, const char* resampli
 
 }
 
+void compute_syst_eq28(data_all in, const char* outpath, const char* filename) {
+    int N = in.Nfits;
+    int Njack = in.fits[0].Njack;
+    char name[NAMESIZE];
+    mysprintf(name, NAMESIZE, "%s/%s", outpath, filename);
+    FILE* f = open_file(name, "w+");
+    printf("writing: %s\n",name);
+    std::vector<double> aves(N);
+    std::vector<double> errors(N);
+    for (int i = 0; i < N; i++) {
+        aves[i] = in.fits[i].P[0][Njack - 1];
+        errors[i] = error_jackboot(in.resampling.c_str(), Njack, in.fits[i].P[0]);
+    }
+
+    double ave = 0, err = 0;
+    for (int i = 0; i < N; i++) {
+        ave += aves[i];
+        err += pow(errors[i], 2);
+    }
+    ave /= (double)N;
+
+    for (int i = 0; i < N; i++) {
+        err += pow(ave - aves[i], 2);
+    }
+    err = sqrt(err / (double)N);
+
+    for (int i = 0; i < N; i++) {
+        fprintf(f, "%s    %g     %g   %g   %g\n", in.fits[i].name, aves[i], errors[i], ave, err);
+    }
+    printf("systematics  %s: N=%d\n", filename, N);
+    printf("mean(eq28)= %g  %g \n", ave, err);
+    fclose(f);
+}
+
+
 int main(int argc, char** argv) {
     error(argc != 4, 1, "main ",
         "usage:./fit_all_phi4  jack/boot   path_to_jack   output_dir");
@@ -154,7 +189,8 @@ int main(int argc, char** argv) {
     // fits 
     /////////////////////////////////////////////////////////////////////////////////////////////////
     fit_type fit_info;
-
+    data_all  syst_amu_SD_l;
+    syst_amu_SD_l.resampling = argv[1];
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     printf("\n/////////////////////////////////     amu_SD_l_common    //////////////////\n");
     //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -177,6 +213,7 @@ int main(int argc, char** argv) {
     fit_result amu_SD_l_common = fit_all_data(argv, jackall, lhs_amu_common<25, 26>, fit_info, "amu_SD_l_common");
     fit_info.band_range = { 0,0.0081 };
     print_fit_band(argv, jackall, fit_info, fit_info, "amu_SD_l_common", "afm", amu_SD_l_common, amu_SD_l_common, 0, myen.size() - 1, 0.001);
+
 
     fit_info.restore_default();
 
@@ -203,9 +240,41 @@ int main(int argc, char** argv) {
     fit_result amu_SD_l_common_a4 = fit_all_data(argv, jackall, lhs_amu_common<25, 26>, fit_info, "amu_SD_l_common_a4");
     fit_info.band_range = { 0,0.0081 };
     print_fit_band(argv, jackall, fit_info, fit_info, "amu_SD_l_common_a4", "afm", amu_SD_l_common_a4, amu_SD_l_common_a4, 0, myen.size() - 1, 0.0005);
-
+    syst_amu_SD_l.add_fit(amu_SD_l_common_a4);
+    free_fit_result(fit_info, amu_SD_l_common_a4);
     fit_info.restore_default();
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    printf("\n/////////////////////////////////     amu_SD_l_simpson38    a^2+a^4//////////////////\n");
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    fit_info.Npar = 5;
+    fit_info.N = 2;
+    fit_info.Nvar = 1;
+    fit_info.Njack = Njack;
+    fit_info.myen = myen;
+    fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+    count = 0;
+    for (int n = 0;n < fit_info.N;n++) {
+        for (int e = 0;e < fit_info.myen.size();e++) {
+            for (int j = 0;j < Njack;j++) {
+                fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2);
+            }
+            count++;
+        }
+    }
+    fit_info.function = rhs_amu_common_a4;
+    fit_result amu_SD_l_simpson38_a4 = fit_all_data(argv, jackall, lhs_amu_common<27, 28>, fit_info, "amu_SD_l_simpson38_a4");
+    fit_info.band_range = { 0,0.0081 };
+    print_fit_band(argv, jackall, fit_info, fit_info, "amu_SD_l_simpson38_a4", "afm", amu_SD_l_simpson38_a4, amu_SD_l_simpson38_a4, 0, myen.size() - 1, 0.0005);
+    syst_amu_SD_l.add_fit(amu_SD_l_simpson38_a4);
+    free_fit_result(fit_info, amu_SD_l_simpson38_a4);
+    fit_info.restore_default();
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    printf("\n/////////////////////////////////   Systematics  amu_SD_l   //////////////////\n");
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    compute_syst_eq28(syst_amu_SD_l, argv[3], "Systematics_amu_SD_l.txt");
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     printf("\n/////////////////////////////////     amu_SD_s_common    //////////////////\n");
