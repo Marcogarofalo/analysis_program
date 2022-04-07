@@ -308,6 +308,7 @@ struct fit_result {
   double** P;// [par][jack]
   double* chi2;
   double*** C;
+  char name[NAMESIZE];
 
 };
 
