@@ -348,7 +348,7 @@ double* compute_DV(int L, int Njack, double* Mpi, double* Mrho, double* a, doubl
     int T = file_head.l0;
     double* omega = (double*)malloc(sizeof(double) * Njack);
     for (int j = 0;j < Njack;j++) {
-        double x[3];
+        double x[6];
         x[0] = 1;
         x[1] = Mpi[j];
         x[2] = L;
