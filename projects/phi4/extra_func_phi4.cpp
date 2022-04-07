@@ -279,6 +279,19 @@ double lhs_kcotd_m_deltaE_g_new(int n, int e, int j, data_all gjack, struct fit_
 }
 
 
+double lhs_kcotd_m_new(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double r;
+
+    int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
+    init_dvec_E2_g_extra(n, dvec, dvec1, dvec2, dmax1, dmax2);
+    double E2 = get_E2_g_n_extra(n, e, j, gjack);
+    // double mass = gjack.en[e].jack[1][j];
+    double mass = fit_info.x[0][e][j];
+    double L = gjack.en[e].header.L;
+
+     r = kcotd_extra(E2, mass, dvec, L);
+    return r / mass;
+}
 
 double lhs_kcotd_minf_deltaE_g_new(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double r;
@@ -308,7 +321,9 @@ double lhs_kcotd_minf_deltaE_g_new(int n, int e, int j, data_all gjack, struct f
     E2 = E2 - E2fL + E2f;
 
     r = kcotd_extra(E2, mass, dvec, L);
+
     double mass_inf = fit_info.x[2][e][j];
+
     return r / mass_inf;
 }
 

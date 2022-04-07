@@ -16,7 +16,8 @@ void print_fit_band_phi4(char** argv, data_all gjack, struct fit_type fit_info,
 double rhs_kcotd_m_new(int n, int Nvar, double* x, int Npar, double* P);
 double lhs_kcotd_m_deltaE_g_new(int n, int e, int j, data_all gjack, struct fit_type fit_info);
 double compute_k_m_g_new(int n, int e, int j, data_all gjack, struct fit_type fit_info);
-
+double lhs_kcotd_minf_deltaE_g_new(int n, int e, int j, data_all gjack, struct fit_type fit_info);
+double lhs_kcotd_m_new(int n, int e, int j, data_all gjack, struct fit_type fit_info);
 // QC3
 double lhs_E3orE1_m_complex_new(int n, int e, int j, data_all gjack, struct fit_type fit_info);
 double lhs_E3_E1_E2_m_complex_new(int n, int e, int j, data_all gjack, struct fit_type fit_info);
@@ -26,7 +27,7 @@ double rhs_E3_m_QC3_pole_E2_QC2(int n, int Nvar, double* x, int Npar, double* P)
 
 void print_fit_band_QC3_phi4(char** argv, data_all gjack, struct fit_type fit_info,
     struct fit_type fit_info_E3_poly, const char* label, const char* dir_name,
-    struct fit_result fit_out, struct fit_result fit_out_poly, int var, int en, double h) ;
+    struct fit_result fit_out, struct fit_result fit_out_poly, int var, int en, double h);
 #endif //PYTHON
 
 #endif // !extra_fun_phi4_H

@@ -191,6 +191,7 @@ public:
         fit_result* fit_tmp = (struct fit_result*)malloc(sizeof(struct fit_result) * N);
         for (int i = 0;i < N - 1;i++) {
             fit_tmp[i] = malloc_copy_fit_result(fits[i]);
+            // fit_tmp[i].name=fits[i].name;
             for (int j = 0;j < fits[i].Npar;j++) {
                 free(fits[i].P[j]);
                 for (int k = 0;k < fits[i].Npar;k++) {
@@ -205,23 +206,23 @@ public:
         }
 
         fit_tmp[N - 1] = malloc_copy_fit_result(fit_out);
+        fits = fit_tmp;
+        // fits = (struct fit_result*)malloc(sizeof(struct fit_result) * N);
+        // for (int i = 0;i < N;i++) {
+        //     fits[i] = malloc_copy_fit_result(fit_tmp[i]);
 
-        fits = (struct fit_result*)malloc(sizeof(struct fit_result) * N);
-        for (int i = 0;i < N;i++) {
-            fits[i] = malloc_copy_fit_result(fit_tmp[i]);
-
-            for (int j = 0;j < fit_tmp[i].Npar;j++) {
-                free(fit_tmp[i].P[j]);
-                for (int k = 0;k < fit_tmp[i].Npar;k++) {
-                    free(fit_tmp[i].C[j][k]);
-                }
-                free(fit_tmp[i].C[j]);
-            }
-            free(fit_tmp[i].chi2);
-            free(fit_tmp[i].P);
-            free(fit_tmp[i].C);
-            if (i == N - 2) { free(fit_tmp); }
-        }
+        //     for (int j = 0;j < fit_tmp[i].Npar;j++) {
+        //         free(fit_tmp[i].P[j]);
+        //         for (int k = 0;k < fit_tmp[i].Npar;k++) {
+        //             free(fit_tmp[i].C[j][k]);
+        //         }
+        //         free(fit_tmp[i].C[j]);
+        //     }
+        //     free(fit_tmp[i].chi2);
+        //     free(fit_tmp[i].P);
+        //     free(fit_tmp[i].C);
+        // }
+        // free(fit_tmp);
 
     }
 

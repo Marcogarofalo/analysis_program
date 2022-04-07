@@ -163,6 +163,7 @@ struct  fit_result   malloc_copy_fit_result(struct fit_result fit_out) {
         fit_tmp.chi2[j] = fit_out.chi2[j];
     }
     fit_tmp.Npar = fit_out.Npar;
+    mysprintf(fit_tmp.name,NAMESIZE,"%s", fit_out.name);
     return fit_tmp;
 }
 

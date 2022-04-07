@@ -287,6 +287,8 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
             fit_out.P[i][j] = fit[j][i];
 
     fit_out.Npar=fit_info.Npar;
+    // fit_out.name=label;
+    mysprintf(fit_out.name,NAMESIZE,"%s", label);
     /////////////////////////////////////////////////////////////////////writing the result
     print_fit_output(argv, gjack, fit_info, label, fit_out, en, x, y, myen);
 
