@@ -146,6 +146,7 @@ void print_fit_band_QC3_phi4(char** argv, data_all gjack, struct fit_type fit_in
                 tmpy[j] = fit_info.function(n, Nvar, tmpx, Npar, tif[j]);
             }
             fprintf(f, "%g  \t %g  %g   %g   %g\n", pos, tmpy[Njack - 1], error_jackboot(argv[1], Njack, tmpy), tmpx[3], tmpx[4]);
+            printf("%g  \t %g  %g   %g   %g\n", pos, tmpy[Njack - 1], error_jackboot(argv[1], Njack, tmpy), tmpx[3], tmpx[4]);
             pos += h;
         }
 
@@ -196,7 +197,7 @@ void init_dvec_E2_with_E3(int n, int* dvec, int* dvec1, int* dvec2, int* dmax1, 
         dmax1[0] = 1; dmax1[1] = 0; dmax1[2] = 0;
         dmax2[0] = -1; dmax2[1] = 0; dmax2[2] = 0;
     }
-    
+
     else {
         printf("%s n=%d not implemented\n", __func__, n); exit(1);
     }
@@ -289,7 +290,7 @@ double lhs_kcotd_m_new(int n, int e, int j, data_all gjack, struct fit_type fit_
     double mass = fit_info.x[0][e][j];
     double L = gjack.en[e].header.L;
 
-     r = kcotd_extra(E2, mass, dvec, L);
+    r = kcotd_extra(E2, mass, dvec, L);
     return r / mass;
 }
 
@@ -504,6 +505,31 @@ double rhs_E3_m_QC3_pole_new(int n, int Nvar, double* x, int Npar, double* P) {
     return r;
 }
 
+double rhs_E3_m_QC3_pole_inter(int n, int Nvar, double* x, int Npar, double* P) {
+
+    double Pkcot[2];
+    Pkcot[0] = x[1];
+    Pkcot[1] = x[2];
+
+    int Nkcot = 2;
+    int Nkiso = Npar;
+    int dvec[3];//,dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec_QC3_pole_new(n, dvec);
+    //init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    double nnP[3];
+    nnP[0] = (double)dvec[0]; nnP[1] = (double)dvec[1]; nnP[2] = (double)dvec[2];
+
+    double Lm = x[0];// L* M
+    int steps = 4;
+    // // when we load find_sol
+    double Estart = x[3] - 2 * x[4];
+    double Eend = x[3] + 2 * x[4];
+    double r = python_detQC_call(Estart, Eend, steps, Lm, nnP, Nkcot, Pkcot, Nkiso, P);
+
+    return r;
+}
+
+
 double rhs_E3_m_QC3_pole_E2_QC2(int n, int Nvar, double* x, int Npar, double* P) {
 
     double Pkcot[2];
@@ -521,7 +547,7 @@ double rhs_E3_m_QC3_pole_E2_QC2(int n, int Nvar, double* x, int Npar, double* P)
     double Lm = x[0];// L* M
     int steps = 4;
     double r;
-    
+
     if (n < 2) {
         // // when we load find_2sol
         r = python_detQC_call(3.05, 2e-4, n, Lm, nnP, Nkcot, Pkcot, Nkiso, P);
@@ -558,8 +584,8 @@ double rhs_E3_m_QC3_pole_E2_QC2(int n, int Nvar, double* x, int Npar, double* P)
         double k = rtsafe(to_invert_k_from_phase_shift_with_E3, n, 3, xx, Npar, Pkcot, 2/*ivar*/, 0. /*input*/, xmin, xmax, 1e-5, 100, 1e-4);
         double E2 = sqrt((k * k + mass * mass) * 4. + (2 * pi_greco / L) * (2 * pi_greco / L) * (dvec[0] * dvec[0] + dvec[1] * dvec[1] + dvec[2] * dvec[2]));
 
-        double mass_inf = x[0]/x[2];
-        r= (E2 / mass_inf);
+        double mass_inf = x[0] / x[2];
+        r = (E2 / mass_inf);
 
     }
 

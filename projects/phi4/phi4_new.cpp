@@ -2530,6 +2530,7 @@ int main(int argc, char** argv) {
             strcmp(argv[4], "G2t_T64_L18_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0_bin1000_merged_bin100") == 0 ||
             strcmp(argv[4], "G2t_T64_L19_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0_bin1000_merged_bin100") == 0 ||
             strcmp(argv[4], "G2t_T64_L20_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0_bin1000_merged_bin100") == 0 ||
+            strcmp(argv[4], "G2t_T64_L21_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0_bin1000_merged_bin100") == 0 ||
             strcmp(argv[4], "G2t_T64_L24_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0_bin1000_merged_bin100") == 0 ||
             strcmp(argv[4], "G2t_T64_L25_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0_bin1000_merged_bin100") == 0 
             ) {

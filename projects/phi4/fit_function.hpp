@@ -111,12 +111,12 @@ void printing_file_for_maxim_and_fernando_complex(char** argv, std::vector<clust
             fprintf(f, "%-4d%-4d%-10g%-10g%-10g%-10g%-14.10g%-14.10g%-14.10g%-14.10g%-14.10g%-14.10g\n",
                 paramsj[e].data.L[1], paramsj[e].data.L[0], paramsj[e].data.gC,
                 paramsj[e].data.msq0, paramsj[e].data.msq1, paramsj[e].data.lambdaC0,
-                gjack[e].jack[1][Njack - 1],
-                gjack[e].jack[4][Njack - 1],
-                gjack[e].jack[100][Njack - 1],
-                gjack[e].jack[80][Njack - 1],
-                gjack[e].jack[355][Njack - 1],
-                gjack[e].jack[354][Njack - 1]);
+                gjack[e].jack[1][j],
+                gjack[e].jack[4][j],
+                gjack[e].jack[100][j],
+                gjack[e].jack[80][j],
+                gjack[e].jack[355][j],
+                gjack[e].jack[354][j]);
         }
         fclose(f);
     }
@@ -1480,10 +1480,10 @@ double lhs_deltaE2_m_latt_QC2(int n, int e, int j, data_all gjack, struct fit_ty
     double Ef2 = sqrt(mass * mass + (2 * pi_greco / L) * (2 * pi_greco / L) * (dvec2[0] * dvec2[0] + dvec2[1] * dvec2[1] + dvec2[2] * dvec2[2]));
     double E2f = Ef1 + Ef2;
 
-    double mass_inf = fit_info.x[2][0][j];
+    // double mass_inf = fit_info.x[2][0][j];
     if (n == 0 && e == 0 && j == 0) printf("E2=%g  %g  %g\n", E2, E2fL, E2f);
 
-    return (E2 - E2fL + E2f) / mass_inf;
+    return (E2 - E2fL + E2f) / mass;
 
 }
 
@@ -2392,7 +2392,7 @@ struct fit_result fit_data(char** argv, vector<cluster::IO_params> params, vecto
     free_2(Njack, fit);
 
     ////// free end
-
+    mysprintf(fit_out.name,NAMESIZE,"%s", label);
     fit_out.Npar = fit_info.Npar;
     return fit_out;
 
