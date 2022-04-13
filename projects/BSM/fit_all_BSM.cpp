@@ -182,6 +182,9 @@ int main(int argc, char** argv) {
     mysprintf(namefile, NAMESIZE, "%s/b5.85/L20T40/eta_m1.5_M02_-0.040000_mu03_0.0224_csw_1.0_rho3/jackknife/%s_T40_L20_rho3.000000_eta-1.500000_csw1.000000_mu030.022400_m0-0.040000", argv[2], argv[1]);
     emplace_back_par_data(namefile, paramsj, dataj);
 
+    mysprintf(namefile, NAMESIZE, "%s/b5.85/L20T40/eta_m1.8_M02_-0.045000_mu03_0.0224_csw_1.0_rho3/jackknife/%s_T40_L20_rho3.000000_eta-1.800000_csw1.000000_mu030.022400_m0-0.045000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
 
     mysprintf(namefile, NAMESIZE, "%s/b5.85/L20T40/eta_m2.0_M02_-0.010396_mu03_0.0224_csw_1.0_rho3/jackknife/%s_T40_L20_rho3.000000_eta-2.000000_csw1.000000_mu030.022400_m0-0.010396", argv[2], argv[1]);
     emplace_back_par_data(namefile, paramsj, dataj);
@@ -463,7 +466,7 @@ int main(int argc, char** argv) {
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     fit_info.Nvar = 7;
-    
+
     fit_info.N = 2;
     fit_info.Njack = gjack[0].Njack;
     fit_info.n_ext_P = 2;
@@ -476,7 +479,7 @@ int main(int argc, char** argv) {
     fit_info.function = rhs_NG_mpcac_MPS2_m0_eta2_mueta;
 
 
-        mysprintf(namefit, NAMESIZE, "fit_NG_mpcac_MPS_b585_rho3_lines");
+    mysprintf(namefit, NAMESIZE, "fit_NG_mpcac_MPS_b585_rho3_lines");
     fit_result fit_NG3 = fit_data(argv, paramsj, gjack, lhs_mpcac_MPS2, fit_info, namefit, myenNG3);
     print_fit_band_eta(argv, gjack, fit_info, namefit, fit_NG3, paramsj, myenNG3, { -2.5,-1.5 });
 
