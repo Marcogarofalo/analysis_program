@@ -840,6 +840,38 @@ void add_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack,
     ncorr_conf_jack = correlators_out;
 }
 
+
+void add_one_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack,  struct fit_type fit_info, double** r) {
+
+    int correlators_out = ncorr_conf_jack +1;
+    int Njack = fit_info.Njack;
+
+    double**** corr_out = calloc_corr(Njack, correlators_out, file_head.l0);
+    // copy the first part
+    for (int j = 0; j < Njack; j++) {
+        for (int v = 0; v < ncorr_conf_jack; v++) {
+            for (int t = 0; t < file_head.l0; t++) {
+                corr_out[j][v][t][0] = conf_jack[j][v][t][0];
+                corr_out[j][v][t][1] = conf_jack[j][v][t][1];
+            }
+        }
+    }
+
+
+    for (int j = 0; j < Njack; j++) {
+        for (int t = 0; t < file_head.l0; t++) {
+            for (int n = 0; n < 1; n++) {
+                corr_out[j][ncorr_conf_jack + n][t][0] = r[t][j];
+                corr_out[j][ncorr_conf_jack + n][t][1] = 0;
+            }
+        }
+    }
+
+    free_corr(Njack, ncorr_conf_jack, file_head.l0, conf_jack);
+    conf_jack = corr_out;
+    ncorr_conf_jack = correlators_out;
+}
+
 void zero_corr(double* zeros, int Njack, FILE* jack_file) {
     fwrite(zeros, sizeof(double), Njack, jack_file);
     corr_counter++;
