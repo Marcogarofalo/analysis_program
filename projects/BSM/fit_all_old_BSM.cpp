@@ -156,6 +156,39 @@ int main(int argc, char** argv) {
     vector<int> myenW(NeW);
     for (int i = 0;i < NeW; i++)  myenW[i] = i;
 
+    ////////////////////// b595
+
+    mysprintf(namefile, NAMESIZE, "%s/b595_W/etam0.4987_M02_0000_mu03_0186_rho1.002001/jackknife/%s_T48_L20_rho1.960000_eta-0.976077_csw0.000000_mu030.018600_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
+    mysprintf(namefile, NAMESIZE, "%s/b595_W/etam0.4987_M02_0000_mu03_0321_rho1.002001/jackknife/%s_T48_L20_rho1.960000_eta-0.976077_csw0.000000_mu030.032100_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
+    mysprintf(namefile, NAMESIZE, "%s/b595_W/etam0.5290_M02_0000_mu03_0186_rho1.002001/jackknife/%s_T48_L20_rho1.960000_eta-1.035382_csw0.000000_mu030.018600_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);    
+
+    mysprintf(namefile, NAMESIZE, "%s/b595_W/etam0.5290_M02_0000_mu03_0321_rho1.002001/jackknife/%s_T48_L20_rho1.960000_eta-1.035382_csw0.000000_mu030.032100_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
+    mysprintf(namefile, NAMESIZE, "%s/b595_W/etam0.5503_M02_0000_mu03_0100_rho1.002001/jackknife/%s_T48_L20_rho1.960000_eta-1.077071_csw0.000000_mu030.010000_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
+    mysprintf(namefile, NAMESIZE, "%s/b595_W/etam0.5503_M02_0000_mu03_0186_rho1.002001/jackknife/%s_T48_L20_rho1.960000_eta-1.077071_csw0.000000_mu030.018600_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+    
+    mysprintf(namefile, NAMESIZE, "%s/b595_W/etam0.5503_M02_0000_mu03_0321_rho1.002001/jackknife/%s_T48_L20_rho1.960000_eta-1.077071_csw0.000000_mu030.032100_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+    
+
+    //////
+   
+    
+    int NeW595 = dataj.size()-NeW;
+    printf("number of ensembles W = %d\n", NeW595);
+    vector<int> myenW595(NeW595);
+    for (int i = 0;i < NeW595; i++)  myenW595[i] = i+NeW;
+
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////   NG
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -267,10 +300,85 @@ int main(int argc, char** argv) {
     fit_info.restore_default();
 
 
- exit(1);
-  
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+printf("///////////////////////////////////////////    b595   ///////////////////////////////////////////////////////");
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+printf("/////////////////////////////////////  r_AWI_tau2///////////////////////////////////// ");
+    fit_info.Nvar = 7;
+    fit_info.Npar = 3;
+    fit_info.N = 1;
+    fit_info.Njack = gjack[0].Njack;
+    fit_info.n_ext_P = 0;
+    fit_info.function = rhs_critical_eta_mu;
+    fit_info.corr_id={ 13,4 };
 
 
+    fit_critical = fit_data(argv, paramsj, gjack, lhs_fit_two_func, fit_info, "eta_critical_tau2_b595", myenW595);
+    print_fit_band_eta(argv, gjack, fit_info, "eta_critical_tau2_b595", fit_critical, paramsj, myenW595);
 
+    free_fit_result(fit_info, fit_critical);
+    fit_info.restore_default();
+    printf("/////////////////////////////////////  r_AWI_tau3///////////////////////////////////// ");
+    fit_info.Nvar = 7;
+    fit_info.Npar = 3;
+    fit_info.N = 1;
+    fit_info.Njack = gjack[0].Njack;
+    fit_info.n_ext_P = 0;
+    fit_info.function = rhs_critical_eta_mu;
+    fit_info.corr_id={ 14,4 };
+
+
+    fit_critical = fit_data(argv, paramsj, gjack, lhs_fit_two_func, fit_info, "eta_critical_tau3_b595", myenW595);
+    print_fit_band_eta(argv, gjack, fit_info, "eta_critical_tau3_b595", fit_critical, paramsj, myenW595);
+
+    free_fit_result(fit_info, fit_critical);
+    fit_info.restore_default();
+     printf("/////////////////////////////////////  r_AWI_tau4///////////////////////////////////// ");
+    fit_info.Nvar = 7;
+    fit_info.Npar = 3;
+    fit_info.N = 1;
+    fit_info.Njack = gjack[0].Njack;
+    fit_info.n_ext_P = 0;
+    fit_info.function = rhs_critical_eta_mu;
+    fit_info.corr_id={ 15,4 };
+
+
+    fit_critical = fit_data(argv, paramsj, gjack, lhs_fit_two_func, fit_info, "eta_critical_tau4_b595", myenW595);
+    print_fit_band_eta(argv, gjack, fit_info, "eta_critical_tau4_b595", fit_critical, paramsj, myenW595);
+
+    free_fit_result(fit_info, fit_critical);
+    fit_info.restore_default();
+
+     printf("/////////////////////////////////////  r_AWI_tau5///////////////////////////////////// ");
+    fit_info.Nvar = 7;
+    fit_info.Npar = 3;
+    fit_info.N = 1;
+    fit_info.Njack = gjack[0].Njack;
+    fit_info.n_ext_P = 0;
+    fit_info.function = rhs_critical_eta_mu;
+    fit_info.corr_id={ 15,4 };
+
+
+    fit_critical = fit_data(argv, paramsj, gjack, lhs_critical_eta_mu_m0, fit_info, "eta_critical_tau5_b595", myenW595);
+    print_fit_band_eta(argv, gjack, fit_info, "eta_critical_tau5_b595", fit_critical, paramsj, myenW595);
+
+
+     printf("/////////////////////////////////////  r_AWI_tau6///////////////////////////////////// ");
+    fit_info.Nvar = 7;
+    fit_info.Npar = 3;
+    fit_info.N = 1;
+    fit_info.Njack = gjack[0].Njack;
+    fit_info.n_ext_P = 0;
+    fit_info.function = rhs_critical_eta_mu;
+    fit_info.corr_id={ 3,4 };
+
+
+    fit_critical = fit_data(argv, paramsj, gjack, lhs_critical_eta_mu_m0, fit_info, "eta_critical_tau6_b595", myenW595);
+    print_fit_band_eta(argv, gjack, fit_info, "eta_critical_tau6_b595", fit_critical, paramsj, myenW595);
+
+
+    free_fit_result(fit_info, fit_critical);
+    fit_info.restore_default();
     return 0;
 }
