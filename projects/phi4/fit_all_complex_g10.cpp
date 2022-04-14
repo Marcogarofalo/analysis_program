@@ -606,6 +606,7 @@ int main(int argc, char** argv) {
     fit_info.ext_P[1] = gjack[0].jack[1];
     fit_info.ext_P[2] = gjack[0].jack[1];
 
+    
     fit_m0 = fit_data(argv, paramsj, gjack, M0_finite_volume_lhs, fit_info, "M0_finite_vol", myen);
     jackall.add_fit(fit_m0);
 
@@ -837,6 +838,7 @@ int main(int argc, char** argv) {
             count++;
         }
     }
+    
     fit_result fit_QC3_poly = fit_all_data(argv, jackall, lhs_E3_m_new, fit_info_E3_poly, "fit_QC3_poly");
 
     fit_info_E3_poly.band_range = { 19, 27 };
@@ -904,6 +906,10 @@ int main(int argc, char** argv) {
     // fit_info.guess = {-8.48047e+06, 10.66685e+06,-425.446 };
     fit_info.mean_only = true;
     fit_info.precision_sum = 2;
+    
+    fit_info.noderiv=true;
+    fit_info.lambda=1e-2;
+    
 
     mysprintf(namefile, NAMESIZE, "QC3_%dpar_pole", fit_info.Npar);
     struct fit_result fit_QC3_2par = fit_all_data(argv, jackall, lhs_E3orE1_m_complex_new, fit_info, namefile);
