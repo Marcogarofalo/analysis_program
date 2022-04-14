@@ -189,14 +189,27 @@ void init_dvec_E2_g_extra(int n, int* dvec, int* dvec1, int* dvec2, int* dmax1, 
 
 void init_dvec_E2_with_E3(int n, int* dvec, int* dvec1, int* dvec2, int* dmax1, int* dmax2) {
 
-    if (n == 2) {//E2_0
+    if (n == 0) {//E2_0
         dvec[0] = 0; dvec[1] = 0; dvec[2] = 0;
         dvec1[0] = 0; dvec1[1] = 0; dvec1[2] = 0;
         dvec2[0] = 0; dvec2[1] = 0; dvec2[2] = 0;
         dmax1[0] = 1; dmax1[1] = 0; dmax1[2] = 0;
         dmax2[0] = -1; dmax2[1] = 0; dmax2[2] = 0;
     }
-    
+    else if (n == 1) {//E2_0_p1
+        dvec[0] = 1; dvec[1] = 0; dvec[2] = 0;
+        dvec1[0] = 1; dvec1[1] = 0; dvec1[2] = 0;
+        dvec2[0] = 0; dvec2[1] = 0; dvec2[2] = 0;
+        dmax1[0] = 1; dmax1[1] = 1; dmax1[2] = 0;
+        dmax2[0] = 0; dmax2[1] = -1; dmax2[2] = 0;
+    }
+    else if (n == 2) {//E2_0_A1
+        dvec[0] = 0; dvec[1] = 0; dvec[2] = 0;
+        dvec1[0] = 1; dvec1[1] = 0; dvec1[2] = 0;
+        dvec2[0] = -1; dvec2[1] = 0; dvec2[2] = 0;
+        dmax1[0] = 1; dmax1[1] = 0; dmax1[2] = 1;
+        dmax2[0] = -1; dmax2[1] = 0; dmax2[2] = -1;
+    }
     else {
         printf("%s n=%d not implemented\n", __func__, n); exit(1);
     }
@@ -289,7 +302,7 @@ double lhs_kcotd_m_new(int n, int e, int j, data_all gjack, struct fit_type fit_
     double mass = fit_info.x[0][e][j];
     double L = gjack.en[e].header.L;
 
-     r = kcotd_extra(E2, mass, dvec, L);
+    r = kcotd_extra(E2, mass, dvec, L);
     return r / mass;
 }
 
@@ -389,7 +402,7 @@ double to_invert_k_from_phase_shift_with_E3(int n, int Nvar, double* x, int Npar
     if (Npar >= 3) {
         kcotdelta_m += P[2] * r0m0 * r0m0 * r0m0 * k_m * k_m * k_m * k_m;
     }
-    // printf(" k=%g   f(k)=%g  kcotdelta_m=%g   r=%g  z=%g  gamma=%g   mass=%g  L=%g   dvec=(%d,%d,%d) E2CM=%g\n ",k, kcotdelta_m-r ,kcotdelta_m, r , z[0] ,gamma,mass, L, dvec[0] ,dvec[1] ,dvec[2], E2_CM);
+    // printf(" k=%g   f(k)=%g  kcotdelta_m=%g   r=%g  z=%g  gamma=%g   mass=%g  L=%g   dvec=(%d,%d,%d) E2CM=%g\n ", k, kcotdelta_m - r, kcotdelta_m, r, z[0], gamma, mass, L, dvec[0], dvec[1], dvec[2], E2_CM);
     // printf("P[0]=%g \t",P[0]);
     // if (Npar>=2) printf("P[1]=%g \t",P[1]);
     // if (Npar>=3) printf("P[2]=%g \t",P[2]);
@@ -410,8 +423,8 @@ void init_dvec_QC3_pole_new(int n, int* dvec) {
     else if (n == 1) {// E3_0
         dvec[0] = 0; dvec[1] = 0; dvec[2] = 0;
     }
-    else if (n == 2) {//E2_0_p11
-        dvec[0] = 1; dvec[1] = 0; dvec[2] = 0;
+    else if (n == 2) {//E2_0
+        dvec[0] = 0; dvec[1] = 0; dvec[2] = 0;
     }
     else if (n == 3) {//E2_0_p1
         dvec[0] = 1; dvec[1] = 0; dvec[2] = 0;
@@ -455,8 +468,8 @@ double lhs_E3orE1_m_complex_new(int n, int e, int j, data_all gjack, struct fit_
 
 double lhs_E3_E1_E2_m_complex_new(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double E3;
-    //double mass=gjack[e].jack[1][j];
-    double mass = gjack.fits[0].P[0][j];
+    double mass = gjack.en[e].jack[1][j];
+    // double mass = gjack.fits[0].P[0][j];
 
 
     if (n == 0) {//GEVP 1
@@ -511,7 +524,7 @@ double rhs_E3_m_QC3_pole_E2_QC2(int n, int Nvar, double* x, int Npar, double* P)
     Pkcot[1] = P[4];
 
     int Nkcot = 2;
-    int Nkiso = Npar;
+    int Nkiso = Npar - Nkcot;
     int dvec[3];//,dvec1[3],dvec2[3],dmax1[3],dmax2[3];
     init_dvec_QC3_pole_new(n, dvec);
     //init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
@@ -521,21 +534,23 @@ double rhs_E3_m_QC3_pole_E2_QC2(int n, int Nvar, double* x, int Npar, double* P)
     double Lm = x[0];// L* M
     int steps = 4;
     double r;
-    
+
     if (n < 2) {
         // // when we load find_2sol
         r = python_detQC_call(3.05, 2e-4, n, Lm, nnP, Nkcot, Pkcot, Nkiso, P);
     }
     else {
-
+        int nr=n-2;
         double mass = x[1];
-        double xx[3] = { x[2],mass,1 }; //{L,mass,   k to be find by the bisection}
+        double L = x[2];
+
+        double xx[3] = { L,mass,1 }; //{L,mass,   k to be find by the bisection}
 
 
         int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
-        init_dvec_E2_with_E3(n, dvec, dvec1, dvec2, dmax1, dmax2);
+        init_dvec_E2_with_E3(nr, dvec, dvec1, dvec2, dmax1, dmax2);
+        
 
-        double L = x[0];
         // xmin have to be k in free theory
         double E1f = sqrt(mass * mass + (2 * pi_greco / L) * (2 * pi_greco / L) * (dvec1[0] * dvec1[0] + dvec1[1] * dvec1[1] + dvec1[2] * dvec1[2]));
         double E2f = sqrt(mass * mass + (2 * pi_greco / L) * (2 * pi_greco / L) * (dvec2[0] * dvec2[0] + dvec2[1] * dvec2[1] + dvec2[2] * dvec2[2]));
@@ -555,11 +570,11 @@ double rhs_E3_m_QC3_pole_E2_QC2(int n, int Nvar, double* x, int Npar, double* P)
         double xmin = kf + 1e-6;
         double xmax = kf1 - 1e-6;
 
-        double k = rtsafe(to_invert_k_from_phase_shift_with_E3, n, 3, xx, Npar, Pkcot, 2/*ivar*/, 0. /*input*/, xmin, xmax, 1e-5, 100, 1e-4);
+        double k = rtsafe(to_invert_k_from_phase_shift_with_E3, nr, 3, xx, Nkcot/*Npar*/, Pkcot, 2/*ivar*/, 0. /*input*/, xmin, xmax, 1e-5, 100, 1e-4);
         double E2 = sqrt((k * k + mass * mass) * 4. + (2 * pi_greco / L) * (2 * pi_greco / L) * (dvec[0] * dvec[0] + dvec[1] * dvec[1] + dvec[2] * dvec[2]));
 
-        double mass_inf = x[0]/x[2];
-        r= (E2 / mass_inf);
+        // double mass_inf = x[0]/x[2];
+        r = (E2 / mass);
 
     }
 

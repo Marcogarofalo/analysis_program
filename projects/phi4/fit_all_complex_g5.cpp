@@ -934,7 +934,7 @@ int main(int argc, char** argv) {
 	print_fit_band(argv, jackall, fit_info_E3_poly, fit_info_m0, "fit_QC3_poly", "L", fit_QC3_poly, fit_m0, 0, 0, 0.05);
 
 	//fit_info.restore_default();
-exit(1);
+
 #ifdef PYTHON
 	//// we need python
 	wchar_t* program = Py_DecodeLocale(argv[0], NULL);
@@ -1038,7 +1038,7 @@ exit(1);
 	}
 
 	// fit_info.lambda = 0.001;
-	fit_info.acc = 0.05;
+	fit_info.acc = 0.5;
 	fit_info.h = 2e-3;
 	// //fit_info.Prange={1000,10000};
 	fit_info.devorder = 2;
