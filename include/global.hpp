@@ -215,6 +215,7 @@ struct  fit_type {
   int precision_sum = 0;// 0 float, 1 float kahan,  >1 long double
   bool mean_only = false;
   bool unstable = false; // if true avoid thing that may return error
+  bool noderiv = false;
 
   std::vector<int> corr_id = {};
   std::vector<double>  Prange = {};
@@ -270,7 +271,8 @@ struct  fit_type {
     myen = std::vector<int>();
 
     mean_only = false;
-
+    unstable = false; // if true avoid thing that may return error
+    noderiv = false;
     plateaux_scan = false;
     guess_per_jack = 0;
     chi2_gap_jackboot = 1;

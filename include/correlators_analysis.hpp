@@ -43,7 +43,7 @@ struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinemat
 
 
 void add_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack, double** fun_of_corr(int, double****, int, struct fit_type), struct fit_type fit_info);
-
+void add_one_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack, struct fit_type fit_info, double** r);
 void zero_corr(double* zeros, int Njack, FILE* jack_file);
 
 void write_jack(double* corr, int Njack, FILE* jack_file);

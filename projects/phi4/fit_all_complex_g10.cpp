@@ -511,9 +511,13 @@ int main(int argc, char** argv) {
 
 
     std::vector<std::string> files;
-    mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L20_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0", argv[2], argv[1]);
+    // mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L20_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0", argv[2], argv[1]);
+    // emplace_back_par_data(namefile, paramsj, dataj);
+    // files.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L21_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0", argv[2], argv[1]);
     emplace_back_par_data(namefile, paramsj, dataj);
     files.emplace_back(namefile);
+
     mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L22_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0", argv[2], argv[1]);
     emplace_back_par_data(namefile, paramsj, dataj);
     files.emplace_back(namefile);
@@ -524,6 +528,9 @@ int main(int argc, char** argv) {
     emplace_back_par_data(namefile, paramsj, dataj);
     files.emplace_back(namefile);
     mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L25_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+    files.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L26_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0", argv[2], argv[1]);
     emplace_back_par_data(namefile, paramsj, dataj);
     files.emplace_back(namefile);
 
@@ -599,6 +606,7 @@ int main(int argc, char** argv) {
     fit_info.ext_P[1] = gjack[0].jack[1];
     fit_info.ext_P[2] = gjack[0].jack[1];
 
+    
     fit_m0 = fit_data(argv, paramsj, gjack, M0_finite_volume_lhs, fit_info, "M0_finite_vol", myen);
     jackall.add_fit(fit_m0);
 
@@ -830,6 +838,7 @@ int main(int argc, char** argv) {
             count++;
         }
     }
+    
     fit_result fit_QC3_poly = fit_all_data(argv, jackall, lhs_E3_m_new, fit_info_E3_poly, "fit_QC3_poly");
 
     fit_info_E3_poly.band_range = { 19, 27 };
@@ -851,7 +860,7 @@ int main(int argc, char** argv) {
 
     printf("////////////////////  kiso pole fit   ////////////////////////////////////\n");
     init_python_detQC();
-    init_python_detQC_kcot_kiso("kcot_2par", "kiso_pole", "find_sol");
+    init_python_detQC_kcot_kiso("kcot_2par", "kiso_pole", "find_2sol");
 
     fit_info.Npar = 3;
     fit_info.N = 2;
@@ -884,22 +893,27 @@ int main(int argc, char** argv) {
     }
 
     // fit_info.lambda = 0.001;
-    fit_info.acc = 0.001;
-    fit_info.h = 1e-3;
-    // //fit_info.Prange={1000,10000};
-    fit_info.devorder = 4;
+    fit_info.acc = 0.5;
+    fit_info.h = 1e-2;
+    // fit_info.Prange={100,100, 100};
+    fit_info.devorder = -2;
     fit_info.verbosity = 3;
-    fit_info.repeat_start = 2;
+    fit_info.repeat_start = 1;
     // fit_info.guess = { -0.142262, -2.96471 };
     //fit_info.guess = { -150.299, 9.72572 };
     // fit_info.guess = { 318.061, 9.64639 };
-    fit_info.guess = { 8.28416, 9.65554, -1504.59 };
+    fit_info.guess = { 20.28416, 10.75554, -1504.59 };
+    // fit_info.guess = {-8.48047e+06, 10.66685e+06,-425.446 };
     fit_info.mean_only = true;
     fit_info.precision_sum = 2;
+    
+    fit_info.noderiv=true;
+    fit_info.lambda=1e-2;
+    
 
     mysprintf(namefile, NAMESIZE, "QC3_%dpar_pole", fit_info.Npar);
     struct fit_result fit_QC3_2par = fit_all_data(argv, jackall, lhs_E3orE1_m_complex_new, fit_info, namefile);
-    fit_info.band_range = { 4.0,4.5 };
+    fit_info.band_range = { 5.65,6.9 };
     print_fit_band_QC3_phi4(argv, jackall, fit_info, fit_info_E3_poly, namefile, "L_m", fit_QC3_2par, fit_QC3_poly, 0, 0, 0.15);
 
     fit_info.restore_default();

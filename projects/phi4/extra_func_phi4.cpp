@@ -146,6 +146,7 @@ void print_fit_band_QC3_phi4(char** argv, data_all gjack, struct fit_type fit_in
                 tmpy[j] = fit_info.function(n, Nvar, tmpx, Npar, tif[j]);
             }
             fprintf(f, "%g  \t %g  %g   %g   %g\n", pos, tmpy[Njack - 1], error_jackboot(argv[1], Njack, tmpy), tmpx[3], tmpx[4]);
+            printf("%g  \t %g  %g   %g   %g\n", pos, tmpy[Njack - 1], error_jackboot(argv[1], Njack, tmpy), tmpx[3], tmpx[4]);
             pos += h;
         }
 
@@ -516,6 +517,31 @@ double rhs_E3_m_QC3_pole_new(int n, int Nvar, double* x, int Npar, double* P) {
 
     return r;
 }
+
+double rhs_E3_m_QC3_pole_inter(int n, int Nvar, double* x, int Npar, double* P) {
+
+    double Pkcot[2];
+    Pkcot[0] = x[1];
+    Pkcot[1] = x[2];
+
+    int Nkcot = 2;
+    int Nkiso = Npar;
+    int dvec[3];//,dvec1[3],dvec2[3],dmax1[3],dmax2[3];
+    init_dvec_QC3_pole_new(n, dvec);
+    //init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
+    double nnP[3];
+    nnP[0] = (double)dvec[0]; nnP[1] = (double)dvec[1]; nnP[2] = (double)dvec[2];
+
+    double Lm = x[0];// L* M
+    int steps = 4;
+    // // when we load find_sol
+    double Estart = x[3] - 2 * x[4];
+    double Eend = x[3] + 2 * x[4];
+    double r = python_detQC_call(Estart, Eend, steps, Lm, nnP, Nkcot, Pkcot, Nkiso, P);
+
+    return r;
+}
+
 
 double rhs_E3_m_QC3_pole_E2_QC2(int n, int Nvar, double* x, int Npar, double* P) {
 

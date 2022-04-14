@@ -1116,7 +1116,7 @@ int main(int argc, char** argv) {
     amu_W_s = compute_amu_W(conf_jack, 5 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{W}_simpson38(op,s)", resampling);
     write_jack(amu_W_s, Njack, jack_file);
     check_correlatro_counter(55);
-    printf("amu_W_simpson38(op,l) = %g  %g\n", amu_W[Njack - 1], error_jackboot(resampling, Njack, amu_W));
+    printf("amu_W_simpson38(op,l) = %g  %g\n", amu_W_s[Njack - 1], error_jackboot(resampling, Njack, amu_W_s));
 
 
     int_scheme = integrate_simpson38;
