@@ -833,7 +833,7 @@ int main(int argc, char** argv) {
     for (int n = 0;n < fit_info_E3_poly.N;n++) {
         for (int e = 0;e < fit_info_E3_poly.myen.size();e++) {
             for (int j = 0;j < Njack;j++) {
-                fit_info_E3_poly.x[0][count][j] = paramsj[e].data.L[1];
+                fit_info_E3_poly.x[0][count][j] = paramsj[e].data.L[1]* jackall.fits[0].P[0][j];
             }
             count++;
         }
@@ -841,7 +841,7 @@ int main(int argc, char** argv) {
     
     fit_result fit_QC3_poly = fit_all_data(argv, jackall, lhs_E3_m_new, fit_info_E3_poly, "fit_QC3_poly");
 
-    fit_info_E3_poly.band_range = { 19, 27 };
+    fit_info_E3_poly.band_range = { 5.5, 7.5 };
     print_fit_band(argv, jackall, fit_info_E3_poly, fit_info_m0, "fit_QC3_poly", "L", fit_QC3_poly, fit_m0, 0, 0, 0.1);
 
     //fit_info.restore_default();
@@ -893,7 +893,7 @@ int main(int argc, char** argv) {
     }
 
     // fit_info.lambda = 0.001;
-    fit_info.acc = 0.5;
+    fit_info.acc = 1.0;
     fit_info.h = 1e-2;
     // fit_info.Prange={100,100, 100};
     fit_info.devorder = -2;
@@ -902,7 +902,7 @@ int main(int argc, char** argv) {
     // fit_info.guess = { -0.142262, -2.96471 };
     //fit_info.guess = { -150.299, 9.72572 };
     // fit_info.guess = { 318.061, 9.64639 };
-    fit_info.guess = { 20.28416, 10.75554, -1504.59 };
+    fit_info.guess = { 20.28416, 9.135, -1004.59 };
     // fit_info.guess = {-8.48047e+06, 10.66685e+06,-425.446 };
     fit_info.mean_only = true;
     fit_info.precision_sum = 2;
