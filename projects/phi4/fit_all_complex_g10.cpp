@@ -860,7 +860,7 @@ int main(int argc, char** argv) {
 
     printf("////////////////////  kiso pole fit   ////////////////////////////////////\n");
     init_python_detQC();
-    init_python_detQC_kcot_kiso("kcot_2par", "kiso_pole", "find_2sol");
+    init_python_detQC_kcot_kiso("kcot_2par", "kiso_pole", "find_2sol_QC3_pole");
 
     fit_info.Npar = 3;
     fit_info.N = 2;
@@ -893,7 +893,7 @@ int main(int argc, char** argv) {
     }
 
     // fit_info.lambda = 0.001;
-    fit_info.acc = 1.0;
+    fit_info.acc = 0.01;
     fit_info.h = 1e-2;
     // fit_info.Prange={100,100, 100};
     fit_info.devorder = -2;
@@ -902,19 +902,21 @@ int main(int argc, char** argv) {
     // fit_info.guess = { -0.142262, -2.96471 };
     //fit_info.guess = { -150.299, 9.72572 };
     // fit_info.guess = { 318.061, 9.64639 };
-    fit_info.guess = { 20.28416, 9.135, -1004.59 };
+    fit_info.guess = { 60.0257, 9.1358, -2859.6 };
+    fit_info.guess = { 58.371, 9.13589, -2803.26 };
     // fit_info.guess = {-8.48047e+06, 10.66685e+06,-425.446 };
-    fit_info.mean_only = true;
+    // fit_info.mean_only = true;
     fit_info.precision_sum = 2;
     
-    fit_info.noderiv=true;
-    fit_info.lambda=1e-2;
+    // fit_info.noderiv=true;
+    // fit_info.lambda=0.01;
+    // fit_info.Prange={1,0.001, 10};
     
 
     mysprintf(namefile, NAMESIZE, "QC3_%dpar_pole", fit_info.Npar);
     struct fit_result fit_QC3_2par = fit_all_data(argv, jackall, lhs_E3orE1_m_complex_new, fit_info, namefile);
-    fit_info.band_range = { 5.65,6.9 };
-    print_fit_band_QC3_phi4(argv, jackall, fit_info, fit_info_E3_poly, namefile, "L_m", fit_QC3_2par, fit_QC3_poly, 0, 0, 0.15);
+    fit_info.band_range = { 5.65,7.2 };
+    print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", fit_QC3_2par, fit_QC3_2par, 0, 0, 0.15);
 
     fit_info.restore_default();
 
