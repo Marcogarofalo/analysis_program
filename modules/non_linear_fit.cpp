@@ -769,7 +769,6 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
 
     P = (double*)malloc(Npar * sizeof(double));
     P_tmp = (double*)malloc(Npar * sizeof(double));
-    P_tmp1 = (double*)malloc(Npar * sizeof(double));
 
     for (j = 0;j < Npar;j++) {
         P[j] = guess[j];
@@ -790,7 +789,6 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
 
     chi2 = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun);//printf("chi2 in fit function=%g\n",chi2/(ensemble[0]*N-Npar));
 
-    chi2_tmp = chi2 + 1;
     if (verbosity > 0) {
         printf("non_linear_fit_Nf:\ninitial chi2=%g\n", chi2);
         if (verbosity > 1) {
@@ -835,20 +833,19 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
     }
     else {
         while (res > acc) {
-            chi2_tmp = chi2 + 1;
+            chi2_tmp = chi2 + 10;
             if (Niter > 200) { if (verbosity > 0) printf("Niter=%d of the Levenberg-Marquardt chi2 minimization: exeeds max number\n", Niter); break; }
             Niter++;
             nerror = 0;
             bool computed_alpha = false;
-            for (i = 0;i < Npar;i++)
-                P_tmp1[i] = P[i];
+            
             while (chi2_tmp >= chi2) {  //do {} while()   , at least one time is done. if chi is too big chi_tmp=chi+1 = chi 
                 if (!computed_alpha) {
                     count = 0;
                     for (n = 0;n < N;n++) {
                         for (e = 0;e < ensemble[n];e++) {//printf("e=%d   n=%d   en[%d]=%d\n",e,n,n,ensemble[n]);
-                            f = fun(n, Nvar, x[e + count], Npar, P_tmp1);
-                            fk = der_fun_Nf_h(n, Nvar, x[e + count], Npar, P_tmp1, fun, h);
+                            f = fun(n, Nvar, x[e + count], Npar, P_tmp);
+                            fk = der_fun_Nf_h(n, Nvar, x[e + count], Npar, P_tmp, fun, h);
                             if (verbosity > 3) {
                                 printf("n=%d     e=%d   fun=%g  derivative=\t", n, e, f);
                                 for (j = 0;j < Npar;j++) { printf("%g \t", fk[j]); }printf("\n");
@@ -898,8 +895,10 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
                             printf(" non_linear_fit_Nf a parameter proposal was rejected because out of range Niter=%d\n", Niter);
                             printf("lambda=%f\n", lambda);
                             printf("chi2=%f chi2_tmp=%f  res=%f \n\n", chi2, chi2_tmp, res);
-                            for (j = 0;j < Npar;j++)
+                            for (j = 0;j < Npar;j++){
                                 printf("P[%d]=%g   Ptmp[%d]=%g\n", j, P[j], j, P_tmp[j]);
+                                P_tmp[j]=P[j];
+                            }
                         }
                         continue;
                     }
@@ -912,9 +911,8 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
                     if (isnan(P_tmp[j])) {
                         computed_alpha = false;
                         h /= 10.0;
-                        P_tmp1[j] = P[j] + (2. * rand() / RAND_MAX - 1.) * P[j] / 100.0;// recompute the hessian on this par
-                        P_tmp[j] = P_tmp1[j];// try if they are better
-                        if (verbosity > 1) printf("parameter is nan, resetting: P[%d]=%g\n", j, P_tmp1[j]);
+                        P_tmp[j] = P[j] + (2. * rand() / RAND_MAX - 1.) * P[j] / 100.0;// recompute the hessian on this par
+                        if (verbosity > 1) printf("parameter is nan, resetting: P[%d]=%g\n", j, P_tmp[j]);
                     }
                 }
                 chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun);
@@ -926,7 +924,7 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
                     printf("\n");
                 }
 
-                if (chi2_tmp != chi2_tmp) chi2_tmp = chi2 + 1;
+                if (chi2_tmp != chi2_tmp) chi2_tmp = chi2 + 10;
 
 
                 if (chi2_tmp >= chi2)
@@ -937,21 +935,18 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
                  //error(lambda>1e+15,1,"non_linear_fit_Nf","lambda of the Levenberg-Marquardt chi2 minimization: exeeds 1e+15 lambda=%g",lambda);
                 if (lambda > 1e+15) {
                     if (verbosity > 1) printf("lambda of the Levenberg-Marquardt chi2 minimization: exeeds 1e+15 lambda=%g\n RESET lambda=0.001\n", lambda);
-                    /*free(P_tmp);
-                    free(alpha);free(beta);
-                    return P;*/
+                    for (j = 0;j < Npar;j++) {
+                        P_tmp[j] = P[j] + (2. * rand() / ((double)RAND_MAX) - 1.) * P[j] / 1000.0;
+                        computed_alpha = false;
+                        if (verbosity > 0)  printf("  guess[%d]=%g\t", j, guess[j]);
+                    }
                     lambda = 0.001;
                     nerror++;
-                    if (nerror > 20) {
+                    if (nerror > 2) {
                         if (verbosity > 0)
                             printf("\n !!!!!!!!!!!!!!!! error:  Impossible to minimise the chi2 with Levenberg-Marquardt for this starting point   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                        for (j = 0;j < Npar;j++) {
-                            P_tmp1[j] = P[j] + (2. * rand() - 1.) * P[j] / 100.0;
-                            computed_alpha = false;
-                            if (verbosity > 0)  printf("  guess[%d]=%g\t", j, guess[j]);
-                            free(alpha[j]);
-                        }
                         if (verbosity > 0)  printf("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
+                        for (j = 0;j < Npar;j++)      free(alpha[j]);
                         free(P_tmp);
                         free(alpha);free(beta);
                         return P;
@@ -985,7 +980,7 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
         free(alpha[j]);
         free(alpha_l[j]);
     }
-    free(P_tmp);free(P_tmp1);
+    free(P_tmp);
     free(alpha);free(beta);free(alpha_l);
     return P;
 }
