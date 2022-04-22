@@ -546,14 +546,14 @@ double rhs_E3_m_QC3_pole_inter(int n, int Nvar, double* x, int Npar, double* P) 
 double rhs_E3_m_QC3_pole_E2_QC2(int n, int Nvar, double* x, int Npar, double* P) {
 
     double Pkcot[2];
-    Pkcot[0] = P[3];
-    Pkcot[1] = P[4];
+    Pkcot[0] = P[Npar-2];
+    Pkcot[1] = P[Npar-1];
 
     int Nkcot = 2;
     int Nkiso = Npar - Nkcot;
     int dvec[3];//,dvec1[3],dvec2[3],dmax1[3],dmax2[3];
     init_dvec_QC3_pole_new(n, dvec);
-    //init_dvec(n,dvec,dvec1,dvec2,dmax1,dmax2);
+   
     double nnP[3];
     nnP[0] = (double)dvec[0]; nnP[1] = (double)dvec[1]; nnP[2] = (double)dvec[2];
 
@@ -563,20 +563,18 @@ double rhs_E3_m_QC3_pole_E2_QC2(int n, int Nvar, double* x, int Npar, double* P)
 
     if (n < 2) {
         // // when we load find_2sol
-        r = python_detQC_call(3.05, 2e-4, n, Lm, nnP, Nkcot, Pkcot, Nkiso, P);
+        r = python_detQC_call(3.01, 2e-4, n, Lm, nnP, Nkcot, Pkcot, Nkiso, P);
     }
     else {
         int nr=n-2;
         double mass = x[1];
-        double L = x[2];
+        double L = x[0]/x[1];
 
         double xx[3] = { L,mass,1 }; //{L,mass,   k to be find by the bisection}
-
 
         int dvec[3], dvec1[3], dvec2[3], dmax1[3], dmax2[3];
         init_dvec_E2_with_E3(nr, dvec, dvec1, dvec2, dmax1, dmax2);
         
-
         // xmin have to be k in free theory
         double E1f = sqrt(mass * mass + (2 * pi_greco / L) * (2 * pi_greco / L) * (dvec1[0] * dvec1[0] + dvec1[1] * dvec1[1] + dvec1[2] * dvec1[2]));
         double E2f = sqrt(mass * mass + (2 * pi_greco / L) * (2 * pi_greco / L) * (dvec2[0] * dvec2[0] + dvec2[1] * dvec2[1] + dvec2[2] * dvec2[2]));
@@ -585,13 +583,11 @@ double rhs_E3_m_QC3_pole_E2_QC2(int n, int Nvar, double* x, int Npar, double* P)
 
         double kf = sqrt(ECMfsq / 4. - mass * mass);
 
-
         E1f = sqrt(mass * mass + (2 * pi_greco / L) * (2 * pi_greco / L) * ((dmax1[0]) * (dmax1[0]) + dmax1[1] * dmax1[1] + (dmax1[2]) * (dmax1[2])));
         E2f = sqrt(mass * mass + (2 * pi_greco / L) * (2 * pi_greco / L) * ((dmax2[0]) * (dmax2[0]) + dmax2[1] * dmax2[1] + (dmax2[2]) * (dmax2[2])));
         double Ef_p = E1f + E2f;
         double ECMfsq_p = Ef_p * Ef_p - (2 * pi_greco / L) * (2 * pi_greco / L) * ((dvec[0]) * (dvec[0]) + dvec[1] * dvec[1] + dvec[2] * dvec[2]);
         double kf1 = sqrt(ECMfsq_p / 4. - mass * mass);
-
 
         double xmin = kf + 1e-6;
         double xmax = kf1 - 1e-6;
@@ -606,5 +602,6 @@ double rhs_E3_m_QC3_pole_E2_QC2(int n, int Nvar, double* x, int Npar, double* P)
 
     return r;
 }
+
 
 #endif

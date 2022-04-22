@@ -275,10 +275,12 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
             fit[j] = (double*)malloc(sizeof(double) * fit_info.Npar);
 
             for (int i = 0; i < fit_info.Npar;i++) {
-                double noise = fit[Njack - 1][i] * mt_rand() / ((double)mt_rand.max() * 100);
-                fit[j][i] = fit[Njack - 1][i] * noise;
+                double noise = fit[Njack - 1][i] * ( mt_rand()) / ((double)mt_rand.max() * 10000)  ;
+                fit[j][i] = fit[Njack - 1][i] + noise;
+                printf("%g \t",fit[j][i]);
                 fit_out.chi2[j] = fit_out.chi2[Njack - 1] * noise;
             }
+            printf("\n");
         }
 
     }

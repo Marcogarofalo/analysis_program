@@ -807,7 +807,7 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
             init_chi2 = chi2;
             for (j = 0;j < Npar;j++) {
                 int dir = 1;
-                double lmax = 1000;
+                double lmax = 100;
                 double lam = lambda;
                 if (fit_info.Prange.size()==Npar)
                     lam=fit_info.Prange[j];
@@ -825,7 +825,7 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
                     }
                     dir *= -1;
                     // if does not find a better chi2 in both directions
-                    if (dir == 1) lam *= 2;
+                    if (dir == 1) lam *= 1e+6;
                     P_tmp[j] = P[j];
                 }
             }
