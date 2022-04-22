@@ -38,11 +38,18 @@ constexpr double Metas_MeV_err = 0.49;
 constexpr double Mrho_MeV = 775.4;
 constexpr double Mrho_MeV_err = 0.4;
 
-constexpr double grhopipi = 6.06;
-constexpr double grhopipi_err = 0.03;
+// constexpr double grhopipi = 6.06;
+// constexpr double grhopipi_err = 0.03;
 
-constexpr double Mpi_MeV = 134.80;
-constexpr double Mpi_MeV_err = 0.2;
+// constexpr double Mpi_MeV = 134.80;
+// constexpr double Mpi_MeV_err = 0.2;
+
+constexpr double grhopipi = 5.95;
+constexpr double grhopipi_err = 0.0001;
+
+
+constexpr double Mpi_MeV = 139;
+constexpr double Mpi_MeV_err = 0.001;
 
 using namespace std;
 
@@ -996,9 +1003,9 @@ int main(int argc, char** argv) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // a_W_l
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // a_W_l
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     int_scheme = integrate_reinman;
     double* amu_W = compute_amu_W(conf_jack, 2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "amu_{W}(eq,l)", resampling);
@@ -1140,11 +1147,23 @@ int main(int argc, char** argv) {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    double* DV = compute_DV(header.L, Njack, jack_Mpi_MeV_exp, jack_Mrho_MeV_exp, a, jack_grhopipi, outfile, "DV", resampling);
-    write_jack(DV, Njack, jack_file);
-    printf("DV = %g  %g\n", DV[Njack - 1], error_jackboot(resampling, Njack, DV));
+    double** DVt = compute_DVt(header.L, Njack, jack_Mpi_MeV_exp, jack_Mrho_MeV_exp, a, jack_grhopipi, outfile, "DVt", resampling);
+
+
+    fit_info.N = 1;
+    int ncorr_new = var;
+    printf("%d\n",ncorr_new);
+    add_one_correlators(option, ncorr_new, conf_jack, fit_info, DVt);
+    printf("%d\n",ncorr_new);
+
+    int_scheme = integrate_reinman;
+    double *DV = compute_amu_W(conf_jack, ncorr_new-1, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "DV_{W}(op,l)", resampling);
+    write_jack(amu_W, Njack, jack_file);
     check_correlatro_counter(58);
 
+    printf("DV_{W}(op,l) = %g  %g\n", DV[Njack - 1], error_jackboot(resampling, Njack, DV));
+    free(DV);
+    
     for (int i = 0;i < Nstrange;i++) {
         Meta[i] = nullptr;
     }

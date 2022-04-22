@@ -1,9 +1,13 @@
 #include <gsl/gsl_integration.h>
+#include <gsl/gsl_deriv.h>
 #include "tower.hpp"
 #include "fit_all.hpp"
 extern "C" {
 #include "../external/rzeta/src/dzeta_function.h"
 }
+#include <algorithm>
+
+using namespace std::complex_literals;
 
 constexpr double muon_mass_MeV = 105.6583755;
 constexpr double alpha_em = 0.0072973525693;
@@ -319,6 +323,50 @@ double compute_cotd(int Nvar, double* x) {
     return cotd;
 }
 
+double compute_delta(double x, void* params) {
+    double* P = (double*)params;
+    int Nvar = P[0] + 1e-6;
+    double* xh = (double*)malloc(sizeof(double) * Nvar);
+    for (int i = 0;i < Nvar;i++) {
+        xh[i] = P[i];
+    }
+    xh[0] = x;
+    return  std::atan(1. / compute_cotd(Nvar, xh));
+}
+
+double compute_deriv_delta(int Nvar, double* x) {
+
+    gsl_function F;
+    double result, abserr;
+
+    F.function = &compute_delta;
+    double* P;
+    P = (double*)malloc(sizeof(double) * Nvar);
+    for (int i = 0;i < Nvar;i++) {
+        P[i] = x[i];
+    }
+    P[0] = Nvar;
+    F.params = (void*)P;
+    gsl_deriv_central(&F, x[0], 1e-8, &result, &abserr);
+    double k = sqrt(x[0] * x[0] / 4. - x[1] * x[1]);
+    result *= 2 * k / (sqrt(k * k + x[1] * x[1]));
+
+    free(P);
+    return result;
+}
+
+
+double w_js(int j, int s, double q) {
+    double z[2] = { 0,0 };
+    int dvec[3] = { 0, 0, 0 };
+    double gamma = 1;
+    double A = 1;
+    dzeta_function(z, q * q, j, s, dvec, gamma, A, 1.e-3, 1.e+6, 5);
+    // std::complex<double>  zc(z[0], z[1]);
+    double r = z[0] / (pow(q, j + 1) * sqrt(2. * j + 1.) * pow(pi_greco, 3. / 2.));
+    return r;
+}
+
 double omega_QC2(int n, int Nvar, double* x, int Npar, double* P) {
     double omega = x[0];
     double mass = x[1];
@@ -326,53 +374,258 @@ double omega_QC2(int n, int Nvar, double* x, int Npar, double* P) {
     double Mrho = x[3];
     double grhopipi = x[4];
     double a = x[5];
-    double k = sqrt(omega * omega / 4 - mass * mass);
-    double qsq = k * (L * (a / 197.326963) / (2 * pi_greco));
-    qsq = qsq * qsq;
-    double gamma = 1; // consider only the rest frame;
-    int dvec[3] = { 0,0,0 };
-    double A = 1.;
-    double z[2];
+    double k = sqrt(omega * omega / 4. - mass * mass);
+    double q = k * (L * (a / 197.326963) / (2. * pi_greco));
+
     // printf("%g %g %g\n", omega,k,qsq);exit(1);
-    dzeta_function(z, qsq, 0, 0, dvec, gamma, A, 1.e-3, 1.e+6, 5);
-    std::complex<double>  zc(z[0], z[1]);
-    double r = real(zc * 2. * pi_greco / (pow(pi_greco, 3. / 2.) * L * (a / 197.326963) * gamma * mass));
+    // dzeta_function(z, qsq, 0, 0, dvec, gamma, A, 1.e-3, 1.e+6, 5);
+    // std::complex<double>  zc(z[0], z[1]);
+    // double r = real(zc * 2. * pi_greco / (pow(pi_greco, 3. / 2.) * L * (a / 197.326963) * gamma * mass));
+    double r = w_js(0, 0, q) - w_js(2, 0, q) - (3. / sqrt(6)) * (w_js(2, -2, q) + w_js(2, 2, q));
 
     double cotd = compute_cotd(Nvar, x);
-    return cotd * k / mass - r;
+    return cotd - r;
 
 }
 
-double* compute_DV(int L, int Njack, double* Mpi, double* Mrho, double* a, double* grhopipi, FILE* outfile, const char* description, const char* resampling) {
+double compute_phi(double q, void* params) {
+    (void)(params); /* avoid unused parameter warning */
+    double M = w_js(0, 0, q) - w_js(2, 0, q) - (3. / sqrt(6)) * (w_js(2, -2, q) + w_js(2, 2, q));
+    return -std::atan(1.0 / M);
+}
+
+
+double compute_deriv_phi(double q) {
+
+    gsl_function F;
+    double result, abserr;
+
+    F.function = &compute_phi;
+    F.params = 0;
+    gsl_deriv_central(&F, q, 1e-8, &result, &abserr);
+
+    return result;
+}
+inline double compute_FGS2(int Nvar, double* x) {
+    double omega = x[0];
+    double mass = x[1];
+    double L = x[2];
+    double Mrho = x[3];
+    double grhopipi = x[4];
+    double a = x[5];
+    double k = sqrt(omega * omega / 4. - mass * mass);
+    double q = k * (L * (a / 197.326963) / (2. * pi_greco));
+
+    double ho = (grhopipi * grhopipi * k * k * k * 2) * log((omega + 2 * k) / (2 * mass)) / (6.0 * M_PI * M_PI * omega);
+    double hM = (grhopipi * grhopipi * k * k * k * 2) * log((Mrho + 2 * k) / (2 * mass)) / (6.0 * M_PI * M_PI * Mrho);
+    double h1 = (grhopipi * grhopipi * k * k) * (1 + (1 + 2 * mass * mass / (Mrho * Mrho) * (Mrho / k) * log((Mrho + 2 * k) / (2 * mass)))) / (6.0 * M_PI * M_PI * Mrho);
+    double gamma = (grhopipi * grhopipi * k * k * k) / (6.0 * M_PI * omega * omega);
+
+    double Apipi0 = hM - Mrho * h1 / 2. + pow(grhopipi * mass, 2) / (6 * M_PI * M_PI);
+    std::complex<double> Apipi = hM + (omega * omega - Mrho * Mrho) * h1 / (2 * Mrho) - ho + 1i * omega * gamma;
+    std::complex<double> FGS = (Mrho * Mrho - Apipi0) / (Mrho * Mrho - omega * omega - Apipi);
+    double FGS2 = std::abs(FGS);
+    FGS2 *= FGS2;
+    return FGS2;
+}
+
+double matrix_element_nuA2(int Nvar, double* x) {
+    double omega = x[0];
+    double mass = x[1];
+    double L = x[2];
+    double Mrho = x[3];
+    double grhopipi = x[4];
+    double a = x[5];
+    double k = sqrt(omega * omega / 4. - mass * mass);
+    double q = k * (L * (a / 197.326963) / (2. * pi_greco));
+
+
+    double FGS2 = compute_FGS2(Nvar, x);
+
+    double r = 2 * pow(k, 5) * FGS2 / (3. * M_PI * omega * omega);
+
+    double deriv_d = compute_deriv_delta(Nvar, x);
+    double deriv_phi = compute_deriv_phi(q);
+    r /= k * deriv_d + q * deriv_phi;
+
+    return r;
+}
+
+
+double integrand_V_infL(double omega, void* params) {
+
+
+    double* x = (double*)params;
+    double mass = x[1];
+    double L = x[2];
+    double Mrho = x[3];
+    double grhopipi = x[4];
+    double a = x[5];
+
+    double t = x[6];
+    x[0] = omega;
+    double FGS2 = compute_FGS2(7, x);
+    return omega * omega * pow(1 - pow(2 * mass / omega, 2), 3. / 2.) * FGS2 * exp(-omega * t);
+    // return  exp(-omega * t);
+
+}
+double* compute_V_infL(int Nvar, double* x, int T) {
+    double omega = x[0];
+    double mass = x[1];
+    double L = x[2];
+    double Mrho = x[3];
+    double grhopipi = x[4];
+    double a = x[5];
+
+    double* P = (double*)malloc(sizeof(double) * (Nvar + 1));
+    for (int i = 0;i < Nvar;i++) {
+        P[i] = x[i];
+    }
+    double* V = (double*)malloc(sizeof(double) * T);
+    V[0] = 0;
+    int Maxiter = 1e+3;
+    int epsrel = 1e-5;
+    gsl_integration_workspace* w = gsl_integration_workspace_alloc(Maxiter);
+
+    for (int t = 1; t < T;t++) {
+        P[Nvar] = t * (a / 197.326963);
+
+        double result, error;
+        gsl_function F;
+        F.function = &integrand_V_infL;
+        F.params = (void*)P;
+        // printf("here : %g\n",P[Nvar]);
+                //  gsl_integration_qags(&F, 2*mass, 10000, 1e+5, epsrel, Maxiter, w, &result, &error);
+        gsl_integration_qagiu(&F, 2 * mass, 1e-4, epsrel, Maxiter, w, &result, &error);
+        // printf("K(%g)=%g\n", z, result);
+
+        V[t] = result / (48. * M_PI * M_PI);
+    }
+    gsl_integration_workspace_free(w);
+    free(P);
+    return V;
+}
+
+double* compute_VL(int n, double** omega, double** nuA2, double* a, int T, int j) {
+    double* VL = (double*)calloc(T, sizeof(double));
+    for (int t = 0; t < T;t++) {
+        double ta = t * (a[j] / 197.326963);
+        for (int in = 0;in < n;in++) {
+            VL[t] += nuA2[in][j] * exp(-omega[in][j] * ta);
+        }
+
+    }
+    return VL;
+
+}
+
+double** compute_DVt(int L, int Njack, double* Mpi, double* Mrho, double* a, double* grhopipi, FILE* outfile, const char* description, const char* resampling) {
 
     int T = file_head.l0;
-    double* omega = (double*)malloc(sizeof(double) * Njack);
+    constexpr int Nvar = 6;
+    constexpr int Nomegas = 5;
+    double** omega = double_malloc_2(Nomegas, Njack);
+    double** nuA2 = double_malloc_2(Nomegas, Njack);
+    double** DVt = double_malloc_2(T, Njack);
+    double** VinfL = (double**)malloc(sizeof(double*) * Njack);
+    double** VL = (double**)malloc(sizeof(double*) * Njack);
+
+
+    int p2[Nomegas * Nomegas * Nomegas];
+    int count = 0;
+    for (int i = 0;i < Nomegas;i++) {
+        for (int j = 0;j < Nomegas;j++) {
+            for (int k = 0;k < Nomegas;k++) {
+                p2[count] = i * i + j * j + k * k;
+                count++;
+            }
+        }
+    }
+    std::sort(p2, p2 + Nomegas * Nomegas * Nomegas);
+    int p2s[Nomegas+1];
+    count = 0;
+    p2s[0]=0;
+    while (count < Nomegas+1) {
+        double old = p2[0];
+        for (int i = 0;i < Nomegas * Nomegas * Nomegas;i++) {
+            if (p2[i] > old) {
+                p2s[count] = p2[i];
+                count++;
+                old = p2[i];
+            }
+        }
+    }
+    // for (int i = 0;i < Nomegas+1;i++)
+    //     printf("sorted: %d\n", p2s[i]);
+
+
+    fprintf(outfile, " \n\n# omega  cotd  M11\n");
     for (int j = 0;j < Njack;j++) {
-        double x[6];
+        double x[Nvar];
         x[0] = 1;
         x[1] = Mpi[j];
         x[2] = L;
         x[3] = Mrho[j];
         x[4] = grhopipi[j];
         x[5] = a[j];
-        double xmin = 2 * x[1];
-        double xmax = x[1] + sqrt(x[1] * x[1] + 2 * M_PI / ((double)L * (x[5] / 197.326963)));
-        omega[j] = rtsafe(omega_QC2, 0/*n*/, 6, x, 0/* Npar */, nullptr/* Pkcot */, 0/*ivar*/, 0. /*input*/, xmin, xmax, 1e-5, 100, 1e-4);
+        // first we plot cotd*k/m
+        if (j == Njack-1) {
+            for (int i = 0;i < 1500;i++) {
+                x[0] = x[1] * (2. + 30.5 * i / 1500.0);
+                double k = sqrt(x[0] * x[0] / 4 - x[1] * x[1]);
+                double cotd = compute_cotd(Nvar, x);
+                double q = k * (L * (x[5] / 197.326963) / (2. * pi_greco));
+                double r = w_js(0, 0, q) - w_js(2, 0, q) - (3. / sqrt(6)) * (w_js(2, -2, q) + w_js(2, 2, q));
+                fprintf(outfile, "%g    %g  %g\n", x[0], cotd, r);
+            }
 
+            fprintf(outfile, "\n\n #QC2 fit in [%d,%d] chi2=%.5g  %.5g\n", 0, 0, 0.0, 0.0);
 
+        }
+        double p = 2 * M_PI / ((double)L * (x[5] / 197.326963));
+
+        for (int i = 0; i < Nomegas;i++) {
+            double xmin = 2 * sqrt(x[1] * x[1] + p2s[i] * p * p) + 1e-8;
+            double xmax = 2 * sqrt(x[1] * x[1] + p2s[i + 1] * p * p) - 1e-8;
+            // printf("%d   %d\n", p2s[i], p2s[i + 1]);
+            omega[i][j] = rtsafe(omega_QC2, 0/*n*/, 6, x, 0/* Npar */, nullptr/* Pkcot */, 0/*ivar*/, 0. /*input*/, xmin, xmax, 1e-5, 100, 1e-4);
+            x[0] = omega[i][j];
+            nuA2[i][j] = matrix_element_nuA2(Nvar, x);
+            count++;
+        }
+
+        VinfL[j] = compute_V_infL(Nvar, x, T);
+        VL[j] = compute_VL(Nomegas, omega, nuA2, a, T, j);
+        for (int t = 0;t < T;t++) {
+            DVt[t][j] = VinfL[j][t] - VL[j][t];
+        }
     }
 
-    printf("omega=%g  %g\n", omega[Njack - 1], error_jackboot(resampling, Njack, omega));
+
+    for (int i = 0; i < Nomegas;i++) {
+        printf("omega[%d]=%g  %g\n", i, omega[i][Njack - 1], error_jackboot(resampling, Njack, omega[i]));
+        printf("nuA2[%d]=%g  %g\n", i, nuA2[i][Njack - 1], error_jackboot(resampling, Njack, nuA2[i]));
+        fprintf(outfile, "%g  %g\n", omega[i][Njack - 1], error_jackboot(resampling, Njack, omega[i]));
+    }
+
+    fprintf(outfile, " \n\n# t  inf  L\n");
+    for (int t = 1;t < T;t++) {
+        fprintf(outfile, "%d   %g   %g\n", t, VinfL[Njack - 1][t], VL[Njack - 1][t]);
+    }
+    fprintf(outfile, "\n\n #DVt fit in [%d,%d] chi2=%.5g  %.5g\n", 0, 0, 0.0, 0.0);
+    fprintf(outfile, "%.5g  %.5g\n", 0.0, 0.0);
+
     // fprintf(outfile, " \n\n");
     // fprintf(outfile, "#\n");
     // for (int t = 1; t < T / 2; t++) {
-    //     fprintf(outfile, "%d   %.15g   %.15g\t", t, fi[t][Njack - 1], error_jackboot(resampling, Njack, fi[t]));
+    //      fprintf(outfile, "%d   %.15g   %.15g\t", t, fi[t][Njack - 1], error_jackboot(resampling, Njack, fi[t]));
     // }
     // fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 0, T / 2, 0.0, 0.0);
     // fprintf(outfile, "   %.15g   %15.g\n", amu[Njack - 1], error_jackboot(resampling, Njack, amu));
 
-
-    return omega;
+    // free_2(5, omega);
+    // free_2(5, nuA2);
+    return DVt;
 }
 
 
