@@ -800,22 +800,22 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
     //     printf("chi2=%f   res=%.10f P0=%f   P1=%f\n",chi2,res,P[0],P[1]);
     if (fit_info.noderiv) {
         double init_chi2 = 1;
-        double loop_chi2 = 2;
+        double loop_chi2 = 20;
         while (fabs(init_chi2 - loop_chi2) > acc) {
             init_chi2 = chi2;
             for (j = 0;j < Npar;j++) {
                 int dir = 1;
                 double lmax = 1000;
                 double lam = lambda;
+                if (fit_info.Prange.size()==Npar)
+                    lam=fit_info.Prange[j];
                 while (lam < lmax) {
                     P_tmp[j] = P[j] + dir * lam;
                     chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun);
-                    if (verbosity > 2) {
-                        printf("params=%d  P=%g   Pnew=%g  chi2: new=%.8g  old=%.8g\n", j, P[j], P_tmp[j], chi2_tmp, chi2);
-                        if (verbosity > 3)for (int l = 0;l < Npar;l++) printf("%g\t", P_tmp[l]); printf("\n");
-                    }
+                    if (verbosity > 2) for (int l = 0;l < Npar;l++) printf("%g\t", P_tmp[l]); printf("\n");
                     while (chi2_tmp < chi2 && !isnan(chi2_tmp)) {
-                        if (verbosity > 1) printf("found a better chi2: new=%.8g  old=%.8g  param=%d lambda=%g\n", chi2_tmp, chi2, j, lam);
+                        if (verbosity > 1) printf("found a better chi2: dir %d new=%.8g  old=%.8g  param=%d lambda=%g P=%g   Pnew=%g\n",
+                            j, chi2_tmp, chi2, j, lam, P[j], P_tmp[j]);
                         chi2 = chi2_tmp;
                         P[j] = P_tmp[j];
                         P_tmp[j] = P[j] + dir * lam;

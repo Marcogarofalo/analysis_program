@@ -512,7 +512,7 @@ double rhs_E3_m_QC3_pole_new(int n, int Nvar, double* x, int Npar, double* P) {
     double Lm = x[0];// L* M
     int steps = 4;
     // // when we load find_2sol
-    double r = python_detQC_call(3.05, 2e-4, n, Lm, nnP, Nkcot, Pkcot, Nkiso, P);
+    double r = python_detQC_call(3.01, 1e-4, n, Lm, nnP, Nkcot, Pkcot, Nkiso, P);
 
 
     return r;

@@ -1064,7 +1064,7 @@ double rhs_deltaE2_m_QC2(int n, int Nvar, double* x, int Npar, double* P) {
     double E2 = sqrt((k * k + mass * mass) * 4. + (2 * pi_greco / L) * (2 * pi_greco / L) * (dvec[0] * dvec[0] + dvec[1] * dvec[1] + dvec[2] * dvec[2]));
 
     double mass_inf = x[2];
-    return (E2 / mass_inf);
+    return (E2 / mass);
 
 
 }
