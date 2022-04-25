@@ -190,14 +190,14 @@ void print_fit_band_E3_vs_L(char** argv, vector<data_phi> gjack, struct fit_type
                 tmpx[6] = 1;//k
                 tmpx[7] = 1;//MpiL
 
-//                 double *x=(double*) malloc(sizeof(double)*myen.size());
-//                 double *y=(double*) malloc(sizeof(double)*myen.size());
-//                 for (int e=0; e<myen.size();e++){
-//                     y[e]= lhs_E3_m(n,myen[e],j,params,gjack,fit_info);// E3( \vec{n} )/mass
-//                     x[e]=params[myen[e]].data.L[1];
-//                 }
-//                 tmpx[8]=inter_spline( tmpx[0], myen.size(), x, y   ); // tmpx[0]=L 
-//                 free(x);free(y);
+                //                 double *x=(double*) malloc(sizeof(double)*myen.size());
+                //                 double *y=(double*) malloc(sizeof(double)*myen.size());
+                //                 for (int e=0; e<myen.size();e++){
+                //                     y[e]= lhs_E3_m(n,myen[e],j,params,gjack,fit_info);// E3( \vec{n} )/mass
+                //                     x[e]=params[myen[e]].data.L[1];
+                //                 }
+                //                 tmpx[8]=inter_spline( tmpx[0], myen.size(), x, y   ); // tmpx[0]=L 
+                //                 free(x);free(y);
 
                 tmpx[8] = E3_m[Njack - 1];// E3( \vec{n} )/mass
                 // as error on E3/m  we take the error on the ensemble=0
@@ -606,7 +606,7 @@ int main(int argc, char** argv) {
     fit_info.ext_P[1] = gjack[0].jack[1];
     fit_info.ext_P[2] = gjack[0].jack[1];
 
-    
+
     fit_m0 = fit_data(argv, paramsj, gjack, M0_finite_volume_lhs, fit_info, "M0_finite_vol", myen);
     jackall.add_fit(fit_m0);
 
@@ -833,12 +833,12 @@ int main(int argc, char** argv) {
     for (int n = 0;n < fit_info_E3_poly.N;n++) {
         for (int e = 0;e < fit_info_E3_poly.myen.size();e++) {
             for (int j = 0;j < Njack;j++) {
-                fit_info_E3_poly.x[0][count][j] = paramsj[e].data.L[1]* jackall.fits[0].P[0][j];
+                fit_info_E3_poly.x[0][count][j] = paramsj[e].data.L[1] * jackall.fits[0].P[0][j];
             }
             count++;
         }
     }
-    
+
     fit_result fit_QC3_poly = fit_all_data(argv, jackall, lhs_E3_m_new, fit_info_E3_poly, "fit_QC3_poly");
 
     fit_info_E3_poly.band_range = { 5.5, 7.5 };
@@ -907,11 +907,11 @@ int main(int argc, char** argv) {
     // fit_info.guess = {-8.48047e+06, 10.66685e+06,-425.446 };
     fit_info.mean_only = true;
     fit_info.precision_sum = 2;
-    
+
     // fit_info.noderiv=true;
     // fit_info.lambda=0.01;
     // fit_info.Prange={1,0.001, 10};
-    
+
 
     mysprintf(namefile, NAMESIZE, "QC3_%dpar_pole", fit_info.Npar);
     // struct fit_result fit_QC3_2par = fit_all_data(argv, jackall, lhs_E3orE1_m_complex_new, fit_info, namefile);
@@ -921,101 +921,196 @@ int main(int argc, char** argv) {
     fit_info.restore_default();
 
     printf("//////////////////// kcot and kiso pole fit   ////////////////////////////////////\n");
-	// init_python_detQC();
-	init_python_detQC_kcot_kiso("kcot_2par", "kiso_pole", "find_2sol_QC3_pole");
+    // init_python_detQC();
+    init_python_detQC_kcot_kiso("kcot_2par", "kiso_pole", "find_2sol_QC3_pole");
 
-	fit_info.Npar = 3 + 2;
-	fit_info.N = 2 + 1;
-	fit_info.Njack = jackall.en[0].Njack;
+    fit_info.Npar = 3 + 2;
+    fit_info.N = 2 + 1;
+    fit_info.Njack = jackall.en[0].Njack;
 
-	fit_info.function = rhs_E3_m_QC3_pole_E2_QC2;
-	fit_info.n_ext_P = 0;
-	fit_info.Nvar = 2;
-	fit_info.myen = myen;
-	fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+    fit_info.function = rhs_E3_m_QC3_pole_E2_QC2;
+    fit_info.n_ext_P = 0;
+    fit_info.Nvar = 2;
+    fit_info.myen = myen;
+    fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
 
-	scount = 0;
-	for (int n = 0;n < fit_info.N;n++) {
-		for (int e = 0;e < fit_info.myen.size();e++) {
-			for (int j = 0;j < fit_info.Njack;j++) {
-				fit_info.x[0][scount][j] = jackall.en[e].header.L * jackall.en[e].jack[1][j];
-				fit_info.x[1][scount][j] = jackall.en[e].jack[1][j];
-			}
-			scount++;
-		}
-	}
+    scount = 0;
+    for (int n = 0;n < fit_info.N;n++) {
+        for (int e = 0;e < fit_info.myen.size();e++) {
+            for (int j = 0;j < fit_info.Njack;j++) {
+                fit_info.x[0][scount][j] = jackall.en[e].header.L * jackall.en[e].jack[1][j];
+                fit_info.x[1][scount][j] = jackall.en[e].jack[1][j];
+            }
+            scount++;
+        }
+    }
 
-	// fit_info.lambda = 0.001;
-	fit_info.acc = 0.1;
-	fit_info.h = 1e-2;
-	// //fit_info.Prange={1000,10000};
-	fit_info.devorder = -2;
-	fit_info.verbosity = 3;
-	fit_info.repeat_start = 1;
-	
-	// fit_info.guess = { 74.37, 9.129, -710, -0.160, -32 };
+    // fit_info.lambda = 0.001;
+    fit_info.acc = 0.1;
+    fit_info.h = 1e-2;
+    // //fit_info.Prange={1000,10000};
+    fit_info.devorder = -2;
+    fit_info.verbosity = 3;
+    fit_info.repeat_start = 1;
+
+    // fit_info.guess = { 74.37, 9.129, -710, -0.160, -32 };
     // fit_info.guess = {74.0805, 9.12889, -706.844, -0.159792, -31.5321 };
-    fit_info.guess = {73.7538, 9.12887, -706.766, -0.159647, -31.1049 };
-	// fit_info.mean_only = true;
-	fit_info.precision_sum = 2;
+    fit_info.guess = { 73.7538, 9.12887, -706.766, -0.159647, -31.1049 };
+    // fit_info.mean_only = true;
+    fit_info.precision_sum = 2;
 
     // fit_info.noderiv=true;
     //fit_info.Prange={1,0.001, 10, 0.01, 1};
-    
 
-	mysprintf(namefile, NAMESIZE, "kcot_1lev_and_kiso_pole_3par", fit_info.Npar);
-	// struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
-	// fit_info.band_range = { 5.65,7.2 };
-	// print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, myen.size()-1, 0.15);
-	fit_info.restore_default();
+
+    mysprintf(namefile, NAMESIZE, "kcot_1lev_and_kiso_pole_3par", fit_info.Npar);
+    // struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
+    // fit_info.band_range = { 5.65,7.2 };
+    // print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, myen.size()-1, 0.15);
+    fit_info.restore_default();
+
+    printf("//////////////////// kcot 1par and kiso pole fit   ////////////////////////////////////\n");
+    // init_python_detQC();
+    init_python_detQC_kcot_kiso("kcot_1par", "kiso_pole", "find_2sol_QC3_pole");
+
+    fit_info.Npar = 3 + 1;
+    fit_info.N = 2 + 1;
+    fit_info.Njack = jackall.en[0].Njack;
+
+    fit_info.function = rhs_E3_m_QC3_pole_E2_QC2_1par;
+    fit_info.n_ext_P = 0;
+    fit_info.Nvar = 2;
+    fit_info.myen = myen;
+    fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+
+    scount = 0;
+    for (int n = 0;n < fit_info.N;n++) {
+        for (int e = 0;e < fit_info.myen.size();e++) {
+            for (int j = 0;j < fit_info.Njack;j++) {
+                fit_info.x[0][scount][j] = jackall.en[e].header.L * jackall.en[e].jack[1][j];
+                fit_info.x[1][scount][j] = jackall.en[e].jack[1][j];
+            }
+            scount++;
+        }
+    }
+
+    // fit_info.lambda = 0.001;
+    fit_info.acc = 0.1;
+    fit_info.h = 1e-2;
+    // //fit_info.Prange={1000,10000};
+    fit_info.devorder = -2;
+    fit_info.verbosity = 3;
+    fit_info.repeat_start = 1;
+    fit_info.guess = { 85.28, 9.1294, 1384, -0.155809 };
+    // fit_info.mean_only = true;
+    fit_info.precision_sum = 2;
+
+    // fit_info.noderiv=true;
+    //fit_info.Prange={1,0.001, 10, 0.01, 1};
+
+
+    mysprintf(namefile, NAMESIZE, "kcot_1par_1lev_and_kiso_pole_3par", fit_info.Npar);
+    // struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
+    // fit_info.band_range = { 5.65,7.2 };
+    // print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, myen.size()-1, 0.15);
+    fit_info.restore_default();
+
+
+    printf("//////////////////// kcot 1par and kiso no coupling fit   ////////////////////////////////////\n");
+    // init_python_detQC();
+    init_python_detQC_kcot_kiso("kcot_1par", "kiso_1par", "find_2sol_QC3_pole");
+
+    fit_info.Npar = 2 + 1;
+    fit_info.N = 2 + 1;
+    fit_info.Njack = jackall.en[0].Njack;
+
+    fit_info.function = rhs_E3_m_QC3_pole_E2_QC2_1par;
+    fit_info.n_ext_P = 0;
+    fit_info.Nvar = 2;
+    fit_info.myen = myen;
+    fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+
+    scount = 0;
+    for (int n = 0;n < fit_info.N;n++) {
+        for (int e = 0;e < fit_info.myen.size();e++) {
+            for (int j = 0;j < fit_info.Njack;j++) {
+                fit_info.x[0][scount][j] = jackall.en[e].header.L * jackall.en[e].jack[1][j];
+                fit_info.x[1][scount][j] = jackall.en[e].jack[1][j];
+            }
+            scount++;
+        }
+    }
+
+    // fit_info.lambda = 0.001;
+    fit_info.acc = 0.1;
+    fit_info.h = 1e-2;
+    // //fit_info.Prange={1000,10000};
+    fit_info.devorder = -2;
+    fit_info.verbosity = 3;
+    fit_info.repeat_start = 1;
+    // fit_info.guess = { 85.28, 9.1294,  -0.155809 };
+    fit_info.guess = { -155.026, 3.02142, -0.155296 };
+    // fit_info.mean_only = true;
+    fit_info.precision_sum = 2;
+
+    // fit_info.noderiv=true;
+    //fit_info.Prange={1,0.001, 10, 0.01, 1};
+
+
+    mysprintf(namefile, NAMESIZE, "kcot_1par_1lev_and_kiso_const", fit_info.Npar);
+    struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
+    fit_info.band_range = { 5.65,7.2 };
+    print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, myen.size() - 1, 0.15);
+    fit_info.restore_default();
+
 
     printf("//////////////////// kcot and kiso no coupling  fit   ////////////////////////////////////\n");
-	// init_python_detQC();
-	init_python_detQC_kcot_kiso("kcot_2par", "kiso_1par", "find_2sol_QC3_pole");
+    // init_python_detQC();
+    init_python_detQC_kcot_kiso("kcot_2par", "kiso_1par", "find_2sol_QC3_pole");
 
-	fit_info.Npar = 2 + 2;
-	fit_info.N = 2 + 1;
-	fit_info.Njack = jackall.en[0].Njack;
+    fit_info.Npar = 2 + 2;
+    fit_info.N = 2 + 1;
+    fit_info.Njack = jackall.en[0].Njack;
 
-	fit_info.function = rhs_E3_m_QC3_pole_E2_QC2;
-	fit_info.n_ext_P = 0;
-	fit_info.Nvar = 2;
-	fit_info.myen = myen;
-	fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+    fit_info.function = rhs_E3_m_QC3_const_E2_QC2;
+    fit_info.n_ext_P = 0;
+    fit_info.Nvar = 2;
+    fit_info.myen = myen;
+    fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
 
-	scount = 0;
-	for (int n = 0;n < fit_info.N;n++) {
-		for (int e = 0;e < fit_info.myen.size();e++) {
-			for (int j = 0;j < fit_info.Njack;j++) {
-				fit_info.x[0][scount][j] = jackall.en[e].header.L * jackall.en[e].jack[1][j];
-				fit_info.x[1][scount][j] = jackall.en[e].jack[1][j];
-			}
-			scount++;
-		}
-	}
+    scount = 0;
+    for (int n = 0;n < fit_info.N;n++) {
+        for (int e = 0;e < fit_info.myen.size();e++) {
+            for (int j = 0;j < fit_info.Njack;j++) {
+                fit_info.x[0][scount][j] = jackall.en[e].header.L * jackall.en[e].jack[1][j];
+                fit_info.x[1][scount][j] = jackall.en[e].jack[1][j];
+            }
+            scount++;
+        }
+    }
 
-	// fit_info.lambda = 0.001;
-	fit_info.acc = 0.6;
-	fit_info.h = 1e-2;
-	// //fit_info.Prange={1000,10000};
-	fit_info.devorder = -2;
-	fit_info.verbosity = 3;
-	fit_info.repeat_start = 1;
-	
-    fit_info.guess = {-744.738,  9.12657, -0.159187, -23.5928  };
-    
-	// fit_info.mean_only = true;
-	fit_info.precision_sum = 2;
+    // fit_info.lambda = 0.001;
+    fit_info.acc = 0.6;
+    fit_info.h = 1e-2;
+    // //fit_info.Prange={1000,10000};
+    fit_info.devorder = -2;
+    fit_info.verbosity = 3;
+    fit_info.repeat_start = 1;
+
+    fit_info.guess = { -744.738,  9.12657, -0.159187, -23.5928 };
+
+    // fit_info.mean_only = true;
+    fit_info.precision_sum = 2;
 
     // fit_info.noderiv=true;
     //fit_info.Prange={1,0.001, 10, 0.01, 1};
-    
 
-	mysprintf(namefile, NAMESIZE, "kcot_1lev_and_kiso_const_3par", fit_info.Npar);
-	struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
-	fit_info.band_range = { 5.65,7.2 };
-	print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, myen.size()-1, 0.05);
-	fit_info.restore_default();
+
+    mysprintf(namefile, NAMESIZE, "kcot_1lev_and_kiso_const_3par", fit_info.Npar);
+    // struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
+    // fit_info.band_range = { 5.65,7.2 };
+    // print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, myen.size()-1, 0.05);
+    fit_info.restore_default();
 
 
 
