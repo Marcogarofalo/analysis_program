@@ -139,6 +139,36 @@ void printing_file_for_maxim_and_fernando_complex(char** argv, std::vector<clust
         fclose(f);
     }
     {
+        char name[NAMESIZE];
+        mysprintf(name, NAMESIZE, "data_m.txt");
+        FILE* f = open_file(name, "w+");
+        fprintf(f, "L	T	g          m02       m12        l0        E1    	  E1err     	E2      	E2err       	E2p1     	E2p1err 	 E2A1       	E2A1err     	E3_0     	E3_0err     	E3_1    	E3_1err  \n");
+        for (int e : myen) {
+            double* tmp = (double*)malloc(sizeof(double) * Njack);
+
+            fprintf(f, "%-4d%-4d%-10g%-10g%-10g%-10g",
+                paramsj[e].data.L[1], paramsj[e].data.L[0], paramsj[e].data.gC,
+                paramsj[e].data.msq0, paramsj[e].data.msq1, paramsj[e].data.lambdaC0);
+
+            for (int j = 0;j < Njack;j++)   tmp[j] = gjack[e].jack[1][j]/gjack[e].jack[1][j];
+            fprintf(f, "%-14.10g%-18.10g", tmp[Njack - 1], error_jackboot(resampling, Njack, tmp));
+            for (int j = 0;j < Njack;j++)   tmp[j] = gjack[e].jack[4][j]/gjack[e].jack[1][j];
+            fprintf(f, "%-14.10g%-18.10g", tmp[Njack - 1], error_jackboot(resampling, Njack, tmp));
+            for (int j = 0;j < Njack;j++)   tmp[j] = gjack[e].jack[4][j]/gjack[e].jack[1][j];
+            fprintf(f, "%-14.10g%-18.10g", tmp[Njack - 1], error_jackboot(resampling, Njack, tmp));
+            for (int j = 0;j < Njack;j++)   tmp[j] = gjack[e].jack[100][j]/gjack[e].jack[1][j];
+            fprintf(f, "%-14.10g%-18.10g", tmp[Njack - 1], error_jackboot(resampling, Njack, tmp));
+            for (int j = 0;j < Njack;j++)   tmp[j] = gjack[e].jack[80][j]/gjack[e].jack[1][j];
+            fprintf(f, "%-14.10g%-18.10g", tmp[Njack - 1], error_jackboot(resampling, Njack, tmp));
+            for (int j = 0;j < Njack;j++)   tmp[j] = gjack[e].jack[355][j]/gjack[e].jack[1][j];
+            fprintf(f, "%-14.10g%-18.10g", tmp[Njack - 1], error_jackboot(resampling, Njack, tmp));
+            for (int j = 0;j < Njack;j++)   tmp[j] = gjack[e].jack[354][j]/gjack[e].jack[1][j];
+            fprintf(f, "%-14.10g%-18.10g", tmp[Njack - 1], error_jackboot(resampling, Njack, tmp));
+            fprintf(f,"\n");
+        }
+        fclose(f);
+    }
+    {
         for (int e : myen) {
             char name[NAMESIZE];
             mysprintf(name, NAMESIZE, "covariance_spectrum_L%d.txt", paramsj[e].data.L[1]);
@@ -151,6 +181,33 @@ void printing_file_for_maxim_and_fernando_complex(char** argv, std::vector<clust
                 to_cov[3][j] = gjack[e].jack[80][j];
                 to_cov[4][j] = gjack[e].jack[355][j];
                 to_cov[5][j] = gjack[e].jack[354][j];
+            }
+            double** cov = covariance(resampling, 6, Njack, to_cov);
+            for (int i = 0;i < 6;i++) {
+                for (int j = 0;j < 6;j++) {
+                    fprintf(f, "%-18.10g", cov[i][j]);
+                }
+                fprintf(f, "\n");
+            }
+            fclose(f);
+            free(to_cov);
+            free(cov);
+        }
+    }
+
+    {
+        for (int e : myen) {
+            char name[NAMESIZE];
+            mysprintf(name, NAMESIZE, "covariance_spectrum_m_L%d.txt", paramsj[e].data.L[1]);
+            FILE* f = open_file(name, "w+");
+            double** to_cov = double_malloc_2(6, Njack);
+            for (int j = 0;j < Njack;j++) {
+                to_cov[0][j] = gjack[e].jack[1][j]/gjack[e].jack[1][j];
+                to_cov[1][j] = gjack[e].jack[4][j]/gjack[e].jack[1][j];
+                to_cov[2][j] = gjack[e].jack[100][j]/gjack[e].jack[1][j];
+                to_cov[3][j] = gjack[e].jack[80][j]/gjack[e].jack[1][j];
+                to_cov[4][j] = gjack[e].jack[355][j]/gjack[e].jack[1][j];
+                to_cov[5][j] = gjack[e].jack[354][j]/gjack[e].jack[1][j];
             }
             double** cov = covariance(resampling, 6, Njack, to_cov);
             for (int i = 0;i < 6;i++) {
@@ -896,7 +953,7 @@ double rhs_k_from_phase_shift(int n, int Nvar, double* x, int Npar, double* P) {
 
     double xmin = kf + 1e-8;
     double xmax = kf1 - 1e-6;//- (kf1-kf)/1e+3;
-//     if(n==2 && fabs(L-36)<1e-3) 
+    //     if(n==2 && fabs(L-36)<1e-3) 
     E2 = rtsafe(to_invert_k_from_phase_shift, n, 3, xx, Npar, P, 2/*ivar*/, 0. /*input*/, xmin, xmax, 1e-5, 100, 4e-5);
 
 
@@ -933,7 +990,7 @@ double rhs_k_from_phase_shift_g(int n, int Nvar, double* x, int Npar, double* P)
 
     double xmin = kf + 1e-6;
     double xmax = kf1 - 1e-6;//- (kf1-kf)/1e+3;
-//     if(n==2 && fabs(L-36)<1e-3) 
+    //     if(n==2 && fabs(L-36)<1e-3) 
     E2 = rtsafe(to_invert_k_from_phase_shift_g, n, 3, xx, Npar, P, 2/*ivar*/, 0. /*input*/, xmin, xmax, 1e-5, 100, 4e-5);
 
 
@@ -970,8 +1027,8 @@ double rhs_deltaE2_m_quant_cond(int n, int Nvar, double* x, int Npar, double* P)
 
     double xmin = kf + 1e-6;
     double xmax = kf1 - 1e-6;//- (kf1-kf)/1e+3;
-//     printf("L=%g  n=%d      P0=%g  P1=%g  kmin=%g  kmax=%g   d=(%d,%d,%d)=(%d,%d,%d)+(%d,%d,%d)\n",L,n,P[0],P[1],xmin,xmax,
-//            dvec[0],dvec[1],dvec[2], dvec1[0],dvec1[1],dvec1[2], dvec2[0],dvec2[1],dvec2[2]    );
+    //     printf("L=%g  n=%d      P0=%g  P1=%g  kmin=%g  kmax=%g   d=(%d,%d,%d)=(%d,%d,%d)+(%d,%d,%d)\n",L,n,P[0],P[1],xmin,xmax,
+    //            dvec[0],dvec[1],dvec[2], dvec1[0],dvec1[1],dvec1[2], dvec2[0],dvec2[1],dvec2[2]    );
     double k = rtsafe(to_invert_k_from_phase_shift, n, 3, xx, Npar, P, 2/*ivar*/, 0. /*input*/, xmin, xmax, 1e-5, 100, 1e-4);
     double E2 = sqrt((k * k + mass * mass) * 4. + (2 * pi_greco / L) * (2 * pi_greco / L) * (dvec[0] * dvec[0] + dvec[1] * dvec[1] + dvec[2] * dvec[2]));
 
@@ -1318,7 +1375,7 @@ double rhs_q_from_phase_shift(int n, int Nvar, double* x, int Npar, double* P) {
 
     double xmin = qf + 1e-10;
     double xmax = qf1 - 1e-10;//- (kf1-kf)/1e+3;
-//     printf("kf=%g   kf1=%g      x=%g   %g\n",qf,qf1,xmin,xmax);
+    //     printf("kf=%g   kf1=%g      x=%g   %g\n",qf,qf1,xmin,xmax);
     xx[0] = mL_2pi; xx[1] = 1;  xx[2] = x[0];
     q = rtsafe(to_invert_k_from_phase_shift, n, 2, xx, Npar, P, 1/*ivar*/, 0. /*input*/, xmin, xmax, 1e-5, 100, 1e-4);
 
@@ -2392,7 +2449,7 @@ struct fit_result fit_data(char** argv, vector<cluster::IO_params> params, vecto
     free_2(Njack, fit);
 
     ////// free end
-    mysprintf(fit_out.name,NAMESIZE,"%s", label);
+    mysprintf(fit_out.name, NAMESIZE, "%s", label);
     fit_out.Npar = fit_info.Npar;
     return fit_out;
 
