@@ -303,6 +303,7 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
 
 void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
     struct fit_type fit_info_m0, const char* label, const char* dir_name,
-    struct fit_result fit_out, struct fit_result fit_out_m0, int var, int en, double h);
+    struct fit_result fit_out, struct fit_result fit_out_m0, int var, int en, double h,
+    std::vector<double> xval={});
 #endif
 
