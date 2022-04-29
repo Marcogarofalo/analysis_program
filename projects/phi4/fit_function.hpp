@@ -150,9 +150,7 @@ void printing_file_for_maxim_and_fernando_complex(char** argv, std::vector<clust
                 paramsj[e].data.L[1], paramsj[e].data.L[0], paramsj[e].data.gC,
                 paramsj[e].data.msq0, paramsj[e].data.msq1, paramsj[e].data.lambdaC0);
 
-            for (int j = 0;j < Njack;j++)   tmp[j] = gjack[e].jack[1][j]/gjack[e].jack[1][j];
-            fprintf(f, "%-14.10g%-18.10g", tmp[Njack - 1], error_jackboot(resampling, Njack, tmp));
-            for (int j = 0;j < Njack;j++)   tmp[j] = gjack[e].jack[4][j]/gjack[e].jack[1][j];
+            for (int j = 0;j < Njack;j++)   tmp[j] = gjack[e].jack[1][j];
             fprintf(f, "%-14.10g%-18.10g", tmp[Njack - 1], error_jackboot(resampling, Njack, tmp));
             for (int j = 0;j < Njack;j++)   tmp[j] = gjack[e].jack[4][j]/gjack[e].jack[1][j];
             fprintf(f, "%-14.10g%-18.10g", tmp[Njack - 1], error_jackboot(resampling, Njack, tmp));
