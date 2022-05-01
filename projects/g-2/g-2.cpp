@@ -35,21 +35,24 @@
 constexpr double Metas_MeV = 689.89;
 constexpr double Metas_MeV_err = 0.49;
 
+constexpr double Mphi_MeV = 1019.461;
+constexpr double Mphi_MeV_err = 0.016;
+
 constexpr double Mrho_MeV = 775.4;
 constexpr double Mrho_MeV_err = 0.4;
 
 // constexpr double grhopipi = 6.06;
 // constexpr double grhopipi_err = 0.03;
 
-// constexpr double Mpi_MeV = 134.80;
-// constexpr double Mpi_MeV_err = 0.2;
+constexpr double Mpi_MeV = 135.0;
+constexpr double Mpi_MeV_err = 0.2;
 
 constexpr double grhopipi = 5.95;
 constexpr double grhopipi_err = 0.0001;
 
 
-constexpr double Mpi_MeV = 139;
-constexpr double Mpi_MeV_err = 0.001;
+// constexpr double Mpi_MeV = 139;
+// constexpr double Mpi_MeV_err = 0.001;
 
 using namespace std;
 
@@ -436,7 +439,7 @@ int main(int argc, char** argv) {
     int i, j, t;
 
     int* iconf, confs;
-    double**** data, **** data_bin, ** out, ** tmp;
+    double**** data, **** data_bin, ** out;
     char c;
     clock_t t1, t2;
     double* in;
@@ -790,10 +793,12 @@ int main(int argc, char** argv) {
     line_read_param(option, "a", mean, err, seed, namefile_plateaux);
     double* a = fake_sampling(resampling, mean, err, Njack, seed);
 
-    double* jack_Metas_MeV_exp = fake_sampling(resampling, Metas_MeV, Metas_MeV_err, Njack, seed + 1000);
-    double* jack_Mrho_MeV_exp = fake_sampling(resampling, Mrho_MeV, Mrho_MeV_err, Njack, seed + 1001);
-    double* jack_grhopipi = fake_sampling(resampling, grhopipi, grhopipi_err, Njack, seed + 1002);
-    double* jack_Mpi_MeV_exp = fake_sampling(resampling, Mpi_MeV, Mpi_MeV_err, Njack, seed + 1003);
+    double* jack_Metas_MeV_exp = fake_sampling(resampling, Metas_MeV, Metas_MeV_err, Njack, 1000);
+
+    double* jack_Mrho_MeV_exp = fake_sampling(resampling, Mrho_MeV, Mrho_MeV_err, Njack, 1001);
+    double* jack_grhopipi = fake_sampling(resampling, grhopipi, grhopipi_err, Njack, 1002);
+    double* jack_Mpi_MeV_exp = fake_sampling(resampling, Mpi_MeV, Mpi_MeV_err, Njack, 1003);
+    double* jack_Mphi_MeV_exp = fake_sampling(resampling, Mphi_MeV, Mphi_MeV_err, Njack, 1004);
 
     // line_read_param(option, "ZA", mean, err, seed, namefile_plateaux);
     // double* ZA = fake_sampling(resampling, mean, err, Njack, seed);
@@ -804,10 +809,19 @@ int main(int argc, char** argv) {
     for (int j = 0;j < Njack;j++) {
         jack_aMetas_MeV_exp[j] = jack_Metas_MeV_exp[j] * a[j] / 197.326963;
     }
+    double* jack_aMphi_MeV_exp = (double*)malloc(sizeof(double) * Njack);
+    for (int j = 0;j < Njack;j++) {
+        jack_aMphi_MeV_exp[j] = jack_Mphi_MeV_exp[j] * a[j] / 197.326963;
+    }
     int Nstrange = 2;
     double** Meta = (double**)malloc(sizeof(double*) * Nstrange);
     Meta[0] = M_eta_op;
     Meta[1] = M_eta1_op;
+
+    double** Mphi = (double**)malloc(sizeof(double*) * Nstrange);
+    Mphi[0] = M_phi_op;
+    Mphi[1] = M_phi1_op;
+
     double** Z = (double**)malloc(sizeof(double*) * Nstrange);
     Z[0] = ZVs.P[0];
     Z[1] = ZVs1.P[0];
@@ -890,108 +904,106 @@ int main(int argc, char** argv) {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     constexpr double q2s = 1.0 / 9.0;
     int_scheme = integrate_reinman;
-    double* amu_sd_s = compute_amu_sd(conf_jack, 2 + 6, Njack, ZVs.P[0], a, q2s, int_scheme, outfile, "amu_{sd}(eq,s)", resampling);
-    write_jack(amu_sd_s, Njack, jack_file);
+    double* amu_sdeq_s = compute_amu_sd(conf_jack, 2 + 6, Njack, ZVs.P[0], a, q2s, int_scheme, outfile, "amu_{sd}(eq,s)", resampling);
+    write_jack(amu_sdeq_s, Njack, jack_file);
     check_correlatro_counter(29);
-    printf("amu_sd(eq,s) = %g  %g\n", amu_sd_s[Njack - 1], error_jackboot(resampling, Njack, amu_sd_s));
+    printf("amu_sd(eq,s) = %g  %g\n", amu_sdeq_s[Njack - 1], error_jackboot(resampling, Njack, amu_sdeq_s));
 
 
     int_scheme = integrate_reinman;
-    double* amu_sd_s1 = compute_amu_sd(conf_jack, 2 + 12, Njack, ZVs1.P[0], a, q2s, int_scheme, outfile, "amu_{sd}(eq,s1)", resampling);
-    write_jack(amu_sd_s1, Njack, jack_file);
+    double* amu_sdeq_s1 = compute_amu_sd(conf_jack, 2 + 12, Njack, ZVs1.P[0], a, q2s, int_scheme, outfile, "amu_{sd}(eq,s1)", resampling);
+    write_jack(amu_sdeq_s1, Njack, jack_file);
     check_correlatro_counter(30);
-    printf("amu_sd(eq,s1) = %g  %g\n", amu_sd_s1[Njack - 1], error_jackboot(resampling, Njack, amu_sd_s1));
+    printf("amu_sd(eq,s1) = %g  %g\n", amu_sdeq_s1[Njack - 1], error_jackboot(resampling, Njack, amu_sdeq_s1));
 
     double** asd_vec = (double**)malloc(sizeof(double*) * Nstrange);
-    asd_vec[0] = amu_sd_s;
-    asd_vec[1] = amu_sd_s1;
+    asd_vec[0] = amu_sdeq_s;
+    asd_vec[1] = amu_sdeq_s1;
 
     double* amu_sd_sphys = interpol_Z(Nstrange, Njack, Meta, asd_vec, jack_aMetas_MeV_exp, outfile, "amu_{sd}(eq,sphys)", resampling);
     write_jack(amu_sd_sphys, Njack, jack_file);
     printf("amu_sd(eq,shys) = %g  %g\n", amu_sd_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_sd_sphys));
 
     check_correlatro_counter(31);
-    free(amu_sd_s);free(amu_sd_s1);free(amu_sd_sphys);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // a_SD_s_op reinman
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     int_scheme = integrate_reinman;
-    amu_sd_s = compute_amu_sd(conf_jack, 5 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{sd}(op,s)", resampling);
-    write_jack(amu_sd_s, Njack, jack_file);
+    double* amu_sdop_s = compute_amu_sd(conf_jack, 5 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{sd}(op,s)", resampling);
+    write_jack(amu_sdop_s, Njack, jack_file);
     check_correlatro_counter(32);
-    printf("amu_sd(op,l) = %g  %g\n", amu_sd_s[Njack - 1], error_jackboot(resampling, Njack, amu_sd_s));
+    printf("amu_sd(op,s) = %g  %g\n", amu_sdop_s[Njack - 1], error_jackboot(resampling, Njack, amu_sdop_s));
 
 
     int_scheme = integrate_reinman;
-    amu_sd_s1 = compute_amu_sd(conf_jack, 5 + 12, Njack, ZAs1.P[0], a, q2s, int_scheme, outfile, "amu_{sd}(op,s1)", resampling);
-    write_jack(amu_sd_s1, Njack, jack_file);
+    double* amu_sdop_s1 = compute_amu_sd(conf_jack, 5 + 12, Njack, ZAs1.P[0], a, q2s, int_scheme, outfile, "amu_{sd}(op,s1)", resampling);
+    write_jack(amu_sdop_s1, Njack, jack_file);
     check_correlatro_counter(33);
-    printf("amu_sd(op,l) = %g  %g\n", amu_sd_s1[Njack - 1], error_jackboot(resampling, Njack, amu_sd_s1));
+    printf("amu_sd(op,s1) = %g  %g\n", amu_sdop_s1[Njack - 1], error_jackboot(resampling, Njack, amu_sdop_s1));
 
 
-    asd_vec[0] = amu_sd_s;
-    asd_vec[1] = amu_sd_s1;
+    asd_vec[0] = amu_sdop_s;
+    asd_vec[1] = amu_sdop_s1;
     amu_sd_sphys = interpol_Z(Nstrange, Njack, Meta, asd_vec, jack_aMetas_MeV_exp, outfile, "amu_{sd}(op,sphys)", resampling);
     write_jack(amu_sd_sphys, Njack, jack_file);
     printf("amu_sd(op,shys) = %g  %g\n", amu_sd_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_sd_sphys));
 
     check_correlatro_counter(34);
-    free(amu_sd_s);free(amu_sd_s1);free(amu_sd_sphys);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // a_SD_s_eq simpson38
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     int_scheme = integrate_simpson38;
-    amu_sd_s = compute_amu_sd(conf_jack, 2 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{sd}_simpson38(eq,s)", resampling);
-    write_jack(amu_sd_s, Njack, jack_file);
+    double* amu_sdeq_simp_s = compute_amu_sd(conf_jack, 2 + 6, Njack, ZVs.P[0], a, q2s, int_scheme, outfile, "amu_{sd}_simpson38(eq,s)", resampling);
+    write_jack(amu_sdeq_simp_s, Njack, jack_file);
     check_correlatro_counter(35);
-    printf("amu_sd_simpson38(eq,s) = %g  %g\n", amu_sd_s[Njack - 1], error_jackboot(resampling, Njack, amu_sd_s));
+    printf("amu_sd_simpson38(eq,s) = %g  %g\n", amu_sdeq_simp_s[Njack - 1], error_jackboot(resampling, Njack, amu_sdeq_simp_s));
 
 
     int_scheme = integrate_simpson38;
-    amu_sd_s1 = compute_amu_sd(conf_jack, 2 + 12, Njack, ZAs1.P[0], a, q2s, int_scheme, outfile, "amu_{sd}_simpson38(eq,s1)", resampling);
-    write_jack(amu_sd_s1, Njack, jack_file);
+    double* amu_sdeq_simp_s1 = compute_amu_sd(conf_jack, 2 + 12, Njack, ZVs1.P[0], a, q2s, int_scheme, outfile, "amu_{sd}_simpson38(eq,s1)", resampling);
+    write_jack(amu_sdeq_simp_s1, Njack, jack_file);
     check_correlatro_counter(36);
-    printf("amu_sd_simpson38(eq,s1) = %g  %g\n", amu_sd_s1[Njack - 1], error_jackboot(resampling, Njack, amu_sd_s1));
+    printf("amu_sd_simpson38(eq,s1) = %g  %g\n", amu_sdeq_simp_s1[Njack - 1], error_jackboot(resampling, Njack, amu_sdeq_simp_s1));
 
-    asd_vec[0] = amu_sd_s;
-    asd_vec[1] = amu_sd_s1;
+    asd_vec[0] = amu_sdeq_simp_s;
+    asd_vec[1] = amu_sdeq_simp_s1;
 
     amu_sd_sphys = interpol_Z(Nstrange, Njack, Meta, asd_vec, jack_aMetas_MeV_exp, outfile, "amu_{sd}_simpson38(eq,sphys)", resampling);
     write_jack(amu_sd_sphys, Njack, jack_file);
     printf("amu_sd(eq,shys) = %g  %g\n", amu_sd_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_sd_sphys));
-
+    free(amu_sd_sphys);
     check_correlatro_counter(37);
-    free(amu_sd_s);free(amu_sd_s1);free(amu_sd_sphys);
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // a_SD_s_op simpson38
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     int_scheme = integrate_simpson38;
-    amu_sd_s = compute_amu_sd(conf_jack, 5 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{sd}_simpson38(op,s)", resampling);
-    write_jack(amu_sd_s, Njack, jack_file);
+    double* amu_sdop_simp_s = compute_amu_sd(conf_jack, 5 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{sd}_simpson38(op,s)", resampling);
+    write_jack(amu_sdop_simp_s, Njack, jack_file);
     check_correlatro_counter(38);
-    printf("amu_sd_simpson38(op,l) = %g  %g\n", amu_sd_s[Njack - 1], error_jackboot(resampling, Njack, amu_sd_s));
+    printf("amu_sd_simpson38(op,s) = %g  %g\n", amu_sdop_simp_s[Njack - 1], error_jackboot(resampling, Njack, amu_sdop_simp_s));
 
 
     int_scheme = integrate_simpson38;
-    amu_sd_s1 = compute_amu_sd(conf_jack, 5 + 12, Njack, ZAs1.P[0], a, q2s, int_scheme, outfile, "amu_{sd}_simpson38(op,s1)", resampling);
-    write_jack(amu_sd_s1, Njack, jack_file);
+    double* amu_sdop_simp_s1 = compute_amu_sd(conf_jack, 5 + 12, Njack, ZAs1.P[0], a, q2s, int_scheme, outfile, "amu_{sd}_simpson38(op,s1)", resampling);
+    write_jack(amu_sdop_simp_s1, Njack, jack_file);
     check_correlatro_counter(39);
-    printf("amu_sd_simpson38(op,l) = %g  %g\n", amu_sd_s1[Njack - 1], error_jackboot(resampling, Njack, amu_sd_s1));
+    printf("amu_sd_simpson38(op,s1) = %g  %g\n", amu_sdop_simp_s1[Njack - 1], error_jackboot(resampling, Njack, amu_sdop_simp_s1));
 
 
-    asd_vec[0] = amu_sd_s;
-    asd_vec[1] = amu_sd_s1;
+    asd_vec[0] = amu_sdop_simp_s;
+    asd_vec[1] = amu_sdop_simp_s1;
     amu_sd_sphys = interpol_Z(Nstrange, Njack, Meta, asd_vec, jack_aMetas_MeV_exp, outfile, "amu_{sd}_simpson38(op,sphys)", resampling);
     write_jack(amu_sd_sphys, Njack, jack_file);
     printf("amu_sd_simpson38(op,shys) = %g  %g\n", amu_sd_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_sd_sphys));
     check_correlatro_counter(40);
-    free(amu_sd_s);free(amu_sd_s1);free(amu_sd_sphys);
+    free(amu_sd_sphys);
 
 
     write_jack(a, Njack, jack_file);
@@ -1022,13 +1034,13 @@ int main(int argc, char** argv) {
 
 
     int_scheme = integrate_simpson38;
-    amu_W = compute_amu_W(conf_jack, 2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "amu_{sd,simpson38}(eq,l)", resampling);
+    amu_W = compute_amu_W(conf_jack, 2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "amu_{W,simpson38}(eq,l)", resampling);
     write_jack(amu_W, Njack, jack_file);
     check_correlatro_counter(44);
     printf("amu_W_simpson38(eq,l) = %g  %g\n", amu_W[Njack - 1], error_jackboot(resampling, Njack, amu_W));
     free(amu_W);
 
-    amu_W = compute_amu_W(conf_jack, 5, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "amu_{sd,simpson38}(op,l)", resampling);
+    amu_W = compute_amu_W(conf_jack, 5, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "amu_{W,simpson38}(op,l)", resampling);
     write_jack(amu_W, Njack, jack_file);
     check_correlatro_counter(45);
     printf("amu_W_simpson38(op,l) = %g  %g\n", amu_W[Njack - 1], error_jackboot(resampling, Njack, amu_W));
@@ -1039,107 +1051,104 @@ int main(int argc, char** argv) {
     // a_W_s_eq reinman
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     int_scheme = integrate_reinman;
-    double* amu_W_s = compute_amu_W(conf_jack, 2 + 6, Njack, ZVs.P[0], a, q2s, int_scheme, outfile, "amu_{W}(eq,s)", resampling);
-    write_jack(amu_W_s, Njack, jack_file);
+    double* amu_Weq_s = compute_amu_W(conf_jack, 2 + 6, Njack, ZVs.P[0], a, q2s, int_scheme, outfile, "amu_{W}(eq,s)", resampling);
+    write_jack(amu_Weq_s, Njack, jack_file);
     check_correlatro_counter(46);
-    printf("amu_W(eq,s) = %g  %g\n", amu_W_s[Njack - 1], error_jackboot(resampling, Njack, amu_W_s));
+    printf("amu_W(eq,s) = %g  %g\n", amu_Weq_s[Njack - 1], error_jackboot(resampling, Njack, amu_Weq_s));
 
 
     int_scheme = integrate_reinman;
-    double* amu_W_s1 = compute_amu_W(conf_jack, 2 + 12, Njack, ZVs1.P[0], a, q2s, int_scheme, outfile, "amu_{W}(eq,s1)", resampling);
-    write_jack(amu_W_s1, Njack, jack_file);
+    double* amu_Weq_s1 = compute_amu_W(conf_jack, 2 + 12, Njack, ZVs1.P[0], a, q2s, int_scheme, outfile, "amu_{W}(eq,s1)", resampling);
+    write_jack(amu_Weq_s1, Njack, jack_file);
     check_correlatro_counter(47);
-    printf("amu_W(eq,s1) = %g  %g\n", amu_W_s1[Njack - 1], error_jackboot(resampling, Njack, amu_W_s1));
+    printf("amu_W(eq,s1) = %g  %g\n", amu_Weq_s1[Njack - 1], error_jackboot(resampling, Njack, amu_Weq_s1));
 
-    asd_vec[0] = amu_W_s;
-    asd_vec[1] = amu_W_s1;
-
+    asd_vec[0] = amu_Weq_s;
+    asd_vec[1] = amu_Weq_s1;
     double* amu_W_sphys = interpol_Z(Nstrange, Njack, Meta, asd_vec, jack_aMetas_MeV_exp, outfile, "amu_{W}(eq,sphys)", resampling);
     write_jack(amu_W_sphys, Njack, jack_file);
     printf("amu_W(eq,shys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
 
     check_correlatro_counter(48);
-    free(amu_W_s);free(amu_W_s1);free(amu_W_sphys);
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // a_W_s_op reinman
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     int_scheme = integrate_reinman;
-    amu_W_s = compute_amu_W(conf_jack, 5 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{W}(op,s)", resampling);
-    write_jack(amu_W_s, Njack, jack_file);
+    double* amu_Wop_s = compute_amu_W(conf_jack, 5 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{W}(op,s)", resampling);
+    write_jack(amu_Wop_s, Njack, jack_file);
     check_correlatro_counter(49);
-    printf("amu_W(op,l) = %g  %g\n", amu_W_s[Njack - 1], error_jackboot(resampling, Njack, amu_W_s));
+    printf("amu_W(op,l) = %g  %g\n", amu_Wop_s[Njack - 1], error_jackboot(resampling, Njack, amu_Wop_s));
 
 
     int_scheme = integrate_reinman;
-    amu_W_s1 = compute_amu_W(conf_jack, 5 + 12, Njack, ZAs1.P[0], a, q2s, int_scheme, outfile, "amu_{W}(op,s1)", resampling);
-    write_jack(amu_W_s1, Njack, jack_file);
+    double* amu_Wop_s1 = compute_amu_W(conf_jack, 5 + 12, Njack, ZAs1.P[0], a, q2s, int_scheme, outfile, "amu_{W}(op,s1)", resampling);
+    write_jack(amu_Wop_s1, Njack, jack_file);
     check_correlatro_counter(50);
-    printf("amu_W(op,l) = %g  %g\n", amu_W_s1[Njack - 1], error_jackboot(resampling, Njack, amu_W_s1));
+    printf("amu_W(op,l) = %g  %g\n", amu_Wop_s1[Njack - 1], error_jackboot(resampling, Njack, amu_Wop_s1));
 
 
-    asd_vec[0] = amu_W_s;
-    asd_vec[1] = amu_W_s1;
+    asd_vec[0] = amu_Wop_s;
+    asd_vec[1] = amu_Wop_s1;
     amu_W_sphys = interpol_Z(Nstrange, Njack, Meta, asd_vec, jack_aMetas_MeV_exp, outfile, "amu_{W}(op,sphys)", resampling);
     write_jack(amu_W_sphys, Njack, jack_file);
     printf("amu_W(op,shys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
 
     check_correlatro_counter(51);
-    free(amu_W_s);free(amu_W_s1);free(amu_W_sphys);
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // a_W_s_eq simpson38
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     int_scheme = integrate_simpson38;
-    amu_W_s = compute_amu_W(conf_jack, 2 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{W}_simpson38(eq,s)", resampling);
-    write_jack(amu_W_s, Njack, jack_file);
+    double* amu_Weq_simp_s = compute_amu_W(conf_jack, 2 + 6, Njack, ZVs.P[0], a, q2s, int_scheme, outfile, "amu_{W}_simpson38(eq,s)", resampling);
+    write_jack(amu_Weq_simp_s, Njack, jack_file);
     check_correlatro_counter(52);
-    printf("amu_W_simpson38(eq,s) = %g  %g\n", amu_W_s[Njack - 1], error_jackboot(resampling, Njack, amu_W_s));
+    printf("amu_W_simpson38(eq,s) = %g  %g\n", amu_Weq_simp_s[Njack - 1], error_jackboot(resampling, Njack, amu_Weq_simp_s));
 
 
     int_scheme = integrate_simpson38;
-    amu_W_s1 = compute_amu_W(conf_jack, 2 + 12, Njack, ZAs1.P[0], a, q2s, int_scheme, outfile, "amu_{W}_simpson38(eq,s1)", resampling);
-    write_jack(amu_W_s1, Njack, jack_file);
+    double* amu_Weq_simp_s1 = compute_amu_W(conf_jack, 2 + 12, Njack, ZVs1.P[0], a, q2s, int_scheme, outfile, "amu_{W}_simpson38(eq,s1)", resampling);
+    write_jack(amu_Weq_simp_s1, Njack, jack_file);
     check_correlatro_counter(53);
-    printf("amu_W_simpson38(eq,s1) = %g  %g\n", amu_W_s1[Njack - 1], error_jackboot(resampling, Njack, amu_W_s1));
+    printf("amu_W_simpson38(eq,s1) = %g  %g\n", amu_Weq_simp_s1[Njack - 1], error_jackboot(resampling, Njack, amu_Weq_simp_s1));
 
-    asd_vec[0] = amu_W_s;
-    asd_vec[1] = amu_W_s1;
-
+    asd_vec[0] = amu_Weq_simp_s;
+    asd_vec[1] = amu_Weq_simp_s1;
     amu_W_sphys = interpol_Z(Nstrange, Njack, Meta, asd_vec, jack_aMetas_MeV_exp, outfile, "amu_{W}_simpson38(eq,sphys)", resampling);
     write_jack(amu_W_sphys, Njack, jack_file);
     printf("amu_W(eq,shys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
 
     check_correlatro_counter(54);
-    free(amu_W_s);free(amu_W_s1);free(amu_W_sphys);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // a_W_s_op simpson38
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     int_scheme = integrate_simpson38;
-    amu_W_s = compute_amu_W(conf_jack, 5 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{W}_simpson38(op,s)", resampling);
-    write_jack(amu_W_s, Njack, jack_file);
+    double* amu_Wop_simp_s = compute_amu_W(conf_jack, 5 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{W}_simpson38(op,s)", resampling);
+    write_jack(amu_Wop_simp_s, Njack, jack_file);
     check_correlatro_counter(55);
-    printf("amu_W_simpson38(op,l) = %g  %g\n", amu_W_s[Njack - 1], error_jackboot(resampling, Njack, amu_W_s));
+    printf("amu_W_simpson38(op,l) = %g  %g\n", amu_Wop_simp_s[Njack - 1], error_jackboot(resampling, Njack, amu_Wop_simp_s));
 
 
     int_scheme = integrate_simpson38;
-    amu_W_s1 = compute_amu_W(conf_jack, 5 + 12, Njack, ZAs1.P[0], a, q2s, int_scheme, outfile, "amu_{W}_simpson38(op,s1)", resampling);
-    write_jack(amu_W_s1, Njack, jack_file);
+    double* amu_Wop_simp_s1 = compute_amu_W(conf_jack, 5 + 12, Njack, ZAs1.P[0], a, q2s, int_scheme, outfile, "amu_{W}_simpson38(op,s1)", resampling);
+    write_jack(amu_Wop_simp_s1, Njack, jack_file);
     check_correlatro_counter(56);
-    printf("amu_W_simpson38(op,l) = %g  %g\n", amu_W_s1[Njack - 1], error_jackboot(resampling, Njack, amu_W_s1));
+    printf("amu_W_simpson38(op,l) = %g  %g\n", amu_Wop_simp_s1[Njack - 1], error_jackboot(resampling, Njack, amu_Wop_simp_s1));
 
 
-    asd_vec[0] = amu_W_s;
-    asd_vec[1] = amu_W_s1;
+    asd_vec[0] = amu_Wop_simp_s;
+    asd_vec[1] = amu_Wop_simp_s1;
     amu_W_sphys = interpol_Z(Nstrange, Njack, Meta, asd_vec, jack_aMetas_MeV_exp, outfile, "amu_{W}_simpson38(op,sphys)", resampling);
     write_jack(amu_W_sphys, Njack, jack_file);
     printf("amu_W_simpson38(op,shys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
     check_correlatro_counter(57);
-    free(amu_W_s);free(amu_W_s1);free(amu_W_sphys);
+
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1152,18 +1161,84 @@ int main(int argc, char** argv) {
 
     fit_info.N = 1;
     int ncorr_new = var;
-    printf("%d\n",ncorr_new);
+    printf("%d\n", ncorr_new);
     add_one_correlators(option, ncorr_new, conf_jack, fit_info, DVt);
-    printf("%d\n",ncorr_new);
+    printf("%d\n", ncorr_new);
 
     int_scheme = integrate_reinman;
-    double *DV = compute_amu_W(conf_jack, ncorr_new-1, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "DV_{W}(op,l)", resampling);
-    write_jack(amu_W, Njack, jack_file);
+    double* DV = compute_amu_W(conf_jack, ncorr_new - 1, Njack, ZA, a, 1.0, int_scheme, outfile, "DV_{W}(op,l)", resampling);
+    write_jack(DV, Njack, jack_file);
     check_correlatro_counter(58);
 
     printf("DV_{W}(op,l) = %g  %g\n", DV[Njack - 1], error_jackboot(resampling, Njack, DV));
     free(DV);
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    // SD s 
+    ///
+    double* tmp;
+    asd_vec[0] = amu_sdeq_s;
+    asd_vec[1] = amu_sdeq_s1;
+    tmp = interpol_Z(Nstrange, Njack, Mphi, asd_vec, jack_aMphi_MeV_exp, outfile, "amu_{sd}(eq,phiphys)", resampling);
+    write_jack(tmp, Njack, jack_file);
+    printf("amu_sd(eq,phiphys) = %g  %g\n", tmp[Njack - 1], error_jackboot(resampling, Njack, tmp));
+    check_correlatro_counter(59); free(tmp);
+
+    asd_vec[0] = amu_sdop_s;
+    asd_vec[1] = amu_sdop_s1;
+    tmp = interpol_Z(Nstrange, Njack, Mphi, asd_vec, jack_aMphi_MeV_exp, outfile, "amu_{sd}(op,phiphys)", resampling);
+    write_jack(tmp, Njack, jack_file);
+    printf("amu_sd(op,phiphys) = %g  %g\n", tmp[Njack - 1], error_jackboot(resampling, Njack, tmp));
+    check_correlatro_counter(60); free(tmp);
+
+    asd_vec[0] = amu_sdeq_simp_s;
+    asd_vec[1] = amu_sdeq_simp_s1;
+    tmp = interpol_Z(Nstrange, Njack, Mphi, asd_vec, jack_aMphi_MeV_exp, outfile, "amu_{sd,simp}(eq,phiphys)", resampling);
+    write_jack(tmp, Njack, jack_file);
+    printf("amu_sd(eq,phiphys) = %g  %g\n", tmp[Njack - 1], error_jackboot(resampling, Njack, tmp));
+    check_correlatro_counter(61); free(tmp);
+
+    asd_vec[0] = amu_sdop_simp_s;
+    asd_vec[1] = amu_sdop_simp_s1;
+    tmp = interpol_Z(Nstrange, Njack, Mphi, asd_vec, jack_aMphi_MeV_exp, outfile, "amu_{sd,simp}(op,phiphys)", resampling);
+    write_jack(tmp, Njack, jack_file);
+    printf("amu_sd(op,phiphys) = %g  %g\n", tmp[Njack - 1], error_jackboot(resampling, Njack, tmp));
+    check_correlatro_counter(62); free(tmp);
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    // W s
+    //////////
+    asd_vec[0] = amu_Weq_s;
+    asd_vec[1] = amu_Weq_s1;
+    amu_W_sphys = interpol_Z(Nstrange, Njack, Mphi, asd_vec, jack_aMphi_MeV_exp, outfile, "amu_{W}(eq,phiphys)", resampling);
+    write_jack(amu_W_sphys, Njack, jack_file);
+    printf("amu_W(eq,phihys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
+    check_correlatro_counter(63);
+
+    asd_vec[0] = amu_Wop_s;
+    asd_vec[1] = amu_Wop_s1;
+    amu_W_sphys = interpol_Z(Nstrange, Njack, Mphi, asd_vec, jack_aMphi_MeV_exp, outfile, "amu_{W}(op,phiphys)", resampling);
+    write_jack(amu_W_sphys, Njack, jack_file);
+    printf("amu_W(op,shys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
+    check_correlatro_counter(64);
+
+    asd_vec[0] = amu_Weq_simp_s;
+    asd_vec[1] = amu_Weq_simp_s1;
+    amu_W_sphys = interpol_Z(Nstrange, Njack, Mphi, asd_vec, jack_aMphi_MeV_exp, outfile, "amu_{W}_simpson38(eq,phiphys)", resampling);
+    write_jack(amu_W_sphys, Njack, jack_file);
+    printf("amu_W(eq,shys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
+    check_correlatro_counter(65);
     
+    asd_vec[0] = amu_Wop_simp_s;
+    asd_vec[1] = amu_Wop_simp_s1;
+    amu_W_sphys = interpol_Z(Nstrange, Njack, Mphi, asd_vec, jack_aMphi_MeV_exp, outfile, "amu_{W}_simpson38(op,phiphys)", resampling);
+    write_jack(amu_W_sphys, Njack, jack_file);
+    printf("amu_W_simpson38(op,shys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
+    check_correlatro_counter(66);
+
+
+
+    free(amu_sdeq_s);free(amu_sdeq_s1);free(amu_sd_sphys);
+
     for (int i = 0;i < Nstrange;i++) {
         Meta[i] = nullptr;
     }

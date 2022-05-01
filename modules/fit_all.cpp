@@ -31,7 +31,7 @@
 
 void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
     struct fit_type fit_info_m0, const char* label, const char* dir_name,
-    struct fit_result fit_out, struct fit_result fit_out_m0, int var, int en, double h) {
+    struct fit_result fit_out, struct fit_result fit_out_m0, int var, int en, double h, std::vector<double> xval) {
 
     std::vector<int> myen = fit_info.myen;
     int Npar = fit_info.Npar;
@@ -76,7 +76,10 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
         double pos = min;
         while (pos < max) {
             for (int j = 0;j < Njack;j++) {
-                for (int i = 0; i < Nvar; i++) {
+                for (int i = 0; i < xval.size(); i++){
+                    tmpx[i] = xval[i];
+                }
+                for (int i = xval.size(); i < Nvar; i++) {
                     tmpx[i] = fit_info.x[i][en + n * myen.size()][j];
                 }
                 tmpx[var] = pos;

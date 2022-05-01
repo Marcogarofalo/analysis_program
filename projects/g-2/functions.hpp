@@ -6,6 +6,7 @@ extern "C" {
 #include "../external/rzeta/src/dzeta_function.h"
 }
 #include <algorithm>
+static int once = 0;
 
 using namespace std::complex_literals;
 
@@ -314,23 +315,25 @@ double compute_cotd(int Nvar, double* x) {
     double k = sqrt(omega * omega / 4 - mass * mass);
 
     double ho = (grhopipi * grhopipi * k * k * k * 2) * log((omega + 2 * k) / (2 * mass)) / (6.0 * M_PI * M_PI * omega);
-    double hM = (grhopipi * grhopipi * k * k * k * 2) * log((Mrho + 2 * k) / (2 * mass)) / (6.0 * M_PI * M_PI * Mrho);
-    double h1 = (grhopipi * grhopipi * k * k) * (1 + (1 + 2 * mass * mass / (Mrho * Mrho) * (Mrho / k) * log((Mrho + 2 * k) / (2 * mass)))) / (6.0 * M_PI * M_PI * Mrho);
+    double kM = sqrt(Mrho * Mrho / 4. - mass * mass);
+    double hM = (grhopipi * grhopipi * kM * kM * kM * 2) * log((Mrho + 2 * kM) / (2 * mass)) / (6.0 * M_PI * M_PI * Mrho);
+    // double hM = (grhopipi * grhopipi * kM * kM * kM * 2) * log((Mrho + 2 * kM) / (2 * mass)) / (6.0 * M_PI * M_PI * Mrho);
+    double h1M = (grhopipi * grhopipi * kM * kM) * (1 + (1 + 2 * mass * mass / (Mrho * Mrho)) * (Mrho / kM) * log((Mrho + 2 * kM) / (2 * mass))) / (6.0 * M_PI * M_PI * Mrho);
     double gamma = (grhopipi * grhopipi * k * k * k) / (6.0 * M_PI * omega * omega);
 
-    double cotd = Mrho * Mrho - omega * omega - hM - (omega * omega - Mrho * Mrho) * h1 / (2 * Mrho) + ho;
+    double cotd = Mrho * Mrho - omega * omega - hM - (omega * omega - Mrho * Mrho) * h1M / (2 * Mrho) + ho;
     cotd /= omega * gamma;
     return cotd;
 }
 
-double compute_delta(double x, void* params) {
+double compute_delta(double omega, void* params) {
     double* P = (double*)params;
     int Nvar = P[0] + 1e-6;
     double* xh = (double*)malloc(sizeof(double) * Nvar);
-    for (int i = 0;i < Nvar;i++) {
+    for (int i = 1;i < Nvar;i++) {
         xh[i] = P[i];
     }
-    xh[0] = x;
+    xh[0] = omega;
     return  std::atan(1. / compute_cotd(Nvar, xh));
 }
 
@@ -414,18 +417,21 @@ inline double compute_FGS2(int Nvar, double* x) {
     double grhopipi = x[4];
     double a = x[5];
     double k = sqrt(omega * omega / 4. - mass * mass);
-    double q = k * (L * (a / 197.326963) / (2. * pi_greco));
+    // double q = k * (L * (a / 197.326963) / (2. * pi_greco));
 
     double ho = (grhopipi * grhopipi * k * k * k * 2) * log((omega + 2 * k) / (2 * mass)) / (6.0 * M_PI * M_PI * omega);
-    double hM = (grhopipi * grhopipi * k * k * k * 2) * log((Mrho + 2 * k) / (2 * mass)) / (6.0 * M_PI * M_PI * Mrho);
-    double h1 = (grhopipi * grhopipi * k * k) * (1 + (1 + 2 * mass * mass / (Mrho * Mrho) * (Mrho / k) * log((Mrho + 2 * k) / (2 * mass)))) / (6.0 * M_PI * M_PI * Mrho);
+    double kM = sqrt(Mrho * Mrho / 4. - mass * mass);
+    double hM = (grhopipi * grhopipi * kM * kM * kM * 2) * log((Mrho + 2 * kM) / (2 * mass)) / (6.0 * M_PI * M_PI * Mrho);
+    double h1M = (grhopipi * grhopipi * kM * kM) * (1 + (1 + 2 * mass * mass / (Mrho * Mrho)) * (Mrho / kM) * log((Mrho + 2 * kM) / (2 * mass))) / (6.0 * M_PI * M_PI * Mrho);
     double gamma = (grhopipi * grhopipi * k * k * k) / (6.0 * M_PI * omega * omega);
 
-    double Apipi0 = hM - Mrho * h1 / 2. + pow(grhopipi * mass, 2) / (6 * M_PI * M_PI);
-    std::complex<double> Apipi = hM + (omega * omega - Mrho * Mrho) * h1 / (2 * Mrho) - ho + 1i * omega * gamma;
+    double Apipi0 = hM - Mrho * h1M / 2. + pow(grhopipi * mass, 2) / (6 * M_PI * M_PI);
+    std::complex<double> Apipi = hM + (omega * omega - Mrho * Mrho) * h1M / (2 * Mrho) - ho + 1i * omega * gamma;
     std::complex<double> FGS = (Mrho * Mrho - Apipi0) / (Mrho * Mrho - omega * omega - Apipi);
-    double FGS2 = std::abs(FGS);
-    FGS2 *= FGS2;
+    double FGS2 = real(FGS * conj(FGS));
+    if (once == -1) {
+        printf("omega=%.15g    Mpi=%.15g   Mrho=%.15g  g=%.15g\n", omega, mass, Mrho, grhopipi);
+    }
     return FGS2;
 }
 
@@ -465,6 +471,14 @@ double integrand_V_infL(double omega, void* params) {
     double t = x[6];
     x[0] = omega;
     double FGS2 = compute_FGS2(7, x);
+    if (once == 0) {
+        x[0] = 500;
+        printf(" t= %g\n", t);
+        once = -1;
+        printf("FGS2=%.15g\n", compute_FGS2(7, x));
+        once = 1;
+    }
+
     return omega * omega * pow(1 - pow(2 * mass / omega, 2), 3. / 2.) * FGS2 * exp(-omega * t);
     // return  exp(-omega * t);
 
@@ -483,8 +497,8 @@ double* compute_V_infL(int Nvar, double* x, int T) {
     }
     double* V = (double*)malloc(sizeof(double) * T);
     V[0] = 0;
-    int Maxiter = 1e+3;
-    int epsrel = 1e-5;
+    int Maxiter = 1e+8;
+    double epsrel = 1e-8;
     gsl_integration_workspace* w = gsl_integration_workspace_alloc(Maxiter);
 
     for (int t = 1; t < T;t++) {
@@ -496,7 +510,7 @@ double* compute_V_infL(int Nvar, double* x, int T) {
         F.params = (void*)P;
         // printf("here : %g\n",P[Nvar]);
                 //  gsl_integration_qags(&F, 2*mass, 10000, 1e+5, epsrel, Maxiter, w, &result, &error);
-        gsl_integration_qagiu(&F, 2 * mass, 1e-4, epsrel, Maxiter, w, &result, &error);
+        gsl_integration_qagiu(&F, 2 * mass, 0, epsrel, Maxiter, w, &result, &error);
         // printf("K(%g)=%g\n", z, result);
 
         V[t] = result / (48. * M_PI * M_PI);
@@ -523,7 +537,7 @@ double** compute_DVt(int L, int Njack, double* Mpi, double* Mrho, double* a, dou
 
     int T = file_head.l0;
     constexpr int Nvar = 6;
-    constexpr int Nomegas = 5;
+    constexpr int Nomegas = 20;
     double** omega = double_malloc_2(Nomegas, Njack);
     double** nuA2 = double_malloc_2(Nomegas, Njack);
     double** DVt = double_malloc_2(T, Njack);
@@ -542,10 +556,10 @@ double** compute_DVt(int L, int Njack, double* Mpi, double* Mrho, double* a, dou
         }
     }
     std::sort(p2, p2 + Nomegas * Nomegas * Nomegas);
-    int p2s[Nomegas+1];
+    int p2s[Nomegas + 1];
     count = 0;
-    p2s[0]=0;
-    while (count < Nomegas+1) {
+    p2s[0] = 0;
+    while (count < Nomegas + 1) {
         double old = p2[0];
         for (int i = 0;i < Nomegas * Nomegas * Nomegas;i++) {
             if (p2[i] > old) {
@@ -560,7 +574,7 @@ double** compute_DVt(int L, int Njack, double* Mpi, double* Mrho, double* a, dou
 
 
     fprintf(outfile, " \n\n# omega  cotd  M11\n");
-    for (int j = 0;j < Njack;j++) {
+    for (int j = Njack - 1;j < Njack;j++) {
         double x[Nvar];
         x[0] = 1;
         x[1] = Mpi[j];
@@ -569,7 +583,7 @@ double** compute_DVt(int L, int Njack, double* Mpi, double* Mrho, double* a, dou
         x[4] = grhopipi[j];
         x[5] = a[j];
         // first we plot cotd*k/m
-        if (j == Njack-1) {
+        if (j == Njack - 1) {
             for (int i = 0;i < 1500;i++) {
                 x[0] = x[1] * (2. + 30.5 * i / 1500.0);
                 double k = sqrt(x[0] * x[0] / 4 - x[1] * x[1]);
@@ -588,16 +602,30 @@ double** compute_DVt(int L, int Njack, double* Mpi, double* Mrho, double* a, dou
             double xmin = 2 * sqrt(x[1] * x[1] + p2s[i] * p * p) + 1e-8;
             double xmax = 2 * sqrt(x[1] * x[1] + p2s[i + 1] * p * p) - 1e-8;
             // printf("%d   %d\n", p2s[i], p2s[i + 1]);
-            omega[i][j] = rtsafe(omega_QC2, 0/*n*/, 6, x, 0/* Npar */, nullptr/* Pkcot */, 0/*ivar*/, 0. /*input*/, xmin, xmax, 1e-5, 100, 1e-4);
+            double oj = rtsafe(omega_QC2, 0/*n*/, 6, x, 0/* Npar */, nullptr/* Pkcot */, 0/*ivar*/, 0. /*input*/, xmin, xmax, 1e-5, 100, 1e-4);
+            int seed = rand();
+            omega[i] = fake_sampling(resampling, oj, oj / 1e+4, Njack, seed);
             x[0] = omega[i][j];
-            nuA2[i][j] = matrix_element_nuA2(Nvar, x);
+            double A = matrix_element_nuA2(Nvar, x);
+            nuA2[i] = fake_sampling(resampling, A, A / 1e+4, Njack, seed);
             count++;
         }
+    }
 
+    for (int j = 0;j < Njack;j++) {
+        double x[Nvar];
+        x[0] = 1;
+        x[1] = Mpi[j];
+        x[2] = L;
+        x[3] = Mrho[j];
+        x[4] = grhopipi[j];
+        x[5] = a[j];
+
+        // x[0] = omega[i][j];
         VinfL[j] = compute_V_infL(Nvar, x, T);
         VL[j] = compute_VL(Nomegas, omega, nuA2, a, T, j);
         for (int t = 0;t < T;t++) {
-            DVt[t][j] = VinfL[j][t] - VL[j][t];
+            DVt[t][j] = (VinfL[j][t] - VL[j][t]) * pow(a[j] / 197.326963, 3);
         }
     }
 
@@ -639,12 +667,58 @@ double rhs_amu_common(int n, int Nvar, double* x, int Npar, double* P) {
 
     return r;
 }
+
+double rhs_amu_common_a2_FVE(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    double GS = x[1];
+    double Mpi = x[2];
+    double Mpiphys = x[3];
+    if (n == 0)      r = P[0] + a2 * P[1] - (10.0 / 9.0) * GS * (1 + P[3] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+    else if (n == 1) r = P[0] + a2 * P[2] - (10.0 / 9.0) * GS * (1 + P[4] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+
+    return r;
+}
+
+
 double rhs_amu_common_a4(int n, int Nvar, double* x, int Npar, double* P) {
     double r;
     double a2 = x[0];
     if (n == 0)      r = P[0] + a2 * P[1] + a2 * a2 * P[3];
     else if (n == 1) r = P[0] + a2 * P[2] + a2 * a2 * P[4];
 
+    return r;
+}
+double rhs_amu_common_a4_n0(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    if (n == 0)      r = P[0] + a2 * P[1] + a2 * a2 * P[3];
+    else if (n == 1) r = P[0] + a2 * P[2];
+
+    return r;
+}
+double rhs_amu_common_a4_n1(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    if (n == 0)      r = P[0] + a2 * P[1];
+    else if (n == 1) r = P[0] + a2 * P[2] + a2 * a2 * P[3];
+
+    return r;
+}
+double rhs_amu_common_log_a4_n0(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    double w02=0.030276;
+    if (n == 0)      r = P[0] + (a2/pow(log(a2/w02),3) )* P[1] + a2 * a2 * P[3];
+    else if (n == 1) r = P[0] + (a2/pow(log(a2/w02),3) ) * P[2];
+    return r;
+}
+double rhs_amu_common_log_a4_n1(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    double w02=0.030276;
+    if (n == 0)      r = P[0] + (a2/pow(log(a2/w02),3) ) * P[1];
+    else if (n == 1) r = P[0] + (a2/pow(log(a2/w02),3) ) * P[2] + a2 * a2 * P[3];
     return r;
 }
 
@@ -654,4 +728,144 @@ double lhs_amu_common(int n, int e, int j, data_all gjack, struct fit_type fit_i
     if (n == 0)        r = gjack.en[e].jack[ieq][j];
     else if (n == 1)   r = gjack.en[e].jack[iop][j];
     return r;
+}
+
+double lhs_amu(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double r;
+    if (fit_info.corr_id.size() != 2) { printf("error lhs_amu called without ids"); }
+    if (n == 0)        r = gjack.en[e].jack[fit_info.corr_id[0]][j];
+    else if (n == 1)   r = gjack.en[e].jack[fit_info.corr_id[1]][j];
+    return r;
+}
+
+
+template<int ieq, int iop>
+double lhs_amu_common_FVE(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double r;
+    if (n == 0)        r = gjack.en[e].jack[ieq][j] + (10. / 9.) * gjack.en[e].jack[48][j];
+    else if (n == 1)   r = gjack.en[e].jack[iop][j] + (10. / 9.) * gjack.en[e].jack[48][j];
+    return r;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// print band
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+void print_fit_band_amu_W_l(char** argv, data_all gjack, struct fit_type fit_info,
+    struct fit_type fit_info_m0, const char* label, const char* dir_name,
+    struct fit_result fit_out, struct fit_result fit_out_m0, int var, int en, double h, std::vector<double> xval,
+    double lhs_fun(int, int, int, data_all, struct fit_type)) {
+
+    std::vector<int> myen = fit_info.myen;
+    int Npar = fit_info.Npar;
+    int Nvar = fit_info.Nvar;
+    int Njack = gjack.en[0].Njack;
+    int N = fit_info.N;
+    char namefile[NAMESIZE];
+    FILE* f;
+
+    double** tif = swap_indices(fit_info.Npar, Njack, fit_out.P);
+    double** tif_m0 = swap_indices(fit_info_m0.Npar, Njack, fit_out_m0.P);
+    double min, max;
+    if (fit_info.band_range.size() != 2) {
+        min = fit_info.x[var][0][Njack - 1];
+        max = fit_info.x[var][0][Njack - 1];
+        for (int e = 1; e < myen.size() * N;e++) {
+            if (fit_info.x[var][e][Njack - 1] < min)
+                min = fit_info.x[var][e][Njack - 1];
+            if (fit_info.x[var][e][Njack - 1] > max)
+                max = fit_info.x[var][e][Njack - 1];
+        }
+        if (min == max)  printf("no variation in this direction\n");
+        min -= (max - min) / 10.0;
+        max += (max - min) / 10.0;
+
+    }
+    else {
+        min = fit_info.band_range[0];
+        max = fit_info.band_range[1];
+    }
+
+    max += h / 2.0;
+    /// y
+    int* ens = (int*)malloc(sizeof(int) * fit_info.N);// we need to init en and en_tot to allocate the other 
+    for (int e = 0;e < fit_info.N; e++) { ens[e] = myen.size(); }
+    int en_tot = 0;      for (int n = 0;n < N;n++) { en_tot += ens[n]; }// total data to fit
+    double*** y = double_malloc_3(Njack, en_tot, 2);// 2 is mean/error
+    int count = 0;
+    for (int n = 0;n < N;n++) {
+        for (int e = 0;e < ens[n];e++) {
+            double* tmpj = (double*)malloc(sizeof(double) * Njack);
+            for (int j = 0;j < Njack;j++) {
+                tmpj[j] = lhs_fun(n, myen[e], j, gjack, fit_info);
+                // if (j == Njack - 1 && n == 0) printf("y =%g   GS=%g  FVE=%g  e=%d  \n", tmpj[j],
+                //     (10.0 / 9.0) * fit_info.x[1][e][j],
+                //     (10.0 / 9.0) * fit_info.x[1][e][j] * (1 - fit_out.P[3][j] * fit_info.x[0][e][j]), e);
+                if (n == 0)  tmpj[j] += (10.0 / 9.0) * fit_info.x[1][e][j] * (1 + fit_out.P[3][j] * fit_info.x[0][e][j]);
+                else if (n == 1)  tmpj[j] += (10.0 / 9.0) * fit_info.x[1][e][j] * (1 + fit_out.P[4][j] * fit_info.x[0][e][j]);
+            }
+            double err = error_jackboot(argv[1], Njack, tmpj);
+            for (int j = 0;j < Njack;j++) {
+                y[j][e + count][0] = tmpj[j];
+                y[j][e + count][1] = err;
+            }
+
+
+            free(tmpj);
+        }
+        count += ens[n];
+    }
+    mysprintf(namefile, NAMESIZE, "%s/%s_fit_out_ysub_%s.txt", argv[3], label, dir_name);
+    FILE* fy = open_file(namefile, "w+");
+
+    for (int n = 0;n < N; n++) {
+
+        mysprintf(namefile, NAMESIZE, "%s/%s_fit_out_n%d_%s.txt", argv[3], label, n, dir_name);
+        f = open_file(namefile, "w+");
+        double* tmpx = (double*)malloc(sizeof(double) * Nvar);
+        double* tmpy = (double*)malloc(sizeof(double) * Njack);
+        printf("writing: %s\n", namefile);
+
+
+        count = 0;
+        for (int n = 0;n < N;n++) {
+            for (int e = 0;e < ens[n];e++) {
+                for (int v = 0; v < Nvar;v++) {
+                    fprintf(fy, " %g\t ", fit_info.x[v][e + count][Njack - 1]);
+                }
+                fprintf(fy, " %g   %g  \t ", y[Njack - 1][e + count][0], y[Njack - 1][e + count][1]);
+                fprintf(fy, " %d   \n ", n);
+            }
+            count += ens[n];
+            fprintf(fy, "\n\n");
+        }
+        // band range
+        double pos = min;
+        while (pos < max) {
+            for (int j = 0;j < Njack;j++) {
+                for (int i = 0; i < xval.size(); i++) {
+                    tmpx[i] = xval[i];
+                }
+                for (int i = xval.size(); i < Nvar; i++) {
+                    tmpx[i] = fit_info.x[i][en + n * myen.size()][j];
+                }
+                tmpx[var] = pos;
+                tmpy[j] = fit_info.function(n, Nvar, tmpx, Npar, tif[j]);
+            }
+            fprintf(f, "%g  \t %g  %g\n", pos, tmpy[Njack - 1], error_jackboot(argv[1], Njack, tmpy));
+            pos += h;
+        }
+        free(tmpy);free(tmpx);
+        fclose(f);
+    }
+    fclose(fy);
+    free_2(Njack, tif);
+    free_2(Njack, tif_m0);
+    free_3(Njack, en_tot, y);
+
+
 }
