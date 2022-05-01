@@ -2,6 +2,7 @@
 #define correlators_analysis_H
 #include "resampling.hpp"
 #include "global.hpp"
+#include "non_linear_fit.hpp"
 double laplacian_M_eff_T(int t, int T, double** in);
 double der2corr_M_eff_T(int t, int T, double** in);
 double M_eff_T(int t, int T, double** in);

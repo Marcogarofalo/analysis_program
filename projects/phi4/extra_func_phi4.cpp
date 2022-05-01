@@ -9,7 +9,7 @@ extern "C" {
 #include "../external/rzeta/src/dzeta_function.h"
 }
 
-
+#include "non_linear_fit.hpp"
 #include "fit_all.hpp"
 
 

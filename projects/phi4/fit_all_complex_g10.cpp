@@ -1006,6 +1006,7 @@ int main(int argc, char** argv) {
     fit_info.precision_sum = 2;
 
     // fit_info.noderiv=true;
+    fit_info.noderiv = true;
     //fit_info.Prange={1,0.001, 10, 0.01, 1};
 
 
@@ -1046,15 +1047,28 @@ int main(int argc, char** argv) {
     fit_info.devorder = -2;
     fit_info.verbosity = 3;
     fit_info.repeat_start = 1;
-    fit_info.guess = { 64.7613, 9.1304, 1055.59, -0.1582 };
+    // fit_info.guess = { 64.7613, 9.1304, 1055.59, -0.1582 };
+    fit_info.guess = { 85.28, 9.1294, 1384, -0.155809 };
     // fit_info.mean_only = true;
     fit_info.precision_sum = 2;
     // fit_info.mean_only = true;
-    fit_info.precision_sum = 2;
     fit_info.covariancey = true;
     // fit_info.noderiv = true;
     // fit_info.Prange = { 1, 0.001, 10, 0.01 };
-
+    fit_info.compute_cov_fit(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info);
+    int ie=0, ie1=0;
+    for (int n = 0;n < fit_info.N;n++){
+        for (int e = 0;e < fit_info.myen.size();e++){
+            for (int n1 = 0;n1 < fit_info.N;n1++){
+                for (int e1 = 0;e1 < fit_info.myen.size();e1++){
+                    if (e != e1)   fit_info.cov[ie][ie1] = 0;
+                    ie1++;
+                }
+            }
+            ie++;
+        }
+    }
+    fit_info.compute_cov1_fit();
 
     mysprintf(namefile, NAMESIZE, "kcot_1par_1lev_and_kiso_pole_3par_cov", fit_info.Npar);
     struct fit_result kcot_1lev_and_kiso_pole_3par_cov = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);

@@ -18,91 +18,154 @@
 #include "tower.hpp"
 #include "global.hpp"
 #include <random>
- /*
-double *LU_decomposition_solver(int N, double **M, double *b){
- double **U,**L,*y,*x;
- int i,j,k;
+#include "fit_all.hpp"
 
- x=(double*) malloc(sizeof(double)*N);
- y=(double*) malloc(sizeof(double)*N);
- L=(double**) malloc(sizeof(double*)*N);
- U=(double**) malloc(sizeof(double*)*N);
- for (i=0;i<N;i++){
-    U[i]=(double*) calloc(N,sizeof(double));
-    L[i]=(double*) calloc(N,sizeof(double));
- }
 
- for (i=0;i<N;i++)
-     L[i][i]=1;
+void fit_type::compute_cov_fit(char** argv, data_all gjack, double lhs_fun(int, int, int, data_all, struct fit_type), struct fit_type fit_info) {
+    ////// allocation
+    int* en = (int*)malloc(sizeof(int) * N);// we need to init en and en_tot to allocate the other 
+    for (int e = 0;e < N; e++) { en[e] = myen.size(); }
+    int en_tot = 0;      for (int n = 0;n < N;n++) { en_tot += en[n]; }// total data to fit
 
- for (j=0;j<N;j++){
-    for (i=0;i<=j;i++){
-        U[i][j]=M[i][j];
-        for (k=0;k<i;k++)
-            U[i][j]-=L[i][k]*U[k][j];
+    double*** y = double_malloc_3(Njack, en_tot, 2);// 2 is mean/error
+
+    ////////////////////////////////////////// y
+    int count = 0;
+    for (int n = 0;n < N;n++) {
+        for (int e = 0;e < en[n];e++) {
+            double* tmpj = (double*)malloc(sizeof(double) * Njack);
+            for (int j = 0;j < Njack;j++) {
+                tmpj[j] = lhs_fun(n, myen[e], j, gjack, fit_info);
+            }
+            double err = error_jackboot(argv[1], Njack, tmpj);
+            for (int j = 0;j < Njack;j++) {
+                y[j][e + count][0] = tmpj[j];
+                y[j][e + count][1] = err;
+            }
+            free(tmpj);
+        }
+        count += en[n];
     }
-    for (i=j+1;i<N;i++){
-        L[i][j]=M[i][j];
-        for (k=0;k<j;k++)
-            L[i][j]-=L[i][k]*U[k][j];
-        L[i][j]/=U[j][j];
+    //////  init end
+    double** cov1;
+
+    double** yy = double_malloc_2(en_tot, Njack);
+    for (int i = 0;i < en_tot;i++)
+        for (int j = 0;j < Njack;j++)
+            yy[i][j] = y[j][i][0];
+
+
+    double** cov = covariance(argv[1], en_tot, Njack, yy);
+    free_2(en_tot, yy);
+
+    for (int n = 0;n < N;n++)
+        for (int e = 0;e < en[n];e++)
+            for (int n1 = 0;n1 < N;n1++)
+                for (int e1 = 0;e1 < en[n];e1++) {
+                    if (e != e1)
+                        cov[e + en[n] * n][e1 + en[n1] * n1] = 0;
+                }
+
+
+    int yn = is_it_positive(cov, en_tot);
+    while (yn == 1) {
+        printf("covariance matrix not positive defined adding eps*cov[0][0]*I \n");
+        for (int i = 0;i < en_tot;i++)
+            cov[i][i] += cov[0][0] * 1e-12;
+        yn = is_it_positive(cov, en_tot);
+        printf("now the matrix is positive defined.  %d\n", yn);
     }
- }
-
- y[0]=b[0]/L[0][0];
- for (i=0;i<N;i++){
-     y[i]=b[i];
-     for (k=0;k<i;k++)
-         y[i]-=L[i][k]*y[k];
-     y[i]/=L[i][i];
- }
-
- x[N-1]=y[N-1]/U[N-1][N-1];
- for (i=N-2;i>=0;i--){
-     x[i]=y[i];
-     for (k=i+1;k<N;k++)
-         x[i]-=U[i][k]*x[k];
-     x[i]/=U[i][i];
- }
-
- free(y);
- for (i=0;i<N;i++){
-     free(L[i]);
-     free(U[i]);
- }
- free(U);
- free(L);
-
- return x;
-
+    cov1 = symmetric_matrix_inverse(en_tot, cov);
+    free(en);
+    free_3(Njack, en_tot, y);
+    covariancey = true;
 }
 
-//return the inverse matrix of M
-double **matrix_inverse(int N, double **M  ){
-    double *b,**r,*a;
-    int i,j;
+void fit_type::compute_cov1_fit() {
+    int* en = (int*)malloc(sizeof(int) * N);// we need to init en and en_tot to allocate the other 
+    for (int e = 0;e < N; e++) { en[e] = myen.size(); }
+    int en_tot = 0;      for (int n = 0;n < N;n++) { en_tot += en[n]; }// total data to fit
 
-    b=(double*) calloc(N,sizeof(double));
-    r=(double**) malloc(sizeof(double*)*N);
-    for (i=0;i<N;i++){
-        r[i]=(double*) malloc(N*sizeof(double));
+    if (covariancey) {
+        free_2(en_tot, cov1);
+        int yn = is_it_positive(cov, en_tot);
+        while (yn == 1) {
+            printf("covariance matrix not positive defined adding eps*cov[0][0]*I \n");
+            for (int i = 0;i < en_tot;i++)
+                cov[i][i] += cov[0][0] * 1e-12;
+            yn = is_it_positive(cov, en_tot);
+            printf("now the matrix is positive defined.  %d\n", yn);
+        }
+        cov1 = symmetric_matrix_inverse(en_tot, cov);
+    }
+    free(en);
+}
+
+void fit_type::restore_default() {
+    custom = false; // 1 means default fit , 0 custom fit options
+    lambda = 0.001;
+    acc = 0.001;
+    h = 1e-5;
+    Prange = std::vector<double>();
+    guess = std::vector<double>();
+    corr_id = std::vector<int>();
+    devorder = 4;
+    repeat_start = 1;
+
+    if (myen.size() > 0 && N > 0 && Nvar > 0) {
+        for (int i = 0;i < Nvar;i++) {
+            for (int j = 0;j < myen.size() * N;j++) {
+                free(x[i][j]);
+            }
+            free(x[i]);
+        }
+        free(x);
+    }
+    // Nvar = 0;
+    N = 0;
+    myen = std::vector<int>();
+
+    mean_only = false;
+    unstable = false; // if true avoid thing that may return error
+    noderiv = false;
+
+    plateaux_scan = false;
+    guess_per_jack = 0;
+    chi2_gap_jackboot = 1;
+
+    precision_sum = 0;
+    verbosity = 0;
+    mu = 0;
+
+    t0_GEVP = 3;
+    value_or_vector = 0;
+    GEVP_tpt0 = false;
+    GEVP_swap_t_t0 = false;
+    GEVP_ignore_warning_after_t = 1000;
+
+    HENKEL_size = 1;
+    if (n_ext_P > 0) {
+        for (int i = 0;i < n_ext_P;i++) {
+            ext_P[i] = nullptr;
+        }
+        free(ext_P);
+        n_ext_P = 0;
     }
 
-    for (i=0;i<N;i++){
-        b[i]=1.;
-        a=LU_decomposition_solver(N, M, b);
-        for (j=0;j<N;j++)
-            r[j][i]=a[j];
-        free(a);
-        b[i]=0;
+    band_range = std::vector<double>();
+    //      f_plateaux_scan=NULL;
+    //      name_plateaux_scan="\0";
+    if (covariancey) {
+        int* en = (int*)malloc(sizeof(int) * N);// we need to init en and en_tot to allocate the other 
+        for (int e = 0;e < N; e++) { en[e] = myen.size(); }
+        int en_tot = 0;      for (int n = 0;n < N;n++) { en_tot += en[n]; }// total data to fit
+        free_2(en_tot, cov);
+        free_2(en_tot, cov1);
+        free(en);
     }
+    covariancey = false;
 
-    free(b);
-
-    return r;
-}*/
-
-
+}
 
 
 struct fit_result malloc_fit(struct  fit_type  fit_info) {
@@ -1122,8 +1185,6 @@ double compute_chi_non_linear_Nf_cov1(int N, int* ensemble, double** x, double**
     double chi2 = 0, f, f1;
     int e, n, count, e1, n1, count1;
 
-
-
     int en_tot = 0;
     for (n = 0;n < N;n++)
         for (e = 0;e < ensemble[n];e++)
@@ -1141,30 +1202,11 @@ double compute_chi_non_linear_Nf_cov1(int N, int* ensemble, double** x, double**
     for (int i = 0;i < en_tot;i++)
         chi2 += tmp[i] * cov1[i][i] * tmp[i];
 
-
     for (int i = 0;i < en_tot;i++)
         for (int j = i + 1;j < en_tot;j++)
             chi2 += 2. * tmp[i] * cov1[i][j] * tmp[j];
 
     free(tmp);
-    /*double chi2o=0;
-    count=0;
-    for (n=0;n<N;n++){
-        for (e=0;e<ensemble[n];e++){
-            count1=0;
-            f=fun(n,Nvar,x[count],Npar,P)-y[count][0];
-            for (n1=0;n1<N;n1++){
-                for (e1=0;e1<ensemble[n1];e1++){
-                    f1=fun(n1,Nvar,x[count1],Npar,P)-y[count1][0];
-                    chi2o+=f *cov1[count][count1]*f1;
-                    count1++;
-                }
-            }
-            count++;
-        }
-    }
-    error(fabs(chi2-chi2o)>e1-6,1,"chi2 diverso","");
-    */
     return chi2;
 }
 
@@ -1522,19 +1564,15 @@ double* non_linear_fit_Nf_cov(int N, int* ensemble, double** x, double** y, int 
                         }
                     }
                     for (j = 0;j < Npar;j++) {
-                        /*for(i=0;i<en_tot;i++)
-                            beta[j]+=(y[i][0]-f_value[i])*cov1[i][i]*df_value[i][j];*/
                         for (i = 0;i < en_tot;i++)
                             for (int ii = 0;ii < en_tot;ii++)
                                 beta[j] += (y[i][0] - f_value[i]) * cov1[i][ii] * df_value[ii][j];
 
 
                         for (k = j;k < Npar;k++) {
-                            //for(i=0;i<en_tot;i++)
-                            //    alpha[j][k]+=df_value[i][j]*cov1[i][i]*df_value[i][k];
                             for (i = 0;i < en_tot;i++)
                                 for (int ii = 0;ii < en_tot;ii++)
-                                    alpha[j][k] += df_value[i][j] * cov1[i][ii] * df_value[ii][k];
+                                    alpha[j][k] += df_value[j][i] * cov1[i][ii] * df_value[ii][k];
                         }
                     }
                     for (i = 0;i < en_tot;i++)

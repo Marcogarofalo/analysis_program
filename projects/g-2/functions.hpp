@@ -6,6 +6,7 @@ extern "C" {
 #include "../external/rzeta/src/dzeta_function.h"
 }
 #include <algorithm>
+#include "non_linear_fit.hpp"
 static int once = 0;
 
 using namespace std::complex_literals;

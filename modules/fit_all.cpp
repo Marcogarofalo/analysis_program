@@ -23,7 +23,33 @@
 #include "mutils.hpp"
 #include "resampling.hpp"
 
+void data_all::add_fit(struct fit_result fit_out) {
 
+        int N = Nfits + 1;
+        Nfits = N;
+
+        fit_result* fit_tmp = (struct fit_result*)malloc(sizeof(struct fit_result) * N);
+        for (int i = 0;i < N - 1;i++) {
+            fit_tmp[i] = malloc_copy_fit_result(fits[i]);
+            // fit_tmp[i].name=fits[i].name;
+            for (int j = 0;j < fits[i].Npar;j++) {
+                free(fits[i].P[j]);
+                for (int k = 0;k < fits[i].Npar;k++) {
+                    free(fits[i].C[j][k]);
+                }
+                free(fits[i].C[j]);
+            }
+            free(fits[i].chi2);
+            free(fits[i].P);
+            free(fits[i].C);
+            if (i == N - 2) { free(fits); }
+        }
+
+        fit_tmp[N - 1] = malloc_copy_fit_result(fit_out);
+        fits = fit_tmp;
+        
+
+    }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// print band
@@ -76,7 +102,7 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
         double pos = min;
         while (pos < max) {
             for (int j = 0;j < Njack;j++) {
-                for (int i = 0; i < xval.size(); i++){
+                for (int i = 0; i < xval.size(); i++) {
                     tmpx[i] = xval[i];
                 }
                 for (int i = xval.size(); i < Nvar; i++) {
@@ -247,8 +273,18 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
             for (int j = 0;j < Njack;j++)
                 yy[i][j] = y[j][i][0];
 
+
         double** cov = covariance(argv[1], en_tot, Njack, yy);
         free_2(en_tot, yy);
+
+        for (int n = 0;n < N;n++)
+            for (int e = 0;e < en[n];e++)
+                for (int n1 = 0;n1 < N;n1++)
+                    for (int e1 = 0;e1 < en[n];e1++) {
+                        if (e != e1)
+                            cov[e + en[n] * n][e1 + en[n1] * n1] = 0;
+                    }
+
 
         int yn = is_it_positive(cov, en_tot);
         while (yn == 1) {
@@ -272,8 +308,8 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
 
             double a = timestamp();
             if (fit_info.covariancey) {
-                fit[j] = non_linear_fit_Nf_cov(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info, cov1);
-                fit_out.chi2[j] = compute_chi_non_linear_Nf_cov1(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function, cov1) / (en_tot - Npar);
+                fit[j] = non_linear_fit_Nf_cov(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info, fit_info.cov1);
+                fit_out.chi2[j] = compute_chi_non_linear_Nf_cov1(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function, fit_info.cov1) / (en_tot - Npar);
             }
             else {
                 fit[j] = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
@@ -294,8 +330,8 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
     else if (fit_info.mean_only == true) {
         int j = Njack - 1;
         if (fit_info.covariancey) {
-            fit[j] = non_linear_fit_Nf_cov(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info, cov1);
-            fit_out.chi2[j] = compute_chi_non_linear_Nf_cov1(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function, cov1) / (en_tot - Npar);
+            fit[j] = non_linear_fit_Nf_cov(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info, fit_info.cov1);
+            fit_out.chi2[j] = compute_chi_non_linear_Nf_cov1(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function, fit_info.cov1) / (en_tot - Npar);
         }
         else {
             fit[j] = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
@@ -327,7 +363,6 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
 
     ////// free
     free(en);
-    if(fit_info.covariancey) free_2(en_tot, cov1);
     //free(chi2j);
     free_3(Njack, en_tot, y);
     free_3(Njack, en_tot, x);

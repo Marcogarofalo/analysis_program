@@ -60,7 +60,8 @@ add_library(
     non_linear_fit.hpp
     ../modules/non_linear_fit.cpp
     ../modules/non_linear_fit_sigmax.cpp
-) 
+)
+target_link_libraries(non_linear_fit PUBLIC fit_all) 
 target_link_libraries(non_linear_fit PUBLIC linear_fit)
 target_link_libraries(non_linear_fit PUBLIC mutils)
 target_include_directories(non_linear_fit PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")

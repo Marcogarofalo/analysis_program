@@ -1,9 +1,8 @@
 #ifndef fit_all_H
 #define fit_all_H
 
-
 #include "global.hpp"
-#include "non_linear_fit.hpp"
+// #include "non_linear_fit.hpp"
 #include "tower.hpp"
 #include <iostream>
 #include "resampling.hpp"
@@ -183,49 +182,8 @@ public:
         for (int e = 0;e < ens;e++)
             en[e].init_error();
     }
-    void add_fit(struct fit_result fit_out) {
-
-        int N = Nfits + 1;
-        Nfits = N;
-
-        fit_result* fit_tmp = (struct fit_result*)malloc(sizeof(struct fit_result) * N);
-        for (int i = 0;i < N - 1;i++) {
-            fit_tmp[i] = malloc_copy_fit_result(fits[i]);
-            // fit_tmp[i].name=fits[i].name;
-            for (int j = 0;j < fits[i].Npar;j++) {
-                free(fits[i].P[j]);
-                for (int k = 0;k < fits[i].Npar;k++) {
-                    free(fits[i].C[j][k]);
-                }
-                free(fits[i].C[j]);
-            }
-            free(fits[i].chi2);
-            free(fits[i].P);
-            free(fits[i].C);
-            if (i == N - 2) { free(fits); }
-        }
-
-        fit_tmp[N - 1] = malloc_copy_fit_result(fit_out);
-        fits = fit_tmp;
-        // fits = (struct fit_result*)malloc(sizeof(struct fit_result) * N);
-        // for (int i = 0;i < N;i++) {
-        //     fits[i] = malloc_copy_fit_result(fit_tmp[i]);
-
-        //     for (int j = 0;j < fit_tmp[i].Npar;j++) {
-        //         free(fit_tmp[i].P[j]);
-        //         for (int k = 0;k < fit_tmp[i].Npar;k++) {
-        //             free(fit_tmp[i].C[j][k]);
-        //         }
-        //         free(fit_tmp[i].C[j]);
-        //     }
-        //     free(fit_tmp[i].chi2);
-        //     free(fit_tmp[i].P);
-        //     free(fit_tmp[i].C);
-        // }
-        // free(fit_tmp);
-
-    }
-
+    
+    void add_fit(struct fit_result fit_out);
     // data_all() {};
 
     // data_all(int N) : ens(N) {
