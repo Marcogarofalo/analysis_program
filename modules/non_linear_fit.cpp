@@ -807,8 +807,8 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
                 int dir = 1;
                 double lmax = 100;
                 double lam = lambda;
-                if (fit_info.Prange.size()==Npar)
-                    lam=fit_info.Prange[j];
+                if (fit_info.Prange.size() == Npar)
+                    lam = fit_info.Prange[j];
                 while (lam < lmax) {
                     P_tmp[j] = P[j] + dir * lam;
                     chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun);
@@ -838,7 +838,7 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
             Niter++;
             nerror = 0;
             bool computed_alpha = false;
-            
+
             while (chi2_tmp >= chi2) {  //do {} while()   , at least one time is done. if chi is too big chi_tmp=chi+1 = chi 
                 if (!computed_alpha) {
                     count = 0;
@@ -895,9 +895,9 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
                             printf(" non_linear_fit_Nf a parameter proposal was rejected because out of range Niter=%d\n", Niter);
                             printf("lambda=%f\n", lambda);
                             printf("chi2=%f chi2_tmp=%f  res=%f \n\n", chi2, chi2_tmp, res);
-                            for (j = 0;j < Npar;j++){
+                            for (j = 0;j < Npar;j++) {
                                 printf("P[%d]=%g   Ptmp[%d]=%g\n", j, P[j], j, P_tmp[j]);
-                                P_tmp[j]=P[j];
+                                P_tmp[j] = P[j];
                             }
                         }
                         continue;
@@ -1391,6 +1391,263 @@ double* non_linear_fit_Nf_covariance(int N, int* ensemble, double** x, double** 
 }
 
 
+/*********************************************************************************
+ * x[ensemble][variable number] ,   y[ensemble][0=mean,1=error],
+ * fun(index_function,Nvariables,variables[], Nparameters,parameters[])
+ * the function return an array[Nparameter]  with the value of the parameters that minimise the chi2
+ * devorder can be negative, in that case each parameter has is own h[i]=Parameter[i] *h
+ ***********************************************************************************/
+ //double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar,  double fun(int, int, double*, int, double*) , double* guess, double lambda, double acc, double h, std::vector< double > Prange, int devorder, int verbosity , int precision_sum )
+double* non_linear_fit_Nf_cov(int N, int* ensemble, double** x, double** y, int Nvar, int Npar, double fun(int, int, double*, int, double*), double* guess, fit_type fit_info, double** cov1) {
+
+
+    double lambda = fit_info.lambda;
+    double acc = fit_info.acc;
+    double h = fit_info.h;
+    std::vector< double > Prange = fit_info.Prange;
+    int devorder = fit_info.devorder;
+    int verbosity = fit_info.verbosity;
+    int precision_sum = fit_info.precision_sum;
+
+    double* (*der_fun_Nf_h)(int, int, double*, int, double*, double(int, int, double*, int, double*), double);
+    double (*chi2_fun)(int, int*, double**, double**, double*, int, int, double(int, int, double*, int, double*), double**);
+    chi2_fun = compute_chi_non_linear_Nf_cov1;
+
+    if (devorder == -2) {
+        der_fun_Nf_h = der_O2_fun_Nf_h_adaptive;
+    }
+    else if (devorder == 4) {
+        der_fun_Nf_h = der_O4_fun_Nf_h;
+    }
+    else if (devorder == 2) {
+        der_fun_Nf_h = der_O2_fun_Nf_h;
+    }
+    else {
+        error(true, 1, "non_linear_fit_Nf", "order of the derivative must be 4 (default) , 2,  -2 to set a step different for each parameter h[i]=P[i]*h    ");
+    }
+
+    double** alpha, * X, * beta, ** a, ** C, * sigma;
+    int i, j, k, e;
+    int en_tot = 0;
+    for (int n = 0;n < N;n++)
+        for (e = 0;e < ensemble[n];e++)
+            en_tot += 1;
+    double* f_value = (double*)malloc(sizeof(double) * en_tot);
+    double** df_value = (double**)malloc(sizeof(double*) * en_tot);
+
+    double chi2, chi2_tmp;
+    double* P, * P_tmp, * P_tmp1, res;
+    int n, count, Niter = 0;
+    int nerror = 0;
+    res = 1;
+
+    P = (double*)malloc(Npar * sizeof(double));
+    P_tmp = (double*)malloc(Npar * sizeof(double));
+
+    for (j = 0;j < Npar;j++) {
+        P[j] = guess[j];
+        P_tmp[j] = P[j];
+
+    }
+
+    beta = (double*)calloc(Npar, sizeof(double));
+    alpha = (double**)malloc(sizeof(double*) * Npar);
+    for (j = 0;j < Npar;j++) {
+        alpha[j] = (double*)calloc(Npar, sizeof(double));
+    }
+    double** alpha_l = (double**)malloc(sizeof(double*) * Npar);
+    for (j = 0;j < Npar;j++) {
+        alpha_l[j] = (double*)malloc(Npar * sizeof(double));
+    }
+
+    chi2 = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun, cov1);//printf("chi2 in fit function=%g\n",chi2/(ensemble[0]*N-Npar));
+
+    if (verbosity > 0) {
+        printf("non_linear_fit_Nf:\ninitial chi2=%g\n", chi2);
+        if (verbosity > 1) {
+            for (j = 0;j < Npar;j++)
+                printf("  P[%d]=%g", j, P_tmp[j]);
+            printf("\n");
+        }
+    }
+    if (fit_info.noderiv) {
+        double init_chi2 = 1;
+        double loop_chi2 = 20;
+        while (fabs(init_chi2 - loop_chi2) > acc) {
+            init_chi2 = chi2;
+            for (j = 0;j < Npar;j++) {
+                int dir = 1;
+                double lmax = 100;
+                double lam = lambda;
+                if (fit_info.Prange.size() == Npar)
+                    lam = fit_info.Prange[j];
+                while (lam < lmax) {
+                    P_tmp[j] = P[j] + dir * lam;
+                    chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun, cov1);
+                    if (verbosity > 2) for (int l = 0;l < Npar;l++) printf("%g\t", P_tmp[l]); printf("\n");
+                    while (chi2_tmp < chi2 && !isnan(chi2_tmp)) {
+                        if (verbosity > 1) printf("found a better chi2: dir %d new=%.8g  old=%.8g  param=%d lambda=%g P=%g   Pnew=%g\n",
+                            j, chi2_tmp, chi2, j, lam, P[j], P_tmp[j]);
+                        chi2 = chi2_tmp;
+                        P[j] = P_tmp[j];
+                        P_tmp[j] = P[j] + dir * lam;
+                        chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun, cov1);
+                    }
+                    dir *= -1;
+                    // if does not find a better chi2 in both directions
+                    if (dir == 1) lam *= 1e+6;
+                    P_tmp[j] = P[j];
+                }
+            }
+            loop_chi2 = chi2;
+        }
+
+    }
+    else {
+        while (res > acc) {
+            chi2_tmp = chi2 + 10;
+            if (Niter > 200) { if (verbosity > 0) printf("Niter=%d of the Levenberg-Marquardt chi2 minimization: exeeds max number\n", Niter); break; }
+            Niter++;
+            nerror = 0;
+            bool computed_alpha = false;
+
+            while (chi2_tmp >= chi2) {  //do {} while()   , at least one time is done. if chi is too big chi_tmp=chi+1 = chi 
+                if (!computed_alpha) {
+                    count = 0;
+                    for (n = 0;n < N;n++) {
+                        for (e = 0;e < ensemble[n];e++) {
+                            f_value[count] = fun(n, Nvar, x[e], Npar, P);
+                            df_value[count] = der_fun_Nf_h(n, Nvar, x[e], Npar, P, fun, h);
+                            count++;
+                        }
+                    }
+                    for (j = 0;j < Npar;j++) {
+                        /*for(i=0;i<en_tot;i++)
+                            beta[j]+=(y[i][0]-f_value[i])*cov1[i][i]*df_value[i][j];*/
+                        for (i = 0;i < en_tot;i++)
+                            for (int ii = 0;ii < en_tot;ii++)
+                                beta[j] += (y[i][0] - f_value[i]) * cov1[i][ii] * df_value[ii][j];
+
+
+                        for (k = j;k < Npar;k++) {
+                            //for(i=0;i<en_tot;i++)
+                            //    alpha[j][k]+=df_value[i][j]*cov1[i][i]*df_value[i][k];
+                            for (i = 0;i < en_tot;i++)
+                                for (int ii = 0;ii < en_tot;ii++)
+                                    alpha[j][k] += df_value[i][j] * cov1[i][ii] * df_value[ii][k];
+                        }
+                    }
+                    for (i = 0;i < en_tot;i++)
+                        free(df_value[i]);
+                    computed_alpha = true;
+                }
+
+                for (j = 0;j < Npar;j++) {
+                    alpha_l[j][j] = (lambda + 1.) * alpha[j][j];
+                    for (k = 0;k < j;k++)
+                        alpha_l[j][k] = alpha[k][j];
+                    for (k = j + 1;k < Npar;k++)
+                        alpha_l[j][k] = alpha[j][k];
+                }
+
+                free(P_tmp);
+                P_tmp = cholesky_solver_if_possible(Npar, alpha_l, beta);
+
+                if (Prange.size() == Npar) {
+                    bool too_far = false;
+                    for (j = 0;j < Npar;j++) {
+                        if (fabs(P_tmp[j] + P[j] - guess[j]) > Prange[j]) {
+                            too_far = true;
+                        }
+                    }
+                    if (too_far) {
+                        lambda *= 10;
+                        if (verbosity > 0) {
+                            printf(" non_linear_fit_Nf a parameter proposal was rejected because out of range Niter=%d\n", Niter);
+                            printf("lambda=%f\n", lambda);
+                            printf("chi2=%f chi2_tmp=%f  res=%f \n\n", chi2, chi2_tmp, res);
+                            for (j = 0;j < Npar;j++) {
+                                printf("P[%d]=%g   Ptmp[%d]=%g\n", j, P[j], j, P_tmp[j]);
+                                P_tmp[j] = P[j];
+                            }
+                        }
+                        continue;
+                    }
+                }
+
+                for (j = 0;j < Npar;j++)     P_tmp[j] += P[j];
+
+                for (j = 0;j < Npar;j++) {
+                    if (isnan(P_tmp[j])) {
+                        computed_alpha = false;
+                        h /= 10.0;
+                        P_tmp[j] = P[j] + (2. * rand() / RAND_MAX - 1.) * P[j] / 100.0;// recompute the hessian on this par
+                        if (verbosity > 1) printf("parameter is nan, resetting: P[%d]=%g\n", j, P_tmp[j]);
+                    }
+                }
+                chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun, cov1);
+                if (verbosity > 1) {
+                    printf("%s:  new_chi2=%g   old_chi=%g  ", __func__, chi2_tmp, chi2);
+                    for (int i = 0;i < Npar;i++) {
+                        printf("  P[%d]=%g", i, P_tmp[i]);
+                    }
+                    printf("\n");
+                }
+
+                if (chi2_tmp != chi2_tmp) chi2_tmp = chi2 + 10;
+
+                if (chi2_tmp >= chi2)
+                    lambda *= 10;
+
+                if (lambda > 1e+15) {
+                    if (verbosity > 1) printf("lambda of the Levenberg-Marquardt chi2 minimization: exeeds 1e+15 lambda=%g\n RESET lambda=0.001\n", lambda);
+                    for (j = 0;j < Npar;j++) {
+                        P_tmp[j] = P[j] + (2. * rand() / ((double)RAND_MAX) - 1.) * P[j] / 1000.0;
+                        computed_alpha = false;
+                        if (verbosity > 0)  printf("  guess[%d]=%g\t", j, guess[j]);
+                    }
+                    lambda = 0.001;
+                    nerror++;
+                    if (nerror > 2) {
+                        if (verbosity > 0)
+                            printf("\n !!!!!!!!!!!!!!!! error:  Impossible to minimise the chi2 with Levenberg-Marquardt for this starting point   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+                        if (verbosity > 0)  printf("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
+                        for (j = 0;j < Npar;j++)      free(alpha[j]);
+                        free(P_tmp);
+                        free(alpha);free(beta);
+                        return P;
+                    }
+                }
+            }
+            res = chi2 - chi2_tmp;
+            lambda /= 10;
+            for (j = 0;j < Npar;j++) {
+                P[j] = P_tmp[j];
+                //             printf("P[%d]= %f    \t",j,P[j]);
+            }
+            if (verbosity >= 2)  printf("\nres=%g  acc=%g  chi2=%g  \n", res, acc, chi2);
+            error(res < 0, 2, "non_linear_fit", "The Levenberg-Marquardt accepted a configuration when the chi2 increased");
+            chi2 = chi2_tmp;
+            for (j = 0;j < Npar;j++) {
+                beta[j] = 0;
+                for (k = 0;k < Npar;k++) {
+                    alpha[j][k] = 0;
+                }
+            }
+            computed_alpha = false;
+
+        }
+    }
+
+    for (j = 0;j < Npar;j++) {
+        free(alpha[j]);
+        free(alpha_l[j]);
+    }
+    free(f_value);free(df_value);
+    free(P_tmp);
+    free(alpha);free(beta);free(alpha_l);
+    return P;
+}
 
 double rtsafe(void (*funcd)(double, int, double*, double*, double*), int Npar, double* P, double x1, double x2,
     double xacc)

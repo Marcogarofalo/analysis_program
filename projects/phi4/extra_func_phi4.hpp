@@ -27,6 +27,7 @@ double rhs_E3_m_QC3_pole_inter(int n, int Nvar, double* x, int Npar, double* P);
 double rhs_E3_m_QC3_pole_E2_QC2(int n, int Nvar, double* x, int Npar, double* P);
 double rhs_E3_m_QC3_const_E2_QC2(int n, int Nvar, double* x, int Npar, double* P);
 double rhs_E3_m_QC3_pole_E2_QC2_1par(int n, int Nvar, double* x, int Npar, double* P);
+double rhs_E3_m_QC3_const_E2_QC2_1par(int n, int Nvar, double* x, int Npar, double* P);
 
 void print_fit_band_QC3_phi4(char** argv, data_all gjack, struct fit_type fit_info,
     struct fit_type fit_info_E3_poly, const char* label, const char* dir_name,

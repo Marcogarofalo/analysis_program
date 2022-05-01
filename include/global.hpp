@@ -216,6 +216,7 @@ struct  fit_type {
   bool mean_only = false;
   bool unstable = false; // if true avoid thing that may return error
   bool noderiv = false;
+  bool covariancey = false;
 
   std::vector<int> corr_id = {};
   std::vector<double>  Prange = {};
@@ -273,6 +274,8 @@ struct  fit_type {
     mean_only = false;
     unstable = false; // if true avoid thing that may return error
     noderiv = false;
+    covariancey = false;
+    
     plateaux_scan = false;
     guess_per_jack = 0;
     chi2_gap_jackboot = 1;
