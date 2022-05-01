@@ -18,6 +18,7 @@
 
 #include "tower.hpp"
 #include "fit_all.hpp"
+#include "linear_fit.hpp"
 #include "non_linear_fit.hpp"
 #include "mutils.hpp"
 #include "resampling.hpp"
@@ -34,7 +35,7 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
 
     std::vector<int> myen = fit_info.myen;
     int Npar = fit_info.Npar;
-    int Nvar = fit_info.Nvar ;
+    int Nvar = fit_info.Nvar;
     int Njack = gjack.en[0].Njack;
     int N = fit_info.N;
     char namefile[NAMESIZE];
@@ -61,8 +62,8 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
         min = fit_info.band_range[0];
         max = fit_info.band_range[1];
     }
-    
-    max += h/2.0;
+
+    max += h / 2.0;
 
     for (int n = 0;n < N; n++) {
 
@@ -89,7 +90,7 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
     }
     free_2(Njack, tif);
     free_2(Njack, tif_m0);
-    
+
 }
 
 
@@ -235,6 +236,29 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
     }
     //////  init end
 
+    // if covariance
+    double** cov1;
+    if (fit_info.covariancey) {
+        double** yy = double_malloc_2(en_tot, Njack);
+        for (int i = 0;i < en_tot;i++)
+            for (int j = 0;j < Njack;j++)
+                yy[i][j] = y[j][i][0];
+
+        double** cov = covariance(argv[1], en_tot, Njack, yy);
+        free_2(en_tot, yy);
+
+        int yn = is_it_positive(cov, en_tot);
+        while (yn == 1) {
+            printf("covariance matrix not positive defined adding eps*cov[0][0]*I \n");
+            for (int i = 0;i < en_tot;i++)
+                cov[i][i] += cov[0][0] * 1e-12;
+            yn = is_it_positive(cov, en_tot);
+            printf("now the matrix is positive defined.  %d\n", yn);
+        }
+        cov1 = symmetric_matrix_inverse(en_tot, cov);
+        free_2(en_tot, cov);
+
+    }
     ///////////////// the fit 
     // scan the parameter of the fit with the last jack
     if (fit_info.guess.size() == 0 || fit_info.repeat_start > 1) {
@@ -244,9 +268,14 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
         for (int j = Njack - 1;j >= 0;j--) {
 
             double a = timestamp();
-            fit[j] = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
-            fit_out.chi2[j] = compute_chi_non_linear_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function) / (en_tot - Npar);
-
+            if (fit_info.covariancey) {
+                fit[j] = non_linear_fit_Nf_cov(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info, cov1);
+                fit_out.chi2[j] = compute_chi_non_linear_Nf_cov1(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function, cov1) / (en_tot - Npar);
+            }
+            else {
+                fit[j] = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
+                fit_out.chi2[j] = compute_chi_non_linear_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function) / (en_tot - Npar);
+            }
             if (fit_info.verbosity > 0) {
                 printf("jack =%d  chi2/dof=%g   chi2=%g   time=%g   \n", j, fit_out.chi2[j], fit_out.chi2[j] * (en_tot - Npar), timestamp() - a);
                 if (fit_info.verbosity > 1) {
@@ -256,28 +285,27 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
                 }
             }
 
-            // we do not need the covariance of the fit, it will be computed with jackboot
-            //double **C=covariance_non_linear_fit_Nf(N, en,x[j], y[j],fit[j] , Nvar,  Npar, fit_info.function );            
-            //for(int i=0;i<Npar;i++)
-            //    for(int k=0;k<Npar;k++)
-            //        fit_out.C[i][k][j]=C[i][k];
-            //free_2(Npar, C);
-
 
         }
     }
     else if (fit_info.mean_only == true) {
         int j = Njack - 1;
-        fit[j] = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
-        fit_out.chi2[j] = compute_chi_non_linear_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function) / (en_tot - Npar);
+        if (fit_info.covariancey) {
+            fit[j] = non_linear_fit_Nf_cov(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info, cov1);
+            fit_out.chi2[j] = compute_chi_non_linear_Nf_cov1(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function, cov1) / (en_tot - Npar);
+        }
+        else {
+            fit[j] = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
+            fit_out.chi2[j] = compute_chi_non_linear_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function) / (en_tot - Npar);
+        }
         // for the other jackboot add a white noise to the mean
         for (j = Njack - 2;j >= 0;j--) {
             fit[j] = (double*)malloc(sizeof(double) * fit_info.Npar);
 
             for (int i = 0; i < fit_info.Npar;i++) {
-                double noise = fit[Njack - 1][i] * ( mt_rand()) / ((double)mt_rand.max() * 10000)  ;
+                double noise = fit[Njack - 1][i] * (mt_rand()) / ((double)mt_rand.max() * 10000);
                 fit[j][i] = fit[Njack - 1][i] + noise;
-                printf("%g \t",fit[j][i]);
+                printf("%g \t", fit[j][i]);
                 fit_out.chi2[j] = fit_out.chi2[Njack - 1] * noise;
             }
             printf("\n");
@@ -288,14 +316,15 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
         for (int j = 0;j < Njack;j++)
             fit_out.P[i][j] = fit[j][i];
 
-    fit_out.Npar=fit_info.Npar;
+    fit_out.Npar = fit_info.Npar;
     // fit_out.name=label;
-    mysprintf(fit_out.name,NAMESIZE,"%s", label);
+    mysprintf(fit_out.name, NAMESIZE, "%s", label);
     /////////////////////////////////////////////////////////////////////writing the result
     print_fit_output(argv, gjack, fit_info, label, fit_out, en, x, y, myen);
 
     ////// free
     free(en);
+    if(fit_info.covariancey) free_2(en_tot, cov1);
     //free(chi2j);
     free_3(Njack, en_tot, y);
     free_3(Njack, en_tot, x);
