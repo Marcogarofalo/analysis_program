@@ -606,10 +606,8 @@ int main(int argc, char** argv) {
     fit_info.ext_P[1] = gjack[0].jack[1];
     fit_info.ext_P[2] = gjack[0].jack[1];
 
-
     fit_m0 = fit_data(argv, paramsj, gjack, M0_finite_volume_lhs, fit_info, "M0_finite_vol", myen);
     jackall.add_fit(fit_m0);
-
     fit_m1 = fit_data(argv, paramsj, gjack, M1_finite_volume_lhs, fit_info, "M1_finite_vol", myen);
 
     // corr 75 =E1_1_px
@@ -663,11 +661,11 @@ int main(int argc, char** argv) {
             count++;
         }
     }
+
     fit_info.function = rhs_kcotd_m_new;
     fit_result kcotd_m = fit_all_data(argv, jackall, lhs_kcotd_m_new, fit_info, "kcotd_m");
     fit_info.band_range = { };
     print_fit_band(argv, jackall, fit_info, fit_info_m0, "kcotd_m", "k_m", kcotd_m, fit_m0, 1, myen.size() - 1, 0.1);
-
     fit_info.restore_default();
 
 
@@ -810,7 +808,39 @@ int main(int argc, char** argv) {
     jackall.add_fit(deltaE2_m_QC2);
     fit_info.restore_default();
 
-
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    printf("\n/////////////////////////////////   fit  deltaE2_m_QC3 1lev //////////////////\n");
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    fit_info.Npar = 1;
+    fit_info.N = 1;
+    fit_info.Nvar = 3;
+    fit_info.Njack = jackall.en[0].Njack;
+    fit_info.myen = myen;
+    fit_info.precision_sum = 2;
+    fit_info.verbosity = 0;
+    fit_info.guess = { -0.141739, -2.89287 };
+    fit_info.lambda = 0.001;
+    fit_info.acc = 0.001;
+    fit_info.h = 1e-3;
+    fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+    count = 0;
+    for (int n = 0;n < fit_info.N;n++) {
+        for (int e = 0;e < fit_info.myen.size();e++) {
+            for (int j = 0;j < Njack;j++) {
+                fit_info.x[0][count][j] = paramsj[e].data.L[1];
+                fit_info.x[1][count][j] = jackall.en[fit_info.myen[e]].jack[1][j];
+                fit_info.x[2][count][j] = fit_m0.P[0][j];
+            }
+            count++;
+        }
+    }
+    fit_info.function = rhs_deltaE2_m_QC2;
+    fit_result deltaE2_m_QC2_1lev = fit_all_data(argv, jackall, lhs_deltaE2_m_latt_QC2, fit_info, "deltaE2_m_QC2_1lev");
+    fit_info.band_range = { 19, 26 };
+    print_fit_band_phi4(argv, jackall, fit_info, fit_info_m0, "deltaE2_m_QC2_1lev", "L", deltaE2_m_QC2_1lev, fit_m0, 0, 0, 1);
+    free_fit_result(fit_info, deltaE2_m_QC2_1lev);
+    fit_info.restore_default();
+    exit(1);
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     printf("\n/////////////////////////////////   fit  E3 poly  //////////////////\n");
@@ -1061,7 +1091,7 @@ int main(int argc, char** argv) {
     mysprintf(namefile, NAMESIZE, "kcot_1par_1lev_and_kiso_pole_2par", fit_info.Npar);
     struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
     fit_info.band_range = { 5.65,7.2 };
-    print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, myen.size()-1, 0.15);
+    print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, myen.size() - 1, 0.15);
     fit_info.restore_default();
     printf("//////////////////// kcot 1par and kiso pole fit cov  ////////////////////////////////////\n");
     // init_python_detQC();
@@ -1098,7 +1128,7 @@ int main(int argc, char** argv) {
     // fit_info.guess = { 64.7613, 9.1304, 1055.59, -0.1582 };
     // fit_info.guess = { 95.73,   9.1284,  1621,    -0.153309 };
     // fit_info.guess = { 85.28, 9.1294, 1384, -0.155809 };
-    fit_info.guess = { 95.0925,     9.12815, 1544,    -0.155809  };
+    fit_info.guess = { 95.0925,     9.12815, 1544,    -0.155809 };
     // fit_info.Prange = { 1, 0.01, 20, 0.1 };
     // fit_info.mean_only = true;
     fit_info.precision_sum = 2;
@@ -1106,12 +1136,12 @@ int main(int argc, char** argv) {
     fit_info.covariancey = true;
     // fit_info.noderiv = true;
     fit_info.compute_cov_fit(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info);
-    int ie=0, ie1=0;
-    for (int n = 0;n < fit_info.N;n++){
-        for (int e = 0;e < fit_info.myen.size();e++){
-            ie1=0;
-            for (int n1 = 0;n1 < fit_info.N;n1++){
-                for (int e1 = 0;e1 < fit_info.myen.size();e1++){
+    int ie = 0, ie1 = 0;
+    for (int n = 0;n < fit_info.N;n++) {
+        for (int e = 0;e < fit_info.myen.size();e++) {
+            ie1 = 0;
+            for (int n1 = 0;n1 < fit_info.N;n1++) {
+                for (int e1 = 0;e1 < fit_info.myen.size();e1++) {
                     if (e != e1)   fit_info.cov[ie][ie1] = 0;
                     ie1++;
                 }
@@ -1211,12 +1241,12 @@ int main(int argc, char** argv) {
     fit_info.precision_sum = 2;
     fit_info.covariancey = true;
     fit_info.compute_cov_fit(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info);
-    ie=0; ie1=0;
-    for (int n = 0;n < fit_info.N;n++){
-        for (int e = 0;e < fit_info.myen.size();e++){
-            ie1=0;
-            for (int n1 = 0;n1 < fit_info.N;n1++){
-                for (int e1 = 0;e1 < fit_info.myen.size();e1++){
+    ie = 0; ie1 = 0;
+    for (int n = 0;n < fit_info.N;n++) {
+        for (int e = 0;e < fit_info.myen.size();e++) {
+            ie1 = 0;
+            for (int n1 = 0;n1 < fit_info.N;n1++) {
+                for (int e1 = 0;e1 < fit_info.myen.size();e1++) {
                     if (e != e1)   fit_info.cov[ie][ie1] = 0;
                     ie1++;
                 }

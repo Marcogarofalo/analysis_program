@@ -1004,7 +1004,7 @@ int main(int argc, char** argv) {
     fit_info.devorder = -2;
     fit_info.verbosity = 3;
     fit_info.repeat_start = 1;
-    fit_info.guess = {22.7822  ,       9.19774    ,     1317.07   ,      -0.155816 };
+    fit_info.guess = {22.2822 ,        9.19729   ,      1317.02  ,       -0.155816 };
     fit_info.mean_only = true;
     fit_info.precision_sum = 2;
 
@@ -1014,7 +1014,7 @@ int main(int argc, char** argv) {
 
     mysprintf(namefile, NAMESIZE, "kcot_1par_1lev_and_kiso_pole_3par", fit_info.Npar);
     struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
-    fit_info.band_range = { 5.65,7.2 };
+    fit_info.band_range = { 5.0,7.0 };
     print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, myen.size()-1, 0.15);
     fit_info.restore_default();
 

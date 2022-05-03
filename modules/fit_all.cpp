@@ -25,31 +25,31 @@
 
 void data_all::add_fit(struct fit_result fit_out) {
 
-        int N = Nfits + 1;
-        Nfits = N;
+    int N = Nfits + 1;
+    Nfits = N;
 
-        fit_result* fit_tmp = (struct fit_result*)malloc(sizeof(struct fit_result) * N);
-        for (int i = 0;i < N - 1;i++) {
-            fit_tmp[i] = malloc_copy_fit_result(fits[i]);
-            // fit_tmp[i].name=fits[i].name;
-            for (int j = 0;j < fits[i].Npar;j++) {
-                free(fits[i].P[j]);
-                for (int k = 0;k < fits[i].Npar;k++) {
-                    free(fits[i].C[j][k]);
-                }
-                free(fits[i].C[j]);
+    fit_result* fit_tmp = (struct fit_result*)malloc(sizeof(struct fit_result) * N);
+    for (int i = 0;i < N - 1;i++) {
+        fit_tmp[i] = malloc_copy_fit_result(fits[i]);
+        // fit_tmp[i].name=fits[i].name;
+        for (int j = 0;j < fits[i].Npar;j++) {
+            free(fits[i].P[j]);
+            for (int k = 0;k < fits[i].Npar;k++) {
+                free(fits[i].C[j][k]);
             }
-            free(fits[i].chi2);
-            free(fits[i].P);
-            free(fits[i].C);
-            if (i == N - 2) { free(fits); }
+            free(fits[i].C[j]);
         }
-
-        fit_tmp[N - 1] = malloc_copy_fit_result(fit_out);
-        fits = fit_tmp;
-        
-
+        free(fits[i].chi2);
+        free(fits[i].P);
+        free(fits[i].C);
+        if (i == N - 2) { free(fits); }
     }
+
+    fit_tmp[N - 1] = malloc_copy_fit_result(fit_out);
+    fits = fit_tmp;
+
+
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// print band
@@ -162,7 +162,19 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
         fprintf(f, "P[%d]=%g\\pm (%.2g) \\\\ \n", i, fit_out.P[i][Njack - 1], error_jackboot(argv[1], Njack, fit_out.P[i]));
     }
     fprintf(f, "\\end{gather}\n");
-    double** cov = covariance(argv[1], Npar, Njack, fit_out.P);
+    double** cov;
+    if (!fit_info.mean_only)
+        cov = covariance(argv[1], Npar, Njack, fit_out.P);
+    else if (fit_info.mean_only) {
+        cov = double_malloc_2(Npar, Npar);
+        for (int i = 0;i < fit_info.Npar;i++) {
+            for (int k = 0;k < fit_info.Npar;k++) {
+                cov[i][k] = fit_out.C[i][k][Njack - 1];
+            }
+        }
+    }
+
+
     fprintf(f, "{\\tiny\\begin{gather}\n C=\\begin{pmatrix}\n");
     for (int i = 0;i < fit_info.Npar;i++) {
         for (int k = 0;k < i;k++)
@@ -301,19 +313,38 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
             fit_out.chi2[j] = compute_chi_non_linear_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function) / (en_tot - Npar);
         }
         // for the other jackboot add a white noise to the mean
-        for (j = Njack - 2;j >= 0;j--) {
-            fit[j] = (double*)malloc(sizeof(double) * fit_info.Npar);
+        double** C = covariance_non_linear_fit_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function);
+        for (int ip = 0; ip < Npar;ip++)
+            for (int ik = 0; ik < Npar;ik++)
+                fit_out.C[ip][ik][j] = C[ip][ik];
+        printf("err=%g\n", C[0][0]);
 
-            for (int i = 0; i < fit_info.Npar;i++) {
-                double noise = fit[Njack - 1][i] * (mt_rand()) / ((double)mt_rand.max() * 10000);
-                fit[j][i] = fit[Njack - 1][i] + noise;
-                printf("%g \t", fit[j][i]);
-                fit_out.chi2[j] = fit_out.chi2[Njack - 1] * noise;
+        double** tmp = fake_sampling_covariance(argv[1], fit[j], Njack, Npar, C, 1);
+        for (int j1 = Njack - 2; j1 >= 0; j1--) {
+            fit[j1] = (double*)malloc(sizeof(double) * Npar);
+            for (int ip = 0; ip < Npar;ip++) {
+                fit[j1][ip] = tmp[ip][j1];
+                for (int ik = 0; ik < Npar; ik++) {
+                    fit_out.C[ip][ik][j1] = C[ip][ik];
+                }
             }
-            printf("\n");
         }
+        free_2(Npar, tmp);
+        free_2(Npar, C);
+        // for (j = Njack - 2;j >= 0;j--) {
+        //     fit[j] = (double*)malloc(sizeof(double) * fit_info.Npar);
+
+        //     for (int i = 0; i < fit_info.Npar;i++) {
+        //         double noise = fit[Njack - 1][i] * (mt_rand()) / ((double)mt_rand.max() * 10000);
+        //         fit[j][i] = fit[Njack - 1][i] + noise;
+        //         printf("%g \t", fit[j][i]);
+        //         fit_out.chi2[j] = fit_out.chi2[Njack - 1] * noise;
+        //     }
+        //     printf("\n");
+        // }
 
     }
+
     for (int i = 0;i < Npar;i++)
         for (int j = 0;j < Njack;j++)
             fit_out.P[i][j] = fit[j][i];
