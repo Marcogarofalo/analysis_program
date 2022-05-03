@@ -50,6 +50,7 @@ Thumbs.db
 *.wmv
 
 build/
+build*/
 *.json
 __pycache__
 *~
