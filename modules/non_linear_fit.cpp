@@ -28,7 +28,6 @@ void fit_type::compute_cov_fit(char** argv, data_all gjack, double lhs_fun(int, 
     int en_tot = 0;      for (int n = 0;n < N;n++) { en_tot += en[n]; }// total data to fit
 
     double*** y = double_malloc_3(Njack, en_tot, 2);// 2 is mean/error
-
     ////////////////////////////////////////// y
     int count = 0;
     for (int n = 0;n < N;n++) {
@@ -47,25 +46,14 @@ void fit_type::compute_cov_fit(char** argv, data_all gjack, double lhs_fun(int, 
         count += en[n];
     }
     //////  init end
-    double** cov1;
-
     double** yy = double_malloc_2(en_tot, Njack);
     for (int i = 0;i < en_tot;i++)
         for (int j = 0;j < Njack;j++)
             yy[i][j] = y[j][i][0];
 
 
-    double** cov = covariance(argv[1], en_tot, Njack, yy);
+    cov = covariance(argv[1], en_tot, Njack, yy);
     free_2(en_tot, yy);
-
-    for (int n = 0;n < N;n++)
-        for (int e = 0;e < en[n];e++)
-            for (int n1 = 0;n1 < N;n1++)
-                for (int e1 = 0;e1 < en[n];e1++) {
-                    if (e != e1)
-                        cov[e + en[n] * n][e1 + en[n1] * n1] = 0;
-                }
-
 
     int yn = is_it_positive(cov, en_tot);
     while (yn == 1) {
@@ -861,21 +849,27 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
         }
     }
     //     printf("chi2=%f   res=%.10f P0=%f   P1=%f\n",chi2,res,P[0],P[1]);
-    if (fit_info.noderiv) {
+     if (fit_info.noderiv) {
         double init_chi2 = 1;
         double loop_chi2 = 20;
+        int iterations = 0;
         while (fabs(init_chi2 - loop_chi2) > acc) {
             init_chi2 = chi2;
             for (j = 0;j < Npar;j++) {
                 int dir = 1;
                 double lmax = 100;
-                double lam = lambda;
+                double scale = pow(2, iterations);
+                double lam = lambda / scale;
                 if (fit_info.Prange.size() == Npar)
-                    lam = fit_info.Prange[j];
-                while (lam < lmax) {
+                    lam = fit_info.Prange[j] / scale;
+                // while (lam < lmax) {
+                if (verbosity > 2) {
+                    printf("current set: ");
+                    for (int l = 0;l < Npar;l++) printf("%g\t", P_tmp[l]); printf("\t scanning par=%d\n", j);
+                }
+                for (int dir = -1; dir < 2;dir++) {
                     P_tmp[j] = P[j] + dir * lam;
                     chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun);
-                    if (verbosity > 2) for (int l = 0;l < Npar;l++) printf("%g\t", P_tmp[l]); printf("\n");
                     while (chi2_tmp < chi2 && !isnan(chi2_tmp)) {
                         if (verbosity > 1) printf("found a better chi2: dir %d new=%.8g  old=%.8g  param=%d lambda=%g P=%g   Pnew=%g\n",
                             j, chi2_tmp, chi2, j, lam, P[j], P_tmp[j]);
@@ -884,15 +878,20 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
                         P_tmp[j] = P[j] + dir * lam;
                         chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun);
                     }
-                    dir *= -1;
+                    // dir *= -1;
                     // if does not find a better chi2 in both directions
-                    if (dir == 1) lam *= 1e+6;
+                    // if (dir == 1) lam = 1e+6;
                     P_tmp[j] = P[j];
                 }
             }
             loop_chi2 = chi2;
+            iterations++;
+            if (iterations == 10) break;
         }
-
+        if (verbosity > 2) {
+            printf("final set: ");
+            for (int l = 0;l < Npar;l++) printf("%g\t", P_tmp[l]); printf("\t chi2=%f\n", chi2);
+        }
     }
     else {
         while (res > acc) {
@@ -1515,18 +1514,24 @@ double* non_linear_fit_Nf_cov(int N, int* ensemble, double** x, double** y, int 
     if (fit_info.noderiv) {
         double init_chi2 = 1;
         double loop_chi2 = 20;
+        int iterations = 0;
         while (fabs(init_chi2 - loop_chi2) > acc) {
             init_chi2 = chi2;
             for (j = 0;j < Npar;j++) {
                 int dir = 1;
                 double lmax = 100;
-                double lam = lambda;
+                double scale = pow(2, iterations);
+                double lam = lambda / scale;
                 if (fit_info.Prange.size() == Npar)
-                    lam = fit_info.Prange[j];
-                while (lam < lmax) {
+                    lam = fit_info.Prange[j] / scale;
+                // while (lam < lmax) {
+                if (verbosity > 2) {
+                    printf("current set: ");
+                    for (int l = 0;l < Npar;l++) printf("%g\t", P_tmp[l]); printf("\t scanning par=%d\n", j);
+                }
+                for (int dir = -1; dir < 2;dir++) {
                     P_tmp[j] = P[j] + dir * lam;
                     chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun, cov1);
-                    if (verbosity > 2) for (int l = 0;l < Npar;l++) printf("%g\t", P_tmp[l]); printf("\n");
                     while (chi2_tmp < chi2 && !isnan(chi2_tmp)) {
                         if (verbosity > 1) printf("found a better chi2: dir %d new=%.8g  old=%.8g  param=%d lambda=%g P=%g   Pnew=%g\n",
                             j, chi2_tmp, chi2, j, lam, P[j], P_tmp[j]);
@@ -1535,13 +1540,19 @@ double* non_linear_fit_Nf_cov(int N, int* ensemble, double** x, double** y, int 
                         P_tmp[j] = P[j] + dir * lam;
                         chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun, cov1);
                     }
-                    dir *= -1;
+                    // dir *= -1;
                     // if does not find a better chi2 in both directions
-                    if (dir == 1) lam *= 1e+6;
+                    // if (dir == 1) lam = 1e+6;
                     P_tmp[j] = P[j];
                 }
             }
             loop_chi2 = chi2;
+            iterations++;
+            if (iterations == 9) break;
+        }
+        if (verbosity > 2) {
+            printf("final set: ");
+            for (int l = 0;l < Npar;l++) printf("%g\t", P_tmp[l]); printf("\t chi2=%f\n", chi2);
         }
 
     }

@@ -223,8 +223,6 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
             guess[i] = 1;
     }
 
-
-
     //init x
     for (int j = 0;j < Njack;j++) {
         int count = 0;
@@ -233,12 +231,10 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
                 for (int i = 0; i < fit_info.Nvar; i++) {
                     x[j][count][i] = fit_info.x[i][count][j];
                 }
-
                 count++;
             }
         }
     }
-
 
     ////////////////////////////////////////// y
     for (int i = 0; i < fit_info.Nvar; i++)  printf("x%-12d", i);
@@ -265,39 +261,6 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
     }
     //////  init end
 
-    // if covariance
-    double** cov1;
-    if (fit_info.covariancey) {
-        double** yy = double_malloc_2(en_tot, Njack);
-        for (int i = 0;i < en_tot;i++)
-            for (int j = 0;j < Njack;j++)
-                yy[i][j] = y[j][i][0];
-
-
-        double** cov = covariance(argv[1], en_tot, Njack, yy);
-        free_2(en_tot, yy);
-
-        for (int n = 0;n < N;n++)
-            for (int e = 0;e < en[n];e++)
-                for (int n1 = 0;n1 < N;n1++)
-                    for (int e1 = 0;e1 < en[n];e1++) {
-                        if (e != e1)
-                            cov[e + en[n] * n][e1 + en[n1] * n1] = 0;
-                    }
-
-
-        int yn = is_it_positive(cov, en_tot);
-        while (yn == 1) {
-            printf("covariance matrix not positive defined adding eps*cov[0][0]*I \n");
-            for (int i = 0;i < en_tot;i++)
-                cov[i][i] += cov[0][0] * 1e-12;
-            yn = is_it_positive(cov, en_tot);
-            printf("now the matrix is positive defined.  %d\n", yn);
-        }
-        cov1 = symmetric_matrix_inverse(en_tot, cov);
-        free_2(en_tot, cov);
-
-    }
     ///////////////// the fit 
     // scan the parameter of the fit with the last jack
     if (fit_info.guess.size() == 0 || fit_info.repeat_start > 1) {
