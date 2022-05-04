@@ -179,7 +179,7 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
     for (int i = 0;i < fit_info.Npar;i++) {
         for (int k = 0;k < i;k++)
             cov[i][k] /= sqrt(cov[i][i] * cov[k][k]);
-        for (int k = i + 1;k < fit_info.Npar;k++)
+        for (int k = i ;k < fit_info.Npar;k++)
             cov[i][k] /= sqrt(cov[i][i] * cov[k][k]);
     }
 

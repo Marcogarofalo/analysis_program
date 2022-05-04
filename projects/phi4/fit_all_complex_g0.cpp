@@ -514,23 +514,20 @@ int main(int argc, char** argv) {
     // mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L20_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0", argv[2], argv[1]);
     // emplace_back_par_data(namefile, paramsj, dataj);
     // files.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L21_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0", argv[2], argv[1]);
+    mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L20_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g0.000000_rep0", argv[2], argv[1]);
     emplace_back_par_data(namefile, paramsj, dataj);
     files.emplace_back(namefile);
 
-    mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L22_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0", argv[2], argv[1]);
+    mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L21_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g0.000000_rep0", argv[2], argv[1]);
     emplace_back_par_data(namefile, paramsj, dataj);
     files.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L23_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0", argv[2], argv[1]);
+    mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L22_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g0.000000_rep0", argv[2], argv[1]);
     emplace_back_par_data(namefile, paramsj, dataj);
     files.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L24_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0", argv[2], argv[1]);
+    mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L23_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g0.000000_rep0", argv[2], argv[1]);
     emplace_back_par_data(namefile, paramsj, dataj);
     files.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L25_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0", argv[2], argv[1]);
-    emplace_back_par_data(namefile, paramsj, dataj);
-    files.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L26_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0", argv[2], argv[1]);
+    mysprintf(namefile, NAMESIZE, "%s/%s_G2t_T64_L24_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g0.000000_rep0", argv[2], argv[1]);
     emplace_back_par_data(namefile, paramsj, dataj);
     files.emplace_back(namefile);
 
@@ -579,8 +576,8 @@ int main(int argc, char** argv) {
     }
 
     // zeta.Init_Lmq_g(Ls, masses, err_mass  );
-    // zeta.write("zeta_complex_g10.dat");
-    zeta.read("zeta_complex_g10.dat");
+    // zeta.write("zeta_complex_g0.dat");
+    zeta.read("zeta_complex_g0.dat");
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     // printing files
     //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -840,7 +837,7 @@ int main(int argc, char** argv) {
     print_fit_band_phi4(argv, jackall, fit_info, fit_info_m0, "deltaE2_m_QC2_1lev", "L", deltaE2_m_QC2_1lev, fit_m0, 0, 0, 1);
     free_fit_result(fit_info, deltaE2_m_QC2_1lev);
     fit_info.restore_default();
-    
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     printf("\n/////////////////////////////////   fit  E3 poly  //////////////////\n");
@@ -875,7 +872,6 @@ int main(int argc, char** argv) {
     print_fit_band(argv, jackall, fit_info_E3_poly, fit_info_m0, "fit_QC3_poly", "L", fit_QC3_poly, fit_m0, 0, 0, 0.1);
 
     //fit_info.restore_default();
-
 #ifdef PYTHON
     //// we need python
     wchar_t* program = Py_DecodeLocale(argv[0], NULL);
@@ -1149,7 +1145,7 @@ int main(int argc, char** argv) {
             ie++;
         }
     }
-    fit_info.guess={81.5648, 9.12952, 1455.65, -0.155717};
+    fit_info.guess = { 81.5648, 9.12952, 1455.65, -0.155717 };
     // fit_info.guess={95.0925, 9.12815, 1544, -0.155809};
 
     fit_info.compute_cov1_fit();
@@ -1192,18 +1188,20 @@ int main(int argc, char** argv) {
     fit_info.verbosity = 3;
     fit_info.repeat_start = 1;
     // fit_info.guess = { 85.28, 9.1294,  -0.155809 };
-    fit_info.guess = { -155.026, 3.02142, -0.155296 };
+    fit_info.guess = { -155 ,   3.0381, -0.145604};
+    fit_info.guess ={1157.5, 3.03435, -0.150604};
+
     // fit_info.mean_only = true;
     fit_info.precision_sum = 2;
 
     // fit_info.noderiv=true;
-    //fit_info.Prange={1,0.001, 10, 0.01, 1};
+    // fit_info.Prange={1000 , 0.01, 0.01};
 
 
     mysprintf(namefile, NAMESIZE, "kcot_1par_1lev_and_kiso_const", fit_info.Npar);
-    // struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
-    fit_info.band_range = { 5.65,7.2 };
-    // print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, myen.size() - 1, 0.15);
+    struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
+    fit_info.band_range = { 4.9,6 };
+    print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, myen.size() - 1, 0.15);
     fit_info.restore_default();
 
     printf("//////////////////// kcot 1par and kiso no coupling fit covariance   ////////////////////////////////////\n");
@@ -1239,7 +1237,7 @@ int main(int argc, char** argv) {
     fit_info.verbosity = 3;
     fit_info.repeat_start = 1;
     // fit_info.guess = { 85.28, 9.1294,  -0.155809 };
-    fit_info.guess = { -155.026, 3.02142, -0.155296 };
+    // fit_info.guess = { -155.026, 3.02142, -0.155296 };
     fit_info.mean_only = true;
     fit_info.precision_sum = 2;
     fit_info.covariancey = true;

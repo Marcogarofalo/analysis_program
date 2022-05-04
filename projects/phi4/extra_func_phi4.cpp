@@ -740,7 +740,7 @@ double rhs_E3_m_QC3_const_E2_QC2_1par(int n, int Nvar, double* x, int Npar, doub
     double Pkcot[2];
     Pkcot[0] = P[Npar - 1];
 
-    int Nkcot = 2;
+    int Nkcot = 1;
     int Nkiso = Npar - Nkcot;
     int dvec[3];//,dvec1[3],dvec2[3],dmax1[3],dmax2[3];
     init_dvec_QC3_pole_new(n, dvec);

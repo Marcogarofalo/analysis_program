@@ -680,7 +680,7 @@ double compute_chi_non_linear_Nf_long(int N, int* ensemble, double** x, double**
     for (n = 0;n < N;n++) {
         for (e = 0;e < ensemble[n];e++) {
             f = fun(n, Nvar, x[count], Npar, P) - y[count][0];
-            //             printf("e=%d  n=%d   f=%g  y=%g err=%g    dchi= %g  \n ",e,n,f+y[count][0],y[count][0],y[count][1],f*f/(y[count][1]* y[count][1]));
+            // printf("predicted=%g    latt=%g   n=%d  e=%d\n",fun(n, Nvar, x[count], Npar, P), y[count][0], n, e);
             f /= y[count][1];
             chi2 += f * f;
             count++;
@@ -1194,6 +1194,7 @@ double compute_chi_non_linear_Nf_cov1(int N, int* ensemble, double** x, double**
     for (n = 0;n < N;n++) {
         for (e = 0;e < ensemble[n];e++) {
             tmp[count] = fun(n, Nvar, x[count], Npar, P) - y[count][0];// f1(n,e,N,N1,Nvar,x1[count],Npar,Npar1,P,fun)-y1[count][0];
+            // printf("predicted=%g    latt=%g   n=%d  e=%d\n",fun(n, Nvar, x[count], Npar, P), y[count][0], n, e);
             count++;
         }
     }

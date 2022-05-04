@@ -1004,12 +1004,13 @@ int main(int argc, char** argv) {
     fit_info.devorder = -2;
     fit_info.verbosity = 3;
     fit_info.repeat_start = 1;
-    fit_info.guess = {22.2822 ,        9.19729   ,      1317.02  ,       -0.155816 };
-    fit_info.mean_only = true;
+    // fit_info.guess = {22.2822 ,        9.19729   ,      1317.02  ,       -0.155816 };
+    fit_info.guess ={22.2497,      9.19723, 1655.27, -0.157316 };
+    // fit_info.mean_only = true;
     fit_info.precision_sum = 2;
 
-    fit_info.noderiv=true;
-    fit_info.Prange={0.1,0.0001, 0.1,  0.1};
+    // fit_info.noderiv=true;
+    // fit_info.Prange={0.01,0.0001, 1,  0.001};
 
 
     mysprintf(namefile, NAMESIZE, "kcot_1par_1lev_and_kiso_pole_3par", fit_info.Npar);
