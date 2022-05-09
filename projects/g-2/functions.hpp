@@ -675,8 +675,8 @@ double rhs_amu_common_a2_FVE(int n, int Nvar, double* x, int Npar, double* P) {
     double GS = x[1];
     double Mpi = x[2];
     double Mpiphys = x[3];
-    if (n == 0)      r = P[0] + a2 * P[1] - (10.0 / 9.0) * GS * (1 + P[3] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
-    else if (n == 1) r = P[0] + a2 * P[2] - (10.0 / 9.0) * GS * (1 + P[4] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+    if (n == 0)      r = P[0] + a2 * P[1] - (10.0 / 9.0) * GS * (P[3] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+    else if (n == 1) r = P[0] + a2 * P[2] - (10.0 / 9.0) * GS * (P[4] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
 
     return r;
 }
@@ -709,27 +709,37 @@ double rhs_amu_common_a4_n1(int n, int Nvar, double* x, int Npar, double* P) {
 double rhs_amu_common_log_a4_n0(int n, int Nvar, double* x, int Npar, double* P) {
     double r;
     double a2 = x[0];
-    double w02=0.030276;
-    if (n == 0)      r = P[0] + (a2/pow(log(a2/w02),3) )* P[1] + a2 * a2 * P[3];
-    else if (n == 1) r = P[0] + (a2/pow(log(a2/w02),3) ) * P[2];
+    double w02 = 0.030276;
+    if (n == 0)      r = P[0] + (a2 / pow(log(a2 / w02), 3)) * P[1] + a2 * a2 * P[3];
+    else if (n == 1) r = P[0] + (a2 / pow(log(a2 / w02), 3)) * P[2];
     return r;
 }
 double rhs_amu_common_log_a4_n1(int n, int Nvar, double* x, int Npar, double* P) {
     double r;
     double a2 = x[0];
-    double w02=0.030276;
-    if (n == 0)      r = P[0] + (a2/pow(log(a2/w02),3) ) * P[1];
-    else if (n == 1) r = P[0] + (a2/pow(log(a2/w02),3) ) * P[2] + a2 * a2 * P[3];
+    double w02 = 0.030276;
+    if (n == 0)      r = P[0] + (a2 / pow(log(a2 / w02), 3)) * P[1];
+    else if (n == 1) r = P[0] + (a2 / pow(log(a2 / w02), 3)) * P[2] + a2 * a2 * P[3];
     return r;
 }
 
 template<int ieq, int iop>
 double lhs_amu_common(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double r;
-    if (n == 0)        r = gjack.en[e].jack[ieq][j];
-    else if (n == 1)   r = gjack.en[e].jack[iop][j];
+    double GS = gjack.en[e].jack[58][j];
+    if (n == 0)        r = gjack.en[e].jack[ieq][j] ;
+    else if (n == 1)   r = gjack.en[e].jack[iop][j] ;
     return r;
 }
+template<int ieq, int iop>
+double lhs_amu_common_GS(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double r;
+    double GS = gjack.en[e].jack[58][j];
+    if (n == 0)        r = gjack.en[e].jack[ieq][j] + (10.0 / 9.0) * GS;
+    else if (n == 1)   r = gjack.en[e].jack[iop][j] + (10.0 / 9.0) * GS;
+    return r;
+}
+
 
 double lhs_amu(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double r;
@@ -806,8 +816,9 @@ void print_fit_band_amu_W_l(char** argv, data_all gjack, struct fit_type fit_inf
                 // if (j == Njack - 1 && n == 0) printf("y =%g   GS=%g  FVE=%g  e=%d  \n", tmpj[j],
                 //     (10.0 / 9.0) * fit_info.x[1][e][j],
                 //     (10.0 / 9.0) * fit_info.x[1][e][j] * (1 - fit_out.P[3][j] * fit_info.x[0][e][j]), e);
-                if (n == 0)  tmpj[j] += (10.0 / 9.0) * fit_info.x[1][e][j] * (1 + fit_out.P[3][j] * fit_info.x[0][e][j]);
-                else if (n == 1)  tmpj[j] += (10.0 / 9.0) * fit_info.x[1][e][j] * (1 + fit_out.P[4][j] * fit_info.x[0][e][j]);
+                if (n == 0)  tmpj[j] += (10.0 / 9.0) * fit_info.x[1][e][j] * (fit_out.P[3][j] * fit_info.x[0][e][j])
+                    - fit_out.P[5][j] * (fit_info.x[2][e][j] - fit_info.x[3][e][j] * (sqrt(fit_info.x[0][e][j]) / 197.326963));
+                else if (n == 1)  tmpj[j] += (10.0 / 9.0) * fit_info.x[1][e][j] * (fit_out.P[4][j] * fit_info.x[0][e][j]) - fit_out.P[5][j] * (fit_info.x[2][e][j] - fit_info.x[3][e][j] * (sqrt(fit_info.x[0][e][j]) / 197.326963));
             }
             double err = error_jackboot(argv[1], Njack, tmpj);
             for (int j = 0;j < Njack;j++) {
