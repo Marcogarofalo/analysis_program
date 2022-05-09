@@ -291,7 +291,7 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
                 fit_out.chi2[j] = compute_chi_non_linear_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function) / (en_tot - Npar);
             }
             if (fit_info.verbosity > 0) {
-                printf("jack =%d  chi2/dof=%g   chi2=%g   time=%g   \n", j, fit_out.chi2[j], fit_out.chi2[j] * (en_tot - Npar), timestamp() - a);
+                printf("jack =%d  chi2/dof=%g   chi2=%g   time=%g   \nfinal set: ", j, fit_out.chi2[j], fit_out.chi2[j] * (en_tot - Npar), timestamp() - a);
                 if (fit_info.verbosity > 1) {
                     for (int i = 0;i < Npar;i++)
                         printf("P[%d]=%g \t", i, fit[j][i]);
