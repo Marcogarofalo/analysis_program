@@ -223,8 +223,8 @@ int main(int argc, char** argv) {
     std::vector<std::string>   integrations = { "reinman", "simpson" };
     for (auto integration : integrations) {
         int id0, id1;
-        if ( integration == "reinman") { id0 = 25; id1 = 26; }
-        if ( integration == "simpson") { id0 = 27; id1 = 28; }
+        if (integration == "reinman") { id0 = 25; id1 = 26; }
+        if (integration == "simpson") { id0 = 27; id1 = 28; }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////
         printf("\n/////////////////////////////////     amu_SD_l_common    a^2+a^4//////////////////\n");
@@ -506,44 +506,54 @@ int main(int argc, char** argv) {
     compute_syst_eq28(syst_amu_SD_s, argv[3], "Systematics_amu_SD_s.txt");
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+    data_all  syst_amu_W_l;
+    syst_amu_W_l.resampling = argv[1];
+    for (auto integration : integrations) {
+        int id0, id1;
+        if (integration == "reinman") { id0 = 42; id1 = 43; }
+        if (integration == "simpson") { id0 = 44; id1 = 45; }
 
+        ///////////////////////////////////////////////////////////////////////////////////////////////////
+        printf("\n/////////////////////////////////     amu_W_l_common    a^2+a^4//////////////////\n");
+        //////////////////////////////////////////////////////////////////////////////////////////////////
+        constexpr double Mpi_MeV = 135;
+        constexpr double Mpi_MeV_err = 0.2;
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    printf("\n/////////////////////////////////     amu_W_l_common    a^2+a^4//////////////////\n");
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    constexpr double Mpi_MeV = 135;
-    constexpr double Mpi_MeV_err = 0.2;
+        double* jack_Mpi_MeV_exp = fake_sampling(argv[1], Mpi_MeV, Mpi_MeV_err, Njack, 1003);
 
-    double* jack_Mpi_MeV_exp = fake_sampling(argv[1], Mpi_MeV, Mpi_MeV_err, Njack, 1003);
-
-    fit_info.Npar = 6;
-    fit_info.N = 2;
-    fit_info.Nvar = 4;
-    fit_info.Njack = Njack;
-    fit_info.myen = myen;
-    fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
-    count = 0;
-    for (int n = 0;n < fit_info.N;n++) {
-        for (int e = 0;e < fit_info.myen.size();e++) {
-            for (int j = 0;j < Njack;j++) {
-                fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2); // a^2
-                fit_info.x[1][count][j] = jackall.en[e].jack[58][j];  // Delta_FV_GS
-                fit_info.x[2][count][j] = jackall.en[e].jack[1][j];  //Mpi
-                fit_info.x[3][count][j] = jack_Mpi_MeV_exp[j];
+        fit_info.Npar = 6;
+        fit_info.N = 2;
+        fit_info.Nvar = 4;
+        fit_info.Njack = Njack;
+        fit_info.myen = myen;
+        fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+        count = 0;
+        for (int n = 0;n < fit_info.N;n++) {
+            for (int e = 0;e < fit_info.myen.size();e++) {
+                for (int j = 0;j < Njack;j++) {
+                    fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2); // a^2
+                    fit_info.x[1][count][j] = jackall.en[e].jack[58][j];  // Delta_FV_GS
+                    fit_info.x[2][count][j] = jackall.en[e].jack[1][j];  //Mpi
+                    fit_info.x[3][count][j] = jack_Mpi_MeV_exp[j];
+                }
+                count++;
             }
-            count++;
         }
+
+        fit_info.corr_id = { id0, id1 };
+        fit_info.function = rhs_amu_common_a2_FVE;
+        mysprintf(namefit, NAMESIZE, "amu_W_l_%s_a2", integration.c_str());
+
+        fit_result amu_W_l_common_a2 = fit_all_data(argv, jackall, lhs_amu_common_GS, fit_info, namefit);
+        fit_info.band_range = { 0,0.0081 };
+        std::vector<double> xcont = { 0, 0 /*Delta*/, 0, 0 };
+        // print_fit_band(argv, jackall, fit_info, fit_info, "amu_W_l_common_a2", "afm", amu_W_l_common_a2, amu_W_l_common_a2, 0, myen.size() - 1, 0.0005, xcont);
+        print_fit_band_amu_W_l(argv, jackall, fit_info, fit_info, namefit, "afm", amu_W_l_common_a2, amu_W_l_common_a2, 0, myen.size() - 1, 0.0005, xcont, lhs_amu_common_GS);
+        syst_amu_W_l.add_fit(amu_W_l_common_a2);
+        fit_info.restore_default();
     }
+    compute_syst_eq28(syst_amu_W_l, argv[3], "Systematics_amu_W_l.txt");
 
-
-    fit_info.function = rhs_amu_common_a2_FVE;
-    fit_result amu_W_l_common_a2 = fit_all_data(argv, jackall, lhs_amu_common_GS<42, 43>, fit_info, "amu_W_l_common_a2");
-    fit_info.band_range = { 0,0.0081 };
-    std::vector<double> xcont = { 0, 0 /*Delta*/, 0, 0 };
-    // print_fit_band(argv, jackall, fit_info, fit_info, "amu_W_l_common_a2", "afm", amu_W_l_common_a2, amu_W_l_common_a2, 0, myen.size() - 1, 0.0005, xcont);
-    print_fit_band_amu_W_l(argv, jackall, fit_info, fit_info, "amu_W_l_common_a2", "afm", amu_W_l_common_a2, amu_W_l_common_a2, 0, myen.size() - 1, 0.0005, xcont, lhs_amu_common_GS<42, 43>);
-
-    fit_info.restore_default();
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     data_all  syst_amu_W_s;
@@ -639,7 +649,7 @@ int main(int argc, char** argv) {
             if (interpolation == "phi" && integration == "simpson") { id0 = 65; id1 = 66; }
 
             ///////////////////////////////////////////////////////////////////////////////////////////////////
-            printf("\n/////////////////////////////////     amu_SD_s_common_a4    //////////////////\n");
+            printf("\n/////////////////////////////////     amu_W_s_common_a4    //////////////////\n");
             //////////////////////////////////////////////////////////////////////////////////////////////////
             fit_info.Npar = 5;
             fit_info.N = 2;
@@ -666,7 +676,7 @@ int main(int argc, char** argv) {
 
             fit_info.restore_default();
             ///////////////////////////////////////////////////////////////////////////////////////////////////
-            printf("\n/////////////////////////////////     amu_SD_s_common_a4_eq    //////////////////\n");
+            printf("\n/////////////////////////////////     amu_W_s_common_a4_eq    //////////////////\n");
             //////////////////////////////////////////////////////////////////////////////////////////////////
             fit_info.Npar = 4;
             fit_info.N = 2;
@@ -685,7 +695,7 @@ int main(int argc, char** argv) {
             }
             fit_info.function = rhs_amu_common_a4_n0;
             fit_info.corr_id = { id0,id1 };
-            mysprintf(namefit, NAMESIZE, "amu_SD_s_%s_%s_a4_eq", interpolation.c_str(), integration.c_str());
+            mysprintf(namefit, NAMESIZE, "amu_W_s_%s_%s_a4_eq", interpolation.c_str(), integration.c_str());
             amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.0081 };
             syst_amu_W_s.add_fit(amu_SD_s_common_a4);
@@ -694,7 +704,7 @@ int main(int argc, char** argv) {
             fit_info.restore_default();
 
             ///////////////////////////////////////////////////////////////////////////////////////////////////
-            printf("\n/////////////////////////////////     amu_SD_s_common_a4_op    //////////////////\n");
+            printf("\n/////////////////////////////////     amu_W_s_common_a4_op    //////////////////\n");
             //////////////////////////////////////////////////////////////////////////////////////////////////
             fit_info.Npar = 4;
             fit_info.N = 2;
@@ -713,7 +723,7 @@ int main(int argc, char** argv) {
             }
             fit_info.function = rhs_amu_common_a4_n1;
             fit_info.corr_id = { id0,id1 };
-            mysprintf(namefit, NAMESIZE, "amu_SD_s_%s_%s_a4_op", interpolation.c_str(), integration.c_str());
+            mysprintf(namefit, NAMESIZE, "amu_W_s_%s_%s_a4_op", interpolation.c_str(), integration.c_str());
             amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.0081 };
             syst_amu_W_s.add_fit(amu_SD_s_common_a4);

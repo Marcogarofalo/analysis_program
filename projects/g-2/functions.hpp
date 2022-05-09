@@ -731,10 +731,12 @@ double lhs_amu_common(int n, int e, int j, data_all gjack, struct fit_type fit_i
     else if (n == 1)   r = gjack.en[e].jack[iop][j] ;
     return r;
 }
-template<int ieq, int iop>
+
 double lhs_amu_common_GS(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double r;
     double GS = gjack.en[e].jack[58][j];
+    int ieq=fit_info.corr_id[0];
+    int iop=fit_info.corr_id[1];
     if (n == 0)        r = gjack.en[e].jack[ieq][j] + (10.0 / 9.0) * GS;
     else if (n == 1)   r = gjack.en[e].jack[iop][j] + (10.0 / 9.0) * GS;
     return r;
