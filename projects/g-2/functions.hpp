@@ -552,7 +552,7 @@ double** compute_DVt(int L, int Njack, double* Mpi, double* Mrho, double* a, dou
 
     int T = file_head.l0;
     constexpr int Nvar = 6;
-    constexpr int Nomegas = 20;
+    constexpr int Nomegas = 25;
     double** omega = double_malloc_2(Nomegas, Njack);
     double** nuA2 = double_malloc_2(Nomegas, Njack);
     double** DVt = double_malloc_2(T, Njack);
