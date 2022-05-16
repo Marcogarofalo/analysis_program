@@ -1155,9 +1155,14 @@ int main(int argc, char** argv) {
     // DV
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    double* MpiMev = new double[Njack];
+    for (int j = 0;j < Njack;j++) {
+        MpiMev[j] = M_PS_op[j] / (a[j] / 197.326963);
+    }
 
-    double** DVt = compute_DVt(header.L, Njack, jack_Mpi_MeV_exp, jack_Mrho_MeV_exp, a, jack_grhopipi, outfile, "DVt", resampling);
 
+    double** DVt = compute_DVt(header.L, Njack, MpiMev/* jack_Mpi_MeV_exp */, jack_Mrho_MeV_exp, a, jack_grhopipi, outfile, "DVt", resampling);
+    delete[] MpiMev;
 
     fit_info.N = 1;
     int ncorr_new = var;
@@ -1166,7 +1171,8 @@ int main(int argc, char** argv) {
     printf("%d\n", ncorr_new);
 
     int_scheme = integrate_reinman;
-    double* DV = compute_amu_W(conf_jack, ncorr_new - 1, Njack, ZA, a, 1.0, int_scheme, outfile, "DV_{W}(op,l)", resampling);
+    double* one_jack = fake_sampling(resampling, 1, 1e-8, Njack, 1);
+    double* DV = compute_amu_W(conf_jack, ncorr_new - 1, Njack, one_jack, a, 1.0, int_scheme, outfile, "DV_{W}(op,l)", resampling);
     write_jack(DV, Njack, jack_file);
     check_correlatro_counter(58);
 
@@ -1227,7 +1233,7 @@ int main(int argc, char** argv) {
     write_jack(amu_W_sphys, Njack, jack_file);
     printf("amu_W(eq,shys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
     check_correlatro_counter(65);
-    
+
     asd_vec[0] = amu_Wop_simp_s;
     asd_vec[1] = amu_Wop_simp_s1;
     amu_W_sphys = interpol_Z(Nstrange, Njack, Mphi, asd_vec, jack_aMphi_MeV_exp, outfile, "amu_{W}_simpson38(op,phiphys)", resampling);

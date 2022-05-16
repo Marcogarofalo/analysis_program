@@ -4,6 +4,7 @@
 #include "fit_all.hpp"
 extern "C" {
 #include "../external/rzeta/src/dzeta_function.h"
+#include "../external/rzeta/src/qzeta_function.h"
 }
 #include <algorithm>
 #include "non_linear_fit.hpp"
@@ -335,6 +336,7 @@ double compute_delta(double omega, void* params) {
         xh[i] = P[i];
     }
     xh[0] = omega;
+    printf("Nvar=%d  omega=%g   P1=%g L=%g Mrho=%g grpp=%g a =%g\n", Nvar, xh[0], xh[1], xh[2], xh[3], xh[4], xh[5]);
     return  std::atan(1. / compute_cotd(Nvar, xh));
 }
 
@@ -351,7 +353,9 @@ double compute_deriv_delta(int Nvar, double* x) {
     }
     P[0] = Nvar;
     F.params = (void*)P;
-    gsl_deriv_central(&F, x[0], 1e-8, &result, &abserr);
+    gsl_deriv_central(&F, x[0], 1e-3, &result, &abserr);
+    printf("derivdelta= %g %g\n",result,abserr);
+    // result=(F.function(x[0]+1e-8,F.params)-F.function(x[0],F.params))/1e-8;
     double k = sqrt(x[0] * x[0] / 4. - x[1] * x[1]);
     result *= 2 * k / (sqrt(k * k + x[1] * x[1]));
 
@@ -361,7 +365,7 @@ double compute_deriv_delta(int Nvar, double* x) {
 
 
 double w_js(int j, int s, double q) {
-    double z[2] = { 0,0 };
+    double z[2] = { 0, 0 };
     int dvec[3] = { 0, 0, 0 };
     double gamma = 1;
     double A = 1;
@@ -369,6 +373,16 @@ double w_js(int j, int s, double q) {
     // std::complex<double>  zc(z[0], z[1]);
     double r = z[0] / (pow(q, j + 1) * sqrt(2. * j + 1.) * pow(pi_greco, 3. / 2.));
     return r;
+}
+
+double Z00(double q) {
+    double z[2] = { 0, 0 };
+    int dvec[3] = { 0, 0, 0 };
+    double gamma = 1;
+    double A = 1;
+    dzeta_function(z, q * q, 0, 0, dvec, gamma, A, 1.e-3, 1.e-6, 12);
+    // qzeta_function(z, q * q, 0, 0, dvec, gamma, A, 1.e-3, 1.e-6, 12);
+    return z[0];
 }
 
 double omega_QC2(int n, int Nvar, double* x, int Npar, double* P) {
@@ -381,11 +395,9 @@ double omega_QC2(int n, int Nvar, double* x, int Npar, double* P) {
     double k = sqrt(omega * omega / 4. - mass * mass);
     double q = k * (L * (a / 197.326963) / (2. * pi_greco));
 
-    // printf("%g %g %g\n", omega,k,qsq);exit(1);
-    // dzeta_function(z, qsq, 0, 0, dvec, gamma, A, 1.e-3, 1.e+6, 5);
-    // std::complex<double>  zc(z[0], z[1]);
-    // double r = real(zc * 2. * pi_greco / (pow(pi_greco, 3. / 2.) * L * (a / 197.326963) * gamma * mass));
-    double r = w_js(0, 0, q) - w_js(2, 0, q) - (3. / sqrt(6)) * (w_js(2, -2, q) + w_js(2, 2, q));
+    // double r = w_js(0, 0, q) - w_js(2, 0, q) - (3. / sqrt(6)) * (w_js(2, -2, q) + w_js(2, 2, q));
+    // double r = w_js(0, 0, q) / (pow(pi_greco, 3. / 2.) * q);
+    double r = Z00(q) / (pow(pi_greco, 3. / 2.) * q);
 
     double cotd = compute_cotd(Nvar, x);
     return cotd - r;
@@ -394,8 +406,8 @@ double omega_QC2(int n, int Nvar, double* x, int Npar, double* P) {
 
 double compute_phi(double q, void* params) {
     (void)(params); /* avoid unused parameter warning */
-    double M = w_js(0, 0, q) - w_js(2, 0, q) - (3. / sqrt(6)) * (w_js(2, -2, q) + w_js(2, 2, q));
-    return -std::atan(1.0 / M);
+    // double M = w_js(0, 0, q) - w_js(2, 0, q) - (3. / sqrt(6)) * (w_js(2, -2, q) + w_js(2, 2, q));
+    return std::atan(-pow(pi_greco, 3. / 2.) * q / Z00(q));
 }
 
 
@@ -406,8 +418,9 @@ double compute_deriv_phi(double q) {
 
     F.function = &compute_phi;
     F.params = 0;
-    gsl_deriv_central(&F, q, 1e-8, &result, &abserr);
-
+    gsl_deriv_central(&F, q, 1e-3, &result, &abserr);
+    // result=(F.function(q+1e-8,F.params)-F.function(q,F.params))/1e-8;
+    printf("derivphi= %g  %g\n",result,abserr);
     return result;
 }
 inline double compute_FGS2(int Nvar, double* x) {
@@ -453,7 +466,8 @@ double matrix_element_nuA2(int Nvar, double* x) {
 
     double deriv_d = compute_deriv_delta(Nvar, x);
     double deriv_phi = compute_deriv_phi(q);
-    r /= k * deriv_d + q * deriv_phi;
+    printf(" r= %g / ( %g  %g  %g  %g) \n", r, k, deriv_d, q, deriv_phi);
+    r /= (k * deriv_d + q * deriv_phi);
 
     return r;
 }
@@ -472,13 +486,13 @@ double integrand_V_infL(double omega, void* params) {
     double t = x[6];
     x[0] = omega;
     double FGS2 = compute_FGS2(7, x);
-    if (once == 0) {
-        x[0] = 500;
-        printf(" t= %g\n", t);
-        once = -1;
-        printf("FGS2=%.15g\n", compute_FGS2(7, x));
-        once = 1;
-    }
+    // if (once == 0) {
+    //     x[0] = 500;
+    //     printf(" t= %g\n", t);
+    //     once = -1;
+    //     printf("FGS2=%.15g\n", compute_FGS2(7, x));
+    //     once = 1;
+    // }
 
     return omega * omega * pow(1 - pow(2 * mass / omega, 2), 3. / 2.) * FGS2 * exp(-omega * t);
     // return  exp(-omega * t);
@@ -498,7 +512,7 @@ double* compute_V_infL(int Nvar, double* x, int T) {
     }
     double* V = (double*)malloc(sizeof(double) * T);
     V[0] = 0;
-    int Maxiter = 1e+8;
+    int Maxiter = 1e+6;
     double epsrel = 1e-8;
     gsl_integration_workspace* w = gsl_integration_workspace_alloc(Maxiter);
 
@@ -560,8 +574,8 @@ double** compute_DVt(int L, int Njack, double* Mpi, double* Mrho, double* a, dou
     int p2s[Nomegas + 1];
     count = 0;
     p2s[0] = 0;
+    int old = -1;
     while (count < Nomegas + 1) {
-        double old = p2[0];
         for (int i = 0;i < Nomegas * Nomegas * Nomegas;i++) {
             if (p2[i] > old) {
                 p2s[count] = p2[i];
@@ -590,7 +604,8 @@ double** compute_DVt(int L, int Njack, double* Mpi, double* Mrho, double* a, dou
                 double k = sqrt(x[0] * x[0] / 4 - x[1] * x[1]);
                 double cotd = compute_cotd(Nvar, x);
                 double q = k * (L * (x[5] / 197.326963) / (2. * pi_greco));
-                double r = w_js(0, 0, q) - w_js(2, 0, q) - (3. / sqrt(6)) * (w_js(2, -2, q) + w_js(2, 2, q));
+                // double r = w_js(0, 0, q) - w_js(2, 0, q) - (3. / sqrt(6)) * (w_js(2, -2, q) + w_js(2, 2, q));
+                double r = std::atan(pow(pi_greco, 3. / 2.) * q / Z00(q));
                 fprintf(outfile, "%g    %g  %g\n", x[0], cotd, r);
             }
 
@@ -605,10 +620,11 @@ double** compute_DVt(int L, int Njack, double* Mpi, double* Mrho, double* a, dou
             // printf("%d   %d\n", p2s[i], p2s[i + 1]);
             double oj = rtsafe(omega_QC2, 0/*n*/, 6, x, 0/* Npar */, nullptr/* Pkcot */, 0/*ivar*/, 0. /*input*/, xmin, xmax, 1e-5, 100, 1e-4);
             int seed = rand();
-            omega[i] = fake_sampling(resampling, oj, oj / 1e+4, Njack, seed);
+            omega[i] = fake_sampling(resampling, oj, oj / 1e+6, Njack, seed);
+            // if (j==Njack-1) printf("omega[%d]=%f  x=%f  %f\n",i, oj, xmin,xmax);
             x[0] = omega[i][j];
             double A = matrix_element_nuA2(Nvar, x);
-            nuA2[i] = fake_sampling(resampling, A, A / 1e+4, Njack, seed);
+            nuA2[i] = fake_sampling(resampling, A, A / 1e+6, Njack, seed + 1);
             count++;
         }
     }
@@ -622,7 +638,6 @@ double** compute_DVt(int L, int Njack, double* Mpi, double* Mrho, double* a, dou
         x[4] = grhopipi[j];
         x[5] = a[j];
 
-        // x[0] = omega[i][j];
         VinfL[j] = compute_V_infL(Nvar, x, T);
         VL[j] = compute_VL(Nomegas, omega, nuA2, a, T, j);
         for (int t = 0;t < T;t++) {
@@ -632,8 +647,8 @@ double** compute_DVt(int L, int Njack, double* Mpi, double* Mrho, double* a, dou
 
 
     for (int i = 0; i < Nomegas;i++) {
-        printf("omega[%d]=%g  %g\n", i, omega[i][Njack - 1], error_jackboot(resampling, Njack, omega[i]));
-        printf("nuA2[%d]=%g  %g\n", i, nuA2[i][Njack - 1], error_jackboot(resampling, Njack, nuA2[i]));
+        printf("omega nuA2[%d]=%g  %g\n", i, omega[i][Njack - 1], nuA2[i][Njack - 1]);
+        // printf("nuA2[%d]=%g  %g\n", i, nuA2[i][Njack - 1], error_jackboot(resampling, Njack, nuA2[i]));
         fprintf(outfile, "%g  %g\n", omega[i][Njack - 1], error_jackboot(resampling, Njack, omega[i]));
     }
 
@@ -727,16 +742,16 @@ template<int ieq, int iop>
 double lhs_amu_common(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double r;
     double GS = gjack.en[e].jack[58][j];
-    if (n == 0)        r = gjack.en[e].jack[ieq][j] ;
-    else if (n == 1)   r = gjack.en[e].jack[iop][j] ;
+    if (n == 0)        r = gjack.en[e].jack[ieq][j];
+    else if (n == 1)   r = gjack.en[e].jack[iop][j];
     return r;
 }
 
 double lhs_amu_common_GS(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double r;
     double GS = gjack.en[e].jack[58][j];
-    int ieq=fit_info.corr_id[0];
-    int iop=fit_info.corr_id[1];
+    int ieq = fit_info.corr_id[0];
+    int iop = fit_info.corr_id[1];
     if (n == 0)        r = gjack.en[e].jack[ieq][j] + (10.0 / 9.0) * GS;
     else if (n == 1)   r = gjack.en[e].jack[iop][j] + (10.0 / 9.0) * GS;
     return r;

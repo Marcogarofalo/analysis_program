@@ -51,6 +51,7 @@ Thumbs.db
 
 build/
 build*/
+vs_build/
 *.json
 __pycache__
 *~
