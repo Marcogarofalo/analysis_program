@@ -30,8 +30,14 @@ IF(WITH_PYTHON)
     add_target_with_lib(fit_all_complex_g5 fit_all_complex_g5.cpp)
     target_link_libraries(fit_all_complex_g5 PUBLIC extra_func_phi4)    
 
+    add_target_with_lib(fit_all_complex_g5_largeL fit_all_complex_g5_largeL.cpp)
+    target_link_libraries(fit_all_complex_g5_largeL PUBLIC extra_func_phi4)    
+
     add_target_with_lib(fit_all_complex_g10 fit_all_complex_g10.cpp)
     target_link_libraries(fit_all_complex_g10 PUBLIC extra_func_phi4)    
+
+    add_target_with_lib(fit_all_complex_g20 fit_all_complex_g20.cpp)
+    target_link_libraries(fit_all_complex_g20 PUBLIC extra_func_phi4)    
 
 ENDIF()
 add_target_with_lib(checks_phi4 checks_phi4.cpp)
