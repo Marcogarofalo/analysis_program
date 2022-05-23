@@ -605,7 +605,7 @@ double** compute_DVt(int L, int Njack, double* Mpi, double* Mrho, double* a, dou
                 double cotd = compute_cotd(Nvar, x);
                 double q = k * (L * (x[5] / 197.326963) / (2. * pi_greco));
                 // double r = w_js(0, 0, q) - w_js(2, 0, q) - (3. / sqrt(6)) * (w_js(2, -2, q) + w_js(2, 2, q));
-                double r = std::atan(pow(pi_greco, 3. / 2.) * q / Z00(q));
+                double r = Z00(q) / (pow(pi_greco, 3. / 2.) * q);
                 fprintf(outfile, "%g    %g  %g\n", x[0], cotd, r);
             }
 
