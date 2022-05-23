@@ -840,7 +840,7 @@ void add_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack,
     ncorr_conf_jack = correlators_out;
 }
 
-
+// r[t][jack]
 void add_one_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack,  struct fit_type fit_info, double** r) {
 
     int correlators_out = ncorr_conf_jack +1;

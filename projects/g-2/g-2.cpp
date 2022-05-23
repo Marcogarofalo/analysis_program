@@ -50,6 +50,11 @@ constexpr double Mpi_MeV_err = 0.2;
 constexpr double grhopipi = 5.95;
 constexpr double grhopipi_err = 0.0001;
 
+constexpr double Jpsi_MeV = 3.096916 * 1000;
+constexpr double Jpsi_MeV_err = 0.001 * 1000;
+
+constexpr double Metac_MeV = 2.9839 * 1000;
+constexpr double Metac_MeV_err = 0.004 * 1000;
 
 // constexpr double Mpi_MeV = 139;
 // constexpr double Mpi_MeV_err = 0.001;
@@ -465,9 +470,9 @@ int main(int argc, char** argv) {
 
 
 
-    error(argc != 14, 1, "main ",
+    error(argc != 17, 1, "main ",
         "usage:./g-2  blind/see/read_plateaux -p path basename -bin $bin"
-        "   -L L jack/boot  -mu mu  mus mus ");
+        "   -L L jack/boot  -mu mul    mus1 mus2     muc1 muc2 muc3 ");
     error(strcmp(argv[1], "blind") != 0 && strcmp(argv[1], "see") != 0 && strcmp(argv[1], "read_plateaux") != 0, 1, "main ",
         "argv[1] only options:  blind/see/read_plateaux ");
 
@@ -510,10 +515,15 @@ int main(int argc, char** argv) {
     double mu = atof(argv[11]);
     double mus1 = atof(argv[12]);
     double mus2 = atof(argv[13]);
+
+    double muc1 = atof(argv[14]);
+    double muc2 = atof(argv[15]);
+    double muc3 = atof(argv[16]);
+
     generic_header header;
     header.L = file_head.l1;
     header.T = file_head.l0;
-    header.mus = { mu, mus1, mus2 };
+    header.mus = { mu, mus1, mus2 ,muc1, muc2, muc3 };
     header.thetas = {};
 
     mysprintf(namefile, NAMESIZE, "%s_mu.%f", argv[4], mu);
@@ -557,6 +567,7 @@ int main(int argc, char** argv) {
 
 
     std::vector<std::string>  correlators;
+    // light
     mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);//0
     correlators.emplace_back(namefile);
     mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);//1
@@ -570,7 +581,7 @@ int main(int argc, char** argv) {
     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);//5
     correlators.emplace_back(namefile);
 
-
+    // stranges
     mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.3f_P5A0.txt", argv[3], argv[4], mus1);//6
     correlators.emplace_back(namefile);
     mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.3f_P5P5.txt", argv[3], argv[4], mus1);//7
@@ -597,6 +608,45 @@ int main(int argc, char** argv) {
     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.3f_VKVK.txt", argv[3], argv[4], mus2);//17
     correlators.emplace_back(namefile);
 
+    //charms
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5A0.txt", argv[3], argv[4], muc1);//18
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5P5.txt", argv[3], argv[4], muc1);//19
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_VKVK.txt", argv[3], argv[4], muc1);//20
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5A0.txt", argv[3], argv[4], muc1);//21
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5P5.txt", argv[3], argv[4], muc1);//22
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_VKVK.txt", argv[3], argv[4], muc1);//23
+    correlators.emplace_back(namefile);
+
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5A0.txt", argv[3], argv[4], muc2);//24
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5P5.txt", argv[3], argv[4], muc2);//25
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_VKVK.txt", argv[3], argv[4], muc2);//26
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5A0.txt", argv[3], argv[4], muc2);//27
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5P5.txt", argv[3], argv[4], muc2);//28
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_VKVK.txt", argv[3], argv[4], muc2);//29
+    correlators.emplace_back(namefile);
+
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5A0.txt", argv[3], argv[4], muc3);//30
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5P5.txt", argv[3], argv[4], muc3);//31
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_VKVK.txt", argv[3], argv[4], muc3);//32
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5A0.txt", argv[3], argv[4], muc3);//33
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5P5.txt", argv[3], argv[4], muc3);//34
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_VKVK.txt", argv[3], argv[4], muc3);//35
+    correlators.emplace_back(namefile);
 
 
     // printf("reading confs from file: %s", correlators[0].c_str());
@@ -799,6 +849,10 @@ int main(int argc, char** argv) {
     double* jack_grhopipi = fake_sampling(resampling, grhopipi, grhopipi_err, Njack, 1002);
     double* jack_Mpi_MeV_exp = fake_sampling(resampling, Mpi_MeV, Mpi_MeV_err, Njack, 1003);
     double* jack_Mphi_MeV_exp = fake_sampling(resampling, Mphi_MeV, Mphi_MeV_err, Njack, 1004);
+    double* jack_Jpsi_MeV_exp = fake_sampling(resampling, Jpsi_MeV, Jpsi_MeV_err, Njack, 1005);
+    double* jack_Metac_MeV_exp = fake_sampling(resampling, Metac_MeV, Metac_MeV_err, Njack, 1006);
+
+    double* zeros = (double*)calloc(Njack, sizeof(double));
 
     // line_read_param(option, "ZA", mean, err, seed, namefile_plateaux);
     // double* ZA = fake_sampling(resampling, mean, err, Njack, seed);
@@ -813,6 +867,15 @@ int main(int argc, char** argv) {
     for (int j = 0;j < Njack;j++) {
         jack_aMphi_MeV_exp[j] = jack_Mphi_MeV_exp[j] * a[j] / 197.326963;
     }
+    double* jack_aJpsi_MeV_exp = (double*)malloc(sizeof(double) * Njack);
+    for (int j = 0;j < Njack;j++) {
+        jack_aJpsi_MeV_exp[j] = jack_Jpsi_MeV_exp[j] * a[j] / 197.326963;
+    }
+    double* jack_aMetac_MeV_exp = (double*)malloc(sizeof(double) * Njack);
+    for (int j = 0;j < Njack;j++) {
+        jack_aMetac_MeV_exp[j] = jack_Metac_MeV_exp[j] * a[j] / 197.326963;
+    }
+
     int Nstrange = 2;
     double** Meta = (double**)malloc(sizeof(double*) * Nstrange);
     Meta[0] = M_eta_op;
@@ -826,18 +889,29 @@ int main(int argc, char** argv) {
     Z[0] = ZVs.P[0];
     Z[1] = ZVs1.P[0];
 
-    double* ZV = interpol_Z(Nstrange, Njack, Meta, Z, jack_aMetas_MeV_exp, outfile, "Z_V", resampling);
+    double* ZV, * ZA;
+
+    if (strcmp("cA.53.24", argv[4]) == 0 || strcmp("cA.40.24", argv[4]) == 0 || strcmp("cA.30.32", argv[4]) == 0) {
+        line_read_param(option, "ZA", mean, err, seed, namefile_plateaux);
+        ZA = fake_sampling(resampling, mean, err, Njack, seed);
+        line_read_param(option, "ZV", mean, err, seed, namefile_plateaux);
+        ZV = fake_sampling(resampling, mean, err, Njack, seed);
+    }
+    else {
+        Z[0] = ZVs.P[0];
+        Z[1] = ZVs1.P[0];
+        ZV = interpol_Z(Nstrange, Njack, Meta, Z, jack_aMetas_MeV_exp, outfile, "Z_V", resampling);
+
+
+        Z[0] = ZAs.P[0];
+        Z[1] = ZAs1.P[0];
+        ZA = interpol_Z(Nstrange, Njack, Meta, Z, jack_aMetas_MeV_exp, outfile, "Z_A", resampling);
+
+    }
     write_jack(ZV, Njack, jack_file);
     check_correlatro_counter(22);
-
-
-    Z[0] = ZAs.P[0];
-    Z[1] = ZAs1.P[0];
-    double* ZA = interpol_Z(Nstrange, Njack, Meta, Z, jack_aMetas_MeV_exp, outfile, "Z_A", resampling);
     write_jack(ZA, Njack, jack_file);
     check_correlatro_counter(23);
-
-
     ///
     double** musj = double_malloc_2(Nstrange, Njack);
     for (int i = 0;i < Nstrange;i++) {
@@ -1159,9 +1233,13 @@ int main(int argc, char** argv) {
     for (int j = 0;j < Njack;j++) {
         MpiMev[j] = M_PS_op[j] / (a[j] / 197.326963);
     }
-
-
-    double** DVt = compute_DVt(header.L, Njack, MpiMev/* jack_Mpi_MeV_exp */, jack_Mrho_MeV_exp, a, jack_grhopipi, outfile, "DVt", resampling);
+    double** DVt;
+    if (strcmp("cA.53.24", argv[4]) == 0 || strcmp("cA.40.24", argv[4]) == 0 || strcmp("cA.30.32", argv[4]) == 0) {
+        DVt = double_calloc_2(T, Njack);
+    }
+    else {
+        DVt = compute_DVt(header.L, Njack, /* MpiMev */jack_Mpi_MeV_exp, jack_Mrho_MeV_exp, a, jack_grhopipi, outfile, "DVt", resampling);
+    }
     delete[] MpiMev;
 
     fit_info.N = 1;
@@ -1170,11 +1248,13 @@ int main(int argc, char** argv) {
     add_one_correlators(option, ncorr_new, conf_jack, fit_info, DVt);
     printf("%d\n", ncorr_new);
 
-    int_scheme = integrate_reinman;
+    // int_scheme = integrate_reinman;
+    int_scheme = integrate_simpson38;
     double* one_jack = fake_sampling(resampling, 1, 1e-8, Njack, 1);
     double* DV = compute_amu_W(conf_jack, ncorr_new - 1, Njack, one_jack, a, 1.0, int_scheme, outfile, "DV_{W}(op,l)", resampling);
     write_jack(DV, Njack, jack_file);
     check_correlatro_counter(58);
+
 
     printf("DV_{W}(op,l) = %g  %g\n", DV[Njack - 1], error_jackboot(resampling, Njack, DV));
     free(DV);
@@ -1240,6 +1320,138 @@ int main(int argc, char** argv) {
     write_jack(amu_W_sphys, Njack, jack_file);
     printf("amu_W_simpson38(op,shys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
     check_correlatro_counter(66);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////charms
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    int Ncharm = 3;
+    char name_corr[NAMESIZE];
+    std::vector<std::string> name_intgr = { "rein", "simps" };
+    std::vector<std::string> name_eqop = { "eq", "op" };
+    std::vector<std::string> name_M = { "Metac", "MJPsi" };
+    int Ncharm_inter = 3;
+    if (strcmp("cD.54.96", argv[4]) == 0) Ncharm_inter = 2;
+
+    double** Metac_vec = (double**)malloc(sizeof(double*) * Ncharm);
+    for (int ic = 0;ic < Ncharm;ic++) {
+        mysprintf(name_corr, NAMESIZE, "M_{etac}^{op}(c%d)", ic);
+        Metac_vec[ic] = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 4 + 6 * (3 + ic), name_corr, M_eff_T, jack_file);
+        check_correlatro_counter(67 + ic);
+        // printf("%s = %g  %g\n", name_corr, Jpsi_vec[ic][Njack - 1], error_jackboot(resampling, Njack, Jpsi_vec[ic]));
+    }
+    double** Jpsi_vec = (double**)malloc(sizeof(double*) * Ncharm);
+    for (int ic = 0;ic < Ncharm;ic++) {
+        mysprintf(name_corr, NAMESIZE, "M_{JPsi}^{op}(c%d)", ic);
+        Jpsi_vec[ic] = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 5 + 6 * (3 + ic), name_corr, M_eff_T, jack_file);
+        check_correlatro_counter(70 + ic);
+        // printf("%s = %g  %g\n", name_corr, Jpsi_vec[ic][Njack - 1], error_jackboot(resampling, Njack, Jpsi_vec[ic]));
+    }
+
+    constexpr double q2c = 4.0 / 9.0;
+    if (strcmp("cB.72.96", argv[4]) != 0) {
+        for (int tm = 0; tm < name_eqop.size(); tm++) {// eq op
+            double* Z;
+            if (tm == 0) Z = ZV;
+            if (tm == 1) Z = ZA;
+            for (int intgr = 0; intgr < name_intgr.size(); intgr++) {// integrators
+                if (intgr == 0)      int_scheme = integrate_reinman;
+                else if (intgr == 1) int_scheme = integrate_simpson38;
+                else exit(-1);
+
+                double** asdc_vec = (double**)malloc(sizeof(double*) * Ncharm);
+                for (int ic = 0;ic < Ncharm;ic++) {
+                    mysprintf(name_corr, NAMESIZE, "amu_{sd,%s}(%s,c%d)", name_intgr[intgr].c_str(), name_eqop[tm].c_str(), ic);
+                    asdc_vec[ic] = compute_amu_sd(conf_jack, 2 + 6 * (3 + ic) + 3 * tm, Njack, Z, a, q2c, int_scheme, outfile, name_corr, resampling);
+                    write_jack(asdc_vec[ic], Njack, jack_file);
+                    check_correlatro_counter(73 + ic + intgr * (Ncharm + name_M.size()) + tm * (Ncharm + name_M.size()) * name_intgr.size());
+                    printf("%s = %g  %g\n", name_corr, asdc_vec[ic][Njack - 1], error_jackboot(resampling, Njack, asdc_vec[ic]));
+                }
+                for (int im = 0; im < name_M.size(); im++) {// etac JPsi
+                    mysprintf(name_corr, NAMESIZE, "amu_sd_%s(%s,%s)", name_intgr[intgr].c_str(), name_eqop[tm].c_str(), name_M[im].c_str());
+                    double** Meson;
+                    double* Meson_phys;
+                    if (im == 0) { Meson = Metac_vec; Meson_phys = jack_aMetac_MeV_exp; }
+                    else if (im == 1) { Meson = Jpsi_vec; Meson_phys = jack_aJpsi_MeV_exp; }
+
+                    double* amu_sdc_sphys = interpol_Z(Ncharm_inter, Njack, Meson, asdc_vec, Meson_phys, outfile, name_corr, resampling);
+                    write_jack(amu_sdc_sphys, Njack, jack_file);
+                    size_t counter_id = 76 + im + intgr * (Ncharm + name_M.size()) + tm * (Ncharm + name_M.size()) * name_intgr.size();
+                    check_correlatro_counter(counter_id);
+                    printf("%s  id=%ld\n", name_corr, counter_id);
+                    free(amu_sdc_sphys);
+                }
+                free_2(Ncharm, asdc_vec);
+            }
+        }
+    }
+    else if (strcmp("cB.72.96", argv[4]) == 0) {
+        for (int tm = 0; tm < name_eqop.size(); tm++) {
+            for (int intgr = 0; intgr < name_intgr.size(); intgr++) {
+                for (int ic = 0;ic < Ncharm;ic++) {
+                    zero_corr(zeros, Njack, jack_file);
+                }
+                for (int im = 0; im < name_M.size(); im++) {
+                    zero_corr(zeros, Njack, jack_file);
+                }
+            }
+        }
+    }
+
+    ///////////// W 
+
+
+    if (strcmp("cB.72.96", argv[4]) != 0) {
+        for (int tm = 0; tm < name_eqop.size(); tm++) {// eq op
+            double* Z;
+            if (tm == 0) Z = ZV;
+            if (tm == 1) Z = ZA;
+            for (int intgr = 0; intgr < name_intgr.size(); intgr++) {// integrators
+                if (intgr == 0)      int_scheme = integrate_reinman;
+                else if (intgr == 1) int_scheme = integrate_simpson38;
+                else exit(-1);
+
+                double** asdc_vec = (double**)malloc(sizeof(double*) * Ncharm);
+                for (int ic = 0;ic < Ncharm;ic++) {
+                    mysprintf(name_corr, NAMESIZE, "amu_{W,%s}(%s,c%d)", name_intgr[intgr].c_str(), name_eqop[tm].c_str(), ic);
+                    asdc_vec[ic] = compute_amu_W(conf_jack, 2 + 6 * (3 + ic) + 3 * tm, Njack, Z, a, q2c, int_scheme, outfile, name_corr, resampling);
+                    write_jack(asdc_vec[ic], Njack, jack_file);
+                    check_correlatro_counter(93 + ic + intgr * (Ncharm + name_M.size()) + tm * (Ncharm + name_M.size()) * name_intgr.size());
+                    printf("%s = %g  %g\n", name_corr, asdc_vec[ic][Njack - 1], error_jackboot(resampling, Njack, asdc_vec[ic]));
+                }
+                for (int im = 0; im < name_M.size(); im++) {// etac JPsi
+                    mysprintf(name_corr, NAMESIZE, "amu_W_%s(%s,%s)", name_intgr[intgr].c_str(), name_eqop[tm].c_str(), name_M[im].c_str());
+                    double** Meson;
+                    double* Meson_phys;
+                    if (im == 0) { Meson = Metac_vec; Meson_phys = jack_aMetac_MeV_exp; }
+                    else if (im == 1) { Meson = Jpsi_vec; Meson_phys = jack_aJpsi_MeV_exp; }
+
+                    double* amu_sdc_sphys = interpol_Z(Ncharm_inter, Njack, Meson, asdc_vec, Meson_phys, outfile, name_corr, resampling);
+                    write_jack(amu_sdc_sphys, Njack, jack_file);
+                    size_t counter_id = 96 + im + intgr * (Ncharm + name_M.size()) + tm * (Ncharm + name_M.size()) * name_intgr.size();
+                    check_correlatro_counter(counter_id);
+                    printf("%s  id=%ld\n", name_corr, counter_id);
+                    free(amu_sdc_sphys);
+                }
+                free_2(Ncharm, asdc_vec);
+            }
+        }
+    }
+    else if (strcmp("cB.72.96", argv[4]) == 0) {
+        for (int tm = 0; tm < name_eqop.size(); tm++) {
+            for (int intgr = 0; intgr < name_intgr.size(); intgr++) {
+                for (int ic = 0;ic < Ncharm;ic++) {
+                    zero_corr(zeros, Njack, jack_file);
+                }
+                for (int im = 0; im < name_M.size(); im++) {
+                    zero_corr(zeros, Njack, jack_file);
+                }
+            }
+        }
+    }
+
+
+
 
 
 

@@ -157,6 +157,7 @@ int main(int argc, char** argv) {
     error(argc != 4, 1, "main ",
         "usage:./fit_all_phi4  jack/boot   path_to_jack   output_dir");
     char namefile[NAMESIZE];
+    char namefit[NAMESIZE];
 
 
     std::vector<std::string> files;
@@ -170,14 +171,28 @@ int main(int argc, char** argv) {
     files.emplace_back(namefile);
 
 
+    std::vector<int> myen(files.size());
+    for (int e = 0; e < files.size(); e++) {
+        myen[e] = e;
+        printf("file:  %s\n", files[e].c_str());
+        //printf("Nobs=%d  Njack=%d    mus=", jackall.en[e].Nobs, jackall.en[e].Njack);
+        //for (double mu : jackall.en[e].header.mus)
+        //    printf("%g   ", mu);
+        //printf("\n");
+    }
 
-    char namefit[NAMESIZE];
+    mysprintf(namefile, NAMESIZE, "%s/%s_cA.53.24_mu.0.005300", argv[2], argv[1]);
+    files.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_cA.40.24_mu.0.004000", argv[2], argv[1]);
+    files.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_cA.30.32_mu.0.003000", argv[2], argv[1]);
+    files.emplace_back(namefile);
 
     data_all jackall = read_all_the_files(files, argv[1]);
     jackall.init_error();
-    std::vector<int> myen(jackall.ens);
+    std::vector<int> myen_full(jackall.ens);
     for (int e = 0; e < jackall.ens; e++) {
-        myen[e] = e;
+        myen_full[e] = e;
         printf("file:  %s\n", files[e].c_str());
         printf("Nobs=%d  Njack=%d    mus=", jackall.en[e].Nobs, jackall.en[e].Njack);
         for (double mu : jackall.en[e].header.mus)
@@ -185,6 +200,9 @@ int main(int argc, char** argv) {
         printf("\n");
     }
     int Njack = jackall.en[0].Njack;
+    std::vector<int> myen_charm = { 0, 2, 3, 4, 5, 6 };
+
+
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
     // fits 
@@ -736,6 +754,238 @@ int main(int argc, char** argv) {
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     compute_syst_eq28(syst_amu_W_s, argv[3], "Systematics_amu_W_s.txt");
     ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    printf("\n/////////////////////////////////     amu_SD charm    //////////////////\n");
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    data_all  syst_amu_SD_c;
+    syst_amu_SD_c.resampling = argv[1];
+
+
+
+
+    interpolations = { "etac", "Jpsi" };
+    integrations = { "reinman", "simpson" };
+    for (auto interpolation : interpolations) {
+        for (auto integration : integrations) {
+            int id0, id1;
+
+            if (integration == "reinman" && interpolation == "etac") { id0 = 76; id1 = 86; }
+            if (integration == "simpson" && interpolation == "etac") { id0 = 81; id1 = 91; }
+            if (integration == "reinman" && interpolation == "Jpsi") { id0 = 77; id1 = 87; }
+            if (integration == "simpson" && interpolation == "Jpsi") { id0 = 82; id1 = 92; }
+
+            ///////////////////////////////////////////////////////////////////////////////////////////////////
+            printf("\n/////////////////////////////////     amu_SD_c_common_a4    //////////////////\n");
+            //////////////////////////////////////////////////////////////////////////////////////////////////
+            fit_info.Npar = 5;
+            fit_info.N = 2;
+            fit_info.Nvar = 1;
+            fit_info.Njack = Njack;
+            fit_info.myen = myen_charm;
+            fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+            count = 0;
+            for (int n = 0;n < fit_info.N;n++) {
+                for (int e : fit_info.myen) {
+                    for (int j = 0;j < Njack;j++) {
+                        fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2);
+                    }
+                    count++;
+                }
+            }
+            fit_info.function = rhs_amu_common_a4;
+            fit_info.corr_id = { id0,id1 };
+            mysprintf(namefit, NAMESIZE, "amu_SD_c_%s_%s_a4", interpolation.c_str(), integration.c_str());
+            fit_result amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
+            fit_info.band_range = { 0,0.009 };
+            syst_amu_SD_c.add_fit(amu_SD_s_common_a4);
+            print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_s_common_a4, amu_SD_s_common_a4, 0, fit_info.myen.size() - 1, 0.001);
+
+            free_fit_result(fit_info, amu_SD_s_common_a4);
+            fit_info.restore_default();
+            ///////////////////////////////////////////////////////////////////////////////////////////////////
+            printf("\n/////////////////////////////////     amu_SD_c_common_a4_eq    //////////////////\n");
+            //////////////////////////////////////////////////////////////////////////////////////////////////
+            fit_info.Npar = 4;
+            fit_info.N = 2;
+            fit_info.Nvar = 1;
+            fit_info.Njack = Njack;
+            fit_info.myen = myen_charm;
+            fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+            count = 0;
+            for (int n = 0;n < fit_info.N;n++) {
+                for (int e : fit_info.myen) {
+                    for (int j = 0;j < Njack;j++) {
+                        fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2);
+                    }
+                    count++;
+                }
+            }
+            fit_info.function = rhs_amu_common_a4_n0;
+            fit_info.corr_id = { id0,id1 };
+            mysprintf(namefit, NAMESIZE, "amu_SD_c_%s_%s_a4_eq", interpolation.c_str(), integration.c_str());
+            amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
+            fit_info.band_range = { 0,0.009 };
+            syst_amu_SD_c.add_fit(amu_SD_s_common_a4);
+            print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_s_common_a4, amu_SD_s_common_a4, 0, fit_info.myen.size() - 1, 0.001);
+
+            free_fit_result(fit_info, amu_SD_s_common_a4);
+            fit_info.restore_default();
+
+            ///////////////////////////////////////////////////////////////////////////////////////////////////
+            printf("\n/////////////////////////////////     amu_SD_c_common_a4_op    //////////////////\n");
+            //////////////////////////////////////////////////////////////////////////////////////////////////
+            fit_info.Npar = 4;
+            fit_info.N = 2;
+            fit_info.Nvar = 1;
+            fit_info.Njack = Njack;
+            fit_info.myen = myen_charm;
+            fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+            count = 0;
+            for (int n = 0;n < fit_info.N;n++) {
+                for (int e : fit_info.myen) {
+                    for (int j = 0;j < Njack;j++) {
+                        fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2);
+                    }
+                    count++;
+                }
+            }
+            fit_info.function = rhs_amu_common_a4_n1;
+            fit_info.corr_id = { id0,id1 };
+            mysprintf(namefit, NAMESIZE, "amu_SD_c_%s_%s_a4_op", interpolation.c_str(), integration.c_str());
+            amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
+            fit_info.band_range = { 0,0.009 };
+            syst_amu_SD_c.add_fit(amu_SD_s_common_a4);
+            print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_s_common_a4, amu_SD_s_common_a4, 0, fit_info.myen.size() - 1, 0.001);
+
+            free_fit_result(fit_info, amu_SD_s_common_a4);
+            fit_info.restore_default();
+
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    compute_syst_eq28(syst_amu_SD_c, argv[3], "Systematics_amu_SD_c.txt");
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+    printf("\n/////////////////////////////////     amu_W charm    //////////////////\n");
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    data_all  syst_amu_W_c;
+    syst_amu_W_c.resampling = argv[1];
+
+
+
+
+    interpolations = { "etac", "Jpsi" };
+    integrations = { "reinman", "simpson" };
+    for (auto interpolation : interpolations) {
+        for (auto integration : integrations) {
+            int id0, id1;
+
+            if (integration == "reinman" && interpolation == "etac") { id0 = 96;  id1 = 106; }
+            if (integration == "simpson" && interpolation == "etac") { id0 = 101; id1 = 111; }
+            if (integration == "reinman" && interpolation == "Jpsi") { id0 = 97;  id1 = 107; }
+            if (integration == "simpson" && interpolation == "Jpsi") { id0 = 102; id1 = 112; }
+
+            ///////////////////////////////////////////////////////////////////////////////////////////////////
+            printf("\n/////////////////////////////////     amu_W_c_common_a4    //////////////////\n");
+            //////////////////////////////////////////////////////////////////////////////////////////////////
+            fit_info.Npar = 5;
+            fit_info.N = 2;
+            fit_info.Nvar = 1;
+            fit_info.Njack = Njack;
+            fit_info.myen = myen_charm;
+            fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+            count = 0;
+            for (int n = 0;n < fit_info.N;n++) {
+                for (int e : fit_info.myen) {
+                    for (int j = 0;j < Njack;j++) {
+                        fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2);
+                    }
+                    count++;
+                }
+            }
+            fit_info.function = rhs_amu_common_a4;
+            fit_info.corr_id = { id0,id1 };
+            mysprintf(namefit, NAMESIZE, "amu_W_c_%s_%s_a4", interpolation.c_str(), integration.c_str());
+            fit_result amu_W_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
+            fit_info.band_range = { 0,0.009 };
+            syst_amu_W_c.add_fit(amu_W_s_common_a4);
+            print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_W_s_common_a4, amu_W_s_common_a4, 0, fit_info.myen.size() - 1, 0.001);
+
+            free_fit_result(fit_info, amu_W_s_common_a4);
+            fit_info.restore_default();
+            ///////////////////////////////////////////////////////////////////////////////////////////////////
+            printf("\n/////////////////////////////////     amu_W_c_common_a4_eq    //////////////////\n");
+            //////////////////////////////////////////////////////////////////////////////////////////////////
+            fit_info.Npar = 4;
+            fit_info.N = 2;
+            fit_info.Nvar = 1;
+            fit_info.Njack = Njack;
+            fit_info.myen = myen_charm;
+            fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+            count = 0;
+            for (int n = 0;n < fit_info.N;n++) {
+                for (int e : fit_info.myen) {
+                    for (int j = 0;j < Njack;j++) {
+                        fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2);
+                    }
+                    count++;
+                }
+            }
+            fit_info.function = rhs_amu_common_a4_n0;
+            fit_info.corr_id = { id0,id1 };
+            mysprintf(namefit, NAMESIZE, "amu_W_c_%s_%s_a4_eq", interpolation.c_str(), integration.c_str());
+            amu_W_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
+            fit_info.band_range = { 0,0.009 };
+            syst_amu_W_c.add_fit(amu_W_s_common_a4);
+            print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_W_s_common_a4, amu_W_s_common_a4, 0, fit_info.myen.size() - 1, 0.001);
+
+            free_fit_result(fit_info, amu_W_s_common_a4);
+            fit_info.restore_default();
+
+            ///////////////////////////////////////////////////////////////////////////////////////////////////
+            printf("\n/////////////////////////////////     amu_W_c_common_a4_op    //////////////////\n");
+            //////////////////////////////////////////////////////////////////////////////////////////////////
+            fit_info.Npar = 4;
+            fit_info.N = 2;
+            fit_info.Nvar = 1;
+            fit_info.Njack = Njack;
+            fit_info.myen = myen_charm;
+            fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+            count = 0;
+            for (int n = 0;n < fit_info.N;n++) {
+                for (int e : fit_info.myen) {
+                    for (int j = 0;j < Njack;j++) {
+                        fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2);
+                    }
+                    count++;
+                }
+            }
+            fit_info.function = rhs_amu_common_a4_n1;
+            fit_info.corr_id = { id0,id1 };
+            mysprintf(namefit, NAMESIZE, "amu_W_c_%s_%s_a4_op", interpolation.c_str(), integration.c_str());
+            amu_W_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
+            fit_info.band_range = { 0,0.009 };
+            syst_amu_W_c.add_fit(amu_W_s_common_a4);
+            print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_W_s_common_a4, amu_W_s_common_a4, 0, fit_info.myen.size() - 1, 0.001);
+
+            free_fit_result(fit_info, amu_W_s_common_a4);
+            fit_info.restore_default();
+
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    compute_syst_eq28(syst_amu_W_c, argv[3], "Systematics_amu_W_c.txt");
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 
 }
