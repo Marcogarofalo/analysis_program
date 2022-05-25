@@ -38,7 +38,7 @@ constexpr double Metas_MeV_err = 0.49;
 constexpr double Mphi_MeV = 1019.461;
 constexpr double Mphi_MeV_err = 0.016;
 
-constexpr double Mrho_MeV = 775.4;
+constexpr double Mrho_MeV = 775.0;
 constexpr double Mrho_MeV_err = 0.4;
 
 // constexpr double grhopipi = 6.06;
@@ -1233,31 +1233,42 @@ int main(int argc, char** argv) {
     for (int j = 0;j < Njack;j++) {
         MpiMev[j] = M_PS_op[j] / (a[j] / 197.326963);
     }
-    double** DVt;
-    if (strcmp("cA.53.24", argv[4]) == 0 || strcmp("cA.40.24", argv[4]) == 0 || strcmp("cA.30.32", argv[4]) == 0) {
-        DVt = double_calloc_2(T, Njack);
+    // double** DVt;
+    // if (strcmp("cA.53.24", argv[4]) == 0 || strcmp("cA.40.24", argv[4]) == 0 || strcmp("cA.30.32", argv[4]) == 0) {
+    //     DVt = double_calloc_2(T, Njack);
+    // }
+    // else {
+    //     DVt = compute_DVt(header.L, Njack,  MpiMev /* jack_Mpi_MeV_exp */, jack_Mrho_MeV_exp, a, jack_grhopipi, outfile, "DVt", resampling);
+    // }
+    // delete[] MpiMev;
+
+    // fit_info.N = 1;
+    // int ncorr_new = var;
+    // printf("%d\n", ncorr_new);
+    // add_one_correlators(option, ncorr_new, conf_jack, fit_info, DVt);
+    // printf("%d\n", ncorr_new);
+
+    // // int_scheme = integrate_reinman;
+    // int_scheme = integrate_simpson38;
+    // double* one_jack = fake_sampling(resampling, 1, 1e-8, Njack, 1);
+    // double* DV = compute_amu_W(conf_jack, ncorr_new - 1, Njack, one_jack, a, 1.0, int_scheme, outfile, "DV_{W}(op,l)", resampling);
+    // write_jack(DV, Njack, jack_file);
+    // check_correlatro_counter(58);
+    {   // continuum FVE GS 
+        double* DV;
+        if (strcmp("cA.53.24", argv[4]) == 0 || strcmp("cA.40.24", argv[4]) == 0 || strcmp("cA.30.32", argv[4]) == 0) {
+            DV = (double*)calloc(Njack, sizeof(double));
+            write_jack(DV, Njack, jack_file);
+            check_correlatro_counter(58);
+        }
+        else {
+            DV = compute_DVt_and_integrate(header.L, Njack, MpiMev /* jack_Mpi_MeV_exp */, jack_Mrho_MeV_exp, a, jack_grhopipi, outfile, "DVt", resampling);
+            write_jack(DV, Njack, jack_file);
+            check_correlatro_counter(58);
+        }
+        printf("DV_{W}(op,l) = %g  %g\n", DV[Njack - 1], error_jackboot(resampling, Njack, DV));
+        free(DV);
     }
-    else {
-        DVt = compute_DVt(header.L, Njack, /* MpiMev */jack_Mpi_MeV_exp, jack_Mrho_MeV_exp, a, jack_grhopipi, outfile, "DVt", resampling);
-    }
-    delete[] MpiMev;
-
-    fit_info.N = 1;
-    int ncorr_new = var;
-    printf("%d\n", ncorr_new);
-    add_one_correlators(option, ncorr_new, conf_jack, fit_info, DVt);
-    printf("%d\n", ncorr_new);
-
-    // int_scheme = integrate_reinman;
-    int_scheme = integrate_simpson38;
-    double* one_jack = fake_sampling(resampling, 1, 1e-8, Njack, 1);
-    double* DV = compute_amu_W(conf_jack, ncorr_new - 1, Njack, one_jack, a, 1.0, int_scheme, outfile, "DV_{W}(op,l)", resampling);
-    write_jack(DV, Njack, jack_file);
-    check_correlatro_counter(58);
-
-
-    printf("DV_{W}(op,l) = %g  %g\n", DV[Njack - 1], error_jackboot(resampling, Njack, DV));
-    free(DV);
     //////////////////////////////////////////////////////////////////////////////////////////////
     // SD s 
     ///

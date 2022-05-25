@@ -26,7 +26,7 @@ double integrand_K(double x, void* params) {
 }
 
 double kernel_K(double z, double epsrel = 1e-7) {
-    int Maxiter = 1e+3;
+    int Maxiter = 1e+6;
     gsl_integration_workspace* w = gsl_integration_workspace_alloc(Maxiter);
     double result, error;
     gsl_function F;
@@ -43,6 +43,38 @@ double kernel_K(double z, double epsrel = 1e-7) {
 double gm2_step_function(double t_d, double t1_d) {
     return 1.0 / (1.0 + exp(-2 * (t_d - t1_d)));
 }
+
+double integrand_K_W(double x, void* params) {
+    double z = *(double*)params;
+    double arg = (z / 2) * x / (sqrt(1 - x));
+    double j0 = sin(arg) / arg;
+    double f = (1 - x) * (1 - j0 * j0);
+
+    double  t = z / muon_mass_MeV;
+    constexpr double d = 0.15;
+    constexpr double t0_d = 0.4 / d;
+    constexpr double t1_d = 1.0 / d;
+    double theta = gm2_step_function((t * 197.326963) / 0.15, t0_d) - gm2_step_function((t * 197.326963) / 0.15, t1_d);
+    f *= theta;
+
+    return f;
+}
+
+double kernel_K_W(double z, double epsrel = 1e-4) {
+    int Maxiter = 1e+8;
+    gsl_integration_workspace* w = gsl_integration_workspace_alloc(Maxiter);
+    double result, error;
+    gsl_function F;
+    F.function = &integrand_K_W;
+    F.params = &z;
+
+    gsl_integration_qags(&F, 0, 1, 0, epsrel, Maxiter, w, &result, &error);
+    // printf("K(%g)=%g\n", z, result);
+    gsl_integration_workspace_free(w);
+
+    return result;
+}
+
 
 double integrate_simpson38(int lower, int upper, double* f) {
     double integration = 0;
@@ -336,7 +368,7 @@ double compute_delta(double omega, void* params) {
         xh[i] = P[i];
     }
     xh[0] = omega;
-    printf("Nvar=%d  omega=%g   P1=%g L=%g Mrho=%g grpp=%g a =%g\n", Nvar, xh[0], xh[1], xh[2], xh[3], xh[4], xh[5]);
+    // printf("Nvar=%d  omega=%g   P1=%g L=%g Mrho=%g grpp=%g a =%g\n", Nvar, xh[0], xh[1], xh[2], xh[3], xh[4], xh[5]);
     return  std::atan(1. / compute_cotd(Nvar, xh));
 }
 
@@ -354,7 +386,7 @@ double compute_deriv_delta(int Nvar, double* x) {
     P[0] = Nvar;
     F.params = (void*)P;
     gsl_deriv_central(&F, x[0], 1e-3, &result, &abserr);
-    printf("derivdelta= %g %g\n",result,abserr);
+    // printf("derivdelta= %g %g\n", result, abserr);
     // result=(F.function(x[0]+1e-8,F.params)-F.function(x[0],F.params))/1e-8;
     double k = sqrt(x[0] * x[0] / 4. - x[1] * x[1]);
     result *= 2 * k / (sqrt(k * k + x[1] * x[1]));
@@ -420,7 +452,7 @@ double compute_deriv_phi(double q) {
     F.params = 0;
     gsl_deriv_central(&F, q, 1e-3, &result, &abserr);
     // result=(F.function(q+1e-8,F.params)-F.function(q,F.params))/1e-8;
-    printf("derivphi= %g  %g\n",result,abserr);
+    // printf("derivphi= %g  %g\n", result, abserr);
     return result;
 }
 inline double compute_FGS2(int Nvar, double* x) {
@@ -466,7 +498,7 @@ double matrix_element_nuA2(int Nvar, double* x) {
 
     double deriv_d = compute_deriv_delta(Nvar, x);
     double deriv_phi = compute_deriv_phi(q);
-    printf(" r= %g / ( %g  %g  %g  %g) \n", r, k, deriv_d, q, deriv_phi);
+    // printf(" r= %g / ( %g  %g  %g  %g) \n", r, k, deriv_d, q, deriv_phi);
     r /= (k * deriv_d + q * deriv_phi);
 
     return r;
@@ -512,7 +544,7 @@ double* compute_V_infL(int Nvar, double* x, int T) {
     }
     double* V = (double*)malloc(sizeof(double) * T);
     V[0] = 0;
-    int Maxiter = 1e+6;
+    int Maxiter = 1e+8;
     double epsrel = 1e-8;
     gsl_integration_workspace* w = gsl_integration_workspace_alloc(Maxiter);
 
@@ -534,6 +566,42 @@ double* compute_V_infL(int Nvar, double* x, int T) {
     free(P);
     return V;
 }
+double compute_V_infL_t(int Nvar, double* x, double t) {
+    double omega = x[0];
+    double mass = x[1];
+    double L = x[2];
+    double Mrho = x[3];
+    double grhopipi = x[4];
+    double a = x[5];
+
+    double* P = (double*)malloc(sizeof(double) * (Nvar + 1));
+    for (int i = 0;i < Nvar;i++) {
+        P[i] = x[i];
+    }
+    double V = 0;
+
+    int Maxiter = 1e+6;
+    double epsrel = 1e-6;
+    gsl_integration_workspace* w = gsl_integration_workspace_alloc(Maxiter);
+
+    P[Nvar] = t;
+
+    double result, error;
+    gsl_function F;
+    F.function = &integrand_V_infL;
+    F.params = (void*)P;
+    // printf("here : %g\n",P[Nvar]);
+            //  gsl_integration_qags(&F, 2*mass, 10000, 1e+5, epsrel, Maxiter, w, &result, &error);
+    gsl_integration_qagiu(&F, 2 * mass, 0, epsrel, Maxiter, w, &result, &error);
+    // printf("K(%g)=%g\n", z, result);
+
+    V = result / (48. * M_PI * M_PI);
+
+    gsl_integration_workspace_free(w);
+    free(P);
+    return V;
+}
+
 
 double* compute_VL(int n, double** omega, double** nuA2, double* a, int T, int j) {
     double* VL = (double*)calloc(T, sizeof(double));
@@ -541,12 +609,22 @@ double* compute_VL(int n, double** omega, double** nuA2, double* a, int T, int j
         double ta = t * (a[j] / 197.326963);
         for (int in = 0;in < n;in++) {
             VL[t] += nuA2[in][j] * exp(-omega[in][j] * ta);
+
         }
 
     }
     return VL;
 
 }
+
+double compute_VL_t(int n, double* omega, double* nuA2, double t) {
+    double VL = 0;
+    for (int in = 0;in < n;in++) {
+        VL += nuA2[in] * exp(-omega[in] * t);
+    }
+    return VL;
+}
+
 
 double** compute_DVt(int L, int Njack, double* Mpi, double* Mrho, double* a, double* grhopipi, FILE* outfile, const char* description, const char* resampling) {
 
@@ -670,6 +748,202 @@ double** compute_DVt(int L, int Njack, double* Mpi, double* Mrho, double* a, dou
     // free_2(5, omega);
     // free_2(5, nuA2);
     return DVt;
+}
+
+
+double integrand_DV(double t, void* params) {
+    // printf("t=%g\n", t);
+    if (t < 1e-6) {
+        return 0;
+    }
+
+    constexpr int Nvar = 6;
+    double* x = (double*)params;
+    int Nomegas = (int)(x[Nvar] + 0.001);
+    double* omega = (double*)malloc(sizeof(double) * Nomegas);
+    double* nuA2 = (double*)malloc(sizeof(double) * Nomegas);
+    for (int i = 0; i < Nomegas;i++) {
+        omega[i] = x[Nvar + 1 + i];
+        nuA2[i] = x[Nvar + 1 + Nomegas + i];
+
+    }
+
+    double VinfL = compute_V_infL_t(Nvar, x, t);
+    // printf("VinfL=%g\n", VinfL);
+    double VL = compute_VL_t(Nomegas, omega, nuA2, t);
+    // printf("VL=%g\n", VL);
+    double z = muon_mass_MeV * t;
+    double K = z * z * kernel_K(z);
+    // printf("K=%g\n", K);
+
+    constexpr double d = 0.15;
+    constexpr double t0_d = 0.4 / d;
+    constexpr double t1_d = 1.0 / d;
+    double theta = gm2_step_function((t * 197.326963) / 0.15, t0_d) - gm2_step_function((t * 197.326963) / 0.15, t1_d);
+
+    double V_sub = (VinfL - VL) * K * theta;
+    double q2 = 1;
+
+    V_sub *= 4 * alpha_em * alpha_em * q2 / ((muon_mass_MeV) * (muon_mass_MeV));
+
+    free(omega);
+    free(nuA2);
+    // printf("%g  %g\n", t, V_sub);
+    return V_sub;
+}
+
+
+double* compute_DVt_and_integrate(int L, int Njack, double* Mpi, double* Mrho, double* a, double* grhopipi, FILE* outfile, const char* description, const char* resampling) {
+
+    int T = file_head.l0;
+    constexpr int Nvar = 6;
+    constexpr int Nomegas = 25;
+    double** omega = double_malloc_2(Nomegas, Njack);
+    double** nuA2 = double_malloc_2(Nomegas, Njack);
+    double** DVt = double_malloc_2(T, Njack);
+    double** VinfL = (double**)malloc(sizeof(double*) * Njack);
+    double** VL = (double**)malloc(sizeof(double*) * Njack);
+
+
+    int p2[Nomegas * Nomegas * Nomegas];
+    int count = 0;
+    for (int i = 0;i < Nomegas;i++) {
+        for (int j = 0;j < Nomegas;j++) {
+            for (int k = 0;k < Nomegas;k++) {
+                p2[count] = i * i + j * j + k * k;
+                count++;
+            }
+        }
+    }
+    std::sort(p2, p2 + Nomegas * Nomegas * Nomegas);
+    int p2s[Nomegas + 1];
+    count = 0;
+    p2s[0] = 0;
+    int old = -1;
+    while (count < Nomegas + 1) {
+        for (int i = 0;i < Nomegas * Nomegas * Nomegas;i++) {
+            if (p2[i] > old) {
+                p2s[count] = p2[i];
+                count++;
+                old = p2[i];
+            }
+        }
+    }
+
+
+    fprintf(outfile, " \n\n# omega  cotd  M11\n");
+    for (int j = Njack - 1;j < Njack;j++) {
+        double x[Nvar];
+        x[0] = 1;
+        x[1] = Mpi[j];
+        x[2] = L;
+        x[3] = Mrho[j];
+        x[4] = grhopipi[j];
+        x[5] = a[j];
+        // first we plot cotd*k/m
+        if (j == Njack - 1) {
+            for (int i = 0;i < 100 /* 1500 */;i++) {
+                x[0] = x[1] * (2. + 30.5 * i / 1500.0);
+                double k = sqrt(x[0] * x[0] / 4 - x[1] * x[1]);
+                double cotd = compute_cotd(Nvar, x);
+                double q = k * (L * (x[5] / 197.326963) / (2. * pi_greco));
+                // double r = w_js(0, 0, q) - w_js(2, 0, q) - (3. / sqrt(6)) * (w_js(2, -2, q) + w_js(2, 2, q));
+                double r = Z00(q) / (pow(pi_greco, 3. / 2.) * q);
+                fprintf(outfile, "%g    %g  %g\n", x[0], cotd, r);
+            }
+
+            fprintf(outfile, "\n\n #QC2 fit in [%d,%d] chi2=%.5g  %.5g\n", 0, 0, 0.0, 0.0);
+
+        }
+        double p = 2 * M_PI / ((double)L * (x[5] / 197.326963));
+
+        for (int i = 0; i < Nomegas;i++) {
+            double xmin = 2 * sqrt(x[1] * x[1] + p2s[i] * p * p) + 1e-8;
+            double xmax = 2 * sqrt(x[1] * x[1] + p2s[i + 1] * p * p) - 1e-8;
+            // printf("%d   %d\n", p2s[i], p2s[i + 1]);
+            double oj = rtsafe(omega_QC2, 0/*n*/, 6, x, 0/* Npar */, nullptr/* Pkcot */, 0/*ivar*/, 0. /*input*/, xmin, xmax, 1e-5, 100, 1e-4);
+            int seed = rand();
+            omega[i] = fake_sampling(resampling, oj, oj / 1e+6, Njack, seed);
+            // if (j==Njack-1) printf("omega[%d]=%f  x=%f  %f\n",i, oj, xmin,xmax);
+            x[0] = omega[i][j];
+            double A = matrix_element_nuA2(Nvar, x);
+            nuA2[i] = fake_sampling(resampling, A, A / 1e+6, Njack, seed + 1);
+            count++;
+            printf("omega nuA2[%d]=%g  %g\n", i, omega[i][Njack - 1], nuA2[i][Njack - 1]);
+            fprintf(outfile, "%g  %g\n", omega[i][Njack - 1], error_jackboot(resampling, Njack, omega[i]));
+        }
+    }
+
+    for (int j = 0;j < Njack;j++) {
+        double x[Nvar];
+        x[0] = 1;
+        x[1] = Mpi[j];
+        x[2] = L;
+        x[3] = Mrho[j];
+        x[4] = grhopipi[j];
+        x[5] = a[j];
+
+        VinfL[j] = compute_V_infL(Nvar, x, T);
+        VL[j] = compute_VL(Nomegas, omega, nuA2, a, T, j);
+        for (int t = 0;t < T;t++) {
+            DVt[t][j] = (VinfL[j][t] - VL[j][t]) * pow(a[j] / 197.326963, 3);
+        }
+    }
+
+
+
+    fprintf(outfile, " \n\n# t  inf  L\n");
+    for (int t = 1;t < T;t++) {
+        fprintf(outfile, "%d   %g   %g\n", t, VinfL[Njack - 1][t], VL[Njack - 1][t]);
+    }
+    fprintf(outfile, "\n\n #DVt fit in [%d,%d] chi2=%.5g  %.5g\n", 0, 0, 0.0, 0.0);
+    fprintf(outfile, "%.5g  %.5g\n", 0.0, 0.0);
+    printf("--------------integrate GS------------------\n");
+    ///// setup integration
+    int Maxiter = 1e+6;
+    double epsrel = 1e-6;
+    gsl_integration_workspace* w = gsl_integration_workspace_alloc(Maxiter);
+    double* GS;
+    double GS_mean;
+    for (int j = Njack - 1;j < Njack;j++) {
+        // P[Nvar] = t * (a / 197.326963);
+        double* P = (double*)malloc(sizeof(double) * (Nvar + 1 + Nomegas * 2));
+        P[0] = 1;
+        P[1] = Mpi[j];
+        P[2] = L;
+        P[3] = Mrho[j];
+        P[4] = grhopipi[j];
+        P[5] = a[j];
+        P[6] = Nomegas;
+        for (int i = 0; i < Nomegas;i++) {
+            P[Nvar + 1 + i] = omega[i][j];
+            P[Nvar + 1 + Nomegas + i] = nuA2[i][j];
+        }
+        double result, error;
+        gsl_function F;
+        F.function = &integrand_DV;
+        F.params = (void*)P;
+
+        // gsl_integration_qagiu(&F, 0, 0, epsrel, Maxiter, w, &result, &error);
+        gsl_integration_qags(&F, 0, 0.2, 0, epsrel, Maxiter, w, &result, &error);
+        printf("GS=%g +- %g\n", result, error);
+        GS_mean = result;
+        free(P);
+    }
+    GS = fake_sampling(resampling, GS_mean, GS_mean / 1e+3, Njack, rand());
+    gsl_integration_workspace_free(w);
+
+
+    fprintf(outfile, " \n\n");
+    fprintf(outfile, "#\n");
+    for (int t = 1; t < T / 2; t++) {
+        fprintf(outfile, "%d   1   1\t", t);
+    }
+    fprintf(outfile, "\n\n #DV_{W}(op,l) fit in [%d,%d] chi2=%.5g  %.5g\n", 0, T / 2, 0.0, 0.0);
+    fprintf(outfile, "   %.15g   %15.g\n", GS[Njack - 1], error_jackboot(resampling, Njack, GS));
+
+
+    return GS;
 }
 
 
