@@ -182,9 +182,14 @@ int main(int argc, char** argv) {
     mysprintf(namefile, NAMESIZE, "%s/b5.85/L20T40/eta_m1.5_M02_-0.040000_mu03_0.0224_csw_1.0_rho3/jackknife/%s_T40_L20_rho3.000000_eta-1.500000_csw1.000000_mu030.022400_m0-0.040000", argv[2], argv[1]);
     emplace_back_par_data(namefile, paramsj, dataj);
 
+    mysprintf(namefile, NAMESIZE, "%s/b5.85/L20T40/eta_m1.8_M02_-0.045000_mu03_0.0120_csw_1.0_rho3/jackknife/%s_T40_L20_rho3.000000_eta-1.800000_csw1.000000_mu030.012000_m0-0.045000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
     mysprintf(namefile, NAMESIZE, "%s/b5.85/L20T40/eta_m1.8_M02_-0.045000_mu03_0.0224_csw_1.0_rho3/jackknife/%s_T40_L20_rho3.000000_eta-1.800000_csw1.000000_mu030.022400_m0-0.045000", argv[2], argv[1]);
     emplace_back_par_data(namefile, paramsj, dataj);
 
+    mysprintf(namefile, NAMESIZE, "%s/b5.85/L20T40/eta_m1.8_M02_-0.045000_mu03_0.0400_csw_1.0_rho3/jackknife/%s_T40_L20_rho3.000000_eta-1.800000_csw1.000000_mu030.040000_m0-0.045000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
 
     mysprintf(namefile, NAMESIZE, "%s/b5.85/L20T40/eta_m2.0_M02_-0.010396_mu03_0.0224_csw_1.0_rho3/jackknife/%s_T40_L20_rho3.000000_eta-2.000000_csw1.000000_mu030.022400_m0-0.010396", argv[2], argv[1]);
     emplace_back_par_data(namefile, paramsj, dataj);
