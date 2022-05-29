@@ -609,45 +609,45 @@ int main(int argc, char** argv) {
     correlators.emplace_back(namefile);
 
     //charms
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5A0.txt", argv[3], argv[4], muc1);//18
-    correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5P5.txt", argv[3], argv[4], muc1);//19
-    correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_VKVK.txt", argv[3], argv[4], muc1);//20
-    correlators.emplace_back(namefile);
     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5A0.txt", argv[3], argv[4], muc1);//21
     correlators.emplace_back(namefile);
     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5P5.txt", argv[3], argv[4], muc1);//22
     correlators.emplace_back(namefile);
     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_VKVK.txt", argv[3], argv[4], muc1);//23
     correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5A0.txt", argv[3], argv[4], muc1);//18
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5P5.txt", argv[3], argv[4], muc1);//19
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_VKVK.txt", argv[3], argv[4], muc1);//20
+    correlators.emplace_back(namefile);
 
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5A0.txt", argv[3], argv[4], muc2);//24
-    correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5P5.txt", argv[3], argv[4], muc2);//25
-    correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_VKVK.txt", argv[3], argv[4], muc2);//26
-    correlators.emplace_back(namefile);
     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5A0.txt", argv[3], argv[4], muc2);//27
     correlators.emplace_back(namefile);
     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5P5.txt", argv[3], argv[4], muc2);//28
     correlators.emplace_back(namefile);
     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_VKVK.txt", argv[3], argv[4], muc2);//29
     correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5A0.txt", argv[3], argv[4], muc2);//24
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5P5.txt", argv[3], argv[4], muc2);//25
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_VKVK.txt", argv[3], argv[4], muc2);//26
+    correlators.emplace_back(namefile);
 
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5A0.txt", argv[3], argv[4], muc3);//30
-    correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5P5.txt", argv[3], argv[4], muc3);//31
-    correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_VKVK.txt", argv[3], argv[4], muc3);//32
-    correlators.emplace_back(namefile);
+
     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5A0.txt", argv[3], argv[4], muc3);//33
     correlators.emplace_back(namefile);
     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5P5.txt", argv[3], argv[4], muc3);//34
     correlators.emplace_back(namefile);
     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_VKVK.txt", argv[3], argv[4], muc3);//35
     correlators.emplace_back(namefile);
-
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5A0.txt", argv[3], argv[4], muc3);//30
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5P5.txt", argv[3], argv[4], muc3);//31
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_VKVK.txt", argv[3], argv[4], muc3);//32
+    correlators.emplace_back(namefile);
 
     // printf("reading confs from file: %s", correlators[0].c_str());
     // auto iconfs = read_nconfs(correlators[0].c_str());
@@ -1308,28 +1308,28 @@ int main(int argc, char** argv) {
     asd_vec[1] = amu_Weq_s1;
     amu_W_sphys = interpol_Z(Nstrange, Njack, Mphi, asd_vec, jack_aMphi_MeV_exp, outfile, "amu_{W}(eq,phiphys)", resampling);
     write_jack(amu_W_sphys, Njack, jack_file);
-    printf("amu_W(eq,phihys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
+    printf("amu_W(eq,phiphys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
     check_correlatro_counter(63);
 
     asd_vec[0] = amu_Wop_s;
     asd_vec[1] = amu_Wop_s1;
     amu_W_sphys = interpol_Z(Nstrange, Njack, Mphi, asd_vec, jack_aMphi_MeV_exp, outfile, "amu_{W}(op,phiphys)", resampling);
     write_jack(amu_W_sphys, Njack, jack_file);
-    printf("amu_W(op,shys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
+    printf("amu_W(op,phiphys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
     check_correlatro_counter(64);
 
     asd_vec[0] = amu_Weq_simp_s;
     asd_vec[1] = amu_Weq_simp_s1;
     amu_W_sphys = interpol_Z(Nstrange, Njack, Mphi, asd_vec, jack_aMphi_MeV_exp, outfile, "amu_{W}_simpson38(eq,phiphys)", resampling);
     write_jack(amu_W_sphys, Njack, jack_file);
-    printf("amu_W(eq,shys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
+    printf("amu_W(eq,phiphys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
     check_correlatro_counter(65);
 
     asd_vec[0] = amu_Wop_simp_s;
     asd_vec[1] = amu_Wop_simp_s1;
     amu_W_sphys = interpol_Z(Nstrange, Njack, Mphi, asd_vec, jack_aMphi_MeV_exp, outfile, "amu_{W}_simpson38(op,phiphys)", resampling);
     write_jack(amu_W_sphys, Njack, jack_file);
-    printf("amu_W_simpson38(op,shys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
+    printf("amu_W_simpson38(op,phiphys) = %g  %g\n", amu_W_sphys[Njack - 1], error_jackboot(resampling, Njack, amu_W_sphys));
     check_correlatro_counter(66);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1462,6 +1462,31 @@ int main(int argc, char** argv) {
     }
 
 
+
+    ////////////////////////////////masses
+    double** ms = (double**)malloc(sizeof(double*) * 2);
+    ms[0] = fake_sampling(resampling, header.mus[1], 1e-10, Njack, 1);
+    ms[1] = fake_sampling(resampling, header.mus[2], 1e-10, Njack, 1);
+    double* ms_etas = interpol_Z(Nstrange, Njack, Meta, ms, jack_aMetas_MeV_exp, outfile, "ms(etas)", resampling);
+    free(ms_etas);
+
+    double* ms_phi = interpol_Z(Nstrange, Njack, Mphi, ms, jack_aMphi_MeV_exp, outfile, "ms(phi)", resampling);
+    free(ms_phi);
+
+    free_2(2,ms);
+
+    double** mc = (double**)malloc(sizeof(double*) * 3);
+    mc[0] = fake_sampling(resampling, header.mus[3], 1e-10, Njack, 1);
+    mc[1] = fake_sampling(resampling, header.mus[4], 1e-10, Njack, 1);
+    mc[2] = fake_sampling(resampling, header.mus[5], 1e-10, Njack, 1);
+
+
+    double* mc_etac = interpol_Z(Ncharm_inter, Njack, Metac_vec, mc, jack_aMetac_MeV_exp, outfile, "mc(etac)", resampling);
+    free(mc_etac);
+
+    double* mc_JPsi = interpol_Z(Ncharm_inter, Njack, Jpsi_vec, mc, jack_aJpsi_MeV_exp, outfile, "mc(Jpsi)", resampling);
+    free(mc_JPsi);
+    free_2(3,mc);
 
 
 
