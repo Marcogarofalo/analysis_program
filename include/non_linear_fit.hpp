@@ -12,6 +12,50 @@
 #include "global.hpp"
 #include "fit_all.hpp"
 
+struct h_deriv {
+    std::vector<double> h;
+    // cast h_deriv as std::vector<double>
+    operator std::vector<double>() const { return h; }
+    // copy constructor
+    h_deriv(const h_deriv& rhs) {
+        h = rhs.h;
+    }
+    // move constructor
+    h_deriv(h_deriv&& rhs) {
+        h = std::move(rhs.h);
+    }
+    // copy ass
+    h_deriv& operator = (const h_deriv& rhs) {
+        h = rhs.h;
+        return *this;
+    }
+    // move ass
+    h_deriv& operator = (h_deriv&& rhs) noexcept {
+        h = std::move(rhs.h);
+        return *this;
+    }
+
+    h_deriv(const double& rhs) {
+        h = std::vector<double>(1);
+        h[0] = rhs;
+    }
+    h_deriv& operator = (const double& rhs) {
+        h = std::vector<double>(1);
+        h[0] = rhs;
+        return *this;
+    }
+    h_deriv& operator = (const double&& rhs) {
+        h = std::vector<double>(1);
+        h[0] = rhs;
+        return *this;
+    }
+
+    h_deriv& operator = (const std::vector<double>& rhs) {
+        h = rhs;
+        return *this;
+    }
+};
+
 struct  fit_type {
     double (*function)(int, int, double*, int, double*);//N, Nvar, x ,Npar,P
     double (*f1)(int, int, double*, int, double*);
@@ -25,7 +69,7 @@ struct  fit_type {
     int custom = false; // false=0 means default fit , 1 custom fit options
     double lambda = 0.001;
     double acc = 0.001;
-    double h = 1e-5;
+    h_deriv h = 1e-5;
     int devorder = 4;  // 2 , 4 , -2 adaptive h=h*parameter
     int repeat_start = 1;
     double chi2_gap_jackboot = 1;
@@ -120,7 +164,7 @@ double rtbis_func_eq_input(double (*func)(int, int, double*, int, double*), int 
 double rtnewt(double (*func)(int, int, double*, int, double*), int n, int Nvar, double* x, int Npar, double* P, int ivar, double input, double xstart, double xmin, double xmax, float xacc, int JMAX = 1000, double h = 1e-5);
 double  rtsafe(double (*func)(int, int, double*, int, double*), int n, int Nvar, double* x, int Npar, double* P, int ivar, double input, double x1, double x2, float xacc, int JMAX = 1000, double h = 1e-5);
 
-double* der_O4_fun_Nf_h(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), double h);
+double* der_O4_fun_Nf_h(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), std::vector<double> h);
 double* derN_fun_Nf_var_h(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), double h, int N);
 
 struct  fit_result   malloc_copy_fit_result(struct fit_result fit_out);

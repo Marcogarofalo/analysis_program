@@ -460,7 +460,7 @@ double* non_linear_fit(int ensemble, double** x, double** y, int Nvar, int Npar,
 
 //https://en.wikipedia.org/wiki/Finite_difference_coefficient#Central_finite_difference 
 //derivative 1 accuracy 4
-double* der_O4_fun_Nf_h(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), double h) {
+double* der_O4_fun_Nf_h(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), std::vector< double > h) {
 
     double* Ph = (double*)malloc(sizeof(double) * Npar);
     double* df = (double*)calloc(Npar, sizeof(double));
@@ -470,20 +470,20 @@ double* der_O4_fun_Nf_h(int n, int Nvar, double* x, int Npar, double* P, double 
         Ph[i] = P[i];
 
     for (i = 0;i < Npar;i++) {
-        Ph[i] = P[i] - 2. * h;
+        Ph[i] = P[i] - 2. * h[i];
         df[i] = fun(n, Nvar, x, Npar, Ph);
 
-        Ph[i] = P[i] - h;
+        Ph[i] = P[i] - h[i];
         df[i] -= 8 * fun(n, Nvar, x, Npar, Ph);
 
-        Ph[i] = P[i] + h;
+        Ph[i] = P[i] + h[i];
         df[i] += 8 * fun(n, Nvar, x, Npar, Ph);
 
-        Ph[i] = P[i] + 2. * h;
+        Ph[i] = P[i] + 2. * h[i];
         df[i] -= fun(n, Nvar, x, Npar, Ph);
 
         Ph[i] = P[i];//you need to leave the parameter as it was before you move to the next parameter
-        df[i] /= (12. * h);
+        df[i] /= (12. * h[i]);
     }
 
 
@@ -496,7 +496,7 @@ double* der_O4_fun_Nf_h(int n, int Nvar, double* x, int Npar, double* P, double 
 
 //https://en.wikipedia.org/wiki/Finite_difference_coefficient#Central_finite_difference 
 //derivative 1 accuracy 2
-double* der_O2_fun_Nf_h(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), double h) {
+double* der_O2_fun_Nf_h(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), std::vector< double > h) {
 
     double* Ph = (double*)malloc(sizeof(double) * Npar);
     double* df = (double*)calloc(Npar, sizeof(double));
@@ -507,15 +507,15 @@ double* der_O2_fun_Nf_h(int n, int Nvar, double* x, int Npar, double* P, double 
 
     for (i = 0;i < Npar;i++) {
 
-        Ph[i] = P[i] - h;
+        Ph[i] = P[i] - h[i];
         df[i] = -fun(n, Nvar, x, Npar, Ph);
 
-        Ph[i] = P[i] + h;
+        Ph[i] = P[i] + h[i];
         df[i] += fun(n, Nvar, x, Npar, Ph);
 
 
         Ph[i] = P[i];//you need to leave the parameter as it was before you move to the next parameter
-        df[i] /= (2. * h);
+        df[i] /= (2. * h[i]);
     }
 
 
@@ -524,7 +524,7 @@ double* der_O2_fun_Nf_h(int n, int Nvar, double* x, int Npar, double* P, double 
     return df;
 }
 
-double* der_O2_fun_Nf_h_adaptive(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), double h) {
+double* der_O2_fun_Nf_h_adaptive(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), std::vector< double > h) {
 
     double* Ph = (double*)malloc(sizeof(double) * Npar);
     double* df = (double*)calloc(Npar, sizeof(double));
@@ -535,7 +535,7 @@ double* der_O2_fun_Nf_h_adaptive(int n, int Nvar, double* x, int Npar, double* P
 
 
     for (i = 0;i < Npar;i++) {
-        double hp = h * fabs(P[i]);
+        double hp = h[i] * fabs(P[i]);
         Ph[i] = P[i] - hp;
         df[i] = -fun(n, Nvar, x, Npar, Ph);
 
@@ -721,7 +721,10 @@ double** covariance_non_linear_fit_Nf(int N, int* ensemble, double** x, double**
     int i, j, k, e;
     double f, * fk;
     int n, count;
-    double h = 0.00001;
+    std::vector< double > h(Npar);
+    for (int i = 0; i < Npar;i++)
+        h[i] = 0.00001;
+
 
     alpha = (double**)malloc(sizeof(double*) * Npar);
     for (j = 0;j < Npar;j++) {
@@ -777,13 +780,21 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
 
     double lambda = fit_info.lambda;
     double acc = fit_info.acc;
-    double h = fit_info.h;
+    std::vector< double > h;
+    if (fit_info.h.h.size() == 1) {
+        h = std::vector< double >(Npar);
+        for (int i = 0; i < Npar;i++)
+            h[i] = fit_info.h.h[0];
+    }
+    else if (fit_info.h.h.size() == Npar) { h = fit_info.h; }
+    else { printf("non_linear_fit_Nf: h must me a std::vector<double> of 1 o Npar lenght"); exit(1); }
+
     std::vector< double > Prange = fit_info.Prange;
     int devorder = fit_info.devorder;
     int verbosity = fit_info.verbosity;
     int precision_sum = fit_info.precision_sum;
 
-    double* (*der_fun_Nf_h)(int, int, double*, int, double*, double(int, int, double*, int, double*), double);
+    double* (*der_fun_Nf_h)(int, int, double*, int, double*, double(int, int, double*, int, double*), std::vector< double >);
     double (*chi2_fun)(int, int*, double**, double**, double*, int, int, double(int, int, double*, int, double*));
     chi2_fun = compute_chi_non_linear_Nf;
 
@@ -849,7 +860,7 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
         }
     }
     //     printf("chi2=%f   res=%.10f P0=%f   P1=%f\n",chi2,res,P[0],P[1]);
-     if (fit_info.noderiv) {
+    if (fit_info.noderiv) {
         double init_chi2 = 1;
         double loop_chi2 = 20;
         int iterations = 0;
@@ -972,7 +983,7 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
                 for (j = 0;j < Npar;j++) {
                     if (isnan(P_tmp[j])) {
                         computed_alpha = false;
-                        h /= 10.0;
+                        for (int ii = 0;ii < h.size();ii++) h[ii] /= 10.0;
                         P_tmp[j] = P[j] + (2. * rand() / RAND_MAX - 1.) * P[j] / 100.0;// recompute the hessian on this par
                         if (verbosity > 1) printf("parameter is nan, resetting: P[%d]=%g\n", j, P_tmp[j]);
                     }
@@ -1228,7 +1239,7 @@ double compute_chi_non_linear_Nf_cov(int N, int* ensemble, double** x, double** 
 double* non_linear_fit_Nf_covariance(int N, int* ensemble, double** x, double** y, int Nvar, int Npar, double fun(int, int, double*, int, double*), double* guess, double** cov1, int devorder) {
 
 
-    double* (*der_fun_Nf_h)(int, int, double*, int, double*, double(int, int, double*, int, double*), double);
+    double* (*der_fun_Nf_h)(int, int, double*, int, double*, double(int, int, double*, int, double*), std::vector<double>);
     if (devorder == 4) {
         der_fun_Nf_h = der_O4_fun_Nf_h;
     }
@@ -1244,7 +1255,8 @@ double* non_linear_fit_Nf_covariance(int N, int* ensemble, double** x, double** 
     double chi2, chi2_tmp;
     double* P, * P_tmp, lambda, res;
     int n, count, n1, count1, e1, Niter = 0;
-    double h = 1.0e-5;
+    std::vector<double> h(Npar);
+    for (int i = 0; i < Npar;i++) h[i] = 1e-5;
     lambda = 0.001;
     res = 1;
     int en_tot = 0;
@@ -1445,13 +1457,20 @@ double* non_linear_fit_Nf_cov(int N, int* ensemble, double** x, double** y, int 
 
     double lambda = fit_info.lambda;
     double acc = fit_info.acc;
-    double h = fit_info.h;
+    std::vector< double > h;
+    if (fit_info.h.h.size() == 1) {
+        h = std::vector< double >(Npar);
+        for (int i = 0; i < Npar;i++)
+            h[i] = fit_info.h.h[0];
+    }
+    else if (fit_info.h.h.size() == Npar) { h = fit_info.h; }
+    else { printf("non_linear_fit_Nf: h must me a std::vector<double> of 1 o Npar lenght"); exit(1); }
     std::vector< double > Prange = fit_info.Prange;
     int devorder = fit_info.devorder;
     int verbosity = fit_info.verbosity;
     int precision_sum = fit_info.precision_sum;
 
-    double* (*der_fun_Nf_h)(int, int, double*, int, double*, double(int, int, double*, int, double*), double);
+    double* (*der_fun_Nf_h)(int, int, double*, int, double*, double(int, int, double*, int, double*), std::vector<double>);
     double (*chi2_fun)(int, int*, double**, double**, double*, int, int, double(int, int, double*, int, double*), double**);
     chi2_fun = compute_chi_non_linear_Nf_cov1;
 
@@ -1630,7 +1649,7 @@ double* non_linear_fit_Nf_cov(int N, int* ensemble, double** x, double** y, int 
                 for (j = 0;j < Npar;j++) {
                     if (isnan(P_tmp[j])) {
                         computed_alpha = false;
-                        h /= 10.0;
+                        for (int ii = 0; ii < Npar;ii++) h[ii] /= 10.0;
                         P_tmp[j] = P[j] + (2. * rand() / RAND_MAX - 1.) * P[j] / 100.0;// recompute the hessian on this par
                         if (verbosity > 1) printf("parameter is nan, resetting: P[%d]=%g\n", j, P_tmp[j]);
                     }
