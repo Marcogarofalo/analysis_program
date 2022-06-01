@@ -2329,9 +2329,11 @@ void  print_fit_info(char **argv,int jack_tot,struct fit_result fit_out, struct 
     tif=fit_to_tif(fit_info.Npar,jack_tot,fit);    
     
     chi2m=mean_and_error_jack_biased(jack_tot,fit_out.chi2);
-    
+    std::vector<double> h(fit_info.Npar);
+    for (int i=0;i<fit_info.Npar; i++) h[i]=0.00001;
     for(j=0;j<jack_tot;j++){
-        fk=der_O4_fun_Nf_h(fit_info.N,  fit_info.Nvar, phys_point[j], fit_info.Npar,tif[j],  fit_info.function,  0.00001);
+        
+        fk=der_O4_fun_Nf_h(fit_info.N,  fit_info.Nvar, phys_point[j], fit_info.Npar,tif[j],  fit_info.function,  h );
         for (i=0;i<fit_info.Npar;i++)
             tmp2[i][j]=fk[i]*fit[i][j];
         free(fk);
