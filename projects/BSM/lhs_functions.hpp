@@ -32,6 +32,28 @@ double ration_corr_min_half(int j, double ****in,int t ,struct fit_type fit_info
     //return num;
 }
 
+
+double GPS_BSM(int j, double ****in,int t ,struct fit_type fit_info){
+    double m=fit_info.ext_P[0][j];
+    int T=file_head.l0;
+    double GPS= in[j][1][t][0]/ (exp(-m*t)+exp(-m*(T-t)));//P1P1TRIVIAL
+    GPS*=2.*m;
+    GPS=sqrt(GPS);
+    return GPS ;
+    //return num;
+}
+
+
+double ZV_BSM(int j, double ****in,int t ,struct fit_type fit_info){
+    double mu=fit_info.ext_P[0][j];
+    int T=file_head.l0;
+    double num= in[j][32][t][0];//JTILDEV2P1TRIVIAL
+    double den= in[j][1][t][0];//P1P1TRIVIAL
+    return (-num*mu*8./(den)) ;
+    //return num;
+}
+
+
 // template<int tau>
 double r_AWI(int j, double ****in,int t ,struct fit_type fit_info){
     int T=file_head.l0;
