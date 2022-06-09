@@ -118,6 +118,48 @@ data_all read_all_the_files(std::vector<std::string> files, const char* resampli
 
 }
 
+void sum_lsc(data_all in, const char* outpath, const char* filename) {
+    int N = in.Nfits;
+    int Njack = in.fits[0].Njack;
+    char name[NAMESIZE];
+    mysprintf(name, NAMESIZE, "%s/%s", outpath, filename);
+    mysprintf(name, NAMESIZE, "%s/%s", outpath, filename);
+    FILE* f = open_file(name, "w+");
+    printf("writing: %s\n", name);
+    double* ave = (double*)calloc(Njack, sizeof(double*));
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < Njack; j++) {
+            ave[j] += in.fits[i].P[0][j];
+        }
+        fprintf(f, "%s %g  %g\n", in.fits[i].name, in.fits[i].P[0][Njack - 1], error_jackboot(in.resampling.c_str(), Njack, in.fits[i].P[0]));
+    }
+    fprintf(f, "total: %g  %g\n", ave[Njack - 1], error_jackboot(in.resampling.c_str(), Njack, ave));
+
+    double** y = double_malloc_2(N, Njack);
+    for (int j = 0; j < Njack; j++) {
+        for (int i = 0; i < N; i++) {
+            y[i][j] = in.fits[i].P[0][j];
+        }
+    }
+    double** cov = covariance(in.resampling.c_str(), N, Njack, y);
+    fprintf(f, "\n#covariance:\n");
+    for (int i = 0; i < N; i++) {
+        for (int k = 0; k < N; k++) {
+            fprintf(f, "%g\t", cov[i][k]);
+        }
+        fprintf(f, "\n");
+    }
+    fprintf(f, "\n#correlation:\n");
+    for (int i = 0; i < N; i++) {
+        for (int k = 0; k < N; k++) {
+            fprintf(f, "%g\t", cov[i][k] / sqrt(cov[i][i] * cov[k][k]));
+        }
+        fprintf(f, "\n");
+    }
+    fclose(f);
+
+}
+
 void compute_syst_eq28(data_all in, const char* outpath, const char* filename) {
     int N = in.Nfits;
     int Njack = in.fits[0].Njack;
@@ -210,6 +252,11 @@ int main(int argc, char** argv) {
     fit_type fit_info;
     data_all  syst_amu_SD_l;
     syst_amu_SD_l.resampling = argv[1];
+    data_all  sum_amu_SD;
+    sum_amu_SD.resampling = argv[1];
+    data_all  sum_amu_W;
+    sum_amu_W.resampling = argv[1];
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     printf("\n/////////////////////////////////     amu_SD_l_common    //////////////////\n");
     //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -270,6 +317,8 @@ int main(int argc, char** argv) {
         fit_info.band_range = { 0,0.0081 };
         print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_l_common_a4, amu_SD_l_common_a4, 0, myen.size() - 1, 0.0005);
         syst_amu_SD_l.add_fit(amu_SD_l_common_a4);
+        if (integration == "reinman") sum_amu_SD.add_fit(amu_SD_l_common_a4);
+
         free_fit_result(fit_info, amu_SD_l_common_a4);
         fit_info.restore_default();
 
@@ -403,7 +452,9 @@ int main(int argc, char** argv) {
             mysprintf(namefit, NAMESIZE, "amu_SD_s_%s_%s_a4", interpolation.c_str(), integration.c_str());
             fit_result amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.0081 };
-            // syst_amu_SD_s.add_fit(amu_SD_s_common_a4);
+            syst_amu_SD_s.add_fit(amu_SD_s_common_a4);
+            if (interpolation == "eta" && integration == "reinman")  sum_amu_SD.add_fit(amu_SD_s_common_a4);
+
             print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_s_common_a4, amu_SD_s_common_a4, 0, myen.size() - 1, 0.001);
 
             fit_info.restore_default();
@@ -459,6 +510,7 @@ int main(int argc, char** argv) {
             amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.0081 };
             syst_amu_SD_s.add_fit(amu_SD_s_common_a4);
+
             print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_s_common_a4, amu_SD_s_common_a4, 0, myen.size() - 1, 0.001);
 
             fit_info.restore_default();
@@ -522,6 +574,7 @@ int main(int argc, char** argv) {
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     compute_syst_eq28(syst_amu_SD_s, argv[3], "Systematics_amu_SD_s.txt");
+    sum_lsc(sum_amu_SD, argv[3], "sum_amu_SD_ls.txt");
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     data_all  syst_amu_W_l;
@@ -568,6 +621,8 @@ int main(int argc, char** argv) {
         // print_fit_band(argv, jackall, fit_info, fit_info, "amu_W_l_common_a2", "afm", amu_W_l_common_a2, amu_W_l_common_a2, 0, myen.size() - 1, 0.0005, xcont);
         print_fit_band_amu_W_l(argv, jackall, fit_info, fit_info, namefit, "afm", amu_W_l_common_a2, amu_W_l_common_a2, 0, myen.size() - 1, 0.0005, xcont, lhs_amu_common_GS);
         syst_amu_W_l.add_fit(amu_W_l_common_a2);
+        if (integration == "reinman") sum_amu_W.add_fit(amu_W_l_common_a2);
+
         fit_info.restore_default();
     }
     compute_syst_eq28(syst_amu_W_l, argv[3], "Systematics_amu_W_l.txt");
@@ -690,6 +745,8 @@ int main(int argc, char** argv) {
             fit_result amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.0081 };
             syst_amu_W_s.add_fit(amu_SD_s_common_a4);
+            if (interpolation == "eta" && integration == "reinman") sum_amu_W.add_fit(amu_SD_s_common_a4);
+
             print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_s_common_a4, amu_SD_s_common_a4, 0, myen.size() - 1, 0.001);
 
             fit_info.restore_default();
@@ -717,6 +774,7 @@ int main(int argc, char** argv) {
             amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.0081 };
             syst_amu_W_s.add_fit(amu_SD_s_common_a4);
+
             print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_s_common_a4, amu_SD_s_common_a4, 0, myen.size() - 1, 0.001);
 
             fit_info.restore_default();
@@ -753,6 +811,7 @@ int main(int argc, char** argv) {
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     compute_syst_eq28(syst_amu_W_s, argv[3], "Systematics_amu_W_s.txt");
+    sum_lsc(sum_amu_W, argv[3], "sum_amu_W_ls.txt");
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -801,6 +860,8 @@ int main(int argc, char** argv) {
             fit_result amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.009 };
             syst_amu_SD_c.add_fit(amu_SD_s_common_a4);
+            if (integration == "reinman" && interpolation == "etac")  sum_amu_SD.add_fit(amu_SD_s_common_a4);
+
             print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_s_common_a4, amu_SD_s_common_a4, 0, fit_info.myen.size() - 1, 0.001);
 
             free_fit_result(fit_info, amu_SD_s_common_a4);
@@ -868,6 +929,7 @@ int main(int argc, char** argv) {
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     compute_syst_eq28(syst_amu_SD_c, argv[3], "Systematics_amu_SD_c.txt");
+    sum_lsc(sum_amu_SD, argv[3], "sum_amu_SD_lsc.txt");
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -917,6 +979,8 @@ int main(int argc, char** argv) {
             fit_result amu_W_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.009 };
             syst_amu_W_c.add_fit(amu_W_s_common_a4);
+            if (integration == "reinman" && interpolation == "etac") sum_amu_W.add_fit(amu_W_s_common_a4);
+
             print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_W_s_common_a4, amu_W_s_common_a4, 0, fit_info.myen.size() - 1, 0.001);
 
             free_fit_result(fit_info, amu_W_s_common_a4);
@@ -945,6 +1009,7 @@ int main(int argc, char** argv) {
             amu_W_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.009 };
             syst_amu_W_c.add_fit(amu_W_s_common_a4);
+
             print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_W_s_common_a4, amu_W_s_common_a4, 0, fit_info.myen.size() - 1, 0.001);
 
             free_fit_result(fit_info, amu_W_s_common_a4);
@@ -984,6 +1049,7 @@ int main(int argc, char** argv) {
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     compute_syst_eq28(syst_amu_W_c, argv[3], "Systematics_amu_W_c.txt");
+    sum_lsc(sum_amu_W, argv[3], "sum_amu_W_lsc.txt");
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
