@@ -169,6 +169,7 @@ int main(int argc, char** argv) {
 
 
     int bin = atoi(argv[5]);
+    // bin = header.confs / 30;
     int Neff = header.confs / bin;
     int confs = header.confs;
     error(confs <= 0, 1, "main", "nconf<0");
@@ -232,6 +233,16 @@ int main(int argc, char** argv) {
     correlators.emplace_back("LOCALCURRENTTAU1P1phi_t4phi");//30
     correlators.emplace_back("LOCALCURRENTTAU1P1phi_t6phi");//31
 
+    correlators.emplace_back("JTILDEV2P1TRIVIAL");//32
+    f_correlators.resize(correlators.size());
+
+    for (int i = 32;i < correlators.size();i++) {
+        mysprintf(namefile, NAMESIZE, "%s/data/%s", argv[3], correlators[i].c_str());
+        f_correlators[i] = open_file(namefile, "r+");
+        printf("reading file: %s\n", namefile);
+        if (i == 0)            read_header_BSM(header, f_correlators[i]);
+        else            check_header_BSM(header, f_correlators[i], correlators[i]);
+    }
     int var = correlators.size();
     data = calloc_corr(confs, var, header.T);
     int tau = 5;
@@ -343,8 +354,13 @@ int main(int argc, char** argv) {
             data[iconf][31][t][0] += (data[iconf][10][(t + 1) % T][0] - data[iconf][10][t][0]) * data[iconf][7][tptau][0];
             data[iconf][31][t][1] += 0;
         }
+        for (int i = 32; i < 33; i++) {//var_to_read
+            for (int t = 0; t < header.T;t++)
+                fscanf(f_correlators[i], "%lf  %lf\n", &data[iconf][i][t][0], &data[iconf][i][t][1]);
+        }
 
     }
+
     //forward_derivative_corr(confs,0,header.T,data);
     symmetrise_corr(confs, 1, header.T, data);
     symmetrise_corr(confs, 2, header.T, data);
@@ -547,6 +563,42 @@ int main(int argc, char** argv) {
     fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1_wphi", conf_jack, namefile_plateaux, outfile, ration_corr_min_half, "r_AWI_loc_tau6", fit_info, jack_file);
     free_fit_result(fit_info, fit_out);
     check_correlatro_counter(20);
+
+
+    /////////////////Z_V
+    fit_info.restore_default();
+    fit_info.Nvar = 1;
+    fit_info.Npar = 1;
+    fit_info.N = 1;
+    fit_info.Njack = header.Njack;
+    fit_info.n_ext_P = 1;
+    fit_info.ext_P = double_malloc_2(1, header.Njack);
+    for (int j = 0;j < header.Njack;j++) {
+        fit_info.ext_P[0][j] = header.mu03;
+    }
+    fit_info.function = constant_fit;
+    fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1_wphi", conf_jack, namefile_plateaux, outfile, ZV_BSM, "ZV", fit_info, jack_file);
+    free_fit_result(fit_info, fit_out);
+    check_correlatro_counter(21);
+
+    free(fit_info.ext_P[0]);
+    fit_info.restore_default();
+    ///
+    /////////////////G_PS
+    fit_info.restore_default();
+    fit_info.Nvar = 1;
+    fit_info.Npar = 1;
+    fit_info.N = 1;
+    fit_info.Njack = header.Njack;
+    fit_info.n_ext_P = 1;
+    fit_info.ext_P = (double**) malloc(sizeof(double*)*1); 
+    fit_info.ext_P[0] = mass;
+    
+    fit_info.function = constant_fit;
+    fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1_wphi", conf_jack, namefile_plateaux, outfile, GPS_BSM, "G_PS", fit_info, jack_file);
+    free_fit_result(fit_info, fit_out);
+    check_correlatro_counter(22);
+
 
 
 }

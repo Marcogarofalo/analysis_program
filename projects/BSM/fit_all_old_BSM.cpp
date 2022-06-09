@@ -222,13 +222,88 @@ int main(int argc, char** argv) {
     emplace_back_par_data(namefile, paramsj, dataj);
 
 
-    //////
-
-
     int NeW575 = dataj.size() - NeW - NeW595;
     printf("number of ensembles W = %d\n", NeW575);
     vector<int> myenW575(NeW575);
     for (int i = 0;i < NeW575; i++)  myenW575[i] = i + NeW + NeW595;
+
+    ////////////////////// b585 NG
+
+    // mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.581_M02_0000_mu03_0060_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.130770_csw0.000000_mu030.006000_m00.000000", argv[2], argv[1]);
+    // emplace_back_par_data(namefile, paramsj, dataj);
+
+    // mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.581_M02_0000_mu03_0087_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.130770_csw0.000000_mu030.008700_m00.000000", argv[2], argv[1]);
+    // emplace_back_par_data(namefile, paramsj, dataj);
+
+    // mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.581_M02_0000_mu03_0140_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.130770_csw0.000000_mu030.014000_m00.000000", argv[2], argv[1]);
+    // emplace_back_par_data(namefile, paramsj, dataj);
+
+
+    // mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.600_M02_0000_mu03_0140_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.167748_csw0.000000_mu030.014000_m00.000000", argv[2], argv[1]);
+    // emplace_back_par_data(namefile, paramsj, dataj);
+
+    // mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.600_M02_0000_mu03_0224_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.167748_csw0.000000_mu030.022400_m00.000000", argv[2], argv[1]);
+    // emplace_back_par_data(namefile, paramsj, dataj);
+
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.600_M02_0000_mu03_0316_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.167748_csw0.000000_mu030.031600_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
+    // mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.6051_M02_0000_mu03_0040_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.177674_csw0.000000_mu030.004000_m00.000000", argv[2], argv[1]);
+    // emplace_back_par_data(namefile, paramsj, dataj);
+
+
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.6051_M02_0000_mu03_0070_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.177674_csw0.000000_mu030.007000_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.6051_M02_0000_mu03_0100_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.177674_csw0.000000_mu030.010000_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.6051_M02_0000_mu03_0140_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.177674_csw0.000000_mu030.014000_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.6051_M02_0000_mu03_0224_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.177674_csw0.000000_mu030.022400_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
+    // mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.610_M02_0000_mu03_0140_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.187211_csw0.000000_mu030.014000_m00.000000", argv[2], argv[1]);
+    // emplace_back_par_data(namefile, paramsj, dataj);
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.614_M02_0000_mu03_0100_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.194996_csw0.000000_mu030.010000_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.618_M02_0000_mu03_0040_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.202781_csw0.000000_mu030.004000_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.618_M02_0000_mu03_0070_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.202781_csw0.000000_mu030.007000_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.618_M02_0000_mu03_0100_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.202781_csw0.000000_mu030.010000_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.618_M02_0000_mu03_0120_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.202781_csw0.000000_mu030.012000_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.618_M02_0000_mu03_0224_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.202781_csw0.000000_mu030.022400_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
+
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.6201_M02_0000_mu03_0040_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.206868_csw0.000000_mu030.004000_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.6201_M02_0000_mu03_0070_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.206868_csw0.000000_mu030.007000_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.6201_M02_0000_mu03_0100_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.206868_csw0.000000_mu030.010000_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.620_M02_0000_mu03_0224_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.206673_csw0.000000_mu030.022400_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.622_M02_0000_mu03_0040_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.210566_csw0.000000_mu030.004000_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.622_M02_0000_mu03_0070_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.210566_csw0.000000_mu030.007000_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.622_M02_0000_mu03_0100_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.210566_csw0.000000_mu030.010000_m00.000000", argv[2], argv[1]);
+    emplace_back_par_data(namefile, paramsj, dataj);
+    mysprintf(namefile, NAMESIZE, "%s/b585_NG/etam0.622_M02_0000_mu03_0120_rho1.00766/jackknife/%s_T40_L20_rho1.960000_eta-1.210566_csw0.000000_mu030.012000_m00.000000", argv[2], argv[1]);
+
+
+    int NeNG585 = dataj.size() - NeW - NeW595 - NeW575;
+    printf("number of ensembles NG 585 = %d\n", NeNG585);
+    vector<int> myenNG585(NeNG585);
+    for (int i = 0;i < NeNG585; i++)  myenNG585[i] = i + NeW + NeW595 + NeW575;
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////   NG
@@ -278,7 +353,9 @@ int main(int argc, char** argv) {
     // start fitting
     //////////////////////////////////////////////////////////////////////////////////////////////////
     struct fit_type fit_info;
+    struct fit_type fit_info_NG;
     struct fit_result  fit_critical;
+    struct fit_result  fit_critical_NG;
     char namefit[NAMESIZE];
     fit_info.Nvar = 7;
     fit_info.Npar = 3;
@@ -288,8 +365,8 @@ int main(int argc, char** argv) {
     fit_info.function = rhs_critical_eta_mu;
 
 
-    fit_critical = fit_data(argv, paramsj, gjack, lhs_critical_eta_mu_m0, fit_info, "eta_critical_b585", myenW);
-    print_fit_band_eta(argv, gjack, fit_info, "eta_critical_b585", fit_critical, paramsj, myenW);
+    fit_critical = fit_data(argv, paramsj, gjack, lhs_critical_eta_mu_m0, fit_info, "eta_critical_tau5_b585", myenW);
+    print_fit_band_eta(argv, gjack, fit_info, "eta_critical_tau5_b585", fit_critical, paramsj, myenW);
 
     free_fit_result(fit_info, fit_critical);
     fit_info.restore_default();
@@ -307,8 +384,28 @@ int main(int argc, char** argv) {
     fit_critical = fit_data(argv, paramsj, gjack, lhs_fit_two_func, fit_info, "eta_critical_tau2_b585", myenW);
     print_fit_band_eta(argv, gjack, fit_info, "eta_critical_tau2_b585", fit_critical, paramsj, myenW);
 
+    printf("//////////////////  NG_tau2///////////////////////// ");
+    fit_info_NG.Nvar = 7;
+    fit_info_NG.Npar = 7;
+    fit_info_NG.N = 2;
+    fit_info_NG.Njack = gjack[0].Njack;
+    fit_info_NG.n_ext_P = 1;
+    fit_info_NG.ext_P = (double**)malloc(sizeof(double*) * fit_info_NG.n_ext_P);
+    fit_info_NG.ext_P[0] = fit_critical.P[0];
+    fit_info_NG.function = rhs_NG_naive_mpcac_MPS2;
+
+
+    mysprintf(namefit, NAMESIZE, "fit_NG_mpcac_MPS_b585_tau2");
+    fit_critical_NG = fit_data(argv, paramsj, gjack, lhs_mpcac_MPS2, fit_info_NG, namefit, myenNG585);
+    print_fit_band_eta(argv, gjack, fit_info_NG, namefit, fit_critical_NG, paramsj, myenNG585);
+
+    printf("m_pcac(eta_cr)=%g  +-  %g\n", fit_critical_NG.P[0][Njack - 1], error_jackboot(argv[1], Njack, fit_critical_NG.P[0]));
+    printf("M_PS(eta_cr) =%g  +-  %g\n", fit_critical_NG.P[1][Njack - 1], error_jackboot(argv[1], Njack, fit_critical_NG.P[1]));
+
     free_fit_result(fit_info, fit_critical);
     fit_info.restore_default();
+    free_fit_result(fit_info_NG, fit_critical_NG);
+    fit_info_NG.restore_default();
     printf("/////////////////////////////////////  r_AWI_tau3///////////////////////////////////// ");
     fit_info.Nvar = 7;
     fit_info.Npar = 3;

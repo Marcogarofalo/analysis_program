@@ -58,6 +58,22 @@ double rhs_critical_eta_mu_m0_shifted(int n, int Nvar, double* x, int Npar, doub
 }
 
 
+
+
+double rhs_NG_naive_mpcac_MPS2(int n, int Nvar, double* x, int Npar, double* P) {
+    double eta = x[3], mu = x[5], m0 = x[6];
+    double r;
+    double eta_cr = x[Nvar - 1];
+    double eta_sub = eta - eta_cr;
+    if (n == 0) //m_pcac
+        r = P[0] + P[2] * eta_sub + P[4] * mu;
+    else if (n == 1) //MPS^2
+        r = P[1] + P[3] * eta_sub + P[5] * mu + P[6] * eta_sub * eta_sub;
+    else { r = 0; exit(1); }
+
+    return r;
+}
+
 double rhs_NG_mpcac_MPS2(int n, int Nvar, double* x, int Npar, double* P) {
     double eta = x[3], mu = x[5], m0 = x[6];
     double r;
@@ -281,9 +297,15 @@ void print_fit_output(char** argv, vector<data_BSM> gjack, struct fit_type fit_i
     fprintf(f, "\\end{pmatrix}\n\\end{gather}}\n");
     free_2(Npar, cov);
     fclose(f);
+    ////////////// parameter print readable from R
+    mysprintf(namefile, NAMESIZE, "%s/%s_fit_P.txt", argv[3], label);
+    f = open_file(namefile, "w+");
 
+    for (int i = 0;i < Npar;i++) {
+        fprintf(f, "%g   %g    %g\n", i, fit_out.P[i][Njack - 1], error_jackboot(argv[1], Njack, fit_out.P[i]),fit_out.chi2[Njack - 1]);
+    }
     double** tif = swap_indices(fit_info.Npar, Njack, fit_out.P);
-
+    fclose(f);
     /////////fit band L
     //    print_fit_band_L( argv, gjack , fit_info,  label,   fit_out, en, x,  y,   params,  myen);
 
