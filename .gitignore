@@ -55,7 +55,6 @@ vs_build/
 *.json
 __pycache__
 *~
-three_particle_QC
 *.f90
 *.tar
 *.kdev4
