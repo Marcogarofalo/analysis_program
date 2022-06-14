@@ -315,3 +315,14 @@ if(WITH_PYTHON)
     target_link_libraries(QC3_interface PUBLIC  ${PYTHON_LIBRARIES})
     target_include_directories(QC3_interface PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 ENDIF()
+
+
+
+add_library(
+    integral_eq_QC3 STATIC
+    integral_eq_QC3.hpp
+    ../modules/three_particle_QC/integral_eq_QC3.cpp
+)
+target_link_libraries(integral_eq_QC3 PUBLIC tower)
+target_include_directories(integral_eq_QC3 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+ 
