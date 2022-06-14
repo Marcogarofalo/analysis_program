@@ -152,7 +152,7 @@ void fit_type::restore_default() {
         free(en);
     }
     covariancey = false;
-
+    second_deriv = false;
 }
 
 
@@ -523,6 +523,64 @@ double* der_O2_fun_Nf_h(int n, int Nvar, double* x, int Npar, double* P, double 
 
     return df;
 }
+
+
+double der1_O2_h(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), std::vector< double > h) {
+
+    double* Ph = (double*)malloc(sizeof(double) * Npar);
+    double df;
+    int i;
+
+    for (i = 0;i < Npar;i++)
+        Ph[i] = P[i];
+
+    i = n;
+    Ph[i] = P[i] - h[i];
+    df = -fun(n, Nvar, x, Npar, Ph);
+
+    Ph[i] = P[i] + h[i];
+    df += fun(n, Nvar, x, Npar, Ph);
+
+    Ph[i] = P[i];//you need to leave the parameter as it was before you move to the next parameter
+    df /= (2. * h[i]);
+
+    free(Ph);
+    return df;
+}
+
+//https://en.wikipedia.org/wiki/Finite_difference_coefficient#Central_finite_difference 
+//derivative 1 accuracy 2
+double** der2_O2_fun_Nf_h(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), std::vector< double > h) {
+
+    double* Ph = (double*)malloc(sizeof(double) * Npar);
+    double** df = double_calloc_2(Npar, Npar);
+    int i, j;
+
+    for (i = 0;i < Npar;i++)
+        Ph[i] = P[i];
+
+    for (i = 0;i < Npar;i++) {
+        for (j = 0;j < Npar;j++) {
+            Ph[i] = P[i] - h[i];
+            df[i][j] = -der1_O2_h(j, Nvar, x, Npar, Ph, fun, h);
+
+            Ph[i] = P[i] + h[i];
+            df[i][j] += der1_O2_h(j, Nvar, x, Npar, Ph, fun, h);
+
+
+            Ph[i] = P[i];//you need to leave the parameter as it was before you move to the next parameter
+            df[i][j] /= (2. * h[i]);
+        }
+    }
+
+
+    free(Ph);
+
+    return df;
+}
+
+
+
 
 double* der_O2_fun_Nf_h_adaptive(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), std::vector< double > h) {
 
@@ -925,16 +983,30 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
                             }
                             for (j = 0;j < Npar;j++) {
                                 beta[j] += (y[e + count][0] - f) * fk[j] / (y[e + count][1] * y[e + count][1]);
-                                //      printf("|analitic-numeric|=  |%g -%g|   = %g\n",fk[j],fkk[j],fabs(fk[j]-fkk[j]));
                                 for (k = j;k < Npar;k++) {
                                     alpha[j][k] += fk[j] * fk[k] / (y[e + count][1] * y[e + count][1]);
                                 }
-
-
                             }
                             free(fk);
                         }
                         count += ensemble[n];
+                    }
+                    if (fit_info.second_deriv == true) {
+                        count = 0;
+                        for (n = 0;n < N;n++) {
+                            for (e = 0;e < ensemble[n];e++) {
+                                f = fun(n, Nvar, x[e + count], Npar, P_tmp);
+                                double** fkk = der2_O2_fun_Nf_h(n, Nvar, x[e + count], Npar, P_tmp, fun, h);
+                                for (j = 0;j < Npar;j++) {
+                                    for (k = j;k < Npar;k++) {
+                                        alpha[j][k] -= (y[e + count][0] - f) * fkk[j][k] / (y[e + count][1] * y[e + count][1]);
+                                    }
+                                }
+                                free_2(Npar, fkk);
+
+                            }
+                            count += ensemble[n];
+                        }
                     }
                     computed_alpha = true;
                 }
@@ -951,6 +1023,12 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
 
                 free(P_tmp);
                 P_tmp = cholesky_solver_if_possible(Npar, alpha_l, beta);
+                if (verbosity > 3) {
+                    printf("lambda=%g\n", lambda);
+                    for (j = 0;j < Npar;j++) {
+                        printf("shift of par[%d]=%g  \n", j, P_tmp[j]);
+                    }
+                }
                 //P_tmp=LU_decomposition_solver(Npar , alpha , beta);
                 // check that the result is not nan
 

@@ -79,6 +79,7 @@ struct  fit_type {
     bool unstable = false; // if true avoid thing that may return error
     bool noderiv = false;
     bool covariancey = false;
+    bool second_deriv=false;
 
     std::vector<int> corr_id = {};
     std::vector<double>  Prange = {};
