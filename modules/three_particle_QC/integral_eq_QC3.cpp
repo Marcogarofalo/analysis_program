@@ -108,7 +108,7 @@ Eigen::MatrixXcd compute_D(double E3_m, int N, int Npar, double* P, double kcot(
 std::complex<double> rho(double k_m, double E3_m) {
     double omega_k = sqrt(k_m * k_m + 1);
     double Es_mk2 = pow(E3_m - omega_k, 2) - k_m * k_m;
-    std::complex r = J(Es_mk2 / 4.) / (16. * M_PI * sqrt(Es_mk2));
+    std::complex<double> r = J(Es_mk2 / 4.) / (16. * M_PI * sqrt(Es_mk2));
     if (Es_mk2 >= 4)
         r *= -1i * sqrt(Es_mk2 / 4. - 1);
     else
