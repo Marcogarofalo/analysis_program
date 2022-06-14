@@ -68,6 +68,15 @@ target_include_directories(non_linear_fit PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 
 add_library(
+    minimizer STATIC
+    minimizer.hpp
+    ../modules/minimizer.cpp
+)
+target_link_libraries(minimizer PUBLIC non_linear_fit)
+target_include_directories(minimizer PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+
+
+add_library(
     read STATIC
     read.hpp
     ../modules/read.cpp

@@ -55,6 +55,7 @@ void data_all::add_fit(struct fit_result fit_out) {
 //// print band
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// **argv=[   ???, resampling, ???, output_dir ]
 void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
     struct fit_type fit_info_m0, const char* label, const char* dir_name,
     struct fit_result fit_out, struct fit_result fit_out_m0, int var, int en, double h, std::vector<double> xval) {
@@ -127,6 +128,7 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
 //// print output
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// **argv=[   ???, resampling, ???, output_dir ]
 void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
     const char* label, struct fit_result fit_out, int* en, double*** x, double*** y, std::vector<int> myen) {
     int Npar = fit_info.Npar;
@@ -200,7 +202,7 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
 
 }
 
-
+// **argv=[   ???, resampling, ???, output_dir ]
 struct fit_result fit_all_data(char** argv, data_all gjack,
     double lhs_fun(int, int, int, data_all, struct fit_type),
     struct fit_type fit_info, const char* label) {
