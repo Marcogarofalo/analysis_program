@@ -231,7 +231,8 @@ int main(int argc, char** argv) {
     files.emplace_back(namefile);
 
     data_all jackall = read_all_the_files(files, argv[1]);
-    jackall.init_error();
+    jackall.create_generalised_resampling();
+
     std::vector<int> myen_full(jackall.ens);
     for (int e = 0; e < jackall.ens; e++) {
         myen_full[e] = e;
@@ -282,7 +283,6 @@ int main(int argc, char** argv) {
 
 
     fit_info.restore_default();
-
 
 
     std::vector<std::string>   integrations = { "reinman", "simpson" };

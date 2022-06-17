@@ -84,19 +84,24 @@ public:
             for (int j = 0;j < Nobs;j++) {
                 computed[j] = false;
             }
-            init_err == true;
+            init_err = true;
         }
     }
+    void reset_error();
 
     double error_jack(int i) {
+        if (!init_err) init_error();
         if (!computed[i]) {
-            double* r = mean_and_error_jack_biased(Njack, jack[i]);
+            double* r = compute_mean_and_error(Njack, jack[i]);
             errors[i] = r[1];
             free(r);
             computed[i] = true;
         }
         return errors[i];
     }
+
+    // useless function, you can not cut the jackknife, you need to cut the confs from the beginning  
+    // void cut_confs(int N);
 
     // data_single() {};
     // data_single(int Nj, int No, generic_header he) : Nobs(No), Njack(Nj), header(he) {
@@ -178,12 +183,17 @@ public:
 
     int Nfits = 0;
     struct fit_result* fits;
+    friend class data_single;// allow to use private members of data_single
+
     void init_error() {
         for (int e = 0;e < ens;e++)
             en[e].init_error();
     }
     
     void add_fit(struct fit_result fit_out);
+    // useless function, you can not cut the jackknife, you need to cut the confs from the beginning  
+    // void cut_confs(int N);
+    void create_generalised_resampling();
     // data_all() {};
 
     // data_all(int N) : ens(N) {
@@ -262,6 +272,6 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
 void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
     struct fit_type fit_info_m0, const char* label, const char* dir_name,
     struct fit_result fit_out, struct fit_result fit_out_m0, int var, int en, double h,
-    std::vector<double> xval={});
+    std::vector<double> xval = {});
 #endif
 

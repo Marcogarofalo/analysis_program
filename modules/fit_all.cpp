@@ -23,6 +23,34 @@
 #include "mutils.hpp"
 #include "resampling.hpp"
 
+// void data_single::cut_confs(int N) {
+//     if (N >= Njack - 1) { printf("error: trying to cut the configuration up to N= %d > Njack = %d", N, Njack); exit(1); }
+
+//     double** jack1 = (double**)malloc(sizeof(double*) * Nobs);//[obs][jack]
+//     for (int i = 0; i < Nobs;i++) {
+//         jack1[i] = (double*)malloc(sizeof(double) * (N + 1));
+//         for (int j = 0; j < N ;j++) {
+//             jack1[i][j] = jack[i][j];
+//         }
+//         jack1[i][N] = jack[i][Njack - 1];
+//         free(jack[i]);
+//     }
+
+//     free(jack);
+
+//     jack = jack1;
+//     // for (int i = 0; i < Nobs;i++)
+//     //     jack[i] = jack1[i];
+
+//     Njack = N + 1;
+// }
+
+// void data_all::cut_confs(int N) {
+//     for (int i = 0; i < ens;i++) {
+//         en[i].cut_confs(N);
+//     }
+// }
+
 void data_all::add_fit(struct fit_result fit_out) {
 
     int N = Nfits + 1;
@@ -50,7 +78,75 @@ void data_all::add_fit(struct fit_result fit_out) {
 
 
 }
+void data_single::reset_error() {
+    if (init_err) { free(errors); free(computed); }
+}
 
+
+void data_all::create_generalised_resampling() {
+    // if the length is the same return dataj
+    int same = 0;
+    for (int i = 0; i < ens;i++) {
+        printf("(jacks en %d)=%d\n", i, en[i].Njack);
+        if (en[i].Njack == en[0].Njack)
+            same++;
+    }
+
+    if (same == ens) {
+        std::cout << "all the files have the same number of jack/boot , do nothing" << std::endl;
+        return;
+    }
+    else {
+        std::cout << "creating generalised jack" << std::endl;
+
+        //jac_tot is the summ of all jackknife +1 
+        //remember alle the dataj have one extra entry for the mean
+        int jack_tot = 0;
+        for (int e = 0; e < ens;e++)
+            jack_tot += en[e].Njack;
+        jack_tot = jack_tot - ens + 1;
+        std::cout << "jack tot= " << jack_tot << std::endl;
+
+        //get Nobs the minimum number of observable between the files
+        int Nobs = en[0].Nobs;
+        for (int i = 1; i < ens;i++) {
+            if (Nobs > en[i].Nobs)
+                Nobs = en[i].Nobs;
+        }
+
+
+
+        for (int e = 0;e < ens;e++) {
+
+            double** tmp = double_malloc_2(Nobs, jack_tot);
+            int counter = 0;
+            for (int e1 = 0;e1 < ens;e1++) {
+                for (int j = 0;j < (en[e1].Njack - 1);j++) {
+                    for (int o = 0;o < Nobs;o++) {
+                        if (e == e1) {
+                            tmp[o][j + counter] = en[e].jack[o][j];
+                        }
+                        else {
+                            tmp[o][j + counter] = en[e].jack[o][en[e].Njack - 1];
+                        }
+                    }
+                }
+                counter += en[e1].Njack - 1;
+            }
+            for (int o = 0;o < Nobs;o++)
+                tmp[o][jack_tot - 1] = en[e].jack[o][en[e].Njack - 1];
+
+            en[e].reset_error();
+            free_2(en[e].Nobs, en[e].jack);
+            en[e].reset_error();
+            en[e].jack = tmp;
+            en[e].Nobs = Nobs;
+            en[e].Njack = jack_tot;
+        }
+        return ;
+    }
+
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// print band
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -181,7 +277,7 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
     for (int i = 0;i < fit_info.Npar;i++) {
         for (int k = 0;k < i;k++)
             cov[i][k] /= sqrt(cov[i][i] * cov[k][k]);
-        for (int k = i ;k < fit_info.Npar;k++)
+        for (int k = i;k < fit_info.Npar;k++)
             cov[i][k] /= sqrt(cov[i][i] * cov[k][k]);
     }
 

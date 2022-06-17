@@ -730,7 +730,6 @@ int main(int argc, char** argv) {
     // // effective_mass_phi4_gamma(option, kinematic_2pt, (char*)"P5P5", data_bin, Neff, namefile_plateaux, out_gamma, 1, "M_{PS1}^{ll}");
     // //effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,namefile_plateaux,out_gamma,3,"M_{PS}^{ll}");
     // free_corr(bin, var, file_head.l0, data);
-
     conf_jack = create_resampling(option[4], Neff, var, file_head.l0, data);
     free_corr(Neff, var, file_head.l0, data);
 
