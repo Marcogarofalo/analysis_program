@@ -6,6 +6,10 @@
 #include <random>
 
 
+double rhs_one_line(int n, int Nvar, double* x, int Npar, double* P) {
+    return P[0] + P[1] * x[0];
+}
+
 
 double rhs_critical_eta_mu_m0(int n, int Nvar, double* x, int Npar, double* P) {
     double a0 = P[0], r0 = P[1], P2 = P[2];
@@ -29,9 +33,9 @@ double rhs_critical_eta_mu(int n, int Nvar, double* x, int Npar, double* P) {
     double eta_sub = eta - eta_cr;
     double r;
     if (n == 0) //r_AWI
-        r =  P[1] * eta_sub + P[2] * mu ;
+        r = P[1] * eta_sub + P[2] * mu;
     else if (n == 1) //m_pcac
-        r = P[3] * eta_sub + P[4] * mu ;
+        r = P[3] * eta_sub + P[4] * mu;
     else { r = 0; exit(1); }
 
     return r;
@@ -58,6 +62,17 @@ double rhs_critical_eta_mu_m0_shifted(int n, int Nvar, double* x, int Npar, doub
 }
 
 
+
+double rhs_GPS(int n, int Nvar, double* x, int Npar, double* P) {
+    double eta = x[3], mu = x[5], m0 = x[6];
+    double r;
+    double eta_cr = x[Nvar - 1];
+    double eta_sub = eta - eta_cr;
+
+    r = P[0] + P[2] * eta_sub + P[4] * mu;
+
+    return r;
+}
 
 
 double rhs_NG_naive_mpcac_MPS2(int n, int Nvar, double* x, int Npar, double* P) {
@@ -90,6 +105,21 @@ double rhs_NG_mpcac_MPS2(int n, int Nvar, double* x, int Npar, double* P) {
     return r;
 }
 
+double rhs_NG_mpcac_MPS2_mu_eta(int n, int Nvar, double* x, int Npar, double* P) {
+    double eta = x[3], mu = x[5], m0 = x[6];
+    double r;
+    double eta_cr = x[Nvar - 2];
+    double m0_cr = x[Nvar - 1];
+    double eta_sub = eta - eta_cr;
+    double m0_sub = m0 - m0_cr;
+    if (n == 0) //m_pcac
+        r = P[0] + P[2] * eta_sub + P[4] * mu + P[7] * mu * eta_sub;
+    else if (n == 1) //MPS^2
+        r = P[1] + P[3] * eta_sub + P[5] * mu + P[6] * eta_sub * eta_sub;
+    else { r = 0; exit(1); }
+
+    return r;
+}
 
 double rhs_NG_mpcac_MPS2_twoline(int n, int Nvar, double* x, int Npar, double* P) {
     double eta = x[3], mu = x[5], m0 = x[6];
@@ -192,6 +222,15 @@ double rhs_critical_eta_mu_m0_7par(int n, int Nvar, double* x, int Npar, double*
 
 }
 
+double lhs_continuum_mpcac(int n, int e, int j, data_all  gjack, struct fit_type fit_info) {
+
+    return pow(gjack.en[e].jack[0][j], 3) * gjack.en[e].jack[1][j];//r0^3 mpcac
+}
+
+
+double lhs_continuum_MPS(int n, int e, int j, data_all  gjack, struct fit_type fit_info) {
+    return gjack.en[e].jack[0][j]*sqrt( gjack.en[e].jack[2][j]);//r0 M_PS
+}
 
 double lhs_fit_two_func(int n, int e, int j, vector<header_BSM> params, vector<data_BSM> gjack, struct fit_type fit_info) {
     double r;
@@ -225,10 +264,15 @@ double lhs_critical_eta_mu_m0_loc(int n, int e, int j, vector<header_BSM> params
     return r;
 }
 
+
+double lhs_GPS(int n, int e, int j, vector<header_BSM> params, vector<data_BSM> gjack, struct fit_type fit_info) {
+
+    return gjack[e].jack[22][j];
+}
 double lhs_mpcac_MPS2(int n, int e, int j, vector<header_BSM> params, vector<data_BSM> gjack, struct fit_type fit_info) {
     double r;
     if (n == 0)
-        r = gjack[e].jack[4][j]; //m_pcac
+        r = gjack[e].jack[4][j] * gjack[e].jack[21][j] * fit_info.ext_P[1][j]; //2m_pcac* ZV *GPS // GPS=ZV^-1
     else if (n == 1) {
         r = gjack[e].jack[0][j]; //MPS
         r = r * r;  //MPS2
@@ -302,7 +346,7 @@ void print_fit_output(char** argv, vector<data_BSM> gjack, struct fit_type fit_i
     f = open_file(namefile, "w+");
 
     for (int i = 0;i < Npar;i++) {
-        fprintf(f, "%g   %g    %g\n", i, fit_out.P[i][Njack - 1], error_jackboot(argv[1], Njack, fit_out.P[i]),fit_out.chi2[Njack - 1]);
+        fprintf(f, "%g   %g    %g\n", i, fit_out.P[i][Njack - 1], error_jackboot(argv[1], Njack, fit_out.P[i]), fit_out.chi2[Njack - 1]);
     }
     double** tif = swap_indices(fit_info.Npar, Njack, fit_out.P);
     fclose(f);

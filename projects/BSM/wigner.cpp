@@ -85,13 +85,19 @@ int main(int argc, char** argv) {
 
     mysprintf(namefile_plateaux, NAMESIZE, "plateaux.txt");
 
-    error(argc != 7, 1, "main ",
-        "usage:./phi4  blind/see/read_plateaux -p path  -bin $bin  jack/boot  \n separate path and file please");
+    error(argc != 8, 1, "main ",
+        "usage:./phi4  blind/see/read_plateaux -p path  -bin $bin  jack/boot cbtc/nocbtc \n separate path and file please");
     error(strcmp(argv[1], "blind") != 0 && strcmp(argv[1], "see") != 0 && strcmp(argv[1], "read_plateaux") != 0, 1, "main ",
         "argv[1] only options:  blind/see/read_plateaux ");
     error(strcmp(argv[4], "-bin") != 0, 1, "main", "argv[4] must be: -bin");
     error(strcmp(argv[6], "jack") != 0 && strcmp(argv[6], "boot") != 0, 1, "main",
         "argv[6] only options: jack/boot");
+
+    bool cbtc = false;
+    if (strcmp(argv[7], "cbtc") == 0) cbtc = true;
+    else if (strcmp(argv[7], "nocbtc") == 0) cbtc = false;
+    else { printf("cbtc or not?\nusage:./phi4  blind/see/read_plateaux -p path  -bin $bin  jack/boot  cbtc/nocbtc\n separate path and file please"); exit(1); }
+
     char** option;
     option = (char**)malloc(sizeof(char*) * 7);
     option[0] = (char*)malloc(sizeof(char) * NAMESIZE);
@@ -367,6 +373,17 @@ int main(int argc, char** argv) {
     symmetrise_corr(confs, 3, header.T, data);
     symmetrise_corr(confs, 4, header.T, data);
 
+    forward_derivative_corr(confs, 32, header.T, data);//JTILDEV2P1TRIVIAL
+    symmetrise_corr(confs, 32, header.T, data);
+
+    if(cbtc){
+        for (int c=0;c<var; c++)
+            cbtc_corr(confs, c, header.T, data);
+        
+        // cbtc_corr(confs, 0, header.T, data);
+        // cbtc_corr(confs, 1, header.T, data);
+        // cbtc_corr(confs, 32, header.T, data);
+    }
 
     ///resampling
     double**** data_bin = binning(confs, var, header.T, data, bin);
@@ -424,6 +441,8 @@ int main(int argc, char** argv) {
     get_kinematic(0, 0, 1, 0, 0, 0);
     struct fit_type fit_info_silent;
     fit_info_silent.verbosity = -1;
+    fit_info_silent.chi2_gap_jackboot = 10;
+    fit_info_silent.guess_per_jack = 1;
     for (int icorr = 0; icorr < correlators.size(); icorr++) {
         //log effective mass
         double* tmp_meff_corr = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, header.Njack
@@ -591,9 +610,9 @@ int main(int argc, char** argv) {
     fit_info.N = 1;
     fit_info.Njack = header.Njack;
     fit_info.n_ext_P = 1;
-    fit_info.ext_P = (double**) malloc(sizeof(double*)*1); 
+    fit_info.ext_P = (double**)malloc(sizeof(double*) * 1);
     fit_info.ext_P[0] = mass;
-    
+
     fit_info.function = constant_fit;
     fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1_wphi", conf_jack, namefile_plateaux, outfile, GPS_BSM, "G_PS", fit_info, jack_file);
     free_fit_result(fit_info, fit_out);
