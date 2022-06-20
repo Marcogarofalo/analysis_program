@@ -21,4 +21,5 @@ void antisymmetrise_corr(int N, int var, int t ,double ****data);
 void forward_derivative_corr(int N, int var, int t ,double ****data);
 void symmetric_derivative_corr(int N, int var, int t ,double ****data);
 void second_derivative_corr(int N, int var, int t ,double ****data);
+void cbtc_corr(int N, int var, int t ,double ****data);
 #endif    

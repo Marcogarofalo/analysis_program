@@ -301,3 +301,32 @@ void second_derivative_corr(int N, int var, int t, double**** data) {
 
 }
 
+void cbtc_corr(int N, int var, int t ,double ****data){
+    int i,j,k;
+    double ****out;
+    
+    out=calloc_corr( N,  var+1,  t );
+    
+    j=var;
+    for (i=0;i<N;i++){
+        for(k=0;k<t;k++){
+            if (k==t-1){
+                out[i][j][k][0]=(data[i][j][0][0]+2.*data[i][j][k][0]+data[i][j][k-1][0])/4.;
+                out[i][j][k][1]=(data[i][j][0][1]+2.*data[i][j][k][1]+data[i][j][k-1][1])/4.;
+            }
+            else if (k==0){
+                out[i][j][k][0]=(data[i][j][k+1][0]+2*data[i][j][k][0]+data[i][j][t-1][0])/4.;
+                out[i][j][k][1]=(data[i][j][k+1][1]+2*data[i][j][k][1]+data[i][j][t-1][1])/4.;
+            }
+            else {
+                out[i][j][k][0]=(data[i][j][k+1][0]+2.*data[i][j][k][0]+data[i][j][k-1][0])/4.;
+                out[i][j][k][1]=(data[i][j][k+1][1]+2.*data[i][j][k][1]+data[i][j][k-1][1])/4.;
+            }
+        }
+    }
+    
+    copy_corr( N,  var,  t,out,data );
+    free_corr( N,  var+1,  t,out );   
+   
+}
+
