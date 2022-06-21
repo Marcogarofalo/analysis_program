@@ -26,8 +26,8 @@ std::complex<double> M2_from_kcot(int Nvar, double* x, int Npar, double* P, doub
 
 inline double J(double x) {
     if (x <= 0) return 0;
-    if (x > 0 && x <= 1) return exp(-(1. / x) * exp(-(1. / (1. - x))));
-    if (x > 1) return 1;
+    else if (x > 0 && x <= 1) return exp(-(1. / x) * exp(-(1. / (1. - x))));
+    else if (x > 1) return 1;
     else {
         printf("error in J(x): x<0");
         exit(-1);
@@ -61,18 +61,20 @@ std::complex<double> Gs_pke(double k, double p, double E3_m, double d, double ep
         r = H(k, p, E3_m) / (1 + E3_m * E3_m + 1i * eps + 2 * omega_p - 2 * E3_m * (1 + omega_p));
     }
     else {
-        std::complex<double> r = log((2 * pk - pow(E3_m - omega_k - omega_p, 2) + p * p + k * k + 1 - 1i * eps) /
+        r = log((2 * pk - pow(E3_m - omega_k - omega_p, 2) + p * p + k * k + 1 - 1i * eps) /
             (-2 * pk - pow(E3_m - omega_k - omega_p, 2) + p * p + k * k + 1 - 1i * eps));
         // std::cout << "log=" << r << std::endl;
         r *= -H(k, p, E3_m) / (4 * pk);
         // std::cout << "H=" << -H(k, p, E3_m) / (4 * pk) << std::endl;
+        // std::cout << "r=" << r << std::endl;
+
     }
     return r;
 }
 
 double Pk(double k, double d) {
     double omega_k = sqrt(k * k + 1);
-    return k * k * d / (M_2_PI * M_2_PI * omega_k);
+    return k * k * d / (M_PI * M_PI * 2 * 2 * omega_k);
 }
 
 
@@ -100,8 +102,18 @@ Eigen::MatrixXcd compute_D(double E3_m, int N, int Npar, double* P, double kcot(
         }
     }
     Eigen::MatrixXcd oneplusMGP1 = oneplusMGP.inverse();
-    Eigen::MatrixXcd D = -1 * oneplusMGP1 * oneplusMGP;
+    Eigen::MatrixXcd D = -1 * oneplusMGP1 * MGM;
+    // for (int i = 0; i < N;i++) {
+    //     double k = d * i;
+    //     x[0] = k;
+    //     printf("m2(%d)=%g    %g    \n", i, M2_from_kcot(Nvar, x, Npar, P, kcot).real(), M2_from_kcot(Nvar, x, Npar, P, kcot).imag());
+    //     printf("Gs_pke(%d,1)=%g    %g   Gs_pke(1,%d)=%g    %g  \n", i, Gs_pke(k, d, E3_m, d, eps).real(), Gs_pke(k, d, E3_m, d, eps).imag(), i, Gs_pke(d, k, E3_m, d, eps).real(), Gs_pke(d, k, E3_m, d, eps).imag());
 
+    //     printf("MGM(%d,1)=%g    %g   MGM(1,%d)=%g    %g  \n", i, MGM(i, 1).real(), MGM(i, 1).imag(), i, MGM(1, i).real(), MGM(1, i).imag());
+    //     printf("oneplusMGP(%d,1)=%g    %g   oneplusMGP(1,%d)=%g    %g  \n", i, oneplusMGP(i, 1).real(), oneplusMGP(i, 1).imag(), i, oneplusMGP(1, i).real(), oneplusMGP(1, i).imag());
+    //     printf("oneplusMGP1(%d,1)=%g    %g   oneplusMGP1(1,%d)=%g    %g  \n", i, oneplusMGP1(i, 1).real(), oneplusMGP1(i, 1).imag(), i, oneplusMGP1(1, i).real(), oneplusMGP1(1, i).imag());
+    //     printf("D(%d,1)=%g    %g   D(1,%d)=%g    %g  \n", i, D(i, 1).real(), D(i, 1).imag(), i, D(1, i).real(), D(1, i).imag());
+    // }
     return D;
 }
 
@@ -129,7 +141,7 @@ Eigen::VectorXcd  cal_L(double E3_m, Eigen::MatrixXcd D, int N, int Npar, double
         for (int j = 0;j < N;j++) {
             double p = j * d;
             // std::cout<< "D ="<< D(i, j)<<"  pk" << Pk(p, d)<<"  rho"  << rho(p, E3_m)  << std::endl;
-            L(i) += D(i, j) * Pk(p, d) * rho(p, E3_m);
+            L(i) -= D(i, j) * Pk(p, d) * rho(p, E3_m);
         }
     }
     return L;
@@ -140,28 +152,39 @@ Eigen::VectorXcd  cal_L1(double E3_m, Eigen::MatrixXcd D, int N, int Npar, doubl
     int Nvar = 1; // kcotd can have only one variable, k_m
     double x[1];
     Eigen::VectorXcd L(3);
-    int i_min = 0.1 / d;
-    int i_max = 0.1 / d + 1;
-    if (i_max>=N) {printf("error N too small\n"); exit(-1);} 
+
+    double k[3];
+    k[0] = 0;
+    k[1] = sqrt(pow(E3_m - 1, 2) - 4);
+    k[2] = sqrt(pow(E3_m - 1, 2) - 4);// this with a minus
+
     for (int i = 0;i < 3;i++) {
-        double k = fabs(0.1 * (i - 1));//1,0,1
+
         L(i) = std::complex<double>(1. / 3., 0);
-        x[0] = k;
-        L(i) -= M2_from_kcot(Nvar, x, Npar, P, kcot) * rho(k, E3_m);
+        x[0] = k[i];
+        L(i) -= M2_from_kcot(Nvar, x, Npar, P, kcot) * rho(k[i], E3_m);
+
+        int i_min = k[i] / d;
+        int i_max = k[i] / d + 1;
+        if (i_max >= N) { printf("error N*d too small\n"); exit(-1); }
         // std::cout << "M2="<<M2_from_kcot(Nvar, x, Npar, P, kcot) << "   rho=" << rho(k, E3_m)<< std::endl;
         for (int j = 0;j < N;j++) {
             double p = j * d;
 
-            std::complex<double> Dave = (D(i_min, j) + D(i_max, j)) / 2.;
+            std::complex<double> m = (D(i_max, j) - D(i_min, j)) / d;
+            std::complex<double> q = D(i_min, j) - m * ((double)i_min * d);
+            std::complex<double> Dave = q + m * k[i];
+            // printf("k=%g j=%d  d=%g  imin=%d imax=%d  D(min)=%g+I%g  D(max)=%g+I%g  D=%g+I%g\n", k[i], j, d, i_min, i_max,
+            //     real(D(i_min, j)), D(i_min, j).imag(), D(i_max, j).real(), D(i_max, j).imag(), Dave.real(), Dave.imag());
             // std::cout<< "D ="<< D(i, j)<<"  pk" << Pk(p, d)<<"  rho"  << rho(p, E3_m)  << std::endl;
-            L(i) += Dave * Pk(p, d) * rho(p, E3_m);
+            L(i) -= Dave * Pk(p, d) * rho(p, E3_m);
         }
     }
     return L;
 }
 
 
-std::complex<double> Finf(double E3_m, Eigen::MatrixXcd D, int N, int Npar, double* P, double kcot(int, double*, int, double*), double d, double eps) {
+std::complex<double> comput_Finf(double E3_m, Eigen::MatrixXcd D, int N, int Npar, double* P, double kcot(int, double*, int, double*), double d, double eps) {
     std::complex<double> F = std::complex<double>(0, 0);
     Eigen::VectorXcd L = cal_L(E3_m, D, N, Npar, P, kcot, d, eps);
     for (int i = 0;i < N;i++) {
@@ -176,7 +199,7 @@ std::complex<double> compute_M3_sym(double E3_m, int N, int Npar, double* P,
 
     std::complex<double> kiso = compute_kiso(E3_m, PKiso);
     Eigen::MatrixXcd D = compute_D(E3_m, N, Npar, P, kcot, d, eps);
-    std::complex<double> Finf = (E3_m, D, N, Npar, P, kcot, d, eps);
+    std::complex<double> Finf = comput_Finf(E3_m, D, N, Npar, P, kcot, d, eps);
     Eigen::VectorXcd  L = cal_L1(E3_m, D, N, Npar, P, kcot, d, eps);
 
     std::complex<double> M3 = std::complex<double>(0, 0);
@@ -185,6 +208,7 @@ std::complex<double> compute_M3_sym(double E3_m, int N, int Npar, double* P,
         for (int j = 0;j < 3; j++) {
             // std::cout << j <<"   " << L(j)<<"   " << (1. / (1. / kiso + Finf))<<   std::endl;
             M3 += L(i) * (1. / (1. / kiso + Finf)) * L(j);
+            // M3 += (1. / (1. / kiso + Finf)) ;
         }
     }
     return M3;

@@ -23,7 +23,7 @@ double compute_kcot(int Nvar, double* x, int Npar, double* P) {
 }
 
 int main(int argc, char** argv) {
-    double E3_m = 3.0150;
+
 
     int Npar = 1;
     double* P = (double*)malloc(sizeof(double) * 1);
@@ -46,13 +46,20 @@ int main(int argc, char** argv) {
     int N = 100;
     double d = 0.005;
     double eps = 1e-4;
-    printf("E3    M3       Kdf\n");
+    printf("E3    M3_re   M3_im      Kdf_re  kdf_im  Finf_re  Finf_im\n");
     for (int i = 0;i < 100;i++) {
-        double E3 = E3_m +i*0.0001;
+        double E3 = 3.02 + i * 0.000001;
+    // for (int i = 0;i < 2;i++) {
+    //     double E3 = E3_m + i * 0.005;
+
         std::complex<double> M3 = compute_M3_sym(E3, N, Npar, P, compute_kcot, PKiso, compute_kiso, d, eps);
-        std::complex<double> Kdf= compute_kiso(E3 , PKiso);
-        printf("%-16g%-12g%-16g%-12g%-12g\n",E3, real(M3),imag(M3),real(Kdf),imag(Kdf));
-        
+        std::complex<double> Kdf = compute_kiso(E3, PKiso);
+        Eigen::MatrixXcd D = compute_D(E3, N, Npar, P, compute_kcot, d, eps);
+
+        std::complex<double> Finf = comput_Finf(E3, D, N, Npar, P, compute_kcot, d, eps);
+
+        printf("%-18.8g%-14g%-18g%-14g%-18g%-14g%-18g\n", E3, real(M3), imag(M3), real(Kdf), imag(Kdf), real(Finf), imag(Finf));
+
     }
 
 }
