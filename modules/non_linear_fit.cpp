@@ -89,6 +89,15 @@ void fit_type::compute_cov1_fit() {
     free(en);
 }
 
+void fit_type::malloc_x() {
+    error(Nvar <= 0, 1, "malloc_x for fit", "fit_info.Nvar must be greather than zero: current Nvar=%g\n", Nvar);
+    error(myen.size() * N <= 0, 1, "malloc_x for fit",
+        "fit_info.myen.size() and N must be greather than zero: current myen.size()=%d  N=%d\n", myen.size(), N);
+    error(Njack <= 0, 1, "malloc_x for fit", "fit_info.Njack must be greather than zero: current Nvar=%g\n", Njack);
+    x = double_malloc_3(Nvar, myen.size() * N, Njack);
+    allocated_x = true;
+}
+
 void fit_type::restore_default() {
     custom = false; // 1 means default fit , 0 custom fit options
     lambda = 0.001;
@@ -100,7 +109,7 @@ void fit_type::restore_default() {
     devorder = 4;
     repeat_start = 1;
 
-    if (myen.size() > 0 && N > 0 && Nvar > 0) {
+    if (allocated_x) {
         for (int i = 0;i < Nvar;i++) {
             for (int j = 0;j < myen.size() * N;j++) {
                 free(x[i][j]);
@@ -109,6 +118,7 @@ void fit_type::restore_default() {
         }
         free(x);
     }
+    allocated_x = false;
     // Nvar = 0;
     N = 0;
     myen = std::vector<int>();
@@ -525,7 +535,7 @@ double* der_O2_fun_Nf_h(int n, int Nvar, double* x, int Npar, double* P, double 
 }
 
 
-double der1_O2_h(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), std::vector< double > h) {
+double der1_O2_h(int n, int Nvar, double* x, int Npar, double* P, double fun(int, int, double*, int, double*), int dir, std::vector< double > h) {
 
     double* Ph = (double*)malloc(sizeof(double) * Npar);
     double df;
@@ -534,7 +544,7 @@ double der1_O2_h(int n, int Nvar, double* x, int Npar, double* P, double fun(int
     for (i = 0;i < Npar;i++)
         Ph[i] = P[i];
 
-    i = n;
+    i = dir;
     Ph[i] = P[i] - h[i];
     df = -fun(n, Nvar, x, Npar, Ph);
 
@@ -562,10 +572,10 @@ double** der2_O2_fun_Nf_h(int n, int Nvar, double* x, int Npar, double* P, doubl
     for (i = 0;i < Npar;i++) {
         for (j = 0;j < Npar;j++) {
             Ph[i] = P[i] - h[i];
-            df[i][j] = -der1_O2_h(j, Nvar, x, Npar, Ph, fun, h);
+            df[i][j] = -der1_O2_h(n, Nvar, x, Npar, Ph, fun, j, h);
 
             Ph[i] = P[i] + h[i];
-            df[i][j] += der1_O2_h(j, Nvar, x, Npar, Ph, fun, h);
+            df[i][j] += der1_O2_h(n, Nvar, x, Npar, Ph, fun, j, h);
 
 
             Ph[i] = P[i];//you need to leave the parameter as it was before you move to the next parameter

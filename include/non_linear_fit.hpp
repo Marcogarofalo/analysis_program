@@ -86,6 +86,7 @@ struct  fit_type {
     std::vector<double>  guess = {};
     std::vector<int> myen = {};
     double*** x;
+    bool allocated_x=false;
 
     // GEVP
     int t0_GEVP = 3;
@@ -113,7 +114,7 @@ struct  fit_type {
     void compute_cov_fit(char** argv, data_all gjack, double lhs_fun(int, int, int, data_all, struct fit_type), struct fit_type fit_info);
     void compute_cov1_fit();
     void restore_default();
-
+    void malloc_x();
 
 };
 

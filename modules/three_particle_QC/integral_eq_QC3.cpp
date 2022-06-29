@@ -15,19 +15,26 @@ double kcot_generic(int Nvar, double* x, int Npar, double* P) {
 
 std::complex<double> M2_from_kcot(int Nvar, double* x, int Npar, double* P, double kcot(int, double*, int, double*)) {
     double k_m = x[0];
+    double E3_m = x[1];
     double k_mcotd = kcot(Nvar, x, Npar, P);
     // double k_m = sqrt(E_m * E_m / 4. - 1);
-    double E_m = 2 * sqrt(k_m * k_m + 1);
+    double omega_k = sqrt(k_m * k_m + 1);
+    double Es_mk2 = pow(E3_m - omega_k, 2) - k_m * k_m;
 
-    std::complex<double> r = 16 * M_PI * E_m;
-    r /= k_mcotd - 1i * k_m;
-    return r;
+    std::complex<double> r;
+    if (Es_mk2 >= 4)
+        r *= -1i * sqrt(Es_mk2 / 4. - 1);
+    else
+        r *= sqrt(fabs(Es_mk2 / 4. - 1));
+    r += k_mcotd;
+    r /= ( 16. * M_PI * sqrt(Es_mk2));
+    return 1. / r;
 }
 
 inline double J(double x) {
     if (x <= 0) return 0;
-    else if (x > 0 && x <= 1) return exp(-(1. / x) * exp(-(1. / (1. - x))));
-    else if (x > 1) return 1;
+    else if (x > 0 && x < 1) return exp(-(1. / x) * exp(-(1. / (1. - x))));
+    else if (x >= 1) return 1;
     else {
         printf("error in J(x): x<0");
         exit(-1);
@@ -78,16 +85,19 @@ double Pk(double k, double d) {
 }
 
 
-Eigen::MatrixXcd compute_D(double E3_m, int N, int Npar, double* P, double kcot(int, double*, int, double*), double d, double eps) {
+Eigen::MatrixXcd compute_D(double E3_m, int N, int Npar, double* P, double kcot(int, double*, int, double*), double eps) {
 
     Eigen::MatrixXcd oneplusMGP = Eigen::MatrixXcd::Identity(N, N);
     Eigen::MatrixXcd MGM = Eigen::MatrixXcd::Zero(N, N);
 
     int Nvar = 1; // kcotd can have only one variable, k_m
-    double x[1];
+    double x[2];
+    double kmax = sqrt(pow((E3_m * E3_m + 1) / (2 * E3_m), 2) - 1);
+    double d = kmax / N;
     for (int i = 0; i < N;i++) {
         double p = d * i;
         x[0] = p;
+        x[1] = E3_m;
         std::complex<double> m2 = M2_from_kcot(Nvar, x, Npar, P, kcot);
         // std::cout << "m2=" << m2 << std::endl;
         for (int j = 0; j < N;j++) {
@@ -128,19 +138,22 @@ std::complex<double> rho(double k_m, double E3_m) {
     return r;
 }
 
-Eigen::VectorXcd  cal_L(double E3_m, Eigen::MatrixXcd D, int N, int Npar, double* P, double kcot(int, double*, int, double*), double d, double eps) {
+Eigen::VectorXcd  cal_L(double E3_m, Eigen::MatrixXcd D, int N, int Npar, double* P, double kcot(int, double*, int, double*), double eps) {
     int Nvar = 1; // kcotd can have only one variable, k_m
-    double x[1];
+    double x[2];
     Eigen::VectorXcd L(N);
+    double kmax = sqrt(pow((E3_m * E3_m + 1) / (2 * E3_m), 2) - 1);
+    double d = kmax / N;
     for (int i = 0;i < N;i++) {
         double k = i * d;
         L(i) = std::complex<double>(1. / 3., 0);
         x[0] = k;
+        x[1] = E3_m;
         L(i) -= M2_from_kcot(Nvar, x, Npar, P, kcot) * rho(k, E3_m);
         // std::cout << "M2="<<M2_from_kcot(Nvar, x, Npar, P, kcot) << "   rho=" << rho(k, E3_m)<< std::endl;
         for (int j = 0;j < N;j++) {
             double p = j * d;
-            // std::cout<< "D ="<< D(i, j)<<"  pk" << Pk(p, d)<<"  rho"  << rho(p, E3_m)  << std::endl;
+            // std::cout << "D =" << D(i, j) << "  pk" << Pk(p, d) << "  rho" << rho(p, E3_m) << std::endl;
             L(i) -= D(i, j) * Pk(p, d) * rho(p, E3_m);
         }
     }
@@ -148,20 +161,22 @@ Eigen::VectorXcd  cal_L(double E3_m, Eigen::MatrixXcd D, int N, int Npar, double
 }
 
 
-Eigen::VectorXcd  cal_L1(double E3_m, Eigen::MatrixXcd D, int N, int Npar, double* P, double kcot(int, double*, int, double*), double d, double eps) {
+Eigen::VectorXcd  cal_L1(double E3_m, Eigen::MatrixXcd D, int N, int Npar, double* P, double kcot(int, double*, int, double*), double eps) {
     int Nvar = 1; // kcotd can have only one variable, k_m
-    double x[1];
+    double x[2];
     Eigen::VectorXcd L(3);
 
     double k[3];
     k[0] = 0;
     k[1] = sqrt(pow(E3_m - 1, 2) - 4);
     k[2] = sqrt(pow(E3_m - 1, 2) - 4);// this with a minus
-
+    double kmax = sqrt(pow((E3_m * E3_m + 1) / (2 * E3_m), 2) - 1);
+    double d = kmax / N;
     for (int i = 0;i < 3;i++) {
 
         L(i) = std::complex<double>(1. / 3., 0);
         x[0] = k[i];
+        x[1] = E3_m;
         L(i) -= M2_from_kcot(Nvar, x, Npar, P, kcot) * rho(k[i], E3_m);
 
         int i_min = k[i] / d;
@@ -184,23 +199,26 @@ Eigen::VectorXcd  cal_L1(double E3_m, Eigen::MatrixXcd D, int N, int Npar, doubl
 }
 
 
-std::complex<double> comput_Finf(double E3_m, Eigen::MatrixXcd D, int N, int Npar, double* P, double kcot(int, double*, int, double*), double d, double eps) {
+std::complex<double> comput_Finf(double E3_m, Eigen::MatrixXcd D, int N, int Npar, double* P, double kcot(int, double*, int, double*), double eps) {
     std::complex<double> F = std::complex<double>(0, 0);
-    Eigen::VectorXcd L = cal_L(E3_m, D, N, Npar, P, kcot, d, eps);
+    Eigen::VectorXcd L = cal_L(E3_m, D, N, Npar, P, kcot, eps);
+    double kmax = sqrt(pow((E3_m * E3_m + 1) / (2 * E3_m), 2) - 1);
+    double d = kmax / N;
     for (int i = 0;i < N;i++) {
         double k = i * d;
+        // std::cout << i << "   " << Pk(k, d) << "   " << L(i) << "   " << rho(k, E3_m) << std::endl;
         F += Pk(k, d) * L(i) * rho(k, E3_m);
     }
     return F;
 }
 
 std::complex<double> compute_M3_sym(double E3_m, int N, int Npar, double* P,
-    double kcot(int, double*, int, double*), double* PKiso, std::complex<double> compute_kiso(double, double*), double d, double eps) {
+    double kcot(int, double*, int, double*), double* PKiso, double compute_kiso(double, double*), double eps) {
 
     std::complex<double> kiso = compute_kiso(E3_m, PKiso);
-    Eigen::MatrixXcd D = compute_D(E3_m, N, Npar, P, kcot, d, eps);
-    std::complex<double> Finf = comput_Finf(E3_m, D, N, Npar, P, kcot, d, eps);
-    Eigen::VectorXcd  L = cal_L1(E3_m, D, N, Npar, P, kcot, d, eps);
+    Eigen::MatrixXcd D = compute_D(E3_m, N, Npar, P, kcot, eps);
+    std::complex<double> Finf = comput_Finf(E3_m, D, N, Npar, P, kcot, eps);
+    Eigen::VectorXcd  L = cal_L1(E3_m, D, N, Npar, P, kcot, eps);
 
     std::complex<double> M3 = std::complex<double>(0, 0);
 
@@ -211,6 +229,7 @@ std::complex<double> compute_M3_sym(double E3_m, int N, int Npar, double* P,
             // M3 += (1. / (1. / kiso + Finf)) ;
         }
     }
+    // printf("M3=%g %g     %g  %g     %g   %g\n",M3.real(),M3.imag(), kiso.real(), kiso.imag(),Finf.real(),Finf.imag());
     return M3;
 
 }
