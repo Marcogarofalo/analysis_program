@@ -27,7 +27,7 @@ std::complex<double> M2_from_kcot(int Nvar, double* x, int Npar, double* P, doub
     else
         r *= sqrt(fabs(Es_mk2 / 4. - 1));
     r += k_mcotd;
-    r /= ( 16. * M_PI * Es_mk2);
+    r /= ( 16. * M_PI * sqrt(Es_mk2));
     return 1. / r;
 }
 
@@ -213,7 +213,7 @@ std::complex<double> comput_Finf(double E3_m, Eigen::MatrixXcd D, int N, int Npa
 }
 
 std::complex<double> compute_M3_sym(double E3_m, int N, int Npar, double* P,
-    double kcot(int, double*, int, double*), double* PKiso, std::complex<double> compute_kiso(double, double*), double eps) {
+    double kcot(int, double*, int, double*), double* PKiso, double compute_kiso(double, double*), double eps) {
 
     std::complex<double> kiso = compute_kiso(E3_m, PKiso);
     Eigen::MatrixXcd D = compute_D(E3_m, N, Npar, P, kcot, eps);
@@ -229,6 +229,7 @@ std::complex<double> compute_M3_sym(double E3_m, int N, int Npar, double* P,
             // M3 += (1. / (1. / kiso + Finf)) ;
         }
     }
+    // printf("M3=%g %g     %g  %g     %g   %g\n",M3.real(),M3.imag(), kiso.real(), kiso.imag(),Finf.real(),Finf.imag());
     return M3;
 
 }
