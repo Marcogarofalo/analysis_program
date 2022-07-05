@@ -4,6 +4,10 @@
 #include <Eigen/Dense>  
 
 
+typedef Eigen::Matrix< std::complex<  long double >, Eigen::Dynamic, Eigen::Dynamic > MatrixXcld;
+typedef Eigen::Matrix< std::complex<  long double >, Eigen::Dynamic, 1 > VectorXcld;
+
+
 std::complex<double> compute_M3_sym(double E3_m, int N, int Npar, double* P,
     double kcot(int, double*, int, double*), double* PKiso, double compute_kiso(double, double*), double eps);
 Eigen::MatrixXcd compute_D(double E3_m, int N, int Npar, double* P, double kcot(int, double*, int, double*), double eps);

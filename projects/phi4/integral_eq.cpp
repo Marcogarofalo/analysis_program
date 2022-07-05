@@ -20,20 +20,39 @@ double rhs_laurent_pole(int n, int Nvar, double* x, int Npar, double* P) {
     std::complex<double> p(P[0], P[1]);
     std::complex<double> am1(P[2], P[3]);
 
-    std::complex<double> r = am1 / (z * z - p);
+    std::complex<double> r = am1 / (z * z - p*p);
 
     if (Npar >= 6) {
         std::complex<double> a0(P[4], P[5]);
         r += a0;
     }
+    r = 1. / r;
 
     if (n == 0)      return real(r);
     else if (n == 1) return imag(r);
     else { printf("%s\n", __func__);  exit(1); }
 }
 
+double lhs_M3(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double r;
+
+    std::complex<double> M3(gjack.en[e].jack[0][j], gjack.en[e].jack[1][j]);
+    M3 = 1.0 /M3;
+
+    if (n == 0) {
+        r = M3.real();
+    }
+    else if (n == 1) {
+        r = M3.imag();
+    }
+    else {
+        r = 0;  printf("lhs_M3 n=%d not implemented\n", n); exit(1);
+    }
+    return  r;
+}
+
 double compute_kiso(double E3_m, double* P) {
-    return P[0] / (E3_m * E3_m - P[1]) + P[2];
+    return -P[0] / (E3_m * E3_m - P[1]) + P[2];
 }
 
 double compute_kcot(int Nvar, double* x, int Npar, double* P) {
@@ -44,6 +63,11 @@ double compute_kcot(int Nvar, double* x, int Npar, double* P) {
 }
 
 int main(int argc, char** argv) {
+    error(argc != 4, 1, "main ",
+        "usage:./integral_eq  whatever   whatever   output_dir");
+
+    mysprintf(argv[1], NAMESIZE, "%s", "jack");
+    mysprintf(argv[2], NAMESIZE, "%s", "./");
 
 
     int Npar = 1;
@@ -78,9 +102,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    for (int i = 0; i < tot_parK;i++) {
-        cov[i][i] += 1e-7;
-    }
+
 
     double** tmp = fake_sampling_covariance("jack", mean, Njack, tot_parK, cov, seed);
 
@@ -92,9 +114,12 @@ int main(int argc, char** argv) {
     printf("E3    M3_re   M3_im      Kdf_re  kdf_im  Finf_re  Finf_im\n");
 
 
-    double Emin = 3.0189;
-    double Emax = 3.0191;
-    int NE = 6;
+    double Emin = 3.015;
+    double Emax = 3.03;
+    // double Emin = 3.02;
+    // double Emax = 3.03;
+
+    int NE = 20;
     double dE = (Emax - Emin) / ((double)NE);
 
     std::vector<double> E3(NE);
@@ -108,6 +133,7 @@ int main(int argc, char** argv) {
     for (int i = 0;i < NE;i++) {
         for (int j = 0;j < Njack;j++) {
             E3[i] = Emin + i * dE;
+            // E3[i] = 3.02;printf("\n\n MODIFY HERE \n\n");
             P[0] = tmp[3][j];
             PKiso[0] = tmp[0][j];
             PKiso[1] = tmp[1][j];
@@ -116,89 +142,115 @@ int main(int argc, char** argv) {
             std::complex<double> m3 = compute_M3_sym(E3[i], N, Npar, P, compute_kcot, PKiso, compute_kiso, eps);
             M3[i][0][j] = m3.real(); M3[i][1][j] = m3.imag();
 
-            std::complex<double> Kdf = compute_kiso(E3[i], PKiso);
-            Eigen::MatrixXcd D = compute_D(E3[i], N, Npar, P, compute_kcot, eps);
-            std::complex<double> Finf = comput_Finf(E3[i], D, N, Npar, P, compute_kcot, eps);
+            // std::complex<double> Kdf = compute_kiso(E3[i], PKiso);
+            // Eigen::MatrixXcd D = compute_D(E3[i], N, Npar, P, compute_kcot, eps);
+            // std::complex<double> Finf = comput_Finf(E3[i], D, N, Npar, P, compute_kcot, eps);
             // printf("jack =%-4d%-18.8g%-14g%-18g%-14g%-18g||%-25g%-25g%-25g%-25g\n",
-                // j, E3[i], real(m3), imag(m3), real(Kdf), imag(Kdf), PKiso[0], PKiso[1], PKiso[2], P[3]);
-            printf("%-18.8g%-14g%-18g%-14g%-18g%-18.12g%-20.12g\n", E3[i], real(m3), imag(m3), real(Kdf), imag(Kdf), real(Finf), imag(Finf));
+            //     j, E3[i], real(m3), imag(m3), real(Kdf), imag(Kdf), PKiso[0], PKiso[1], PKiso[2], P[3]);
+            // printf("%-18.8g%-14g%-18g%-14g%-18g%-18.12g%-20.12g\n", E3[i], real(m3), imag(m3), real(Kdf), imag(Kdf), real(Finf), imag(Finf));
+            // printf("%-18.8g%-14g%-18g%\n", E3[i], real(m3), imag(m3));
         }
+
         printf("%-18.8g%-14g%-18g%-14g%-18g\n", E3[i], M3[i][0][Njack - 1], error_jackboot("jack", Njack, M3[i][0]),
             M3[i][1][Njack - 1], error_jackboot("jack", Njack, M3[i][1]));
     }
 
-    exit(1);
+
+    data_all jackall;
+    jackall.ens = NE;
+    jackall.resampling = "jack";
+    jackall.en = new data_single[jackall.ens];
+    for (int i = 0;i < NE;i++) {
+        jackall.en[i].Njack = Njack;
+        jackall.en[i].Nobs = 2;
+        jackall.en[i].resampling = jackall.resampling;
+        jackall.en[i].jack = double_malloc_2(2, Njack);
+        for (int j = 0;j < Njack;j++) {
+            jackall.en[i].jack[0][j] = M3[i][0][j];
+            jackall.en[i].jack[1][j] = M3[i][1][j];
+        }
+    }
 
     {
         fit_type fit_info;
-        fit_info.Njack = 1;
+        fit_info.Njack = Njack;
         fit_info.N = 2;
         fit_info.myen = std::vector<int>(NE);
+        for(int e=0; e<fit_info.myen.size(); e++) fit_info.myen[e]=e;
         fit_info.Nvar = 2;
         fit_info.Npar = 4;
         fit_info.function = rhs_laurent_pole;
-        ////// allocation
-        int* en = (int*)malloc(sizeof(int) * fit_info.N);// we need to init en and en_tot to allocate the other 
-        for (int e = 0;e < fit_info.N; e++) { en[e] = fit_info.myen.size(); }
-        int en_tot = 0;      for (int n = 0;n < fit_info.N;n++) { en_tot += en[n]; }// total data to fit
 
-        double*** y = double_malloc_3(fit_info.Njack, en_tot, 2);// 2 is mean/error
-        double*** x = double_malloc_3(fit_info.Njack, en_tot, fit_info.Nvar);
+        fit_info.malloc_x();
 
-        //init x
-        int count = 0;
-        for (int j = 0;j < fit_info.Njack;j++) {
-            int count = 0;
-            for (int n = 0;n < fit_info.N;n++) {
-                for (int e = 0;e < en[n];e++) {
-                    x[j][count][0] = E3[e];
-                    x[j][count][1] = 0;
-                    count++;
-                }
-            }
-        }
-        ////////////////////////////////////////// y
-        count = 0;
+        int scount = 0;
         for (int n = 0;n < fit_info.N;n++) {
-            for (int e = 0;e < en[n];e++) {
+            for (int e = 0;e < fit_info.myen.size();e++) {
                 for (int j = 0;j < fit_info.Njack;j++) {
-                    double yd;
-                    y[j][e + count][0] = M3[e][n][j];// y must be zero
-
+                    fit_info.x[0][scount][j] = E3[e];
+                    fit_info.x[1][scount][j] = 0;
                 }
-                double dy = error_jackboot("jack", Njack, M3[e][n]);
-                for (int j = 0;j < fit_info.Njack;j++)
-                    y[j][e + count][1] = dy;
+                scount++;
             }
-            count += en[n];
-        }
-        //////  init end
-        int j = fit_info.Njack - 1.;
-        fit_info.guess = { 9.1145,   2.08327e-06,   254.085,   -10.0645 };
-        double* guess = (double*)malloc(sizeof(double) * fit_info.Npar);
-        for (int i = 0;i < fit_info.Npar; i++) {
-            guess[i] = fit_info.guess[i];
         }
 
 
-        fit_info.noderiv = false;
-        fit_info.Prange = { 1e-3,1e-3,100,100 };
+        fit_info.acc = 0.01;
+        fit_info.h = 1e-5;
+        fit_info.devorder = -2;
         fit_info.verbosity = 0;
-        fit_info.acc = 1e-9;
-        fit_info.h = 1e-4;
-        fit_info.lambda = 1e-4;
-        fit_info.precision_sum = 2;
-        fit_info.repeat_start = 1;
-        // fit_info.second_deriv=true;
-        // guess= guess_for_non_linear_fit_Nf(fit_info.N, en, x[j], y[j], fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info);
-        double* P = non_linear_fit_Nf(fit_info.N, en, x[j], y[j], fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info);
-        double chi2 = compute_chi_non_linear_Nf(fit_info.N, en, x[j], y[j], P, fit_info.Nvar, fit_info.Npar, fit_info.function);
-        printf("chi2/dof=%g   dof=%d\n",
-            chi2 / (en_tot - fit_info.Npar), (en_tot - fit_info.Npar));
-        printf("p=%g   %g   am1=%g   %g   \n", P[0], P[1], P[2], P[3]);
+        fit_info.repeat_start = 10;
+        fit_info.guess = { 9.1145,   2.08327e-06,   254.085,   -10.0645 };
+        fit_info.precision_sum = 0;
+        char namefile[NAMESIZE];
 
-        free(P);
+        mysprintf(namefile, NAMESIZE, "int_eq_g20_npar%d", fit_info.Npar);
+        struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_M3, fit_info, namefile);
+        fit_info.band_range = { Emin , Emax };
+        print_fit_band(argv, jackall, fit_info, fit_info, namefile, "E_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, fit_info.myen.size() - 1, 0.0002);
         fit_info.restore_default();
+
+    }
+
+    {
+        fit_type fit_info;
+        fit_info.Njack = Njack;
+        fit_info.N = 2;
+        fit_info.myen = std::vector<int>(NE-10);
+        for(int e=0; e<fit_info.myen.size(); e++) fit_info.myen[e]=e+5;
+        fit_info.Nvar = 2;
+        fit_info.Npar = 4;
+        fit_info.function = rhs_laurent_pole;
+
+        fit_info.malloc_x();
+
+        int scount = 0;
+        for (int n = 0;n < fit_info.N;n++) {
+            for (int e = 0;e < fit_info.myen.size();e++) {
+                for (int j = 0;j < fit_info.Njack;j++) {
+                    fit_info.x[0][scount][j] = E3[fit_info.myen[e]];
+                    fit_info.x[1][scount][j] = 0;
+                }
+                scount++;
+            }
+        }
+
+
+        fit_info.acc = 0.01;
+        fit_info.h = 1e-5;
+        fit_info.devorder = -2;
+        fit_info.verbosity = 0;
+        fit_info.repeat_start = 10;
+        fit_info.guess = { 9.1145,   2.08327e-06,   254.085,   -10.0645 };
+        fit_info.precision_sum = 0;
+        char namefile[NAMESIZE];
+
+        mysprintf(namefile, NAMESIZE, "int_eq_g20_close_to_the_pole_npar%d", fit_info.Npar);
+        struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_M3, fit_info, namefile);
+        fit_info.band_range = { Emin , Emax };
+        print_fit_band(argv, jackall, fit_info, fit_info, namefile, "E_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, fit_info.myen.size() - 1, 0.0002);
+        fit_info.restore_default();
+
     }
 
 }

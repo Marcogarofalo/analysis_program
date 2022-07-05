@@ -138,7 +138,7 @@ T   **malloc_2(int size1,int size2){
     }
     return p;    
 }
-
+template long double  **malloc_2<long double>(int ,int );
 template double  **malloc_2<double>(int ,int );
 template int  **malloc_2<int>(int ,int );
 
@@ -153,6 +153,7 @@ T  **calloc_2(int size1,int size2){
     }
     return p;    
 }
+template long double  **calloc_2<long double>(int ,int );
 template double  **calloc_2<double>(int ,int );
 template int  **calloc_2<int>(int ,int );
 

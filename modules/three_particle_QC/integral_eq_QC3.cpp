@@ -3,8 +3,18 @@
 #include "tower.hpp"
 #include <Eigen/Dense>  
 #include <iostream>
+#include "integral_eq_QC3.hpp"
 
 using namespace std::complex_literals;
+
+inline double compute_kmax(double E3_m) {
+    double xmin = 0.02;
+    return sqrt(pow( ((E3_m * E3_m + 1) / (4.) - xmin )* 2 / E3_m, 2) - 1);
+}
+inline double compute_d(double kmax, int N) {
+    return kmax / ((double)N - 1.);
+}
+
 
 double kcot_generic(int Nvar, double* x, int Npar, double* P) {
     double r;
@@ -13,28 +23,30 @@ double kcot_generic(int Nvar, double* x, int Npar, double* P) {
     return r;
 }
 
-std::complex<double> M2_from_kcot(int Nvar, double* x, int Npar, double* P, double kcot(int, double*, int, double*)) {
+std::complex<double> M2_from_kcot(int Nvar, double* x, int Npar, double* P, double kcot(int, double*, int, double*), double eps) {
     double k_m = x[0];
     double E3_m = x[1];
     double k_mcotd = kcot(Nvar, x, Npar, P);
     // double k_m = sqrt(E_m * E_m / 4. - 1);
     double omega_k = sqrt(k_m * k_m + 1);
-    double Es_mk2 = pow(E3_m - omega_k, 2) - k_m * k_m;
+    std::complex<double> Es_mk2 = pow(E3_m - omega_k, 2) - k_m * k_m + 1i * eps;
 
-    std::complex<double> r;
-    if (Es_mk2 >= 4)
-        r *= -1i * sqrt(Es_mk2 / 4. - 1);
-    else
-        r *= sqrt(fabs(Es_mk2 / 4. - 1));
-    r += k_mcotd;
-    r /= ( 16. * M_PI * sqrt(Es_mk2));
-    return 1. / r;
+    // if (Es_mk2 >= 4)
+    //     r *= -1i * sqrt((Es_mk2 + 1i * eps) / 4. - 1.);
+    // else
+    //     r *= sqrt(fabs((Es_mk2 + 1i * eps) / 4. - 1.));
+    std::complex<double> q = sqrt(Es_mk2 / 4. - 1.);
+
+    return 16. * M_PI * sqrt(Es_mk2) / (k_mcotd - 1i * q);
 }
 
 inline double J(double x) {
-    if (x <= 0) return 0;
-    else if (x > 0 && x < 1) return exp(-(1. / x) * exp(-(1. / (1. - x))));
-    else if (x >= 1) return 1;
+    double xmin = 0.02;// fernando set them to these values
+    double xmax = 0.97;
+
+    if (x < xmin) return 0;
+    else if (x >= xmin && x < xmax) return exp(-(1. / x) * exp(-(1. / (1. - x))));
+    else if (x >= xmax) return 1;
     else {
         printf("error in J(x): x<0");
         exit(-1);
@@ -56,30 +68,34 @@ double H(double k, double p, double E3_m) {
 
 std::complex<double> Gs_pke(double k, double p, double E3_m, double d, double eps) {
 
-    double pk = p * k;
     double omega_k = sqrt(k * k + 1);
     double omega_p = sqrt(p * p + 1);
     std::complex<double> r;
 
-    if (p < d) {
+    double th = d / 2.;
+    if (p < th) {
         r = H(k, p, E3_m) / (1 + E3_m * E3_m + 1i * eps + 2 * omega_k - 2 * E3_m * (1 + omega_k));
     }
-    else if (k < d) {
+    else if (k < th) {
         r = H(k, p, E3_m) / (1 + E3_m * E3_m + 1i * eps + 2 * omega_p - 2 * E3_m * (1 + omega_p));
     }
     else {
-        r = log((2 * pk - pow(E3_m - omega_k - omega_p, 2) + p * p + k * k + 1 - 1i * eps) /
-            (-2 * pk - pow(E3_m - omega_k - omega_p, 2) + p * p + k * k + 1 - 1i * eps));
+        // r = log((2 * pk - pow(E3_m - omega_k - omega_p, 2) + p * p + k * k + 1 - 1i * eps) /
+        //     (-2 * pk - pow(E3_m - omega_k - omega_p, 2) + p * p + k * k + 1 - 1i * eps));
+        // r *= -H(k, p, E3_m) / (4 * pk);
+        double alpha = pow(E3_m - omega_k - omega_p, 2) - p * p - k * k - 1.;
+        r = -1 * H(k, p, E3_m) / (4 * p * k) * log((alpha - 2 * p * k + 1i * eps) / (alpha + 2 * p * k + 1i * eps));
+
         // std::cout << "log=" << r << std::endl;
-        r *= -H(k, p, E3_m) / (4 * pk);
-        // std::cout << "H=" << -H(k, p, E3_m) / (4 * pk) << std::endl;
-        // std::cout << "r=" << r << std::endl;
+
+    // std::cout << "H=" << -H(k, p, E3_m) / (4 * pk) << std::endl;
+    // std::cout << "r=" << r << std::endl;
 
     }
     return r;
 }
 
-double Pk(double k, double d) {
+inline double Pk(double k, double d) {
     double omega_k = sqrt(k * k + 1);
     return k * k * d / (M_PI * M_PI * 2 * 2 * omega_k);
 }
@@ -92,13 +108,13 @@ Eigen::MatrixXcd compute_D(double E3_m, int N, int Npar, double* P, double kcot(
 
     int Nvar = 1; // kcotd can have only one variable, k_m
     double x[2];
-    double kmax = sqrt(pow((E3_m * E3_m + 1) / (2 * E3_m), 2) - 1);
-    double d = kmax / N;
+    double kmax = compute_kmax(E3_m);
+    double d = compute_d(kmax, N);
     for (int i = 0; i < N;i++) {
         double p = d * i;
         x[0] = p;
         x[1] = E3_m;
-        std::complex<double> m2 = M2_from_kcot(Nvar, x, Npar, P, kcot);
+        std::complex<double> m2 = M2_from_kcot(Nvar, x, Npar, P, kcot, eps);
         // std::cout << "m2=" << m2 << std::endl;
         for (int j = 0; j < N;j++) {
             double k = d * j;
@@ -107,7 +123,7 @@ Eigen::MatrixXcd compute_D(double E3_m, int N, int Npar, double* P, double kcot(
 
             oneplusMGP(i, j) += m2 * G * Pk(k, d);
             x[0] = k;
-            MGM(i, j) += m2 * G * M2_from_kcot(Nvar, x, Npar, P, kcot);
+            MGM(i, j) += m2 * G * M2_from_kcot(Nvar, x, Npar, P, kcot, eps);
             // std::cout << "m2(p)=" << M2_from_kcot(Nvar, x, Npar, P, kcot) << std::endl;
         }
     }
@@ -129,12 +145,13 @@ Eigen::MatrixXcd compute_D(double E3_m, int N, int Npar, double* P, double kcot(
 
 std::complex<double> rho(double k_m, double E3_m) {
     double omega_k = sqrt(k_m * k_m + 1);
-    double Es_mk2 = pow(E3_m - omega_k, 2) - k_m * k_m;
+    long double Es_mk2 = pow(E3_m - omega_k, 2) - k_m * k_m;
     std::complex<double> r = J(Es_mk2 / 4.) / (16. * M_PI * sqrt(Es_mk2));
     if (Es_mk2 >= 4)
-        r *= -1i * sqrt(Es_mk2 / 4. - 1);
+        r *= -1i * ((double) sqrt(Es_mk2 / 4. - 1));
     else
-        r *= sqrt(fabs(Es_mk2 / 4. - 1));
+        r *= sqrt(-(Es_mk2 / 4. - 1));
+    // printf("rho= %.12g     %.12Lg   %.12g \n",k_m, Es_mk2 / 4., J(Es_mk2 / 4.) );
     return r;
 }
 
@@ -142,14 +159,14 @@ Eigen::VectorXcd  cal_L(double E3_m, Eigen::MatrixXcd D, int N, int Npar, double
     int Nvar = 1; // kcotd can have only one variable, k_m
     double x[2];
     Eigen::VectorXcd L(N);
-    double kmax = sqrt(pow((E3_m * E3_m + 1) / (2 * E3_m), 2) - 1);
-    double d = kmax / N;
+    double kmax = compute_kmax(E3_m);
+    double d = compute_d(kmax, N);
     for (int i = 0;i < N;i++) {
         double k = i * d;
         L(i) = std::complex<double>(1. / 3., 0);
         x[0] = k;
         x[1] = E3_m;
-        L(i) -= M2_from_kcot(Nvar, x, Npar, P, kcot) * rho(k, E3_m);
+        L(i) -= M2_from_kcot(Nvar, x, Npar, P, kcot, eps) * rho(k, E3_m);
         // std::cout << "M2="<<M2_from_kcot(Nvar, x, Npar, P, kcot) << "   rho=" << rho(k, E3_m)<< std::endl;
         for (int j = 0;j < N;j++) {
             double p = j * d;
@@ -170,14 +187,14 @@ Eigen::VectorXcd  cal_L1(double E3_m, Eigen::MatrixXcd D, int N, int Npar, doubl
     k[0] = 0;
     k[1] = sqrt(pow(E3_m - 1, 2) - 4);
     k[2] = sqrt(pow(E3_m - 1, 2) - 4);// this with a minus
-    double kmax = sqrt(pow((E3_m * E3_m + 1) / (2 * E3_m), 2) - 1);
-    double d = kmax / N;
+    double kmax = compute_kmax(E3_m);
+    double d = compute_d(kmax, N);
     for (int i = 0;i < 3;i++) {
 
         L(i) = std::complex<double>(1. / 3., 0);
         x[0] = k[i];
         x[1] = E3_m;
-        L(i) -= M2_from_kcot(Nvar, x, Npar, P, kcot) * rho(k[i], E3_m);
+        L(i) -= M2_from_kcot(Nvar, x, Npar, P, kcot, eps) * rho(k[i], E3_m);
 
         int i_min = k[i] / d;
         int i_max = k[i] / d + 1;
@@ -201,14 +218,18 @@ Eigen::VectorXcd  cal_L1(double E3_m, Eigen::MatrixXcd D, int N, int Npar, doubl
 
 std::complex<double> comput_Finf(double E3_m, Eigen::MatrixXcd D, int N, int Npar, double* P, double kcot(int, double*, int, double*), double eps) {
     std::complex<double> F = std::complex<double>(0, 0);
-    Eigen::VectorXcd L = cal_L(E3_m, D, N, Npar, P, kcot, eps);
-    double kmax = sqrt(pow((E3_m * E3_m + 1) / (2 * E3_m), 2) - 1);
-    double d = kmax / N;
+    Eigen::VectorXcd L = cal_L(E3_m, D, N , Npar, P, kcot, eps);
+    double kmax = compute_kmax(E3_m);
+    double d = compute_d(kmax, N);
     for (int i = 0;i < N;i++) {
         double k = i * d;
-        // std::cout << i << "   " << Pk(k, d) << "   " << L(i) << "   " << rho(k, E3_m) << std::endl;
+
         F += Pk(k, d) * L(i) * rho(k, E3_m);
+        // printf("%-18.10g%-18.10g%-18.10g%-18.10g%-18.10g%-18.10g\n",k,rho(k, E3_m).real(), rho(k, E3_m).imag(), L(i).real(), L(i).imag(),Pk(k, d)  );
+        // std::cout << k << "  "<<  rho(k, E3_m) << "  " << L(i) << Pk(k, d) << std::endl;
+        // std::cout << i << "   " << Pk(k, d) << "   " << L(i) << "   " << rho(k, E3_m) <<"  "<< F << std::endl;
     }
+    
     return F;
 }
 
