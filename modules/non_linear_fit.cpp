@@ -1622,8 +1622,9 @@ double* non_linear_fit_Nf_cov(int N, int* ensemble, double** x, double** y, int 
     if (fit_info.noderiv) {
         double init_chi2 = 1;
         double loop_chi2 = 20;
-        int iterations = 0;
-        while (fabs(init_chi2 - loop_chi2) > acc) {
+        // int iterations = 0;
+        // while (fabs(init_chi2 - loop_chi2) > acc) {
+        for (int iterations = 0; iterations<6 ;iterations++){
             init_chi2 = chi2;
             for (j = 0;j < Npar;j++) {
                 int dir = 1;
@@ -1655,8 +1656,8 @@ double* non_linear_fit_Nf_cov(int N, int* ensemble, double** x, double** y, int 
                 }
             }
             loop_chi2 = chi2;
-            iterations++;
-            if (iterations == 9) break;
+            // iterations++;
+            // if (iterations == 9) break;
         }
         if (verbosity > 2) {
             printf("final set: ");
