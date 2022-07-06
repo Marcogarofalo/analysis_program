@@ -270,18 +270,13 @@ double python_detQC_call(  double Estart,double Eend,int steps, double L, double
             
             
             PyTuple_SetItem(pArgs, 5, pkcot);
-//             if(!pkcot_params )
             pkcot_params = PyTuple_New(Nkcot);
             for(int i=0;i<Nkcot;i++){
                 PyTuple_SetItem(pkcot_params, i, PyFloat_FromDouble( kcot_params[i] )  );
             }
-        
             PyTuple_SetItem(pArgs, 6, pkcot_params);
             
             PyTuple_SetItem(pArgs, 7, pkiso);
-            
-            
-//             if(!pkiso_params )
             pkiso_params = PyTuple_New(Nkiso);
             for(int i=0;i<Nkiso;i++){
                 PyTuple_SetItem(pkiso_params, i, PyFloat_FromDouble( kiso_params[i]  ));
