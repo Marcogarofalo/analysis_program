@@ -1159,7 +1159,7 @@ int main(int argc, char** argv) {
 
     mysprintf(namefile, NAMESIZE, "kcot_1lev_and_kiso_const_3par", fit_info.Npar);
     // struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
-    // fit_info.band_range = { 5.65,7.2 };
+    // fit_info.band_range = { 5.0,7.0  };
     // print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, myen.size()-1, 0.05);
     fit_info.restore_default();
 
@@ -1227,7 +1227,7 @@ int main(int argc, char** argv) {
 
     mysprintf(namefile, NAMESIZE, "kcot_1par_1lev_and_kiso_pole_2par_cov", fit_info.Npar);
     // struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
-    // fit_info.band_range = { 5.65,7.40 };
+    // fit_info.band_range = { 5.0,7.0  };
     // print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, myen.size() - 1, 0.15);
     fit_info.restore_default();
 
@@ -1294,7 +1294,7 @@ int main(int argc, char** argv) {
     fit_info.compute_cov1_fit();
     mysprintf(namefile, NAMESIZE, "kcot_1par_1lev_and_kiso_pole_3par_cov", fit_info.Npar);
     // struct fit_result kcot_1lev_and_kiso_pole_3par_cov = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
-    // fit_info.band_range = { 5.65,7.2 };
+    // fit_info.band_range = { 5.0,7.0  };
     // print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par_cov, kcot_1lev_and_kiso_pole_3par_cov, 0, myen.size() - 1, 0.15);
     fit_info.restore_default();
 
@@ -1342,7 +1342,7 @@ int main(int argc, char** argv) {
 
     mysprintf(namefile, NAMESIZE, "kcot_1lev_and_kiso_const_1par", fit_info.Npar);
     struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
-    fit_info.band_range = { 5.65,7.2 };
+    // fit_info.band_range = { 5.0,7.0  };
     print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, myen.size() - 1, 0.05);
     fit_info.restore_default();
 
