@@ -813,6 +813,21 @@ double** covariance_non_linear_fit_Nf(int N, int* ensemble, double** x, double**
         }
         count += ensemble[n];
     }
+    count = 0;
+    for (n = 0;n < N;n++) {
+        for (e = 0;e < ensemble[n];e++) {
+            f = fun(n, Nvar, x[e + count], Npar, P);
+            double** fkk = der2_O2_fun_Nf_h(n, Nvar, x[e + count], Npar, P, fun, h);
+            for (j = 0;j < Npar;j++) {
+                for (k = j;k < Npar;k++) {
+                    alpha[j][k] -= (y[e + count][0] - f) * fkk[j][k] / (y[e + count][1] * y[e + count][1]);
+                }
+            }
+            free_2(Npar, fkk);
+
+        }
+        count += ensemble[n];
+    }
     for (j = 0;j < Npar;j++) {
         for (k = 0;k < j;k++)
             alpha[j][k] = alpha[k][j];
@@ -1624,7 +1639,7 @@ double* non_linear_fit_Nf_cov(int N, int* ensemble, double** x, double** y, int 
         double loop_chi2 = 20;
         // int iterations = 0;
         // while (fabs(init_chi2 - loop_chi2) > acc) {
-        for (int iterations = 0; iterations<6 ;iterations++){
+        for (int iterations = 0; iterations < 6;iterations++) {
             init_chi2 = chi2;
             for (j = 0;j < Npar;j++) {
                 int dir = 1;
