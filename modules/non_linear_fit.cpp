@@ -1637,22 +1637,59 @@ double* non_linear_fit_Nf_cov(int N, int* ensemble, double** x, double** y, int 
     if (fit_info.noderiv) {
         double init_chi2 = 1;
         double loop_chi2 = 20;
-        // int iterations = 0;
-        // while (fabs(init_chi2 - loop_chi2) > acc) {
-        for (int iterations = 0; iterations < 6;iterations++) {
-            init_chi2 = chi2;
-            for (j = 0;j < Npar;j++) {
-                int dir = 1;
-                double lmax = 100;
-                double scale = pow(2, iterations);
-                double lam = lambda / scale;
-                if (fit_info.Prange.size() == Npar)
-                    lam = fit_info.Prange[j] / scale;
-                // while (lam < lmax) {
-                if (verbosity > 2) {
-                    printf("current set: ");
-                    for (int l = 0;l < Npar;l++) printf("%g\t", P_tmp[l]); printf("\t scanning par=%d\n", j);
-                }
+        // // int iterations = 0;
+        // // while (fabs(init_chi2 - loop_chi2) > acc) {
+        // for (int iterations = 0; iterations < 6;iterations++) {
+        //     init_chi2 = chi2;
+        //     for (j = 0;j < Npar;j++) {
+        //         int dir = 1;
+        //         double lmax = 100;
+        //         double scale = pow(2, iterations);
+        //         double lam = lambda / scale;
+        //         if (fit_info.Prange.size() == Npar)
+        //             lam = fit_info.Prange[j] / scale;
+        //         // while (lam < lmax) {
+        //         if (verbosity > 2) {
+        //             printf("current set: ");
+        //             for (int l = 0;l < Npar;l++) printf("%g\t", P_tmp[l]); printf("\t scanning par=%d\n", j);
+        //         }
+        //         for (int dir = -1; dir < 2;dir++) {
+        //             P_tmp[j] = P[j] + dir * lam;
+        //             chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun, cov1);
+        //             while (chi2_tmp < chi2 && !isnan(chi2_tmp)) {
+        //                 if (verbosity > 1) printf("found a better chi2: dir %d new=%.8g  old=%.8g  param=%d lambda=%g P=%g   Pnew=%g\n",
+        //                     j, chi2_tmp, chi2, j, lam, P[j], P_tmp[j]);
+        //                 chi2 = chi2_tmp;
+        //                 P[j] = P_tmp[j];
+        //                 P_tmp[j] = P[j] + dir * lam;
+        //                 chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun, cov1);
+        //             }
+        //             // dir *= -1;
+        //             // if does not find a better chi2 in both directions
+        //             // if (dir == 1) lam = 1e+6;
+        //             P_tmp[j] = P[j];
+        //         }
+        //     }
+        //     loop_chi2 = chi2;
+        //     // iterations++;
+        //     // if (iterations == 9) break;
+        // }
+
+        for (j = 0;j < Npar;j++) {
+            int dir = 1;
+            double lmax = 100;
+            
+            // while (lam < lmax) {
+            if (verbosity > 2) {
+                printf("current set: ");
+                for (int l = 0;l < Npar;l++) printf("%g\t", P_tmp[l]); printf("\t scanning par=%d\n", j);
+            }
+            double lam = lambda ;
+            if (fit_info.Prange.size() == Npar)
+                lam = fit_info.Prange[j] ;
+            while (lam >h[j]){
+            // for (int iterations = 0; fit_info.Prange[j]/pow(10,iterations) > h[j];iterations++) {
+                // lam=fit_info.Prange[j]/pow(10,iterations);
                 for (int dir = -1; dir < 2;dir++) {
                     P_tmp[j] = P[j] + dir * lam;
                     chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun, cov1);
@@ -1664,12 +1701,15 @@ double* non_linear_fit_Nf_cov(int N, int* ensemble, double** x, double** y, int 
                         P_tmp[j] = P[j] + dir * lam;
                         chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun, cov1);
                     }
+                    
                     // dir *= -1;
                     // if does not find a better chi2 in both directions
                     // if (dir == 1) lam = 1e+6;
                     P_tmp[j] = P[j];
                 }
+                lam/=2.;
             }
+
             loop_chi2 = chi2;
             // iterations++;
             // if (iterations == 9) break;
