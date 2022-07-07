@@ -780,14 +780,16 @@ double rhs_E3_m_QC3_const_E2_QC2_1par(int n, int Nvar, double* x, int Npar, doub
     if (n == 0) {
         // // when we load find_2sol
         double r1 = python_detQC_call(3.01, 2e-4, 0, Lm, nnP, Nkcot, Pkcot, Nkiso, P);
-        double r2 = sqrt(P[1]);
-        r = std::min(r1, r2);
+        // double r2 = sqrt(P[1]);
+        // r = std::min(r1, r2);
+        r=r1;
         // printf("n=%d   r1=%g  r2=%g\n",n, r1,r2 );
     }
     else if (n == 1) {
-        double r1 = python_detQC_call(3.01, 2e-4, 0, Lm, nnP, Nkcot, Pkcot, Nkiso, P);
-        double r2 = sqrt(P[1]);
-        r = std::max(r1, r2);
+        double r1 = python_detQC_call(3.01, 2e-4, 1, Lm, nnP, Nkcot, Pkcot, Nkiso, P);
+        // double r2 = sqrt(P[1]);
+        // r = std::max(r1, r2);
+        r=r1;
         // printf("n=%d   r1=%g  r2=%g\n",n, r1,r2 );
     }
     else {
