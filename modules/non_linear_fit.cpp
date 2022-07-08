@@ -915,6 +915,90 @@ double** covariance_non_linear_fit_Nf(int N, int* ensemble, double** x, double**
 }
 
 
+bool compute_alpha(double* beta, double** alpha, int N, int* ensemble,
+    double** x, double** y, int Nvar, int Npar, double* P_tmp,
+    double fun(int, int, double*, int, double*),
+    double* der_fun_Nf_h(int, int, double*, int, double*, double(int, int, double*, int, double*), std::vector< double >), std::vector< double > h,
+    fit_type fit_info
+) {
+    int count = 0;
+    for (int n = 0;n < N;n++) {
+        for (int e = 0;e < ensemble[n];e++) {//printf("e=%d   n=%d   en[%d]=%d\n",e,n,n,ensemble[n]);
+            double f = fun(n, Nvar, x[e + count], Npar, P_tmp);
+            double* fk = der_fun_Nf_h(n, Nvar, x[e + count], Npar, P_tmp, fun, h);
+            if (fit_info.verbosity > 3) {
+                printf("n=%d     e=%d   fun=%g  derivative=\t", n, e, f);
+                for (int j = 0;j < Npar;j++) { printf("%g \t", fk[j]); }printf("\n");
+            }
+            for (int j = 0;j < Npar;j++) {
+                beta[j] += (y[e + count][0] - f) * fk[j] / (y[e + count][1] * y[e + count][1]);
+                for (int k = j;k < Npar;k++) {
+                    alpha[j][k] += fk[j] * fk[k] / (y[e + count][1] * y[e + count][1]);
+                }
+            }
+            free(fk);
+        }
+        count += ensemble[n];
+    }
+    if (fit_info.second_deriv == true) {
+        count = 0;
+        for (int n = 0;n < N;n++) {
+            for (int e = 0;e < ensemble[n];e++) {
+                double f = fun(n, Nvar, x[e + count], Npar, P_tmp);
+                double** fkk = der2_O2_fun_Nf_h(n, Nvar, x[e + count], Npar, P_tmp, fun, h);
+                for (int j = 0;j < Npar;j++) {
+                    for (int k = j;k < Npar;k++) {
+                        alpha[j][k] -= (y[e + count][0] - f) * fkk[j][k] / (y[e + count][1] * y[e + count][1]);
+                    }
+                }
+                free_2(Npar, fkk);
+
+            }
+            count += ensemble[n];
+        }
+    }
+    return  true;
+}
+
+bool compute_alpha_cov1(double* beta, double** alpha, int N, int* ensemble,
+    double** x, double** y, int Nvar, int Npar, double* P_tmp,
+    double fun(int, int, double*, int, double*),
+    double* der_fun_Nf_h(int, int, double*, int, double*, double(int, int, double*, int, double*), std::vector< double >), std::vector< double > h,
+    fit_type fit_info
+) {
+    int en_tot = 0;
+    for (int n = 0;n < N;n++)
+        for (int e = 0;e < ensemble[n];e++)
+            en_tot += 1;
+    int count = 0;
+    double *f_value=(double*) malloc(sizeof(double)*en_tot);
+    double **df_value=(double**) malloc(sizeof(double*)*en_tot);
+    for (int n = 0;n < N;n++) {
+        for (int e = 0;e < ensemble[n];e++) {
+            f_value[count] = fun(n, Nvar, x[e], Npar, P_tmp);
+            df_value[count] = der_fun_Nf_h(n, Nvar, x[e], Npar, P_tmp, fun, h);
+            count++;
+        }
+    }
+    for (int j = 0;j < Npar;j++) {
+        for (int i = 0;i < en_tot;i++)
+            for (int ii = 0;ii < en_tot;ii++)
+                beta[j] += (y[i][0] - f_value[i]) * fit_info.cov1[i][ii] * df_value[ii][j];
+
+
+        for (int k = j;k < Npar;k++) {
+            for (int i = 0;i < en_tot;i++)
+                for (int ii = 0;ii < en_tot;ii++)
+                    alpha[j][k] += df_value[j][i] * fit_info.cov1[i][ii] * df_value[ii][k];
+        }
+    }
+    for (int i = 0;i < en_tot;i++)
+        free(df_value[i]);
+    free(df_value);
+    free(f_value);
+    return  true;
+}
+
 /*********************************************************************************
  * x[ensemble][variable number] ,   y[ensemble][0=mean,1=error],
  * fun(index_function,Nvariables,variables[], Nparameters,parameters[])
@@ -944,12 +1028,21 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
     double* (*der_fun_Nf_h)(int, int, double*, int, double*, double(int, int, double*, int, double*), std::vector< double >);
     double (*chi2_fun)(int, int*, double**, double**, double*, int, int, double(int, int, double*, int, double*), fit_type);
 
+    bool (*alpha_fun)(double*, double**, int, int*,
+        double**, double**, int, int, double*,
+        double(int, int, double*, int, double*),
+        double* (int, int, double*, int, double*, double(int, int, double*, int, double*), std::vector< double >), std::vector< double >,
+        fit_type
+        );
+
     if (fit_info.covariancey) {
+        alpha_fun = compute_alpha_cov1;
         chi2_fun = compute_chi_non_linear_Nf_cov1_double;
         if (precision_sum > 0)    chi2_fun = compute_chi_non_linear_Nf_cov1_long_double;
 
     }
     else {
+        alpha_fun = compute_alpha;
         chi2_fun = compute_chi_non_linear_Nf;
 
         if (precision_sum == 1) {
@@ -1067,45 +1160,47 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
             nerror = 0;
             bool computed_alpha = false;
 
-            while (chi2_tmp >= chi2) {  //do {} while()   , at least one time is done. if chi is too big chi_tmp=chi+1 = chi 
+            while (chi2_tmp >= chi2) {  //do {} while() , at least one time is done. if chi is too big chi_tmp=chi+1 = chi 
                 if (!computed_alpha) {
-                    count = 0;
-                    for (n = 0;n < N;n++) {
-                        for (e = 0;e < ensemble[n];e++) {//printf("e=%d   n=%d   en[%d]=%d\n",e,n,n,ensemble[n]);
-                            f = fun(n, Nvar, x[e + count], Npar, P_tmp);
-                            fk = der_fun_Nf_h(n, Nvar, x[e + count], Npar, P_tmp, fun, h);
-                            if (verbosity > 3) {
-                                printf("n=%d     e=%d   fun=%g  derivative=\t", n, e, f);
-                                for (j = 0;j < Npar;j++) { printf("%g \t", fk[j]); }printf("\n");
-                            }
-                            for (j = 0;j < Npar;j++) {
-                                beta[j] += (y[e + count][0] - f) * fk[j] / (y[e + count][1] * y[e + count][1]);
-                                for (k = j;k < Npar;k++) {
-                                    alpha[j][k] += fk[j] * fk[k] / (y[e + count][1] * y[e + count][1]);
-                                }
-                            }
-                            free(fk);
-                        }
-                        count += ensemble[n];
-                    }
-                    if (fit_info.second_deriv == true) {
-                        count = 0;
-                        for (n = 0;n < N;n++) {
-                            for (e = 0;e < ensemble[n];e++) {
-                                f = fun(n, Nvar, x[e + count], Npar, P_tmp);
-                                double** fkk = der2_O2_fun_Nf_h(n, Nvar, x[e + count], Npar, P_tmp, fun, h);
-                                for (j = 0;j < Npar;j++) {
-                                    for (k = j;k < Npar;k++) {
-                                        alpha[j][k] -= (y[e + count][0] - f) * fkk[j][k] / (y[e + count][1] * y[e + count][1]);
-                                    }
-                                }
-                                free_2(Npar, fkk);
+                    // count = 0;
+                    // for (n = 0;n < N;n++) {
+                    //     for (e = 0;e < ensemble[n];e++) {//printf("e=%d   n=%d   en[%d]=%d\n",e,n,n,ensemble[n]);
+                    //         f = fun(n, Nvar, x[e + count], Npar, P_tmp);
+                    //         fk = der_fun_Nf_h(n, Nvar, x[e + count], Npar, P_tmp, fun, h);
+                    //         if (verbosity > 3) {
+                    //             printf("n=%d     e=%d   fun=%g  derivative=\t", n, e, f);
+                    //             for (j = 0;j < Npar;j++) { printf("%g \t", fk[j]); }printf("\n");
+                    //         }
+                    //         for (j = 0;j < Npar;j++) {
+                    //             beta[j] += (y[e + count][0] - f) * fk[j] / (y[e + count][1] * y[e + count][1]);
+                    //             for (k = j;k < Npar;k++) {
+                    //                 alpha[j][k] += fk[j] * fk[k] / (y[e + count][1] * y[e + count][1]);
+                    //             }
+                    //         }
+                    //         free(fk);
+                    //     }
+                    //     count += ensemble[n];
+                    // }
+                    // if (fit_info.second_deriv == true) {
+                    //     count = 0;
+                    //     for (n = 0;n < N;n++) {
+                    //         for (e = 0;e < ensemble[n];e++) {
+                    //             f = fun(n, Nvar, x[e + count], Npar, P_tmp);
+                    //             double** fkk = der2_O2_fun_Nf_h(n, Nvar, x[e + count], Npar, P_tmp, fun, h);
+                    //             for (j = 0;j < Npar;j++) {
+                    //                 for (k = j;k < Npar;k++) {
+                    //                     alpha[j][k] -= (y[e + count][0] - f) * fkk[j][k] / (y[e + count][1] * y[e + count][1]);
+                    //                 }
+                    //             }
+                    //             free_2(Npar, fkk);
 
-                            }
-                            count += ensemble[n];
-                        }
-                    }
-                    computed_alpha = true;
+                    //         }
+                    //         count += ensemble[n];
+                    //     }
+                    // }
+                    // computed_alpha = true;
+                    computed_alpha = alpha_fun(beta, alpha, N, ensemble,
+                        x, y, Nvar, Npar, P_tmp, fun, der_fun_Nf_h, h, fit_info);
                 }
 
                 for (j = 0;j < Npar;j++) {
