@@ -340,7 +340,71 @@ double* der_fun_h(int Nvar, double* x, int Npar, double* P, double fun(int, doub
     return df;
 }
 
+/////////////////////////////////////////////// /////////////////////////////////////////////// 
+///////////////////////////////////////////////   chi2      /////////////////////////////////////////////// 
+/////////////////////////////////////////////// /////////////////////////////////////////////// 
 
+double compute_chi_non_linear_Nf_cov1_double(int N, int* ensemble, double** x, double** y, double* P, int Nvar, int Npar, double fun(int, int, double*, int, double*), fit_type fit_info) {
+    double chi2 = 0, f, f1;
+    int e, n, count, e1, n1, count1;
+
+    int en_tot = 0;
+    for (n = 0;n < N;n++)
+        for (e = 0;e < ensemble[n];e++)
+            en_tot++;
+
+    double* tmp = (double*)malloc(sizeof(double) * en_tot);
+    count = 0;
+    for (n = 0;n < N;n++) {
+        for (e = 0;e < ensemble[n];e++) {
+            tmp[count] = fun(n, Nvar, x[count], Npar, P) - y[count][0];// f1(n,e,N,N1,Nvar,x1[count],Npar,Npar1,P,fun)-y1[count][0];
+            // printf("predicted=%g    latt=%g   n=%d  e=%d\n",fun(n, Nvar, x[count], Npar, P), y[count][0], n, e);
+            count++;
+        }
+    }
+
+    for (int i = 0;i < en_tot;i++)
+        chi2 += tmp[i] * fit_info.cov1[i][i] * tmp[i];
+
+    for (int i = 0;i < en_tot;i++)
+        for (int j = i + 1;j < en_tot;j++)
+            chi2 += 2. * tmp[i] * fit_info.cov1[i][j] * tmp[j];
+
+    free(tmp);
+    return chi2;
+}
+
+
+double compute_chi_non_linear_Nf_cov1_long_double(int N, int* ensemble, double** x, double** y, double* P, int Nvar, int Npar, double fun(int, int, double*, int, double*), fit_type fit_info) {
+    double chi2 = 0, f, f1;
+    int e, n, count, e1, n1, count1;
+
+    int en_tot = 0;
+    for (n = 0;n < N;n++)
+        for (e = 0;e < ensemble[n];e++)
+            en_tot++;
+
+    double* tmp = (double*)malloc(sizeof(double) * en_tot);
+    count = 0;
+    for (n = 0;n < N;n++) {
+        for (e = 0;e < ensemble[n];e++) {
+            tmp[count] = fun(n, Nvar, x[count], Npar, P) - y[count][0];// f1(n,e,N,N1,Nvar,x1[count],Npar,Npar1,P,fun)-y1[count][0];
+            // printf("predicted=%g    latt=%g   n=%d  e=%d\n",fun(n, Nvar, x[count], Npar, P), y[count][0], n, e);
+            count++;
+        }
+    }
+    long double ld = 0;
+    for (int i = 0;i < en_tot;i++)
+        ld += tmp[i] * fit_info.cov1[i][i] * tmp[i];
+
+    for (int i = 0;i < en_tot;i++)
+        for (int j = i + 1;j < en_tot;j++)
+            ld += 2. * tmp[i] * fit_info.cov1[i][j] * tmp[j];
+
+    chi2 = (double)ld;
+    free(tmp);
+    return chi2;
+}
 
 double compute_chi_non_linear(int ensemble, double** x, double** y, double* P, int Nvar, int Npar, double fun(int, double*, int, double*)) {
     double chi2 = 0, f;
@@ -879,13 +943,21 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
 
     double* (*der_fun_Nf_h)(int, int, double*, int, double*, double(int, int, double*, int, double*), std::vector< double >);
     double (*chi2_fun)(int, int*, double**, double**, double*, int, int, double(int, int, double*, int, double*), fit_type);
-    chi2_fun = compute_chi_non_linear_Nf;
 
-    if (precision_sum == 1) {
-        chi2_fun = compute_chi_non_linear_Nf_kahan;
+    if (fit_info.covariancey) {
+        chi2_fun = compute_chi_non_linear_Nf_cov1_double;
+        if (precision_sum > 0)    chi2_fun = compute_chi_non_linear_Nf_cov1_long_double;
+
     }
-    else if (precision_sum > 1) {
-        chi2_fun = compute_chi_non_linear_Nf_long;
+    else {
+        chi2_fun = compute_chi_non_linear_Nf;
+
+        if (precision_sum == 1) {
+            chi2_fun = compute_chi_non_linear_Nf_kahan;
+        }
+        else if (precision_sum > 1) {
+            chi2_fun = compute_chi_non_linear_Nf_long;
+        }
     }
 
 
@@ -946,21 +1018,21 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
     if (fit_info.noderiv) {
         double init_chi2 = 1;
         double loop_chi2 = 20;
-        for (j = 0;j < Npar;j++) {
-            int dir = 1;
-            double lmax = 100;
-            
-            // while (lam < lmax) {
-            if (verbosity > 2) {
-                printf("current set: ");
-                for (int l = 0;l < Npar;l++) printf("%g\t", P_tmp[l]); printf("\t scanning par=%d\n", j);
-            }
-            double lam = lambda ;
-            if (fit_info.Prange.size() == Npar)
-                lam = fit_info.Prange[j] ;
-            while (lam >h[j]){
-            // for (int iterations = 0; fit_info.Prange[j]/pow(10,iterations) > h[j];iterations++) {
-                // lam=fit_info.Prange[j]/pow(10,iterations);
+        int iterations = 0;
+        while (fabs(init_chi2 - loop_chi2) > acc) {
+            init_chi2 = chi2;
+            for (j = 0;j < Npar;j++) {
+                int dir = 1;
+                double lmax = 100;
+                double scale = pow(2, iterations);
+                double lam = lambda / scale;
+                if (fit_info.Prange.size() == Npar)
+                    lam = fit_info.Prange[j] / scale;
+                // while (lam < lmax) {
+                if (verbosity > 2) {
+                    printf("current set: ");
+                    for (int l = 0;l < Npar;l++) printf("%g\t", P_tmp[l]); printf("\t scanning par=%d\n", j);
+                }
                 for (int dir = -1; dir < 2;dir++) {
                     P_tmp[j] = P[j] + dir * lam;
                     chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun, fit_info);
@@ -972,18 +1044,15 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
                         P_tmp[j] = P[j] + dir * lam;
                         chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun, fit_info);
                     }
-                    
                     // dir *= -1;
                     // if does not find a better chi2 in both directions
                     // if (dir == 1) lam = 1e+6;
                     P_tmp[j] = P[j];
                 }
-                lam/=2.;
             }
-
             loop_chi2 = chi2;
-            // iterations++;
-            // if (iterations == 9) break;
+            iterations++;
+            if (iterations == 10) break;
         }
         if (verbosity > 2) {
             printf("final set: ");
@@ -1297,69 +1366,7 @@ double* guess_for_non_linear_fit_Nf(int N, int* ensemble, double** x, double** y
 
 
 
-double compute_chi_non_linear_Nf_cov1_double(int N, int* ensemble, double** x, double** y, double* P, int Nvar, int Npar, double fun(int, int, double*, int, double*), fit_type fit_info) {
-    double chi2 = 0, f, f1;
-    int e, n, count, e1, n1, count1;
-
-    int en_tot = 0;
-    for (n = 0;n < N;n++)
-        for (e = 0;e < ensemble[n];e++)
-            en_tot++;
-
-    double* tmp = (double*)malloc(sizeof(double) * en_tot);
-    count = 0;
-    for (n = 0;n < N;n++) {
-        for (e = 0;e < ensemble[n];e++) {
-            tmp[count] = fun(n, Nvar, x[count], Npar, P) - y[count][0];// f1(n,e,N,N1,Nvar,x1[count],Npar,Npar1,P,fun)-y1[count][0];
-            // printf("predicted=%g    latt=%g   n=%d  e=%d\n",fun(n, Nvar, x[count], Npar, P), y[count][0], n, e);
-            count++;
-        }
-    }
-
-    for (int i = 0;i < en_tot;i++)
-        chi2 += tmp[i] * fit_info.cov1[i][i] * tmp[i];
-
-    for (int i = 0;i < en_tot;i++)
-        for (int j = i + 1;j < en_tot;j++)
-            chi2 += 2. * tmp[i] * fit_info.cov1[i][j] * tmp[j];
-
-    free(tmp);
-    return chi2;
-}
-
-
-double compute_chi_non_linear_Nf_cov1_long_double(int N, int* ensemble, double** x, double** y, double* P, int Nvar, int Npar, double fun(int, int, double*, int, double*), fit_type fit_info) {
-    double chi2 = 0, f, f1;
-    int e, n, count, e1, n1, count1;
-
-    int en_tot = 0;
-    for (n = 0;n < N;n++)
-        for (e = 0;e < ensemble[n];e++)
-            en_tot++;
-
-    double* tmp = (double*)malloc(sizeof(double) * en_tot);
-    count = 0;
-    for (n = 0;n < N;n++) {
-        for (e = 0;e < ensemble[n];e++) {
-            tmp[count] = fun(n, Nvar, x[count], Npar, P) - y[count][0];// f1(n,e,N,N1,Nvar,x1[count],Npar,Npar1,P,fun)-y1[count][0];
-            // printf("predicted=%g    latt=%g   n=%d  e=%d\n",fun(n, Nvar, x[count], Npar, P), y[count][0], n, e);
-            count++;
-        }
-    }
-    long double ld=0;
-    for (int i = 0;i < en_tot;i++)
-        ld += tmp[i] * fit_info.cov1[i][i] * tmp[i];
-
-    for (int i = 0;i < en_tot;i++)
-        for (int j = i + 1;j < en_tot;j++)
-            ld += 2. * tmp[i] * fit_info.cov1[i][j] * tmp[j];
-
-    chi2=(double) ld;
-    free(tmp);
-    return chi2;
-}
-
-double compute_chi_non_linear_Nf_cov1(int N, int* ensemble, double** x, double** y, double* P, int Nvar, int Npar, double fun(int, int, double*, int, double*), double **cov1) {
+double compute_chi_non_linear_Nf_cov1(int N, int* ensemble, double** x, double** y, double* P, int Nvar, int Npar, double fun(int, int, double*, int, double*), double** cov1) {
     double chi2 = 0, f, f1;
     int e, n, count, e1, n1, count1;
 
@@ -1706,18 +1713,18 @@ double* non_linear_fit_Nf_cov(int N, int* ensemble, double** x, double** y, int 
         for (j = 0;j < Npar;j++) {
             int dir = 1;
             double lmax = 100;
-            
+
             // while (lam < lmax) {
             if (verbosity > 2) {
                 printf("current set: ");
                 for (int l = 0;l < Npar;l++) printf("%g\t", P_tmp[l]); printf("\t scanning par=%d\n", j);
             }
-            double lam = lambda ;
+            double lam = lambda;
             if (fit_info.Prange.size() == Npar)
-                lam = fit_info.Prange[j] ;
-            while (lam >h[j]){
-            // for (int iterations = 0; fit_info.Prange[j]/pow(10,iterations) > h[j];iterations++) {
-                // lam=fit_info.Prange[j]/pow(10,iterations);
+                lam = fit_info.Prange[j];
+            while (lam > h[j]) {
+                // for (int iterations = 0; fit_info.Prange[j]/pow(10,iterations) > h[j];iterations++) {
+                    // lam=fit_info.Prange[j]/pow(10,iterations);
                 for (int dir = -1; dir < 2;dir++) {
                     P_tmp[j] = P[j] + dir * lam;
                     chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun, cov1);
@@ -1729,13 +1736,13 @@ double* non_linear_fit_Nf_cov(int N, int* ensemble, double** x, double** y, int 
                         P_tmp[j] = P[j] + dir * lam;
                         chi2_tmp = chi2_fun(N, ensemble, x, y, P_tmp, Nvar, Npar, fun, cov1);
                     }
-                    
+
                     // dir *= -1;
                     // if does not find a better chi2 in both directions
                     // if (dir == 1) lam = 1e+6;
                     P_tmp[j] = P[j];
                 }
-                lam/=2.;
+                lam /= 2.;
             }
 
             loop_chi2 = chi2;
