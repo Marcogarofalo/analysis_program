@@ -1300,7 +1300,7 @@ int main(int argc, char** argv) {
 
     printf("//////////////////// kcot and kiso no coupling  fit   ////////////////////////////////////\n");
     // init_python_detQC();
-    init_python_detQC_kcot_kiso("kcot_1par", "kiso_1par", "find_2sol_QC3_pole");
+    init_python_detQC_kcot_kiso("kcot_1par", "kiso_1par", "find_2sol_QC3");
 
     fit_info.Npar = 1+1 + 1;
     fit_info.N = 2 + 1;
@@ -1331,13 +1331,15 @@ int main(int argc, char** argv) {
     fit_info.verbosity = 3;
     fit_info.repeat_start = 1;
 
-    fit_info.guess = { 3061,       9.14457, -0.155437};
+    fit_info.guess = { 2339.67        ,9.14108    ,-0.155492};
 
     // fit_info.mean_only = true;
     fit_info.precision_sum = 2;
 
-    fit_info.noderiv = true;
-    fit_info.Prange = { 5 , 0.0005, 0.005 };
+    // fit_info.noderiv = true;
+    // fit_info.Prange = { 5 , 0.0005, 0.005 };
+    // fit_info.h = {0.1, 1e-5, 1e-5};
+    
 
 
     mysprintf(namefile, NAMESIZE, "kcot_1lev_and_kiso_const_1par", fit_info.Npar);
