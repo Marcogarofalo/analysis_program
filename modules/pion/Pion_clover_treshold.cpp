@@ -306,7 +306,7 @@ struct fit_result fit_Mpi_fw_chiral_FVE_clover_treshold(struct database_file_jac
    //#pragma omp parallel for  private(tmp,i,count,n,e,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2,C,x,cov,cov_yx1,cov1)
    for (j=0;j<Njack;j++){
         //if (j==0){     }
-        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess ).P;
         //tmp=non_linear_fit_Nf_sigmax( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess );
         //tmp=non_linear_fit_Nf_sigmax_iterative( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess );
         //tmp=non_linear_fit_Nf_sigmax_covariance( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess ,cov_yx1);
@@ -534,7 +534,7 @@ printf("ensemble=%d  count=%d   \n",e,count);
    //#pragma omp parallel for  private(tmp,i,count,n,e,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2,C,x,cov,cov_yx1,cov1)
    for (j=0;j<Njack;j++){
         //if (j==0){     }
-        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess ).P;
         //tmp=non_linear_fit_Nf_sigmax( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess );
         //tmp=non_linear_fit_Nf_sigmax_iterative( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess );
         //tmp=non_linear_fit_Nf_sigmax_covariance( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess ,cov_yx1);

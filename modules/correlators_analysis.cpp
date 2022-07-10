@@ -329,7 +329,7 @@ int line_read_plateaux(char** option, const char* corr, int& tmin, int& tmax, in
             myscanf(3, (char*)"%d %d %d", &tmin, &tmax, &sep);
         }
     }
-    if (match > 1){
+    if (match > 1) {
         printf("multiple lines line:\n %s  %s\n", option[6], corr);
         exit(1);
     }
@@ -411,11 +411,10 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
     for (j = Njack - 1; j >= 0; j--) {
         // tmp=linear_fit( (tmax-tmin)/sep +1, x, y[j],  1,constant_fit_to_try );
 
-        fit[j] = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
-        if (fit_info.precision_sum > 0)
-            chi2j[j] = compute_chi_non_linear_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function) / (en_tot - Npar);
-        else
-            chi2j[j] = compute_chi_non_linear_Nf_kahan(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function) / (en_tot - Npar);
+
+        non_linear_fit_result output_fit = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
+        fit[j] = output_fit.P;
+        chi2j[j] = output_fit.chi2/ (en_tot - Npar);
         int max = 0;
 
         while (fabs(chi2j[j] - chi2j[Njack - 1]) / chi2j[Njack - 1] > fit_info.chi2_gap_jackboot && max < fit_info.guess_per_jack) {
@@ -427,14 +426,11 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
                 guess1[i] = guess[i] + guess[i] * mt_rand() / ((double)10 * mt_rand.max());
             guess1 = guess_for_non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess1, fit_info);
 
-            double* tmp_fit = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess1, fit_info);
-            double tmp_chi2;
-            if (fit_info.precision_sum > 0)
-                tmp_chi2 = compute_chi_non_linear_Nf(N, en, x[j], y[j], tmp_fit, Nvar, Npar, fit_info.function) / (en_tot - Npar);
-            else
-                tmp_chi2 = compute_chi_non_linear_Nf_kahan(N, en, x[j], y[j], tmp_fit, Nvar, Npar, fit_info.function) / (en_tot - Npar);
-            //             double tmp_chi2=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp_fit , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
-
+            
+            non_linear_fit_result tmp1 = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess1, fit_info);
+            double* tmp_fit =tmp1.P;
+            double tmp_chi2= tmp1.chi2;
+            
             if (tmp_chi2 < chi2j[j]) {
                 chi2j[j] = tmp_chi2;
                 for (int i = 0; i < Npar; i++)
@@ -481,7 +477,7 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
 
     free(en);
     free(guess);
-    fit_out.Npar=fit_info.Npar;
+    fit_out.Npar = fit_info.Npar;
     return fit_out;
 }
 
@@ -616,7 +612,7 @@ struct fit_result fit_fun_to_corr(char** option, struct kinematic kinematic_2pt,
 
     corr_counter++;
 
-    fit_out.Npar=fit_info.Npar;
+    fit_out.Npar = fit_info.Npar;
     return fit_out;
 }
 
@@ -735,7 +731,7 @@ struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic
      *plateaux_masses=open_file(kinematic_2pt.plateau_m_ll,"r");
 
     }*/
-    fit_out.Npar=fit_info.Npar;
+    fit_out.Npar = fit_info.Npar;
     return fit_out;
 }
 
@@ -794,7 +790,7 @@ struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinemat
       *plateaux_masses=open_file(kinematic_2pt.plateau_m_ll,"r");
 
      }*/
-    fit_out.Npar=fit_info.Npar;
+    fit_out.Npar = fit_info.Npar;
     return fit_out;
 }
 
@@ -841,9 +837,9 @@ void add_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack,
 }
 
 // r[t][jack]
-void add_one_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack,  struct fit_type fit_info, double** r) {
+void add_one_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack, struct fit_type fit_info, double** r) {
 
-    int correlators_out = ncorr_conf_jack +1;
+    int correlators_out = ncorr_conf_jack + 1;
     int Njack = fit_info.Njack;
 
     double**** corr_out = calloc_corr(Njack, correlators_out, file_head.l0);

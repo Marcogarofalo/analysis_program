@@ -228,8 +228,9 @@ struct fit_result fit_fK_of_M(struct database_file_jack  *jack_files,  struct he
        }
         if (j==0) guess=guess_for_non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );
 
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );
-        chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+        non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );
+        tmp= single_jack_fit.P;
+        chi2[j]=single_jack_fit.chi2/(en_tot-Npar);
         C[j]=covariance_non_linear_fit_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fit_info.function );      
         for(i=0;i<Npar;i++){
             r[i][j]=tmp[i];
@@ -340,8 +341,9 @@ struct fit_result global_fit_Omega_from_Mpi_MK(struct database_file_jack  *jack_
     }
         if (j==0) guess=guess_for_non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );
 
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );
-        chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+        non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );
+        tmp=single_jack_fit.P;
+        chi2[j]=single_jack_fit.chi2/(en_tot-Npar);
         C[j]=covariance_non_linear_fit_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fit_info.function );      
         for(i=0;i<Npar;i++){
             r[i][j]=tmp[i];

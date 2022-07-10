@@ -210,8 +210,9 @@ for (e=0;e<ensembles;e++){
             }
        }
  
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, two_lines_B0,guess );
-        chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, two_lines_B0  );
+        non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, two_lines_B0,guess );
+        tmp=single_jack_fit.P;
+        chi2[j]=single_jack_fit.chi2;
           
         for(i=0;i<Npar;i++){
             r[i][e][j]=tmp[i];
@@ -486,7 +487,8 @@ free(y); free(guess);
 
    double in;
    for (j=0;j<Njack;j++){
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, two_lines_B0,guess );
+        non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, two_lines_B0,guess );
+        tmp=single_jack_fit.P;
       //  chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, two_lines  );
         in=r1->MKMeV[j]*r1->w0MeV[j]*r1->MKMeV[j]*r1->w0MeV[j];
         out[0][j]=(in-tmp[0])/tmp[1];

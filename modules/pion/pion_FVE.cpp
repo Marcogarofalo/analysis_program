@@ -574,7 +574,7 @@ double **fit_Mpi_fw_chiral_FVE_P1_P3(struct database_file_jack  *jack_files,  st
             count+=en[n];
         }
 
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_chiral_FVE_P1_P3,guess );
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_chiral_FVE_P1_P3,guess ).P;
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, Mw2_fw_chiral_FVE_P1_P3  );
         if (j==Njack-1) printf("chi2/dof (Nb-1)=%g\n",chi2[j]/(en_tot-Npar));
               
@@ -752,7 +752,7 @@ double **fit_Mpi_fw_chiral_FVE(struct database_file_jack  *jack_files,  struct h
             count+=en[n];
         }
 
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_chiral_FVE,guess );
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_chiral_FVE,guess ).P;
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, Mw2_fw_chiral_FVE  );
               
         for(i=0;i<Npar;i++){
@@ -949,7 +949,7 @@ double **fit_Mpi_fw_chiral_FVE_prior(struct database_file_jack  *jack_files,  st
 
     
    for (j=0;j<Njack;j++){
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_chiral_FVE_prior,guess );
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_chiral_FVE_prior,guess ).P;
 
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, Mw2_fw_chiral_FVE_prior  );
               //printf("tmp[6]=%g\n",tmp[6]);
@@ -1125,7 +1125,7 @@ double **fit_Mpi_fw_chiral_FVE_P40_prior(struct database_file_jack  *jack_files,
    
    #pragma omp parallel for  private(tmp,i)  shared(N, en,x, y , Nvar,  Npar,guess,Njack,r,chi2)     
    for (j=0;j<Njack;j++){
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_chiral_FVE_prior,guess );
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_chiral_FVE_prior,guess ).P;
 
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, Mw2_fw_chiral_FVE_prior  );
               //printf("tmp[6]=%g\n",tmp[6]);
@@ -1281,7 +1281,7 @@ double **fit_Mpi_fw_chiral_FVE_flag(struct database_file_jack  *jack_files,  str
    
    #pragma omp parallel for  private(tmp,i)  shared(N, en,x, y , Nvar,  Npar,guess,Njack,r,chi2)    
    for (j=0;j<Njack;j++){
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_chiral_FVE,guess );
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_chiral_FVE,guess ).P;
 
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, Mw2_fw_chiral_FVE  );
               
@@ -1434,7 +1434,7 @@ double **fit_fw_of_Mw_chiral_FVE(struct database_file_jack  *jack_files,  struct
             count+=en[n];
         }  
  
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fw_of_Mw2_chiral_FVE,guess );
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fw_of_Mw2_chiral_FVE,guess ).P;
 
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fw_of_Mw2_chiral_FVE  );
              
@@ -1605,7 +1605,7 @@ double **fit_Mpi_fw_chiral_FVE_P40(struct database_file_jack  *jack_files,  stru
             }
             count+=en[n];
         }
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_chiral_FVE_P40,guess );
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_chiral_FVE_P40,guess ).P;
 
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, Mw2_fw_chiral_FVE_P40  );
               
@@ -1759,7 +1759,7 @@ double **fit_fw_of_Mw_chiral_FVE_P40(struct database_file_jack  *jack_files,  st
             }
             count+=en[n];
         }
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fw_of_Mw2_chiral_FVE_P40,guess );
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fw_of_Mw2_chiral_FVE_P40,guess ).P;
 
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fw_of_Mw2_chiral_FVE_P40  );
               

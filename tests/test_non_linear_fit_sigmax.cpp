@@ -51,7 +51,7 @@ int main(){
     //double  *non_linear_fit_Nf_sigmax(int N, int *ensemble ,double **x, double **sigmax, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess ){
 
     printf("only y errors\n");
-    double *P=non_linear_fit_Nf( N, en ,x, y , Nvar,  Npar,  f ,guess );
+    double *P=non_linear_fit_Nf( N, en ,x, y , Nvar,  Npar,  f ,guess ).P;
     for(int i=0;i<Npar;i++)
         printf("P%d=%g  \n",i,P[i]);
     int i,k,j;

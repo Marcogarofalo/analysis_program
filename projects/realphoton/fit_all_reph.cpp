@@ -3005,7 +3005,7 @@ void compute_systematics(char **argv, double **phys_point, struct fit_all fit_ch
     double *chi2j=(double*) malloc(sizeof(double)*Njack);
     
     for (j=0;j<Njack;j++){
-        fit1=non_linear_fit_Nf(1, en, xg , y[j] , 1,  2, FV_slope_1_xg ,guess);   
+        fit1=non_linear_fit_Nf(1, en, xg , y[j] , 1,  2, FV_slope_1_xg ,guess).P;   
         chi2j[j]=compute_chi_non_linear_Nf(1, en,xg, y[j],fit1 ,1/* Nvar*/, 2/* Npar*/, FV_slope_1_xg  )/(Nxg-2);
         fit[0][j]=fit1[0];
         fit[1][j]=fit1[1];
@@ -3024,7 +3024,7 @@ void compute_systematics(char **argv, double **phys_point, struct fit_all fit_ch
     free(C);
 
     for (j=0;j<Njack;j++){
-        fit1=non_linear_fit_Nf(1, en, xg , y[j] , 1,  2, FV_slope_0_xg ,guess);
+        fit1=non_linear_fit_Nf(1, en, xg , y[j] , 1,  2, FV_slope_0_xg ,guess).P;
         chi2j[j]=compute_chi_non_linear_Nf(1, en,xg, y[j],fit1 ,1/* Nvar*/, 2/* Npar*/, FV_slope_0_xg  )/(Nxg-2);
         fit[0][j]=fit1[0];
         fit[1][j]=fit1[1];
@@ -3043,7 +3043,7 @@ void compute_systematics(char **argv, double **phys_point, struct fit_all fit_ch
     free(C);
 
     for (j=0;j<Njack;j++){
-        fit1=non_linear_fit_Nf(1, en, xg , y[j] , 1,  2, FV_pole ,guess);   
+        fit1=non_linear_fit_Nf(1, en, xg , y[j] , 1,  2, FV_pole ,guess).P;   
         chi2j[j]=compute_chi_non_linear_Nf(1, en,xg, y[j],fit1 ,1/* Nvar*/, 2/* Npar*/, FV_pole  )/(Nxg-2);
         fit[0][j]=fit1[0];
         fit[1][j]=fit1[1];

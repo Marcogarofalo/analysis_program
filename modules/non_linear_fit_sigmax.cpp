@@ -291,7 +291,7 @@ double  *non_linear_fit_Nf_sigmax_iterative(int N, int *ensemble ,double **x, do
     double *P1;
 
     double h=0.0001;
-    double *P=non_linear_fit_Nf( N, ensemble ,x/*, sigmax*/, y , Nvar,  Npar,   fun , guess );  //first fit 
+    double *P=non_linear_fit_Nf( N, ensemble ,x/*, sigmax*/, y , Nvar,  Npar,   fun , guess ).P;  //first fit 
     double  **C=covariance_non_linear_fit_Nf(N, ensemble,x ,y ,P , Nvar,  Npar, fun );        
     double  chiP2=1;   
     while(chiP2> 0.001) {
@@ -315,7 +315,7 @@ double  *non_linear_fit_Nf_sigmax_iterative(int N, int *ensemble ,double **x, do
                 free(df);
             }
         }
-        P1=non_linear_fit_Nf( N, ensemble ,x/*, sigmax*/, y_tmp , Nvar,  Npar,   fun , guess );
+        P1=non_linear_fit_Nf( N, ensemble ,x/*, sigmax*/, y_tmp , Nvar,  Npar,   fun , guess ).P;
         
         chiP2=chi_parameters_square( Npar, P, P1,C);
        /* printf(" old:\n");

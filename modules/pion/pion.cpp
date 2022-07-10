@@ -329,7 +329,7 @@ double **fit_Mpi_fw(struct database_file_jack  *jack_files,  struct header *head
    
    
    for (j=0;j<Njack;j++){
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw ,guess);
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw ,guess).P;
 
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, Mw2_fw  );
               
@@ -452,7 +452,7 @@ double **fit_Mpi_fw_chiral_c2(struct database_file_jack  *jack_files,  struct he
    
    
    for (j=0;j<Njack;j++){
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_chiral_c2,guess );
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_chiral_c2,guess ).P;
 
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, Mw2_fw_chiral_c2  );
               
@@ -580,7 +580,7 @@ double **fit_Mpi_fw_polynomial(struct database_file_jack  *jack_files,  struct h
    
    
    for (j=0;j<Njack;j++){
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_polynomial ,guess);
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_polynomial ,guess).P;
 
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, Mw2_fw_polynomial  );
               
@@ -721,7 +721,7 @@ double **fit_Mpi_fw_polynomial_6(struct database_file_jack  *jack_files,  struct
     fprintf(gnuplotPipe,"set key spacing 1.2\n");
     */
    for (j=0;j<Njack;j++){
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_polynomial_6 ,guess);
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw_polynomial_6 ,guess).P;
 
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, Mw2_fw_polynomial_6  );
               
@@ -866,7 +866,7 @@ double **fit_Mpi_fw_Mss(struct database_file_jack  *jack_files,  struct header *
    
    
    for (j=0;j<Njack;j++){
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw,guess );
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, Mw2_fw,guess ).P;
 
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, Mw2_fw  );
               

@@ -85,14 +85,14 @@ int main() {
         fit_info.h = { 0.001, 0.001 };
         fit_info.lambda = 1e-4;
         fit_info.second_deriv = true;
-        double* P = non_linear_fit_Nf(fit_info.N, en, x[j], y[j], fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info);
+        double* P = non_linear_fit_Nf(fit_info.N, en, x[j], y[j], fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info).P;
         printf("min=%g   %g\n", P[0], P[1]);
         if (fabs(P[0] - 0.5) > 1e-4) { printf("the minimum should be ( 0.5, 0.3 )\n"); exit(1); }
         if (fabs(P[1] - 0.3) > 1e-4) { printf("the minimum should be ( 0.5, 0.3 )\n"); exit(1); }
 
         free(P);
         fit_info.noderiv = true;
-        P = non_linear_fit_Nf(fit_info.N, en, x[j], y[j], fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info);
+        P = non_linear_fit_Nf(fit_info.N, en, x[j], y[j], fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info).P;
         printf("min=%g   %g\n", P[0], P[1]);
         if (fabs(P[0] - 0.5) > 1e-4) { printf("the minimum should be ( 0.5, 0.3 )\n"); exit(1); }
         if (fabs(P[1] - 0.3) > 1e-4) { printf("the minimum should be ( 0.5, 0.3 )\n"); exit(1); }

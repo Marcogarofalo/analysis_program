@@ -284,7 +284,7 @@ struct fit_result fit_FA_pion_generic(struct database_file_reph_jack  *jack_file
         }
        }
         if (j==0) guess=guess_for_non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function ,guess );
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function ,guess ).P;
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fit_info.function )/(en_tot-Npar);
         C[j]=covariance_non_linear_fit_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fit_info.function );      
         for(i=0;i<Npar;i++){
@@ -410,7 +410,7 @@ struct fit_result fit_FAxg_pion_generic(struct database_file_reph_jack  *jack_fi
         //tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, FA_FV_chiral_continuum,guess );
         //chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, FA_FV_chiral_continuum  );
         if (j==0) guess=guess_for_non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function ,guess );
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function ,guess ).P;
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fit_info.function )/(en_tot-Npar);
         C[j]=covariance_non_linear_fit_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fit_info.function );      
       
@@ -557,7 +557,7 @@ struct fit_result fit_FAV_K(struct database_file_reph_jack  *jack_files,  struct
        }
         if (j==0){ guess=guess_for_non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );}
 
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess ).P;
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
         C[j]=covariance_non_linear_fit_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fit_info.function );      
         for(i=0;i<Npar;i++){
@@ -719,7 +719,7 @@ struct fit_result fit_FAV_D(struct database_file_reph_jack  *jack_files,  struct
         //chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, FA_FV_chiral_continuum  );
         if (j==0) guess=guess_for_non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );  
 
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess ).P;
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
         C[j]=covariance_non_linear_fit_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fit_info.function );      
         for(i=0;i<Npar;i++){
@@ -889,7 +889,7 @@ struct fit_result fit_FAV_Ds(struct database_file_reph_jack  *jack_files,  struc
        }
         if (j==0){ guess=guess_for_non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );}
 
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );
+        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess ).P;
         chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
         C[j]=covariance_non_linear_fit_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fit_info.function );      
         for(i=0;i<Npar;i++){

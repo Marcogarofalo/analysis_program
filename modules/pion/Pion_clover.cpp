@@ -322,7 +322,7 @@ printf("g=%g\n",guess[1] );
    #pragma omp parallel for  private(tmp,i,count,n,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2,C,x,cov,cov_yx1,cov1)
    for (j=0;j<Njack;j++){
         //if (j==0){     }
-        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess ).P;
         //tmp=non_linear_fit_Nf_sigmax( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess );
         //tmp=non_linear_fit_Nf_sigmax_iterative( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess );
         //tmp=non_linear_fit_Nf_sigmax_covariance( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess ,cov_yx1);
@@ -589,7 +589,7 @@ struct fit_result fit_Mpiw0s0_fwMpi4_chiral_FVE_clover(struct database_file_jack
       #pragma omp parallel for  private(tmp,i,count,n,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2,C,x,cov,cov_yx1,cov1)
     for (j=0;j<Njack;j++){
         //if (j==0){     }
-        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess ).P;
         //tmp=non_linear_fit_Nf_sigmax( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess );
         //tmp=non_linear_fit_Nf_sigmax_iterative( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess );
         //tmp=non_linear_fit_Nf_sigmax_covariance( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess ,cov_yx1);
@@ -820,7 +820,7 @@ struct fit_result fit_Mpi_fwMpi4_chiral_FVE_clover(struct database_file_jack  *j
    //#pragma omp parallel for  private(tmp,i,count,n,e,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2,C,x,cov,cov_yx1,cov1)
    for (j=0;j<Njack;j++){
         //if (j==0){     }
-        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess ).P;
         //tmp=non_linear_fit_Nf_sigmax( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess );
         //tmp=non_linear_fit_Nf_sigmax_iterative( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess );
         //tmp=non_linear_fit_Nf_sigmax_covariance( N, en ,x[j], sigmax, y[j] , Nvar,  Npar,  fit_info.function , guess ,cov_yx1);

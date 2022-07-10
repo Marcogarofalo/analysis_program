@@ -2392,8 +2392,9 @@ struct fit_result fit_data(char** argv, vector<cluster::IO_params> params, vecto
         for (int j = Njack - 1;j >= 0;j--) {
 
             double a = timestamp();
-            fit[j] = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
-            fit_out.chi2[j] = compute_chi_non_linear_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function) / (en_tot - Npar);
+            non_linear_fit_result fitj = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
+            fit[j]=fitj.P;
+            fit_out.chi2[j] = fitj.chi2 / (en_tot - Npar);
 
             if (fit_info.verbosity > 0) {
                 printf("jack =%d  chi2/dof=%g   chi2=%g   time=%g   \n", j, fit_out.chi2[j], fit_out.chi2[j] * (en_tot - Npar), timestamp() - a);
@@ -2416,8 +2417,9 @@ struct fit_result fit_data(char** argv, vector<cluster::IO_params> params, vecto
     }
     else if (fit_info.mean_only == true) {
         int j = Njack - 1;
-        fit[j] = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
-        fit_out.chi2[j] = compute_chi_non_linear_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function) / (en_tot - Npar);
+        non_linear_fit_result fitj = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
+        fit[j]=fitj.P;
+        fit_out.chi2[j] = fitj.chi2 / (en_tot - Npar);
         // for the other jackboot add a white noise to the mean
         for (j = Njack - 2;j >= 0;j--) {
             fit[j] = (double*)malloc(sizeof(double) * fit_info.Npar);

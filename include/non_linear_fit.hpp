@@ -132,6 +132,12 @@ EXTERN fit_type default_fit_info;
 struct fit_result malloc_fit(struct  fit_type  fit_info);
 void free_fit_result(struct  fit_type  fit_info, struct fit_result  out);
 
+////////////////////////////////////////
+struct non_linear_fit_result {
+    double* P;// [par][jack]
+    double chi2;
+};
+
 // x[ensemble][variable number] ,   y[ensemble][0=mean,1=error], fun(Nvariables,variables[], Nparameters,parameters[])
 //*funk(Nvariables,variables[], Nparameters,parameters[]) must return a vector[Nparameters] that contain the derivatives of fun respect to the parameters
 //the function return an array[Nparameter]  with the value of the parameters that minimise the chi2
@@ -143,7 +149,7 @@ double compute_chi_non_linear_Nf_cov1(int N, int* ensemble, double** x, double**
 
 //double  *non_linear_fit_Nf(int N, int *ensemble ,double **x, double **y ,int Nvar, int Npar,  double fun(int,int,double*,int,double*) ,double *guess , double lambda=0.001, double acc=0.001, double h=1e-5, std::vector<double>  Prange={},  int devorder=4 , int verbosity=1, int precision_sum=0);
 
-double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar, double fun(int, int, double*, int, double*), double* guess, fit_type fit_info = default_fit_info);
+non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar, double fun(int, int, double*, int, double*), double* guess, fit_type fit_info = default_fit_info);
 double* non_linear_fit_Nf_cov(int N, int* ensemble, double** x, double** y, int Nvar, int Npar, double fun(int, int, double*, int, double*), double* guess, fit_type fit_info, double** cov1);
 
 

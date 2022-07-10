@@ -448,13 +448,9 @@ struct fit_result fit_data(char** argv, vector<header_BSM> params, vector<data_B
 
     for (int j = Njack - 1;j >= 0;j--) {
 
-        fit[j] = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
-
-
-        fit_out.chi2[j] = compute_chi_non_linear_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function) / (en_tot - Npar);
-
-
-
+        non_linear_fit_result fitj = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
+        fit[j]=fitj.P;
+        fit_out.chi2[j] = fitj.chi2 / (en_tot - Npar);
     }
     for (int i = 0;i < Npar;i++)
         for (int j = 0;j < Njack;j++)
