@@ -1213,14 +1213,14 @@ int main(int argc, char** argv) {
             ie++;
         }
     }
-    // fit_info.noderiv = true;
-    // fit_info.guess={70.1133, 9.12926, -0.153529};
-    // fit_info.Prange = { 15, 0.01,  0.01 };
-    // fit_info.h = {1e-2, 1e-6,1e-6};
+    fit_info.noderiv = true;
+    fit_info.guess={70.1133, 9.12926, -0.153529};
+    fit_info.Prange = { 15, 0.01,  0.01 };
+    fit_info.h = {1e-2, 1e-6,1e-6};
 
-    fit_info.noderiv = false;
-    fit_info.h = {1e-1, 1e-5,1e-5};
-    fit_info.devorder = 2;
+    // fit_info.noderiv = false;
+    // fit_info.h = {1e-1, 1e-5,1e-5};
+    // fit_info.devorder = 2;
 
     fit_info.compute_cov1_fit();
     mysprintf(namefile, NAMESIZE, "kcot_1par_1lev_and_kiso_pole_2par_cov", fit_info.Npar);
