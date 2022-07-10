@@ -921,6 +921,12 @@ bool compute_alpha(double* beta, double** alpha, int N, int* ensemble,
     double* der_fun_Nf_h(int, int, double*, int, double*, double(int, int, double*, int, double*), std::vector< double >), std::vector< double > h,
     fit_type fit_info
 ) {
+    for (int j = 0;j < Npar;j++) {
+        beta[j] = 0;
+        for (int k = 0;k < Npar;k++) {
+            alpha[j][k] = 0;
+        }
+    }
     int count = 0;
     for (int n = 0;n < N;n++) {
         for (int e = 0;e < ensemble[n];e++) {//printf("e=%d   n=%d   en[%d]=%d\n",e,n,n,ensemble[n]);
@@ -966,13 +972,19 @@ bool compute_alpha_cov1(double* beta, double** alpha, int N, int* ensemble,
     double* der_fun_Nf_h(int, int, double*, int, double*, double(int, int, double*, int, double*), std::vector< double >), std::vector< double > h,
     fit_type fit_info
 ) {
+    for (int j = 0;j < Npar;j++) {
+        beta[j] = 0;
+        for (int k = 0;k < Npar;k++) {
+            alpha[j][k] = 0;
+        }
+    }
     int en_tot = 0;
     for (int n = 0;n < N;n++)
         for (int e = 0;e < ensemble[n];e++)
             en_tot += 1;
     int count = 0;
-    double *f_value=(double*) malloc(sizeof(double)*en_tot);
-    double **df_value=(double**) malloc(sizeof(double*)*en_tot);
+    double* f_value = (double*)malloc(sizeof(double) * en_tot);
+    double** df_value = (double**)malloc(sizeof(double*) * en_tot);
     for (int n = 0;n < N;n++) {
         for (int e = 0;e < ensemble[n];e++) {
             f_value[count] = fun(n, Nvar, x[e], Npar, P_tmp);
@@ -992,6 +1004,28 @@ bool compute_alpha_cov1(double* beta, double** alpha, int N, int* ensemble,
                     alpha[j][k] += df_value[j][i] * fit_info.cov1[i][ii] * df_value[ii][k];
         }
     }
+    if (fit_info.second_deriv == true) {
+        count = 0;
+        for (int n = 0;n < N;n++) {
+            for (int e = 0;e < ensemble[n];e++) {
+                double** fkk = der2_O2_fun_Nf_h(n, Nvar, x[e + count], Npar, P_tmp, fun, h);
+                int count1 = 0;
+                for (int n1 = 0;n1 < N;n1++) {
+                    for (int e1 = 0;e1 < ensemble[n1];e1++) {
+                        for (int j = 0;j < Npar;j++) {
+                            for (int k = j;k < Npar;k++) {
+                                alpha[j][k] -= (y[e1 + count1][0] - f_value[e1 + count1]) * fit_info.cov1[e1 + count1][e + count] * fkk[j][k];
+                            }
+                        }
+                    }
+                    count1 += ensemble[n1];
+                }
+                free_2(Npar, fkk);
+            }
+            count += ensemble[n];
+        }
+    }
+
     for (int i = 0;i < en_tot;i++)
         free(df_value[i]);
     free(df_value);
@@ -1308,12 +1342,7 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
             if (verbosity >= 2)  printf("\nres=%g  acc=%g  chi2=%g  \n", res, acc, chi2);
             error(res < 0, 2, "non_linear_fit", "The Levenberg-Marquardt accepted a configuration when the chi2 increased");
             chi2 = chi2_tmp;
-            for (j = 0;j < Npar;j++) {
-                beta[j] = 0;
-                for (k = 0;k < Npar;k++) {
-                    alpha[j][k] = 0;
-                }
-            }
+
             computed_alpha = false;
 
         }

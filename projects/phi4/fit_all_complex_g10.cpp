@@ -840,7 +840,7 @@ int main(int argc, char** argv) {
     print_fit_band_phi4(argv, jackall, fit_info, fit_info_m0, "deltaE2_m_QC2_1lev", "L", deltaE2_m_QC2_1lev, fit_m0, 0, 0, 1);
     free_fit_result(fit_info, deltaE2_m_QC2_1lev);
     fit_info.restore_default();
-    
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     printf("\n/////////////////////////////////   fit  E3 poly  //////////////////\n");
@@ -1149,7 +1149,7 @@ int main(int argc, char** argv) {
             ie++;
         }
     }
-    fit_info.guess={81.5648, 9.12952, 1455.65, -0.155717};
+    fit_info.guess = { 81.5648, 9.12952, 1455.65, -0.155717 };
     // fit_info.guess={95.0925, 9.12815, 1544, -0.155809};
 
     fit_info.compute_cov1_fit();
@@ -1186,19 +1186,19 @@ int main(int argc, char** argv) {
     }
 
     // fit_info.lambda = 0.001;
-    fit_info.acc = 0.01;
-   
+    fit_info.acc = 0.001;
+
     // //fit_info.Prange={1000,10000};
-   
+
     fit_info.verbosity = 3;
     fit_info.repeat_start = 1;
-    
+
     // fit_info.Prange = { 1, 0.01, 20, 0.1 };
     // fit_info.mean_only = true;
     fit_info.precision_sum = 2;
     // fit_info.mean_only = true;
     fit_info.covariancey = true;
-    
+
     fit_info.compute_cov_fit(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info);
     ie = 0; ie1 = 0;
     for (int n = 0;n < fit_info.N;n++) {
@@ -1213,13 +1213,15 @@ int main(int argc, char** argv) {
             ie++;
         }
     }
+    fit_info.guess = { 79.1953        ,9.12742   , -0.153186 };
+
     fit_info.noderiv = true;
-    fit_info.guess={70.1133, 9.12926, -0.153529};
     fit_info.Prange = { 15, 0.01,  0.01 };
-    fit_info.h = {1e-2, 1e-6,1e-6};
+    fit_info.h = { 1e-2, 1e-6,1e-6 };
+    fit_info.acc = 0.001;
 
     // fit_info.noderiv = false;
-    // fit_info.h = {1e-1, 1e-5,1e-5};
+    // fit_info.h = { 2e-1, 0.5e-6, 0.5e-6 };
     // fit_info.devorder = 2;
 
     fit_info.compute_cov1_fit();
