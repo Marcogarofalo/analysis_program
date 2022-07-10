@@ -229,7 +229,7 @@ double lhs_continuum_mpcac(int n, int e, int j, data_all  gjack, struct fit_type
 
 
 double lhs_continuum_MPS(int n, int e, int j, data_all  gjack, struct fit_type fit_info) {
-    return gjack.en[e].jack[0][j]*sqrt( gjack.en[e].jack[2][j]);//r0 M_PS
+    return gjack.en[e].jack[0][j] * sqrt(gjack.en[e].jack[2][j]);//r0 M_PS
 }
 
 double lhs_fit_two_func(int n, int e, int j, vector<header_BSM> params, vector<data_BSM> gjack, struct fit_type fit_info) {
@@ -449,7 +449,7 @@ struct fit_result fit_data(char** argv, vector<header_BSM> params, vector<data_B
     for (int j = Njack - 1;j >= 0;j--) {
 
         non_linear_fit_result fitj = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
-        fit[j]=fitj.P;
+        fit[j] = fitj.P;
         fit_out.chi2[j] = fitj.chi2 / (en_tot - Npar);
     }
     for (int i = 0;i < Npar;i++)

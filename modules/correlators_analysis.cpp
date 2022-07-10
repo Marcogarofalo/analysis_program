@@ -414,7 +414,7 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
 
         non_linear_fit_result output_fit = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
         fit[j] = output_fit.P;
-        chi2j[j] = output_fit.chi2/ (en_tot - Npar);
+        chi2j[j] = output_fit.chi2 / (en_tot - Npar);
         int max = 0;
 
         while (fabs(chi2j[j] - chi2j[Njack - 1]) / chi2j[Njack - 1] > fit_info.chi2_gap_jackboot && max < fit_info.guess_per_jack) {
@@ -426,11 +426,11 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
                 guess1[i] = guess[i] + guess[i] * mt_rand() / ((double)10 * mt_rand.max());
             guess1 = guess_for_non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess1, fit_info);
 
-            
+
             non_linear_fit_result tmp1 = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess1, fit_info);
-            double* tmp_fit =tmp1.P;
-            double tmp_chi2= tmp1.chi2;
-            
+            double* tmp_fit = tmp1.P;
+            double tmp_chi2 = tmp1.chi2;
+
             if (tmp_chi2 < chi2j[j]) {
                 chi2j[j] = tmp_chi2;
                 for (int i = 0; i < Npar; i++)
