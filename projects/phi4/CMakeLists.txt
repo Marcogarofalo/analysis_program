@@ -40,7 +40,9 @@ IF(WITH_PYTHON)
     target_link_libraries(fit_all_complex_g20 PUBLIC extra_func_phi4)    
 
 ENDIF()
-add_target_with_lib(integral_eq integral_eq.cpp)
+add_target_with_lib(integral_eq_g5_largeL integral_eq_g5_largeL.cpp)
+add_target_with_lib(integral_eq_g10 integral_eq_g10.cpp)
+add_target_with_lib(integral_eq_g20 integral_eq_g20.cpp)
 add_target_with_lib(checks_phi4 checks_phi4.cpp)
 
 
