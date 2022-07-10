@@ -1,10 +1,43 @@
+#define CONTROL
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <time.h>
+#include <string.h>
+#include <complex.h>
+
+#include <unistd.h>
+#include <sys/time.h>
+#include <fcntl.h>
+#include "global.hpp"
+
+
+#include "linear_fit.hpp"
+#include "non_linear_fit.hpp"
+#include "tower.hpp"
+
 double f(int n, int Nvar, double* x, int Npar, double* P) {
 
     return  P[0] * exp(x[0] * P[1]);
 }
 
+void test_res(non_linear_fit_result fit, int NE, int Npar) {
+    printf("chi2=%-18g     chi2/dof=%g\n", fit.chi2, fit.chi2 / (NE - Npar));
+    printf("min=%g   %g\n", fit.P[0], fit.P[1]);
+    double chi = sqrt(fit.chi2 / (NE - Npar));
+    double gchidof = 1.32723;
+    double gP0 = 1.75309e-05, dgP1 = 6.99e-06 * gchidof;
+    double gP1 = 0.0414701, dgP0 = 0.001104 * gchidof;
+    if (fabs(fit.P[0] - gP0) > 1e-4) { printf("the minimum should be ( %g, %g )\n", gP0, gP1); exit(1); }
+    if (fabs(fit.P[1] - gP1) > 1e-4) { printf("the minimum should be ( %g, %g )\n", gP0, gP1); exit(1); }
+    if (fabs(chi - gchidof) > 1e-4) { printf("chi2/dof should be  %g \n", gchidof * gchidof); exit(1); }
+    printf("the fit is correct!\n\n");
+}
+
+
 int main() {
-    int NE=13;
+    int NE = 13;
     double** y = double_malloc_2(NE, 2);
     double** x = double_malloc_2(NE, 2);
     double** sigmax = double_malloc_2(NE, 2);
@@ -29,23 +62,47 @@ int main() {
         fit_type fit_info;
         fit_info.Njack = 1;
         fit_info.N = 1;
-        fit_info.myen = { 1 };
+        fit_info.myen = std::vector<int>(NE);
+        for (int i = 0;i < fit_info.myen.size();i++) fit_info.myen[i] = i;
         auto myen = fit_info.myen;
         fit_info.Nvar = 1; // not used
         fit_info.Npar = 2; // what we are minimizing
-        fit_info.function = rhs_amu_common_a4;
         ////// allocation
         int* en = (int*)malloc(sizeof(int) * fit_info.N);// we need to init en and en_tot to allocate the other 
         for (int e = 0;e < fit_info.N; e++) { en[e] = myen.size(); }
         int en_tot = 0;      for (int n = 0;n < fit_info.N;n++) { en_tot += en[n]; }// total data to fit
 
         double* guess = (double*)malloc(sizeof(double) * fit_info.Npar);
-        guess[0]=1; guess[1]=0.001;
+        guess[0] = 1; guess[1] = 0.001;
         fit_info.verbosity = -1;
         fit_info.acc = 1e-6;
         fit_info.h = { 0.001, 0.001 };
         fit_info.lambda = 1e-4;
-        fit_info.second_deriv = true;
+
         fit_info.function = f;
+
+        non_linear_fit_result fit = non_linear_fit_Nf(fit_info.N, en, x, y, fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info);
+        test_res(fit, NE, fit_info.Npar);
+        free(fit.P);
+
+        // fit_info.noderiv = true;
+        // fit_info.acc = 1e-16;
+        // fit_info.Prange = { 1e-5, 0.01 };
+        // guess[0] = 1e-5; guess[1] = 0.04;
+        // fit_info.verbosity = 0;
+        // fit = non_linear_fit_Nf(fit_info.N, en, x, y, fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info);
+        // test_res(fit, NE, fit_info.Npar);
+
+// TOO SLOW TO CONVERGE
+        // fit_info.second_deriv = true;
+        // fit_info.verbosity = 2;
+        // fit_info.maxiter=1e+9;
+        // fit_info.acc = 1e-12;
+
+        // guess[0] = 1.e-05; guess[1] = 0.04;
+        // fit = non_linear_fit_Nf(fit_info.N, en, x, y, fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info);
+        // test_res(fit, NE, fit_info.Npar);
+
+
     }
 }

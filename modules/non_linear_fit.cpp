@@ -108,7 +108,7 @@ void fit_type::restore_default() {
     corr_id = std::vector<int>();
     devorder = 4;
     repeat_start = 1;
-
+    maxiter = 200;
     if (allocated_x) {
         for (int i = 0;i < Nvar;i++) {
             for (int j = 0;j < myen.size() * N;j++) {
@@ -1178,7 +1178,7 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
             }
             loop_chi2 = chi2;
             iterations++;
-            if (iterations == 10) break;
+            if (iterations == 10) { printf("\nmax iter reach!!\n\n"); break; }
         }
         if (verbosity > 2) {
             printf("final set: ");
@@ -1188,7 +1188,7 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
     else {
         while (res > acc) {
             chi2_tmp = chi2 + 10;
-            if (Niter > 200) { if (verbosity > 0) printf("Niter=%d of the Levenberg-Marquardt chi2 minimization: exeeds max number\n", Niter); break; }
+            if (Niter > fit_info.maxiter) { if (verbosity >= 0) printf("Niter=%d of the Levenberg-Marquardt chi2 minimization: exeeds max number\n", Niter); break; }
             Niter++;
             nerror = 0;
             bool computed_alpha = false;
