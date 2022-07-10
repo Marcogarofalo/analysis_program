@@ -452,9 +452,9 @@ for (e=0;e<ensembles;e++){
 
             }
        }
- 
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, two_lines,guess );
-        chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, two_lines  );
+        non_linear_fit_result single_jack_fit =non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, two_lines,guess );
+        tmp=single_jack_fit.P;
+        chi2[j]=single_jack_fit.chi2;
   
         for(i=0;i<Npar;i++){
             r[i][e][j]=tmp[i];
@@ -613,8 +613,9 @@ for (ms=0;ms<nks1;ms++){
        // tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, MK_chiral_FVE ,guess );
        // chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, MK_chiral_FVE  );
         if (j==0){ guess=guess_for_non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );    }
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );
-        chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+        non_linear_fit_result single_jack_fit =non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, fit_info.function,guess );
+        tmp=single_jack_fit.P;
+        chi2[j]=single_jack_fit.chi2/(en_tot-Npar);
         C[j]=covariance_non_linear_fit_Nf(N, en,x, y[j],tmp , Nvar,  Npar, fit_info.function );  
          
          if(j==Njack-1){
@@ -758,7 +759,8 @@ free(y1);free(rm1);
 
    double in;
    for (j=0;j<Njack;j++){
-        tmp=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, const_fit,guess );
+        non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x, y[j] , Nvar,  Npar, const_fit,guess );
+        tmp = single_jack_fit.P;
        // printf("j=%d    tmp=%g     MK=%g\n",j,tmp[0], y[j][0][0]);
       //  chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, two_lines  );
         /*in=r1->MKMeV[j]*r1->w0MeV[j]*r1->MKMeV[j]*r1->w0MeV[j];

@@ -85,14 +85,14 @@ int main() {
         fit_info.h = { 0.001, 0.001 };
         fit_info.lambda = 1e-4;
         fit_info.second_deriv = true;
-        double* P = non_linear_fit_Nf(fit_info.N, en, x[j], y[j], fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info);
+        double* P = non_linear_fit_Nf(fit_info.N, en, x[j], y[j], fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info).P;
         printf("min=%g   %g\n", P[0], P[1]);
         if (fabs(P[0] - 0.5) > 1e-4) { printf("the minimum should be ( 0.5, 0.3 )\n"); exit(1); }
         if (fabs(P[1] - 0.3) > 1e-4) { printf("the minimum should be ( 0.5, 0.3 )\n"); exit(1); }
 
         free(P);
         fit_info.noderiv = true;
-        P = non_linear_fit_Nf(fit_info.N, en, x[j], y[j], fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info);
+        P = non_linear_fit_Nf(fit_info.N, en, x[j], y[j], fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info).P;
         printf("min=%g   %g\n", P[0], P[1]);
         if (fabs(P[0] - 0.5) > 1e-4) { printf("the minimum should be ( 0.5, 0.3 )\n"); exit(1); }
         if (fabs(P[1] - 0.3) > 1e-4) { printf("the minimum should be ( 0.5, 0.3 )\n"); exit(1); }
@@ -108,7 +108,7 @@ int main() {
         fit_info.Nvar = 0; // it is important that the value is correct since we need to pass all the x
         fit_info.Npar = 2; // what we are minimizing
         fit_info.function = rhs_amu_common_a4;
-        fit_info.verbosity=0;
+        fit_info.verbosity = 0;
         fit_result min = minimize_functions_Nf(fit_info);
         printf("min=%g   %g\n", min.P[0][0], min.P[1][0]);
         if (fabs(min.P[0][0] - 0.5) > 1e-4) { printf("the minimum should be ( 0.5, 0.3 )\n"); exit(1); }

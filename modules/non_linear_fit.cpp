@@ -1039,8 +1039,7 @@ bool compute_alpha_cov1(double* beta, double** alpha, int N, int* ensemble,
  * the function return an array[Nparameter]  with the value of the parameters that minimise the chi2
  * devorder can be negative, in that case each parameter has is own h[i]=Parameter[i] *h
  ***********************************************************************************/
- //double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar,  double fun(int, int, double*, int, double*) , double* guess, double lambda, double acc, double h, std::vector< double > Prange, int devorder, int verbosity , int precision_sum )
-double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar, double fun(int, int, double*, int, double*), double* guess, fit_type fit_info) {
+non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar, double fun(int, int, double*, int, double*), double* guess, fit_type fit_info) {
 
 
     double lambda = fit_info.lambda;
@@ -1196,43 +1195,6 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
 
             while (chi2_tmp >= chi2) {  //do {} while() , at least one time is done. if chi is too big chi_tmp=chi+1 = chi 
                 if (!computed_alpha) {
-                    // count = 0;
-                    // for (n = 0;n < N;n++) {
-                    //     for (e = 0;e < ensemble[n];e++) {//printf("e=%d   n=%d   en[%d]=%d\n",e,n,n,ensemble[n]);
-                    //         f = fun(n, Nvar, x[e + count], Npar, P_tmp);
-                    //         fk = der_fun_Nf_h(n, Nvar, x[e + count], Npar, P_tmp, fun, h);
-                    //         if (verbosity > 3) {
-                    //             printf("n=%d     e=%d   fun=%g  derivative=\t", n, e, f);
-                    //             for (j = 0;j < Npar;j++) { printf("%g \t", fk[j]); }printf("\n");
-                    //         }
-                    //         for (j = 0;j < Npar;j++) {
-                    //             beta[j] += (y[e + count][0] - f) * fk[j] / (y[e + count][1] * y[e + count][1]);
-                    //             for (k = j;k < Npar;k++) {
-                    //                 alpha[j][k] += fk[j] * fk[k] / (y[e + count][1] * y[e + count][1]);
-                    //             }
-                    //         }
-                    //         free(fk);
-                    //     }
-                    //     count += ensemble[n];
-                    // }
-                    // if (fit_info.second_deriv == true) {
-                    //     count = 0;
-                    //     for (n = 0;n < N;n++) {
-                    //         for (e = 0;e < ensemble[n];e++) {
-                    //             f = fun(n, Nvar, x[e + count], Npar, P_tmp);
-                    //             double** fkk = der2_O2_fun_Nf_h(n, Nvar, x[e + count], Npar, P_tmp, fun, h);
-                    //             for (j = 0;j < Npar;j++) {
-                    //                 for (k = j;k < Npar;k++) {
-                    //                     alpha[j][k] -= (y[e + count][0] - f) * fkk[j][k] / (y[e + count][1] * y[e + count][1]);
-                    //                 }
-                    //             }
-                    //             free_2(Npar, fkk);
-
-                    //         }
-                    //         count += ensemble[n];
-                    //     }
-                    // }
-                    // computed_alpha = true;
                     computed_alpha = alpha_fun(beta, alpha, N, ensemble,
                         x, y, Nvar, Npar, P_tmp, fun, der_fun_Nf_h, h, fit_info);
                 }
@@ -1243,8 +1205,6 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
                         alpha_l[j][k] = alpha[k][j];
                     for (k = j + 1;k < Npar;k++)
                         alpha_l[j][k] = alpha[j][k];
-
-
                 }
 
                 free(P_tmp);
@@ -1326,9 +1286,11 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
                         for (j = 0;j < Npar;j++)      free(alpha[j]);
                         free(P_tmp);
                         free(alpha);free(beta);
-                        return P;
+                        non_linear_fit_result output;
+                        output.P = P;
+                        output.chi2 = chi2;
+                        return output;
                     }
-
                 }
 
 
@@ -1337,11 +1299,11 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
             lambda /= 10;
             for (j = 0;j < Npar;j++) {
                 P[j] = P_tmp[j];
-                //             printf("P[%d]= %f    \t",j,P[j]);
             }
+            chi2 = chi2_tmp;
+
             if (verbosity >= 2)  printf("\nres=%g  acc=%g  chi2=%g  \n", res, acc, chi2);
             error(res < 0, 2, "non_linear_fit", "The Levenberg-Marquardt accepted a configuration when the chi2 increased");
-            chi2 = chi2_tmp;
 
             computed_alpha = false;
 
@@ -1354,7 +1316,10 @@ double* non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar
     }
     free(P_tmp);
     free(alpha);free(beta);free(alpha_l);
-    return P;
+    non_linear_fit_result output;
+    output.P = P;
+    output.chi2 = chi2;
+    return output;
 }
 
 
@@ -1375,7 +1340,7 @@ double* guess_for_non_linear_fit_Nf(int N, int* ensemble, double** x, double** y
     //for(i=0;i<Npar;i++)
       //      guess[i]=((r/rm)-0.5)*2;
     if (fit_info.unstable) for (i = 0;i < Npar;i++) P[i] = guess[i];
-    else P = non_linear_fit_Nf(N, ensemble, x, y, Nvar, Npar, fun, guess, fit_info);
+    else P = non_linear_fit_Nf(N, ensemble, x, y, Nvar, Npar, fun, guess, fit_info).P;
     chi2 = compute_chi_non_linear_Nf(N, ensemble, x, y, P, Nvar, Npar, fun) / (en_tot - Npar);
     jmax = 3 + ((int)(chi2 * 2));
 
@@ -1395,7 +1360,7 @@ double* guess_for_non_linear_fit_Nf(int N, int* ensemble, double** x, double** y
             }
             // printf("\n");
             if (fit_info.unstable) for (i = 0;i < Npar;i++) P_tmp[i] = guess[i];
-            else P_tmp = non_linear_fit_Nf(N, ensemble, x, y, Nvar, Npar, fun, guess, fit_info);
+            else P_tmp = non_linear_fit_Nf(N, ensemble, x, y, Nvar, Npar, fun, guess, fit_info).P;
             chi2_tmp = compute_chi_non_linear_Nf(N, ensemble, x, y, P_tmp, Nvar, Npar, fun) / (en_tot - Npar);
             if (fit_info.verbosity > 2) printf("chi2=%.10f \tchi2_tmp=%.10f   dof=%f\n", chi2, chi2_tmp, en_tot - Npar);
             /*for(i=0;i<Npar;i++)
@@ -1428,7 +1393,7 @@ double* guess_for_non_linear_fit_Nf(int N, int* ensemble, double** x, double** y
                 }
                 // printf("\n");
                 if (fit_info.unstable) for (i = 0;i < Npar;i++) P_tmp[i] = guess[i];
-                else P_tmp = non_linear_fit_Nf(N, ensemble, x, y, Nvar, Npar, fun, guess, fit_info);
+                else P_tmp = non_linear_fit_Nf(N, ensemble, x, y, Nvar, Npar, fun, guess, fit_info).P;
                 chi2_tmp = compute_chi_non_linear_Nf(N, ensemble, x, y, P_tmp, Nvar, Npar, fun) / (en_tot - Npar);
                 if (fit_info.verbosity > 2) printf("chi2=%.10f \tchi2_tmp=%.10f   dof=%f\n", chi2, chi2_tmp, en_tot - Npar);
                 /*for(i=0;i<Npar;i++)
@@ -1461,7 +1426,7 @@ double* guess_for_non_linear_fit_Nf(int N, int* ensemble, double** x, double** y
                 }
                 // printf("\n");
                 if (fit_info.unstable) for (i = 0;i < Npar;i++) P_tmp[i] = guess[i];
-                else P_tmp = non_linear_fit_Nf(N, ensemble, x, y, Nvar, Npar, fun, guess, fit_info);
+                else P_tmp = non_linear_fit_Nf(N, ensemble, x, y, Nvar, Npar, fun, guess, fit_info).P;
                 chi2_tmp = compute_chi_non_linear_Nf(N, ensemble, x, y, P_tmp, Nvar, Npar, fun) / (en_tot - Npar);
                 if (fit_info.verbosity > 2) printf("chi2=%.10f \tchi2_tmp=%.10f   dof=%f\n", chi2, chi2_tmp, en_tot - Npar);
                 /*for(i=0;i<Npar;i++)

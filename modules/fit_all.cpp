@@ -143,7 +143,7 @@ void data_all::create_generalised_resampling() {
             en[e].Nobs = Nobs;
             en[e].Njack = jack_tot;
         }
-        return ;
+        return;
     }
 
 }
@@ -277,7 +277,7 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
     for (int i = 0;i < fit_info.Npar;i++) {
         for (int k = 0;k < i;k++)
             cov[i][k] /= sqrt(cov[i][i] * cov[k][k]);
-        for (int k = i+1;k < fit_info.Npar;k++)
+        for (int k = i + 1;k < fit_info.Npar;k++)
             cov[i][k] /= sqrt(cov[i][i] * cov[k][k]);
     }
     for (int i = 0;i < fit_info.Npar;i++) {
@@ -384,14 +384,10 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
         for (int j = Njack - 1;j >= 0;j--) {
 
             double a = timestamp();
-            if (fit_info.covariancey) {
-                fit[j] = non_linear_fit_Nf_cov(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info, fit_info.cov1);
-                fit_out.chi2[j] = compute_chi_non_linear_Nf_cov1(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function, fit_info.cov1) / (en_tot - Npar);
-            }
-            else {
-                fit[j] = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
-                fit_out.chi2[j] = compute_chi_non_linear_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function) / (en_tot - Npar);
-            }
+            non_linear_fit_result single_jack_fit = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
+            fit[j] = single_jack_fit.P;
+            fit_out.chi2[j] = single_jack_fit.chi2/(en_tot - Npar);
+
             if (fit_info.verbosity > 0) {
                 printf("jack =%d  chi2/dof=%g   chi2=%g   time=%g   \nfinal set: ", j, fit_out.chi2[j], fit_out.chi2[j] * (en_tot - Npar), timestamp() - a);
                 if (fit_info.verbosity > 1) {
@@ -406,14 +402,10 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
     }
     else if (fit_info.mean_only == true) {
         int j = Njack - 1;
-        if (fit_info.covariancey) {
-            fit[j] = non_linear_fit_Nf_cov(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info, fit_info.cov1);
-            fit_out.chi2[j] = compute_chi_non_linear_Nf_cov1(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function, fit_info.cov1) / (en_tot - Npar);
-        }
-        else {
-            fit[j] = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
-            fit_out.chi2[j] = compute_chi_non_linear_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function) / (en_tot - Npar);
-        }
+        non_linear_fit_result single_jack_fit = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
+        fit[j] = single_jack_fit.P;
+        fit_out.chi2[j] = single_jack_fit.chi2/(en_tot - Npar);
+        
         // for the other jackboot add a white noise to the mean
         double** C = covariance_non_linear_fit_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function);
         for (int ip = 0; ip < Npar;ip++)

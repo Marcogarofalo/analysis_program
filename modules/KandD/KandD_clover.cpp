@@ -530,10 +530,11 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
          
          
          for (j=0;j<Njack;j++){
-             tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+             non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+             tmp=single_jack_fit.P;
              //tmp=non_linear_fit_Nf_sigmax(N, en,x[j], sigmax, y[j] , Nvar,  Npar, two_lines,guess );
              //tmp=non_linear_fit_Nf_sigmax_iterative(N, en,x[j], sigmax, y[j] , Nvar,  Npar, two_lines,guess );
-             chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, two_lines  );
+             chi2[j]=single_jack_fit.chi2;
              
              
              for(i=0;i<Npar;i++){
@@ -673,10 +674,11 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
              
              
              //if (j==0){    }
-             tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+             non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+             tmp=single_jack_fit.P;
              //tmp=non_linear_fit_Nf_sigmax(N, en,x[j], sigmax, y[j] , Nvar,  Npar, fit_info.function,guess );
              //tmp=non_linear_fit_Nf_sigmax_iterative(N, en,x[j], sigmax, y[j] , Nvar,  Npar, fit_info.function,guess );
-             chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+             chi2[j]=single_jack_fit.chi2/(en_tot-Npar);
              tmp_chi[j]+=chi2[j];
              C[j]=covariance_non_linear_fit_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function );  
              
@@ -856,7 +858,8 @@ static struct fit_result close_fit( int N, struct header *head ,int Njack, struc
      
      double in;
      for (j=0;j<Njack;j++){
-         tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+         non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+         tmp=single_jack_fit.P;
          
          //  chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, two_lines  );
          //in=r1->MKMeV[j]*(mud.w0[j]/197.326963)*r1->MKMeV[j]*mud.w0[j]/197.326963;
@@ -992,8 +995,9 @@ void interpolate_at_fixed_a(fit_type fit_info, int nk, int Npar, int Nvar, int N
     
     double in;
     for (int j=0;j<Njack;j++){
-        double *tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
         
+        non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+        double *tmp=single_jack_fit.P;
         //  chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, two_lines  );
         //in=r1->MKMeV[j]*(mud.w0[j]/197.326963)*r1->MKMeV[j]*mud.w0[j]/197.326963;
         if (meson=="K") {
@@ -1162,10 +1166,11 @@ double **fit_MK_fK_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
         
         
         for (j=0;j<Njack;j++){
-            tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+            non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+            tmp=single_jack_fit.P;
             //tmp=non_linear_fit_Nf_sigmax(N, en,x[j], sigmax, y[j] , Nvar,  Npar, two_lines,guess );
             //tmp=non_linear_fit_Nf_sigmax_iterative(N, en,x[j], sigmax, y[j] , Nvar,  Npar, two_lines,guess );
-            chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, two_lines  );
+            chi2[j]=single_jack_fit.chi2;
             
             
             for(i=0;i<Npar;i++){
@@ -1306,10 +1311,11 @@ double **fit_MK_fK_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
             
             
             //if (j==0){    }
-            tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+            non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+            tmp=single_jack_fit.P;
             //tmp=non_linear_fit_Nf_sigmax(N, en,x[j], sigmax, y[j] , Nvar,  Npar, fit_info.function,guess );
             //tmp=non_linear_fit_Nf_sigmax_iterative(N, en,x[j], sigmax, y[j] , Nvar,  Npar, fit_info.function,guess );
-            chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+            chi2[j]= single_jack_fit.chi2/(en_tot-Npar);
             tmp_chi[j]+=chi2[j];
             C[j]=covariance_non_linear_fit_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function );  
             
@@ -1510,8 +1516,8 @@ double **fit_MK_fK_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
     
     double in;
     for (j=0;j<Njack;j++){
-        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
-        
+        non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+        tmp= single_jack_fit.P;
         //  chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, two_lines  );
         //in=r1->MKMeV[j]*(mud.w0[j]/197.326963)*r1->MKMeV[j]*mud.w0[j]/197.326963;
         in=r1->MKMeV[j]*mud.w0[j]/197.326963;
@@ -1683,7 +1689,8 @@ double **fit_Mpi_MK_chiral_FVE_clover(struct database_file_jack  *jack_files,  s
         
         
         for (j=0;j<Njack;j++){
-            tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+            non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+            tmp= single_jack_fit.P;
             //tmp=non_linear_fit_Nf_sigmax(N, en,x[j], sigmax, y[j] , Nvar,  Npar, two_lines,guess );
             //tmp=non_linear_fit_Nf_sigmax_iterative(N, en,x[j], sigmax, y[j] , Nvar,  Npar, two_lines,guess );
             chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, two_lines  );
@@ -1833,10 +1840,11 @@ double **fit_Mpi_MK_chiral_FVE_clover(struct database_file_jack  *jack_files,  s
             
             
             //if (j==0){    }
-            tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+            non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+            tmp= single_jack_fit.P;
             //tmp=non_linear_fit_Nf_sigmax(N, en,x[j], sigmax, y[j] , Nvar,  Npar, fit_info.function,guess );
             //tmp=non_linear_fit_Nf_sigmax_iterative(N, en,x[j], sigmax, y[j] , Nvar,  Npar, fit_info.function,guess );
-            chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+            chi2[j]= single_jack_fit.chi2/(en_tot-Npar);
             tmp_chi[j]+=chi2[j];
             C[j]=covariance_non_linear_fit_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function );  
             
@@ -2028,7 +2036,8 @@ double **fit_Mpi_MK_chiral_FVE_clover(struct database_file_jack  *jack_files,  s
     
     double in;
     for (j=0;j<Njack;j++){
-        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+        non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+        tmp= single_jack_fit.P;
         
         //  chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, two_lines  );
         //in=r1->MKMeV[j]*(mud.w0[j]/197.326963)*r1->MKMeV[j]*mud.w0[j]/197.326963;
@@ -3018,12 +3027,14 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
         
         for (j=0;j<Njack;j++){
             if (Npar==2 || Npar==4 ){
-                tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
-                chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, two_lines  );
+                non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+                tmp= single_jack_fit.P;
+                chi2[j]= single_jack_fit.chi2;
             }
             else if (Npar==3 || Npar==6 ){
-                tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_parabolas,guess );
-                chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, two_parabolas  );
+                non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_parabolas,guess );
+                tmp= single_jack_fit.P;
+                chi2[j]= single_jack_fit.chi2;
             }
             if (j==Njack-1){printf("myen=%d   chi2=%g\n",myen[e],chi2[j]);  }
             //tmp=non_linear_fit_Nf_sigmax(N, en,x[j], sigmax, y[j] , Nvar,  Npar, two_lines,guess );
@@ -3203,10 +3214,11 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
             
             
             //if (j==0){    }
-            tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+            non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+            tmp= single_jack_fit.P;
             //tmp=non_linear_fit_Nf_sigmax(N, en,x[j], sigmax, y[j] , Nvar,  Npar, fit_info.function,guess );
             //tmp=non_linear_fit_Nf_sigmax_iterative(N, en,x[j], sigmax, y[j] , Nvar,  Npar, fit_info.function,guess );
-            chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+            chi2[j]= single_jack_fit.chi2/(en_tot-Npar);
             C[j]=covariance_non_linear_fit_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function );  
             tmp_chi2[j]+=chi2[j];
             
@@ -3408,14 +3420,16 @@ double **fit_MD_fD_chiral_FVE_clover(struct database_file_jack  *jack_files,  st
         in=r1->MDMeV[j]*mud.w0[j]/197.326963;
         
         if (Npar==2 || Npar==4){
-            tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+            non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+            tmp= single_jack_fit.P;
             out[0][j]=(in-tmp[0])/tmp[1];
             if (N>1)
                 out[1][j]=tmp[2]+tmp[3]*out[0][j];
             
         }
         else if (Npar==3 || Npar==6){
-            tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_parabolas,guess );
+            non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_parabolas,guess );
+            tmp= single_jack_fit.P;
             double c=tmp[0]-in;
             double b=tmp[1], a=tmp[2];
             out[0][j]=-b+sqrt(b*b-4.*a*c);            
@@ -3568,8 +3582,9 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
             
             for (j=0;j<Njack;j++){
                 
-                tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
-                chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, two_lines  );
+                non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+                tmp= single_jack_fit.P;
+                chi2[j]= single_jack_fit.chi2;
                 
                 
                 MDs_mc[e][ik2-ik2_min][0][j]=tmp[0]+result_ms.ms[j]*(mud.w0[j]/197.326963)*tmp[1];
@@ -3696,10 +3711,11 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
         
         
         for (j=0;j<Njack;j++){
-            tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+            non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+            tmp= single_jack_fit.P;
             //tmp=non_linear_fit_Nf_sigmax(N, en,x[j], sigmax, y[j] , Nvar,  Npar, two_lines,guess );
             //tmp=non_linear_fit_Nf_sigmax_iterative(N, en,x[j], sigmax, y[j] , Nvar,  Npar, two_lines,guess );
-            chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, two_lines  );
+            chi2[j]= single_jack_fit.chi2;
             
             
             for(i=0;i<Npar;i++){
@@ -3840,10 +3856,11 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
             
             
             //if (j==0){    }
-            tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+            non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, fit_info.function,guess );
+            tmp= single_jack_fit.P;
             //tmp=non_linear_fit_Nf_sigmax(N, en,x[j], sigmax, y[j] , Nvar,  Npar, fit_info.function,guess );
             //tmp=non_linear_fit_Nf_sigmax_iterative(N, en,x[j], sigmax, y[j] , Nvar,  Npar, fit_info.function,guess );
-            chi2[j]=compute_chi_non_linear_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function  )/(en_tot-Npar);
+            chi2[j]= single_jack_fit.chi2/(en_tot-Npar);
             C[j]=covariance_non_linear_fit_Nf(N, en,x[j], y[j],tmp , Nvar,  Npar, fit_info.function );  
             tmp_chi2[j]+=chi2[j];
             
@@ -4010,7 +4027,8 @@ double **fit_MDs_fDs_chiral_FVE_clover(struct database_file_jack  *jack_files,  
     
     double in;
     for (j=0;j<Njack;j++){
-        tmp=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+        non_linear_fit_result single_jack_fit=non_linear_fit_Nf(N, en,x[j], y[j] , Nvar,  Npar, two_lines,guess );
+        tmp= single_jack_fit.P;
         
         //  chi2[j]=compute_chi_non_linear_Nf(N, en,x, y[j],tmp , Nvar,  Npar, two_lines  );
         in=r1->MDsMeV[j]*mud.w0[j]/197.326963;
