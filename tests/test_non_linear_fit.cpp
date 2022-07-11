@@ -80,10 +80,22 @@ int main() {
         fit_info.lambda = 1e-4;
 
         fit_info.function = f;
-
+        printf("testing the LM fit\n");
+        fit_info.verbosity = 0;
         non_linear_fit_result fit = non_linear_fit_Nf(fit_info.N, en, x, y, fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info);
         test_res(fit, NE, fit_info.Npar);
         free(fit.P);
+
+        printf("testing the NM fit\n");
+        fit_info.NM = true;
+        fit_info.verbosity = 0;
+        guess[0] = 1.7e-5; guess[1] = 0.041;
+        fit_info.h = { 1e-6, 0.0001 };
+
+        fit = non_linear_fit_Nf(fit_info.N, en, x, y, fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info);
+        test_res(fit, NE, fit_info.Npar);
+        free(fit.P);
+
 
         // fit_info.noderiv = true;
         // fit_info.acc = 1e-16;

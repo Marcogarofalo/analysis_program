@@ -83,6 +83,11 @@ struct  fit_type {
     bool covariancey = false;
     bool second_deriv = false;
 
+    double alpha=1;
+    double gamma=2;
+    double rho=0.5;
+    double sigma=0.5;
+
     std::vector<int> corr_id = {};
     std::vector<double>  Prange = {};
     std::vector<double>  guess = {};

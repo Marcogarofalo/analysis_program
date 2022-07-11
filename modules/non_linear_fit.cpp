@@ -19,6 +19,7 @@
 #include "global.hpp"
 #include <random>
 #include "fit_all.hpp"
+#include "sorting.hpp"
 
 
 void fit_type::compute_cov_fit(char** argv, data_all gjack, double lhs_fun(int, int, int, data_all, struct fit_type), struct fit_type fit_info) {
@@ -125,6 +126,11 @@ void fit_type::restore_default() {
 
     mean_only = false;
     NM = false;
+    alpha = 1;
+    gamma = 2;
+    rho = 0.5;
+    sigma = 0.5;
+
     unstable = false; // if true avoid thing that may return error
     noderiv = false;
 
@@ -1034,6 +1040,79 @@ bool compute_alpha_cov1(double* beta, double** alpha, int N, int* ensemble,
     return  true;
 }
 
+void sort_NM(double* chi2s1, double** points1, double* chi2s, double** points, int Npar, int* order) {
+    for (int i = 0;i < Npar + 1;i++)
+        order[i] = i;
+    quickSort(order, chi2s, 0, Npar);
+    for (int i = 0;i < Npar + 1;i++) {
+        // printf("%d order=%d   chi2s=%g\n", i, order[i], chi2s[i]);
+        chi2s1[i] = chi2s[order[i]];
+        for (int j = 0;j < Npar;j++)
+            points1[i][j] = points[order[i]][j];
+    }
+}
+void compute_centroid_NM(double* centroid, double** points, int Npar) {
+    for (int j = 0;j < Npar;j++) {
+        centroid[j] = 0;
+        for (int i = 0;i < Npar;i++) {// apart the the last point
+            centroid[j] += points[i][j];
+        }
+        centroid[j] /= (double)(Npar);
+    }
+}
+
+void compute_reflected_NM(double* reflected, double* centroid, double** points, int Npar, double alpha) {
+    for (int j = 0;j < Npar;j++) {
+        reflected[j] = centroid[j] + alpha * (centroid[j] - points[Npar][j]);
+    }
+}
+
+void compute_expanded_NM(double* expanded, double* reflected, double* centroid, int Npar, double gamma) {
+    for (int j = 0;j < Npar;j++) {
+        expanded[j] = centroid[j] + gamma * (reflected[j] - centroid[j]);
+    }
+}
+
+void compute_contracted_out_NM(double* co, double* reflected, double* centroid, int Npar, double rho) {
+    for (int j = 0;j < Npar;j++) {
+        co[j] = centroid[j] + rho * (reflected[j] - centroid[j]);
+    }
+}
+
+void compute_contracted_in_NM(double* ci, double* last, double* centroid, int Npar, double rho) {
+    for (int j = 0;j < Npar;j++) {
+        ci[j] = centroid[j] + rho * (last[j] - centroid[j]);
+    }
+}
+
+void shrink_NM(double** points, int Npar, double sigma) {
+    for (int i = 1; i < Npar + 1;i++) {
+        for (int j = 0;j < Npar;j++) {
+            points[i][j] = points[0][j] + sigma * (points[i][j] - points[0][j]);
+        }
+    }
+
+}
+
+double compute_sd_NM(double* centroid, double** points, int Npar) {
+    double sd = 0;
+    compute_centroid_NM(centroid, points, Npar);
+
+    for (int j = 0;j < Npar;j++)
+        centroid[j] = 0;
+    for (int j = 0;j < Npar;j++) {
+        for (int i = 0;i < Npar + 1;i++)
+            centroid[j] += points[i][j];
+        centroid[j] /= ((double)(Npar + 1));
+    }
+    for (int j = 0;j < Npar;j++) {
+        for (int i = 0;i < Npar + 1;i++)
+            sd += (centroid[j] - points[i][j]) * (centroid[j] - points[i][j]);
+    }
+    sd = sqrt(sd / ((double)Npar));
+    return sd;
+}
+
 /*********************************************************************************
  * x[ensemble][variable number] ,   y[ensemble][0=mean,1=error],
  * fun(index_function,Nvariables,variables[], Nparameters,parameters[])
@@ -1142,12 +1221,23 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
         }
     }
     //     printf("chi2=%f   res=%.10f P0=%f   P1=%f\n",chi2,res,P[0],P[1]);
-    if (fit_info.NM) {
+
+    if (fit_info.NM) {//https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method
         double** points = double_malloc_2(Npar + 1, Npar);
+        double** points1 = double_malloc_2(Npar + 1, Npar);
         double* chi2s = (double*)malloc((Npar + 1) * sizeof(double));
+        double* chi2s1 = (double*)malloc((Npar + 1) * sizeof(double));
+        int* order = (int*)malloc((Npar + 1) * sizeof(int));
+        double* centroid = (double*)malloc((Npar) * sizeof(double));
+        double* reflected = (double*)malloc((Npar) * sizeof(double));
+        double* expanded = (double*)malloc((Npar) * sizeof(double));
+        double* co = (double*)malloc((Npar) * sizeof(double));
+        double* ci = (double*)malloc((Npar) * sizeof(double));
+
+        double  r_chi2, e_chi2, co_chi2, ci_chi2;
         for (i = 0;i < Npar + 1;i++) {
             for (j = 0;j < Npar;j++)
-                points[i][j] = P[i];
+                points[i][j] = P[j];
         }
 
         for (i = 0;i < Npar;i++) {
@@ -1156,8 +1246,131 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
         for (i = 0;i < Npar + 1;i++) {
             chi2s[i] = chi2_fun(N, ensemble, x, y, points[i], Nvar, Npar, fun, fit_info);
         }
+        if (verbosity >= 2) {
+            printf("%s initial points of NM\n", __func__);
+            for (i = 0;i < Npar + 1;i++) {
+                printf("chi2=%g   params=", chi2s[i]);
+                for (j = 0;j < Npar;j++)  printf("%g  ", points[i][j]);
+                printf("\n");
+            }
+        }
+        double sd = fit_info.acc + 10;
+        while (sd > fit_info.acc) {
 
-        free_2(Npar+1,points);
+            sort_NM(chi2s1, points1, chi2s, points, Npar, order);
+            compute_centroid_NM(centroid, points1, Npar);
+            compute_reflected_NM(reflected, centroid, points1, Npar, fit_info.alpha);
+            if (verbosity >= 1) {
+                printf("%s (NM): best point chi2=%g   params=", __func__, chi2s1[0]);
+                for (j = 0;j < Npar;j++)  printf("%g  ", points1[0][j]); printf("\n");
+                if (verbosity >= 2) {
+                    printf("sd=%g\n", sd);
+                    for (i = 1;i < Npar + 1;i++) {
+                        printf("point %d chi2=%g   params=", i, chi2s1[i]);
+                        for (j = 0;j < Npar;j++)  printf("%g  ", points1[i][j]); printf("\n");
+                    }
+                    if (verbosity >= 3) {
+                        printf("previous step points:\n");
+                        printf("centroid: ");for (j = 0;j < Npar;j++)  printf("%g  ", centroid[j]); printf("\n");
+                        printf("reflected: ");for (j = 0;j < Npar;j++)  printf("%g  ", reflected[j]); printf("\n");
+                    }
+                }
+            }
+            r_chi2 = chi2_fun(N, ensemble, x, y, reflected, Nvar, Npar, fun, fit_info);
+            if (r_chi2<chi2s1[Npar - 1] && r_chi2>chi2s1[0]) {
+                // printf("reflection\n");
+                // substitute the last with the reflected
+                for (j = 0;j < Npar;j++)
+                    points1[Npar][j] = reflected[j];
+                chi2s1[Npar] = r_chi2;
+
+                // go to step 1
+                sort_NM(chi2s, points, chi2s1, points1, Npar, order);
+                sd = compute_sd_NM(centroid, points, Npar);
+                continue;
+            }
+            else if (r_chi2 < chi2s1[0]) {
+                // printf("expansion\n");
+                compute_expanded_NM(expanded, reflected, centroid, Npar, fit_info.gamma);
+                e_chi2 = chi2_fun(N, ensemble, x, y, expanded, Nvar, Npar, fun, fit_info);
+                if (e_chi2 < r_chi2) {
+                    for (j = 0;j < Npar;j++)
+                        points1[Npar][j] = expanded[j];
+                    chi2s1[Npar] = e_chi2;
+                }
+                else {
+                    for (j = 0;j < Npar;j++)
+                        points1[Npar][j] = reflected[j];
+                    chi2s1[Npar] = r_chi2;
+                }
+                // go to step 1
+                sort_NM(chi2s, points, chi2s1, points1, Npar, order);
+                sd = compute_sd_NM(centroid, points, Npar);
+                continue;
+            }
+            else {//for sure r_chi2>=chi2s1[Npar-1]
+                if (r_chi2 < chi2s1[Npar]) {
+                    // printf("contraction out\n");
+                    compute_contracted_out_NM(co, reflected, centroid, Npar, fit_info.rho);
+                    co_chi2 = chi2_fun(N, ensemble, x, y, co, Nvar, Npar, fun, fit_info);
+                    if (co_chi2 < r_chi2) {
+                        for (j = 0;j < Npar;j++)
+                            points1[Npar][j] = co[j];
+                        chi2s1[Npar] = co_chi2;
+                        sort_NM(chi2s, points, chi2s1, points1, Npar, order);
+                        sd = compute_sd_NM(centroid, points, Npar);
+                        continue;
+                    }
+                    else {
+                        // printf("shrink\n");
+                        shrink_NM(points1, Npar, fit_info.sigma);
+                        for (i = 1;i < Npar + 1;i++) {
+                            chi2s[i] = chi2_fun(N, ensemble, x, y, points1[i], Nvar, Npar, fun, fit_info);
+                        }
+                        sort_NM(chi2s, points, chi2s1, points1, Npar, order);
+                        sd = compute_sd_NM(centroid, points, Npar);
+                        continue;
+                    }
+
+                }
+                else {
+                    // printf("contraction in\n");
+                    compute_contracted_in_NM(ci, points[Npar], centroid, Npar, fit_info.rho);
+                    ci_chi2 = chi2_fun(N, ensemble, x, y, ci, Nvar, Npar, fun, fit_info);
+                    if (ci_chi2 < chi2s1[Npar]) {
+                        for (j = 0;j < Npar;j++)
+                            points1[Npar][j] = ci[j];
+                        chi2s1[Npar] = ci_chi2;
+                        sort_NM(chi2s, points, chi2s1, points1, Npar, order);
+                        sd = compute_sd_NM(centroid, points, Npar);
+                        continue;
+                    }
+                    else {
+                        // printf("shrink\n");
+                        shrink_NM(points1, Npar, fit_info.sigma);
+                        for (i = 1;i < Npar + 1;i++) {
+                            chi2s[i] = chi2_fun(N, ensemble, x, y, points1[i], Nvar, Npar, fun, fit_info);
+                        }
+                        sort_NM(chi2s, points, chi2s1, points1, Npar, order);
+                        sd = compute_sd_NM(centroid, points, Npar);
+                        continue;
+                    }
+                }
+
+
+
+            }
+
+
+        }
+        free(centroid);free(reflected);free(expanded);free(co);free(ci);
+        free(order);
+        free_2(Npar + 1, points1);
+        free(chi2s1);
+        for (i = 0;i < Npar;i++)
+            P[i] = points[0][i];
+        chi2 = chi2s[0];
+        free_2(Npar + 1, points);
         free(chi2s);
 
     }
