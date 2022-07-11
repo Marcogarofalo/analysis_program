@@ -112,6 +112,7 @@ add_library(
 ) 
 
 target_include_directories(eigensystem PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(eigensystem PUBLIC sorting)
 
 
 add_library(
@@ -335,3 +336,10 @@ add_library(
 target_link_libraries(integral_eq_QC3 PUBLIC tower)
 target_include_directories(integral_eq_QC3 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
  
+
+add_library(
+    sorting STATIC
+    sorting.hpp
+    ../modules/sorting.cpp
+) 
+target_include_directories(sorting PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")

@@ -72,12 +72,13 @@ struct  fit_type {
     h_deriv h = 1e-5;
     int devorder = 4;  // 2 , 4 , -2 adaptive h=h*parameter
     int repeat_start = 1;
-    int maxiter=200;
+    int maxiter = 200;
     double chi2_gap_jackboot = 1;
     int guess_per_jack = 3;
     int precision_sum = 0;// 0 float, 1 float kahan,  >1 long double
     bool mean_only = false;
     bool unstable = false; // if true avoid thing that may return error
+    bool NM = false;
     bool noderiv = false;
     bool covariancey = false;
     bool second_deriv = false;

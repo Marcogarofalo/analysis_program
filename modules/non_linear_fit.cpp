@@ -124,6 +124,7 @@ void fit_type::restore_default() {
     myen = std::vector<int>();
 
     mean_only = false;
+    NM = false;
     unstable = false; // if true avoid thing that may return error
     noderiv = false;
 
@@ -1141,7 +1142,26 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
         }
     }
     //     printf("chi2=%f   res=%.10f P0=%f   P1=%f\n",chi2,res,P[0],P[1]);
-    if (fit_info.noderiv) {
+    if (fit_info.NM) {
+        double** points = double_malloc_2(Npar + 1, Npar);
+        double* chi2s = (double*)malloc((Npar + 1) * sizeof(double));
+        for (i = 0;i < Npar + 1;i++) {
+            for (j = 0;j < Npar;j++)
+                points[i][j] = P[i];
+        }
+
+        for (i = 0;i < Npar;i++) {
+            points[i][i] += h[i];
+        }
+        for (i = 0;i < Npar + 1;i++) {
+            chi2s[i] = chi2_fun(N, ensemble, x, y, points[i], Nvar, Npar, fun, fit_info);
+        }
+
+        free_2(Npar+1,points);
+        free(chi2s);
+
+    }
+    else if (fit_info.noderiv) {
         double init_chi2 = 1;
         double loop_chi2 = 20;
         int iterations = 0;
