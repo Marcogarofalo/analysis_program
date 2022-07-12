@@ -114,7 +114,10 @@ int main() {
         // guess[0] = 1.e-05; guess[1] = 0.04;
         // fit = non_linear_fit_Nf(fit_info.N, en, x, y, fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info);
         // test_res(fit, NE, fit_info.Npar);
-
+        free(guess);free(en);
 
     }
+    free_2(NE, x);
+    free_2(NE, y);
+    free_2(NE, sigmax);
 }

@@ -1344,6 +1344,7 @@ int main(int argc, char** argv) {
     fprintf(outfile, "#scattering length  a  err deltaE2 err\n %g  %g     %g  %g\n",
         a_1[Njack - 1], error_jackboot(option[4], Njack, a_1), tmpj[Njack - 1], error_jackboot(option[4], Njack, tmpj));
     free(tmpj);
+    free(a_1);
 
     //c++ 6 || r 7
     file_head.k[2] = mu1;    file_head.k[3] = mu2;
@@ -2532,7 +2533,7 @@ int main(int argc, char** argv) {
             strcmp(argv[4], "G2t_T64_L20_msq0-1.267000_msq1-0.550000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0_bin1000_merged_bin100") == 0 ||
             strcmp(argv[4], "G2t_T64_L21_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0_bin1000_merged_bin100") == 0 ||
             strcmp(argv[4], "G2t_T64_L24_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0_bin1000_merged_bin100") == 0 ||
-            strcmp(argv[4], "G2t_T64_L25_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0_bin1000_merged_bin100") == 0 
+            strcmp(argv[4], "G2t_T64_L25_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0_bin1000_merged_bin100") == 0
             ) {
             fit_info.repeat_start = 6;
             fit_info.acc = 1e-5;
@@ -2799,10 +2800,10 @@ int main(int argc, char** argv) {
         //c++ 108 || r 109
         file_head.k[2] = mu1;    file_head.k[3] = mu1;
         fit_info.guess = { 0.63738,   387.1e-7,    1.0e-7 ,   0.0060975 };//0.12720
-    //     fit_info.guess={0.773652, 3.96386e-05 ,1.33604e-05 ,0.0241938};
+        //     fit_info.guess={0.773652, 3.96386e-05 ,1.33604e-05 ,0.0241938};
 
-    //      fit_info.repeat_start=40;
-    //     fit_info.plateaux_scan=true;
+        //      fit_info.repeat_start=40;
+        //     fit_info.plateaux_scan=true;
 
         fit_out = fit_function_to_corr(option, kinematic_2pt, (char*)"P5P5", conf_jack, namefile_plateaux, outfile, 116, 0/*reim*/, "E3_0_A1", fit_info, jack_file);
         int dvec_A1[3] = { 0,0,0 };
@@ -3453,6 +3454,7 @@ int main(int argc, char** argv) {
 
     free_fit_result(fit_info, fit_out);
     fflush(outfile);
+    fit_info.restore_default();
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     printf("ncorr %d\n", params.data.ncorr);
     int ncorr_new = params.data.ncorr;
@@ -4081,8 +4083,8 @@ int main(int argc, char** argv) {
         fit_info.N = 4;
         fit_info.corr_id = { 0, 129, 127,176,     5, 128,177,    1,178,     175 };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
 
-    //     fit_info.N=3;
-    //     fit_info.corr_id={170, 172, 173,     5, 128,    1};//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
+        //     fit_info.N=3;
+        //     fit_info.corr_id={170, 172, 173,     5, 128,    1};//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
 
         fit_info.value_or_vector = 0; // 0= values
         fit_info.t0_GEVP = 3;
@@ -4188,8 +4190,8 @@ int main(int argc, char** argv) {
         fit_info.N = 3;
         fit_info.corr_id = { 0, 171, 127,     170, 173,    1 };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
 
-    //     fit_info.N=3;
-    //     fit_info.corr_id={170, 172, 173,     5, 128,    1};//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
+        //     fit_info.N=3;
+        //     fit_info.corr_id={170, 172, 173,     5, 128,    1};//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
 
         fit_info.value_or_vector = 0; // 0= values
         fit_info.t0_GEVP = 3;
@@ -4264,8 +4266,8 @@ int main(int argc, char** argv) {
 
         fit_info.N = 4;
         fit_info.corr_id = { 0, 129, 127,171,     5, 128,172,    1,173,     170 };//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 
-    //     fit_info.N=3;
-    //     fit_info.corr_id={170, 172, 173,     5, 128,    1};//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
+        //     fit_info.N=3;
+        //     fit_info.corr_id={170, 172, 173,     5, 128,    1};//diag{ phi0->phi0, 3phi0->3phi0, phi1->phi1 }
         fit_info.value_or_vector = 0; // 0= values
         fit_info.t0_GEVP = 3;
         //fit_info.corr_id={1,2};
@@ -4444,6 +4446,8 @@ int main(int argc, char** argv) {
         //c++ 140 || r 141
         double* E1_0_der2 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 0, "E1_0_der2", laplacian_M_eff_T, jack_file);
         check_correlatro_counter(304);
+        free(E1_0_der2);
+
     }
     else { zero_corr(zeros, Njack, jack_file); }
 
@@ -4452,6 +4456,8 @@ int main(int argc, char** argv) {
         //c++ 140 || r 141
         double* E3_0_der2 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 5, "E3_0_der2", laplacian_M_eff_T, jack_file);
         check_correlatro_counter(305);
+        free(E3_0_der2);
+
     }
     else { zero_corr(zeros, Njack, jack_file); }
 
@@ -4460,6 +4466,8 @@ int main(int argc, char** argv) {
         //c++ 140 || r 141
         double* E1_0_der2 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 0, "E1_0_der2corr", der2corr_M_eff_T, jack_file);
         check_correlatro_counter(306);
+        free(E1_0_der2);
+
     }
     else { zero_corr(zeros, Njack, jack_file); }
 
@@ -4468,6 +4476,8 @@ int main(int argc, char** argv) {
         //c++ 140 || r 141
         double* E3_0_der2 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 5, "E3_0_der2corr", der2corr_M_eff_T, jack_file);
         check_correlatro_counter(307);
+        free(E3_0_der2);
+
     }
     else { zero_corr(zeros, Njack, jack_file); }
 
@@ -4477,6 +4487,8 @@ int main(int argc, char** argv) {
         //c++ 140 || r 141
         double* E1_0_der2 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 0, "E1_0_combtsym", combt_M_eff_T, jack_file);
         check_correlatro_counter(308);
+        free(E1_0_der2);
+
     }
     else { zero_corr(zeros, Njack, jack_file); }
 
@@ -4485,6 +4497,8 @@ int main(int argc, char** argv) {
         //c++ 140 || r 141
         double* E3_0_der2 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 5, "E3_0_combtsym", combt_M_eff_T, jack_file);
         check_correlatro_counter(309);
+        free(E3_0_der2);
+
     }
     else { zero_corr(zeros, Njack, jack_file); }
 
@@ -4494,6 +4508,8 @@ int main(int argc, char** argv) {
         //c++ 140 || r 141
         double* E1_0_der2 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 0, "E1_0_combt2sym", combt2_M_eff_T, jack_file);
         check_correlatro_counter(310);
+        free(E1_0_der2);
+
     }
     else { zero_corr(zeros, Njack, jack_file); }
 
@@ -4502,6 +4518,7 @@ int main(int argc, char** argv) {
         //c++ 140 || r 141
         double* E3_0_der2 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 5, "E3_0_combt2sym", combt2_M_eff_T, jack_file);
         check_correlatro_counter(311);
+        free(E3_0_der2);
     }
     else { zero_corr(zeros, Njack, jack_file); }
 
@@ -4512,6 +4529,7 @@ int main(int argc, char** argv) {
         //c++ 140 || r 141
         double* E1_0_der2 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 0, "E1_0_combt15sym", combt15_M_eff_T, jack_file);
         check_correlatro_counter(312);
+        free(E1_0_der2);
     }
     else { zero_corr(zeros, Njack, jack_file); }
 
@@ -4520,6 +4538,8 @@ int main(int argc, char** argv) {
         //c++ 140 || r 141
         double* E3_0_der2 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 5, "E3_0_combt15sym", combt15_M_eff_T, jack_file);
         check_correlatro_counter(313);
+        free(E3_0_der2);
+
     }
     else { zero_corr(zeros, Njack, jack_file); }
 
@@ -4800,7 +4820,7 @@ int main(int argc, char** argv) {
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
-fit_info.N = 2;
+        fit_info.N = 2;
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_0_1_l%d", i);
             double* l0_GEVP = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, ncorr_new - fit_info.N + i, name_v, identity, jack_file);
@@ -4945,7 +4965,7 @@ fit_info.N = 2;
         printf(" ncorr after GEVP %d\n", ncorr_new);
 
         fit_info.restore_default();
-fit_info.N = 4;
+        fit_info.N = 4;
         for (int i = 0; i < fit_info.N; i++) {
             mysprintf(name_v, NAMESIZE, "GEVP_0_3_1_d0_l%d", i);
             double* l0_GEVP = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, ncorr_new - fit_info.N + i, name_v, identity, jack_file);
@@ -5895,8 +5915,15 @@ fit_info.N = 4;
     else { for (int i = 618;i <= 625;i++)  zero_corr(zeros, Njack, jack_file); }
     check_correlatro_counter(625);
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
-    // free(E1_0_p1);
+    free(zeros);
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////   
+    free(E2_01);
+    free(E2_01_ws);
+    free(a_01_ws);
+    free(a);
+    free(E3_0);
+    free(a_0);
+    free(a0m0);
     // free(E1_0_p11);
     // free(E1_0_p111);
     // free(E2_0_p1);
