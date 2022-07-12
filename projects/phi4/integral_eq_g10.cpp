@@ -144,18 +144,18 @@ int main(int argc, char** argv) {
     int seed = 1;
     int tot_parK = NPkiso + Npar;
     double* mean = (double*)malloc(sizeof(double) * tot_parK);
-    mean[0] = 95.0925;
-    mean[1] = 9.12815;
-    mean[2] = 1544;
-    mean[3] = -0.155809;
+    mean[0] = 96.629;
+    mean[1] = 9.12853;
+    mean[2] = 1773.18;
+    mean[3] = -0.15631;
     double** cov = double_calloc_2(tot_parK, tot_parK);
-    cov[0][0] = pow(1.2, 2);
-    cov[1][1] = pow(0.00052, 2);
-    cov[2][2] = pow(2.7, 2);
-    cov[3][3] = pow(0.00064, 2);
-    cov[0][1] = 0.244; cov[0][2] = 0.155;     cov[0][3] = -0.0306;
-     ;                  cov[1][2] = 0.159; cov[1][3] = -0.538;
-     ; ;                                      cov[2][3] = -0.551;
+    cov[0][0] = pow(16, 2);
+    cov[1][1] = pow(0.0017, 2);
+    cov[2][2] = pow(980, 2);
+    cov[3][3] = pow(0.0027, 2);
+    cov[0][1] = -0.463; cov[0][2] = 0.0674;     cov[0][3] = 0.0289;
+     ;                  cov[1][2] = 0.105;      cov[1][3] = -0.123;
+     ;   ;                                      cov[2][3] = -0.9;
 
     for (int i = 0; i < tot_parK;i++) {
         for (int j = i + 1; j < tot_parK;j++) {
@@ -201,9 +201,9 @@ int main(int argc, char** argv) {
     }
     double*** M3;
 
-    // compute_M3(NE, Emin, dE, Njack, E3, M3, N, Npar, P, compute_kcot, PKiso, compute_kiso, eps);
-    // write_M3(NE, Njack, E3, M3, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
-    read_M3(NE, Njack, E3, M3,  "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
+    compute_M3(NE, Emin, dE, Njack, E3, M3, N, Npar, P, compute_kcot, PKiso, compute_kiso, eps);
+    write_M3(NE, Njack, E3, M3, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
+    // read_M3(NE, Njack, E3, M3,  "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
 
     data_all jackall;
     jackall.ens = NE;

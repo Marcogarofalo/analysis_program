@@ -1149,14 +1149,17 @@ int main(int argc, char** argv) {
             ie++;
         }
     }
-    fit_info.guess = { 81.5648, 9.12952, 1455.65, -0.155717 };
-    // fit_info.guess={95.0925, 9.12815, 1544, -0.155809};
+    // fit_info.guess = { 81.5648, 9.12952, 1455.65, -0.155717 };
+    fit_info.guess={95.0925, 9.12815, 1544, -0.155809};
+    
+    fit_info.NM=true;
+    fit_info.h = { 2, 0.001,  2, 0.001 };
 
     fit_info.compute_cov1_fit();
     mysprintf(namefile, NAMESIZE, "kcot_1par_1lev_and_kiso_pole_3par_cov", fit_info.Npar);
-    // struct fit_result kcot_1lev_and_kiso_pole_3par_cov = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
-    // fit_info.band_range = { 5.65,7.2 };
-    // print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par_cov, kcot_1lev_and_kiso_pole_3par_cov, 0, myen.size() - 1, 0.15);
+    struct fit_result kcot_1lev_and_kiso_pole_3par_cov = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
+    fit_info.band_range = { 5.65,7.2 };
+    print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par_cov, kcot_1lev_and_kiso_pole_3par_cov, 0, myen.size() - 1, 0.15);
     fit_info.restore_default();
 
 
@@ -1215,20 +1218,23 @@ int main(int argc, char** argv) {
     }
     fit_info.guess = { 79.1953        ,9.12742   , -0.153186 };
 
-    fit_info.noderiv = true;
-    fit_info.Prange = { 15, 0.01,  0.01 };
-    fit_info.h = { 1e-2, 1e-6,1e-6 };
-    fit_info.acc = 0.001;
+    // fit_info.noderiv = true;
+    // fit_info.Prange = { 15, 0.01,  0.01 };
+    // fit_info.h = { 1e-2, 1e-6,1e-6 };
+    // fit_info.acc = 0.001;
 
     // fit_info.noderiv = false;
     // fit_info.h = { 2e-1, 0.5e-6, 0.5e-6 };
     // fit_info.devorder = 2;
 
+    fit_info.NM=true;
+    fit_info.h = { 15, 0.01,  0.01 };
+
     fit_info.compute_cov1_fit();
-    mysprintf(namefile, NAMESIZE, "kcot_1par_1lev_and_kiso_pole_2par_cov", fit_info.Npar);
-    struct fit_result kcot_1lev_and_kiso_pole_3par_cov = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
-    fit_info.band_range = { 5.65,7.2 };
-    print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par_cov, kcot_1lev_and_kiso_pole_3par_cov, 0, myen.size() - 1, 0.15);
+    // mysprintf(namefile, NAMESIZE, "kcot_1par_1lev_and_kiso_pole_2par_cov", fit_info.Npar);
+    // struct fit_result kcot_1lev_and_kiso_pole_3par_cov = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
+    // fit_info.band_range = { 5.65,7.2 };
+    // print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par_cov, kcot_1lev_and_kiso_pole_3par_cov, 0, myen.size() - 1, 0.15);
     fit_info.restore_default();
 
     printf("//////////////////// kcot 1par and kiso no coupling fit   ////////////////////////////////////\n");
