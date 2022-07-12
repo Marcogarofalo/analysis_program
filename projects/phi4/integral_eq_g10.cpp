@@ -51,7 +51,7 @@ void read_M3(int& NE, int& Njack, std::vector<double>& E3, double***& M3, std::s
 
 }
 
-void compute_M3(int NE, double Emin, double dE, int Njack, std::vector<double>& E3, double*** &M3, int N, int Npar, double** P,
+void compute_M3(int NE, double Emin, double dE, int Njack, std::vector<double>& E3, double***& M3, int N, int Npar, double** P,
     double compute_kcot(int, double*, int, double*), double** PKiso, double compute_kiso(double, double*), double eps) {
 
     M3 = double_malloc_3(NE, 2, Njack);
@@ -137,9 +137,9 @@ int main(int argc, char** argv) {
 
 
     int Npar = 1;
-    
+
     int NPkiso = 3;
-    
+
     int Njack = 15;
     int seed = 1;
     int tot_parK = NPkiso + Npar;
@@ -154,8 +154,8 @@ int main(int argc, char** argv) {
     cov[2][2] = pow(980, 2);
     cov[3][3] = pow(0.0027, 2);
     cov[0][1] = -0.463; cov[0][2] = 0.0674;     cov[0][3] = 0.0289;
-     ;                  cov[1][2] = 0.105;      cov[1][3] = -0.123;
-     ;   ;                                      cov[2][3] = -0.9;
+    ;                  cov[1][2] = 0.105;      cov[1][3] = -0.123;
+    ; ;                                      cov[2][3] = -0.9;
 
     for (int i = 0; i < tot_parK;i++) {
         for (int j = i + 1; j < tot_parK;j++) {
@@ -201,9 +201,9 @@ int main(int argc, char** argv) {
     }
     double*** M3;
 
-    compute_M3(NE, Emin, dE, Njack, E3, M3, N, Npar, P, compute_kcot, PKiso, compute_kiso, eps);
-    write_M3(NE, Njack, E3, M3, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
-    // read_M3(NE, Njack, E3, M3,  "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
+    // compute_M3(NE, Emin, dE, Njack, E3, M3, N, Npar, P, compute_kcot, PKiso, compute_kiso, eps);
+    // write_M3(NE, Njack, E3, M3, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
+    read_M3(NE, Njack, E3, M3, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
 
     data_all jackall;
     jackall.ens = NE;
@@ -251,6 +251,9 @@ int main(int argc, char** argv) {
         fit_info.repeat_start = 10;
         fit_info.guess = { 3,   2.08327e-06,   254.085,   -10.0645 };
         fit_info.precision_sum = 0;
+
+
+
         char namefile[NAMESIZE];
 
         mysprintf(namefile, NAMESIZE, "int_eq_g10_npar%d", fit_info.Npar);
@@ -260,6 +263,56 @@ int main(int argc, char** argv) {
         fit_info.restore_default();
 
     }
+
+    {
+
+        fit_type fit_info;
+        fit_info.Njack = Njack;
+        fit_info.N = 2;
+        fit_info.myen = std::vector<int>(NE);
+        for (int e = 0; e < fit_info.myen.size(); e++) fit_info.myen[e] = e;
+        fit_info.Nvar = 2;
+        fit_info.Npar = 4;
+        fit_info.function = rhs_laurent_pole;
+        char namefile[NAMESIZE];
+        mysprintf(namefile, NAMESIZE, "int_eq_g10_npar%d_cov", fit_info.Npar);
+        printf("///////////////////////////   %s\n", namefile);
+
+        fit_info.malloc_x();
+        int scount = 0;
+        for (int n = 0;n < fit_info.N;n++) {
+            for (int e = 0;e < fit_info.myen.size();e++) {
+                for (int j = 0;j < fit_info.Njack;j++) {
+                    fit_info.x[0][scount][j] = E3[e];
+                    fit_info.x[1][scount][j] = 0;
+                }
+                scount++;
+            }
+        }
+
+
+        fit_info.acc = 1e-8;
+        fit_info.h = 1e-4;
+        fit_info.devorder = -2;
+        fit_info.verbosity = 2;
+        fit_info.repeat_start = 1;
+        fit_info.guess = { 3,   2.08327e-06,   254.085,   -10.0645 };
+        fit_info.precision_sum = 0;
+        
+        fit_info.NM=true;
+        fit_info.covariancey = true;
+        fit_info.compute_cov_fit(argv, jackall, lhs_M3, fit_info);
+        fit_info.compute_cov1_fit();
+
+
+
+        struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_M3, fit_info, namefile);
+        fit_info.band_range = { Emin , Emax };
+        print_fit_band(argv, jackall, fit_info, fit_info, namefile, "E_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, fit_info.myen.size() - 1, 0.0002);
+        fit_info.restore_default();
+
+    }
+
 
     {
         fit_type fit_info;
@@ -328,7 +381,7 @@ int main(int argc, char** argv) {
         fit_info.acc = 0.01;
         fit_info.h = 1e-5;
         fit_info.devorder = 2;
-        fit_info.verbosity = 3;
+        fit_info.verbosity = 0;
         fit_info.repeat_start = 1;
         fit_info.guess = { 3.02112, -1.18582e-06, -252.892, 10.7525, -2951.33, 160.156 };
         fit_info.precision_sum = 0;
