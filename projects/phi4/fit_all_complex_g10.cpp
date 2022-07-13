@@ -1150,9 +1150,9 @@ int main(int argc, char** argv) {
         }
     }
     // fit_info.guess = { 81.5648, 9.12952, 1455.65, -0.155717 };
-    fit_info.guess={95.0925, 9.12815, 1544, -0.155809};
-    
-    fit_info.NM=true;
+    fit_info.guess = { 95.0925, 9.12815, 1544, -0.155809 };
+
+    fit_info.NM = true;
     fit_info.h = { 2, 0.001,  2, 0.001 };
 
     fit_info.compute_cov1_fit();
@@ -1227,7 +1227,7 @@ int main(int argc, char** argv) {
     // fit_info.h = { 2e-1, 0.5e-6, 0.5e-6 };
     // fit_info.devorder = 2;
 
-    fit_info.NM=true;
+    fit_info.NM = true;
     fit_info.h = { 15, 0.01,  0.01 };
 
     fit_info.compute_cov1_fit();
