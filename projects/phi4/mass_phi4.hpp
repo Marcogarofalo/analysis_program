@@ -97,6 +97,7 @@ void E3_print_extra(double *E3,double *mass, int  *dvec,int L,FILE *outfile, int
     fprintf(outfile,"%.12g  %.12g  \t ", E3_CM[Njack-1],error_jackboot(jackboot,Njack,E3_CM ) );
     
     fprintf(outfile,"\n");
+    free(k);free(E3_CM);
 }
 
 

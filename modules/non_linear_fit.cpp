@@ -1537,9 +1537,10 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
                         if (verbosity > 0)
                             printf("\n !!!!!!!!!!!!!!!! error:  Impossible to minimise the chi2 with Levenberg-Marquardt for this starting point   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
                         if (verbosity > 0)  printf("\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
-                        for (j = 0;j < Npar;j++)      free(alpha[j]);
                         free(P_tmp);
-                        free(alpha);free(beta);
+                        free(beta);
+                        free_2(Npar, alpha_l);
+                        free_2(Npar, alpha);
                         non_linear_fit_result output;
                         output.P = P;
                         output.chi2 = chi2;
@@ -1564,12 +1565,11 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
         }
     }
 
-    for (j = 0;j < Npar;j++) {
-        free(alpha[j]);
-        free(alpha_l[j]);
-    }
+    free_2(Npar, alpha_l);
+    free_2(Npar, alpha);
+
     free(P_tmp);
-    free(alpha);free(beta);free(alpha_l);
+    free(beta);
     non_linear_fit_result output;
     output.P = P;
     output.chi2 = chi2;
@@ -1596,7 +1596,8 @@ double* guess_for_non_linear_fit_Nf(int N, int* ensemble, double** x, double** y
     if (fit_info.unstable) for (i = 0;i < Npar;i++) P[i] = guess[i];
     else P = non_linear_fit_Nf(N, ensemble, x, y, Nvar, Npar, fun, guess, fit_info).P;
     chi2 = compute_chi_non_linear_Nf(N, ensemble, x, y, P, Nvar, Npar, fun) / (en_tot - Npar);
-    jmax = 3 + ((int)(chi2 * 2));
+    if (!isnan(chi2))    jmax = 3 + ((int)(chi2 * 2));
+    else jmax = 35;
 
     std::mt19937 mt_rand(123);
 

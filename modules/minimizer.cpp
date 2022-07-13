@@ -12,10 +12,10 @@ struct fit_result minimize_functions_Nf(struct fit_type fit_info) {
     int Nvar = fit_info.Nvar;
     int N = fit_info.N;
     int Njack = fit_info.Njack;
-    std::vector<int> myen = {0};
+    std::vector<int> myen = { 0 };
 
-    error(fit_info.covariancey==true, 1, "minimize_functions_Nf", " fit_info.covariancey must be false");
-    error(fit_info.second_deriv==false, 1, "minimize_functions_Nf", " fit_info.second_deriv must be true");
+    error(fit_info.covariancey == true, 1, "minimize_functions_Nf", " fit_info.covariancey must be false");
+    error(fit_info.second_deriv == false, 1, "minimize_functions_Nf", " fit_info.second_deriv must be true");
     ////// allocation
     int* en = (int*)malloc(sizeof(int) * fit_info.N);// we need to init en and en_tot to allocate the other 
     for (int e = 0;e < fit_info.N; e++) { en[e] = myen.size(); }
@@ -55,7 +55,7 @@ struct fit_result minimize_functions_Nf(struct fit_type fit_info) {
     }
 
     ////////////////////////////////////////// y
-    
+
     int count = 0;
     for (int n = 0;n < N;n++) {
         for (int e = 0;e < en[n];e++) {
@@ -79,9 +79,9 @@ struct fit_result minimize_functions_Nf(struct fit_type fit_info) {
 
             double a = timestamp();
             non_linear_fit_result fitj = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
-            fit[j]=fitj.P;
+            fit[j] = fitj.P;
             fit_out.chi2[j] = fitj.chi2 / (en_tot - Npar);
-            
+
             if (fit_info.verbosity > 0) {
                 printf("jack =%d  chi2/dof=%g   chi2=%g   time=%g   \nfinal set: ", j, fit_out.chi2[j], fit_out.chi2[j] * (en_tot - Npar), timestamp() - a);
                 if (fit_info.verbosity > 1) {
@@ -96,13 +96,13 @@ struct fit_result minimize_functions_Nf(struct fit_type fit_info) {
     }
     else if (fit_info.mean_only == true) {
         int j = Njack - 1;
-       
-            non_linear_fit_result fitj = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
-            fit[j]=fitj.P;
-            fit_out.chi2[j] = fitj.chi2 / (en_tot - Npar);
-       
+
+        non_linear_fit_result fitj = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
+        fit[j] = fitj.P;
+        fit_out.chi2[j] = fitj.chi2 / (en_tot - Npar);
+
         // for the other jackboot add a white noise to the mean
-        double** C = covariance_non_linear_fit_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function);
+        double** C = covariance_non_linear_fit_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function, fit_info);
         for (int ip = 0; ip < Npar;ip++)
             for (int ik = 0; ik < Npar;ik++)
                 fit_out.C[ip][ik][j] = C[ip][ik];
@@ -117,7 +117,7 @@ struct fit_result minimize_functions_Nf(struct fit_type fit_info) {
         }
         free_2(Npar, tmp);
         free_2(Npar, C);
-       
+
 
     }
 

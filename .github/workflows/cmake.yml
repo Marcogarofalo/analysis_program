@@ -9,7 +9,7 @@ on: [push]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
+  BUILD_TYPE: DEBUG
 
 jobs:
   build:
@@ -53,7 +53,7 @@ jobs:
       run: |
            mkdir build 
            cd build  
-           cmake ..
+           cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..
            
     - name: compiling
       working-directory: ${{github.workspace}}/build

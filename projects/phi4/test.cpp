@@ -60,6 +60,8 @@ int main(int argc, char **argv){
      if (nerrors>0){
          exit(1);
     }
+    free_2(dataj[0].Nobs,dataj[0].jack);
+    free_2(dataj[1].Nobs,dataj[1].jack);
      
 }
 

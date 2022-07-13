@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.13)
 #set(CMAKE_C_COMPILER /usr/bin/gcc)
 #set(CMAKE_CXX_FLAGS "-fopenmp   -pedantic  -g -O3   -lm -lgmp  ")
 MESSAGE("CMAKE_CXX_FLAGS:   ${CMAKE_CXX_FLAGS} ")
-set(CMAKE_C_FLAGS "-fopenmp   -pedantic  -g -O3  -lm -lgmp  ")
+#set(CMAKE_C_FLAGS "-fopenmp   -pedantic  -g -O3  -lm -lgmp  ")
 
 project(analysis_program CXX C)
 #-pg -no-pie , for gproof, then run , gproof exe  gmout.
@@ -13,6 +13,15 @@ project(analysis_program CXX C)
 # valgrind --leak-check=yes --track-origins=yes  ./program   #compile with -g to have line number
 
 MESSAGE("using CXX:" ${CMAKE_CXX_STANDARD} )
+
+
+IF(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+  set(CMAKE_CXX_FLAGS  " ${CMAKE_CXX_FLAGS} ${CXXFLAGS} -fsanitize=address -fsanitize=undefined -fno-sanitize-recover=all")
+  set(CMAKE_CXX_FLAGS  " ${CMAKE_CXX_FLAGS} ${CXXFLAGS} -fsanitize=float-cast-overflow -fno-sanitize=null -fno-sanitize=alignment")
+  set(CMAKE_CXX_FLAGS  " ${CMAKE_CXX_FLAGS} ${CXXFLAGS} -static-libasan -g   ")#-fsanitize=float-divide-by-zero
+  #
+ENDIF()
+
 # no need to install Eigen with cmake and use find package
 #SET( EIGEN3_INCLUDE_DIR /home/marco/library/eigen )
 #IF( NOT EIGEN3_INCLUDE_DIR )

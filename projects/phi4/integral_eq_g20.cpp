@@ -65,11 +65,11 @@ void compute_M3(int NE, double Emin, double dE, int Njack, std::vector<double>& 
             std::complex<double> m3 = compute_M3_sym(E3[i], N, Npar, P[j], compute_kcot, PKiso[j], compute_kiso, eps);
             M3[i][0][j] = m3.real(); M3[i][1][j] = m3.imag();
 
-            // std::complex<double> Kdf = compute_kiso(E3[i], PKiso);
-            // Eigen::MatrixXcd D = compute_D(E3[i], N, Npar, P, compute_kcot, eps);
-            // std::complex<double> Finf = comput_Finf(E3[i], D, N, Npar, P, compute_kcot, eps);
+            // std::complex<double> Kdf = compute_kiso(E3[i], PKiso[j]);
+            // Eigen::MatrixXcd D = compute_D(E3[i], N, Npar, P[j], compute_kcot, eps);
+            // std::complex<double> Finf = comput_Finf(E3[i], D, N, Npar, P[j], compute_kcot, eps);
             // printf("jack =%-4d%-18.8g%-14g%-18g%-14g%-18g||%-25g%-25g%-25g%-25g\n",
-            //     j, E3[i], real(m3), imag(m3), real(Kdf), imag(Kdf), PKiso[0], PKiso[1], PKiso[2], P[3]);
+            //     j, E3[i], real(m3), imag(m3), real(Kdf), imag(Kdf), PKiso[Njack-1][0], PKiso[Njack-1][1], PKiso[Njack-1][2], P[Njack-1][3]);
             // printf("%-18.8g%-14g%-18g%-14g%-18g%-18.12g%-20.12g\n", E3[i], real(m3), imag(m3), real(Kdf), imag(Kdf), real(Finf), imag(Finf));
             // printf("%-18.8g%-14g%-18g%\n", E3[i], real(m3), imag(m3));
         }

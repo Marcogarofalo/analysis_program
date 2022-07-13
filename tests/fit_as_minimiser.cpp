@@ -86,22 +86,27 @@ int main() {
         fit_info.lambda = 1e-4;
         fit_info.second_deriv = true;
         double* P = non_linear_fit_Nf(fit_info.N, en, x[j], y[j], fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info).P;
-        printf("min=%g   %g\n", P[0], P[1]);
+        printf("testing LM minimizer\nmin=%g   %g\n", P[0], P[1]);
         if (fabs(P[0] - 0.5) > 1e-4) { printf("the minimum should be ( 0.5, 0.3 )\n"); exit(1); }
         if (fabs(P[1] - 0.3) > 1e-4) { printf("the minimum should be ( 0.5, 0.3 )\n"); exit(1); }
-
         free(P);
+
         fit_info.noderiv = true;
         P = non_linear_fit_Nf(fit_info.N, en, x[j], y[j], fit_info.Nvar, fit_info.Npar, fit_info.function, guess, fit_info).P;
-        printf("min=%g   %g\n", P[0], P[1]);
+        printf("testing noderiv minimizer\nmin=%g   %g\n", P[0], P[1]);
         if (fabs(P[0] - 0.5) > 1e-4) { printf("the minimum should be ( 0.5, 0.3 )\n"); exit(1); }
         if (fabs(P[1] - 0.3) > 1e-4) { printf("the minimum should be ( 0.5, 0.3 )\n"); exit(1); }
+        free_3(fit_info.Njack, en_tot, y);
+        free_3(fit_info.Njack, en_tot, x);
+        free(guess);
+        free(P);free(en);
     }
     ////////////////////////
     //   using the build in function
     {
         fit_type   fit_info;
         fit_info.N = 1;
+        fit_info.myen = { 1 };
         fit_info.second_deriv = true;
         fit_info.mean_only = false;
         fit_info.Njack = 1;
@@ -109,10 +114,15 @@ int main() {
         fit_info.Npar = 2; // what we are minimizing
         fit_info.function = rhs_amu_common_a4;
         fit_info.verbosity = 0;
+        fit_info.h = { 0.001, 0.001 };
+        fit_info.guess={1,1};
+
         fit_result min = minimize_functions_Nf(fit_info);
-        printf("min=%g   %g\n", min.P[0][0], min.P[1][0]);
+        printf("testing LM minimizer buildin functions\nmin=%g   %g\n", min.P[0][0], min.P[1][0]);
         if (fabs(min.P[0][0] - 0.5) > 1e-4) { printf("the minimum should be ( 0.5, 0.3 )\n"); exit(1); }
         if (fabs(min.P[1][0] - 0.3) > 1e-4) { printf("the minimum should be ( 0.5, 0.3 )\n"); exit(1); }
+        free_fit_result(fit_info, min);
+        fit_info.restore_default();
     }
 
 
