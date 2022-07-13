@@ -852,74 +852,6 @@ double compute_chi_non_linear_Nf_kahan(int N, int* ensemble, double** x, double*
     return chi2;
 }
 
-// x[ensemble][variable number] ,   y[ensemble][0=mean,1=error], fun(index_function,Nvariables,variables[], Nparameters,parameters[])
-//the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 
-double** covariance_non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, double* P, int Nvar, int Npar, double fun(int, int, double*, int, double*), fit_type fit_info) {
-
-    double** alpha, ** C;
-    int i, j, k, e;
-    double f, * fk;
-    int n, count;
-    std::vector< double > h(Npar);
-    for (int i = 0; i < Npar;i++)
-        h[i] = 0.00001;
-
-
-    alpha = (double**)malloc(sizeof(double*) * Npar);
-    for (j = 0;j < Npar;j++) {
-        alpha[j] = (double*)calloc(Npar, sizeof(double));
-    }
-
-    count = 0;
-    for (n = 0;n < N;n++) {
-        for (e = 0;e < ensemble[n];e++) {
-            f = fun(n, Nvar, x[e + count], Npar, P);
-            fk = der_O4_fun_Nf_h(n, Nvar, x[e + count], Npar, P, fun, h);
-            for (j = 0;j < Npar;j++) {
-                for (k = j;k < Npar;k++) {
-                    alpha[j][k] += fk[j] * fk[k] / (y[e + count][1] * y[e + count][1]);
-                }
-            }
-            free(fk);
-        }
-        count += ensemble[n];
-    }
-    count = 0;
-    for (n = 0;n < N;n++) {
-        for (e = 0;e < ensemble[n];e++) {
-            f = fun(n, Nvar, x[e + count], Npar, P);
-            double** fkk = der2_O2_fun_Nf_h(n, Nvar, x[e + count], Npar, P, fun, h);
-            for (j = 0;j < Npar;j++) {
-                for (k = j;k < Npar;k++) {
-                    alpha[j][k] -= (y[e + count][0] - f) * fkk[j][k] / (y[e + count][1] * y[e + count][1]);
-                }
-            }
-            free_2(Npar, fkk);
-
-        }
-        count += ensemble[n];
-    }
-    for (j = 0;j < Npar;j++) {
-        for (k = 0;k < j;k++)
-            alpha[j][k] = alpha[k][j];
-
-    }
-    if (Npar == 1) {
-        C = (double**)malloc(sizeof(double*) * 1);
-        C[0] = (double*)malloc(sizeof(double) * 1);
-        C[0][0] = 1. / alpha[0][0];
-    }
-    else
-        C = symmetric_matrix_inverse(Npar, alpha);
-
-
-    for (j = 0;j < Npar;j++) {
-        free(alpha[j]);
-    }
-
-    free(alpha);
-    return C;
-}
 
 
 bool compute_alpha(double* beta, double** alpha, int N, int* ensemble,
@@ -1008,7 +940,7 @@ bool compute_alpha_cov1(double* beta, double** alpha, int N, int* ensemble,
         for (int k = j;k < Npar;k++) {
             for (int i = 0;i < en_tot;i++)
                 for (int ii = 0;ii < en_tot;ii++)
-                    alpha[j][k] += df_value[j][i] * fit_info.cov1[i][ii] * df_value[ii][k];
+                    alpha[j][k] += df_value[i][j] * fit_info.cov1[i][ii] * df_value[ii][k];
         }
     }
     if (fit_info.second_deriv == true) {
@@ -1039,6 +971,95 @@ bool compute_alpha_cov1(double* beta, double** alpha, int N, int* ensemble,
     free(f_value);
     return  true;
 }
+
+// x[ensemble][variable number] ,   y[ensemble][0=mean,1=error], fun(index_function,Nvariables,variables[], Nparameters,parameters[])
+//the function return an array[Nparameter]  with the value of the parameters that minimise the chi2 
+double** covariance_non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, double* P, int Nvar, int Npar, double fun(int, int, double*, int, double*), fit_type fit_info) {
+
+    double** alpha, ** C;
+    int i, j, k, e;
+    double f, * fk;
+    int n, count;
+    std::vector< double > h;
+    if (fit_info.h.h.size() == 1) {
+        h = std::vector< double >(Npar);
+        for (int i = 0; i < Npar;i++)
+            h[i] = fit_info.h.h[0];
+    }
+    else if (fit_info.h.h.size() == Npar) { h = fit_info.h; }
+    else { printf("non_linear_fit_Nf: h must me a std::vector<double> of 1 o Npar lenght"); exit(1); }
+
+
+    int en_tot = 0;
+    for (int n = 0;n < N;n++)
+        for (int e = 0;e < ensemble[n];e++)
+            en_tot += 1;
+
+    alpha = (double**)malloc(sizeof(double*) * Npar);
+    for (j = 0;j < Npar;j++) {
+        alpha[j] = (double*)calloc(Npar, sizeof(double));
+    }
+    double* beta = (double*)calloc(Npar, sizeof(double));
+
+    double* (*der_fun_Nf_h)(int, int, double*, int, double*, double(int, int, double*, int, double*), std::vector< double >);
+    bool (*alpha_fun)(double*, double**, int, int*, double**, double**, int, int, double*, double(int, int, double*, int, double*),
+        double* (int, int, double*, int, double*, double(int, int, double*, int, double*), std::vector< double >), std::vector< double >,
+        fit_type);
+
+    if (fit_info.covariancey)        alpha_fun = compute_alpha_cov1;
+    else                             alpha_fun = compute_alpha;
+
+
+
+    if (fit_info.devorder == -2)     der_fun_Nf_h = der_O2_fun_Nf_h_adaptive;
+    else if (fit_info.devorder == 4) der_fun_Nf_h = der_O4_fun_Nf_h;
+    else if (fit_info.devorder == 2) der_fun_Nf_h = der_O2_fun_Nf_h;
+    else error(true, 1, "non_linear_fit_Nf", "order of the derivative must be 4 (default) , 2,  -2 to set a step different for each parameter h[i]=P[i]*h    ");
+
+
+    bool computed_alpha = alpha_fun(beta, alpha, N, ensemble,
+        x, y, Nvar, Npar, P, fun, der_fun_Nf_h, h, fit_info);
+
+    for (j = 0;j < Npar;j++) {
+        for (k = 0;k < j;k++)
+            alpha[j][k] = alpha[k][j];
+    }
+
+    if (Npar == 1) {
+        C = (double**)malloc(sizeof(double*) * 1);
+        C[0] = (double*)malloc(sizeof(double) * 1);
+        C[0][0] = 1. / alpha[0][0];
+    }
+    else {
+        double yn = is_it_positive(alpha, Npar);
+        while (yn > 0) {
+            yn *= 2;
+            printf("covariance matrix not positive defined adding eps*cov[0][0]*I*%d \n", yn);
+            for (int i = 0;i < Npar;i++)
+                alpha[i][i] += alpha[0][0] * 1e-10 * yn;
+            for (int i = 0;i < Npar;i++){
+                for (int j = 0;j < Npar;j++)
+                    printf("%g\t", alpha[i][j]);
+                printf("\n");
+            }
+            yn *= is_it_positive(alpha, Npar);
+            error(yn<0,1,"covariance_non_linear_fit_Nf","Cannot make the covariance matrix positive defined\n");
+        }
+        printf("now the matrix is positive defined.  %d\n", yn);
+        C = symmetric_matrix_inverse(Npar, alpha);
+    }
+
+
+    for (j = 0;j < Npar;j++) {
+        free(alpha[j]);
+    }
+
+    free(alpha);
+    free(beta);
+    return C;
+}
+
+
 
 void sort_NM(double* chi2s1, double** points1, double* chi2s, double** points, int Npar, int* order) {
     for (int i = 0;i < Npar + 1;i++)
