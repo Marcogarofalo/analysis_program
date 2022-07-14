@@ -51,7 +51,7 @@ void read_M3(int& NE, int& Njack, std::vector<double>& E3, double***& M3, std::s
 
 }
 
-void compute_M3(int NE, double Emin, double dE, int Njack, std::vector<double>& E3, double*** &M3, int N, int Npar, double** P,
+void compute_M3(int NE, double Emin, double dE, int Njack, std::vector<double>& E3, double***& M3, int N, int Npar, double** P,
     double compute_kcot(int, double*, int, double*), double** PKiso, double compute_kiso(double, double*), double eps) {
 
     M3 = double_malloc_3(NE, 2, Njack);
@@ -149,18 +149,18 @@ int main(int argc, char** argv) {
     int seed = 1;
     int tot_parK = NPkiso + Npar;
     double* mean = (double*)malloc(sizeof(double) * tot_parK);
-    mean[0] = 204.692;
-    mean[1] = 9.12076;
-    mean[2] = -2491.55;
-    mean[3] = -0.149458;
+    mean[0] = 210.679;
+    mean[1] = 9.12063;
+    mean[2] = -2249.87;
+    mean[3] = -0.148436;
     double** cov = double_calloc_2(tot_parK, tot_parK);
-    cov[0][0] = pow(23, 2);
-    cov[1][1] = pow(0.0015, 2);
-    cov[2][2] = pow(6.7e+2, 2);
-    cov[3][3] = pow(0.002, 2);
-    // cov[0][1] = -1.77; cov[0][2] = 9.49;     cov[0][3] = 3.95;
-    // ;                  cov[1][2] = 0.000297; cov[1][3] = -8.63e-5;
-    // ; ;                                      cov[2][3] = -254;
+    cov[0][0] = pow(22, 2);
+    cov[1][1] = pow(0.0013, 2);
+    cov[2][2] = pow(6.6e+2, 2);
+    cov[3][3] = pow(0.0019, 2);
+    cov[0][1] = 0.0299;   cov[0][2] = 0.513;  cov[0][3] = 0.0401;
+    ;                     cov[1][2] = 0.11;   cov[1][3] = 0.0287;
+    ; ;                                       cov[2][3] = -373;
 
     for (int i = 0; i < tot_parK;i++) {
         for (int j = i + 1; j < tot_parK;j++) {
@@ -234,9 +234,9 @@ int main(int argc, char** argv) {
     }
     double*** M3;
 
-    // compute_M3(NE, Emin, dE, Njack, E3, M3, N, Npar, P, compute_kcot, PKiso, compute_kiso, eps);
-    // write_M3(NE, Njack, E3, M3, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
-    read_M3(NE, Njack, E3, M3,  "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
+    compute_M3(NE, Emin, dE, Njack, E3, M3, N, Npar, P, compute_kcot, PKiso, compute_kiso, eps);
+    write_M3(NE, Njack, E3, M3, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
+    // read_M3(NE, Njack, E3, M3, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
 
     data_all jackall;
     jackall.ens = NE;
