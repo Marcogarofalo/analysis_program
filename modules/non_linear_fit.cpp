@@ -1031,21 +1031,22 @@ double** covariance_non_linear_fit_Nf(int N, int* ensemble, double** x, double**
         C[0][0] = 1. / alpha[0][0];
     }
     else {
-        double yn = is_it_positive(alpha, Npar);
-        while (yn > 0) {
-            yn *= 2;
-            printf("covariance matrix not positive defined adding eps*cov[0][0]*I*%d \n", yn);
-            for (int i = 0;i < Npar;i++)
-                alpha[i][i] += alpha[0][0] * 1e-10 * yn;
-            for (int i = 0;i < Npar;i++){
-                for (int j = 0;j < Npar;j++)
-                    printf("%g\t", alpha[i][j]);
-                printf("\n");
-            }
-            yn *= is_it_positive(alpha, Npar);
-            error(yn<0,1,"covariance_non_linear_fit_Nf","Cannot make the covariance matrix positive defined\n");
-        }
-        printf("now the matrix is positive defined.  %d\n", yn);
+        // double yn = is_it_positive(alpha, Npar);
+        // while (yn > 0) {
+        //     yn *= 2;
+        //     printf("covariance matrix not positive defined adding eps*cov[0][0]*I*%g \n", yn);
+        //     for (int i = 0;i < Npar;i++)
+        //         alpha[i][i] += alpha[0][0] * 1e-10 * yn;
+        //     for (int i = 0;i < Npar;i++) {
+        //         for (int j = 0;j < Npar;j++)
+        //             printf("%g\t", alpha[i][j]);
+        //         printf("\n");
+        //     }
+        //     yn *= is_it_positive(alpha, Npar);
+        //     error(yn < 0, 1, "covariance_non_linear_fit_Nf", "Cannot make the covariance matrix positive defined\n");
+        // }
+        // printf("now the matrix is positive defined.  %d\n", yn);
+        make_the_matrix_positive(alpha, Npar);
         C = symmetric_matrix_inverse(Npar, alpha);
     }
 

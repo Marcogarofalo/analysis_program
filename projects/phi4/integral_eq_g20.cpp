@@ -10,6 +10,10 @@
 #include "integral_eq_QC3.hpp"
 #include "mutils.hpp"
 #include "non_linear_fit.hpp"
+#include "linear_fit.hpp"
+
+using namespace std::complex_literals;
+
 
 void write_M3(int NE, int Njack, std::vector<double>& E3, double*** M3, std::string namef, const char* prefix) {
     char namefile[NAMESIZE];
@@ -99,6 +103,24 @@ double rhs_laurent_pole(int n, int Nvar, double* x, int Npar, double* P) {
     else { printf("%s\n", __func__);  exit(1); }
 }
 
+
+double rhs_BW(int n, int Nvar, double* x, int Npar, double* P) {
+    error(Npar % 2 != 0, 1, "rhs_laurent_pole:", "Npar=%d but it must be multiple of two since the parameters are complex", Npar);
+    std::complex<double> E(x[0], x[1]);
+
+    std::complex<double> r = P[2] / (E  - P[0]+1i *P[1]/2.0);
+
+    if (Npar >= 4) {
+        r += P[3];
+    }
+    r = 1. / r;
+
+    if (n == 0)      return real(r);
+    else if (n == 1) return imag(r);
+    else { printf("%s\n", __func__);  exit(1); }
+}
+
+
 double lhs_M3(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double r;
 
@@ -160,7 +182,7 @@ int main(int argc, char** argv) {
     cov[3][3] = pow(0.0019, 2);
     cov[0][1] = 0.0299;   cov[0][2] = 0.513;  cov[0][3] = 0.0401;
     ;                     cov[1][2] = 0.11;   cov[1][3] = 0.0287;
-    ; ;                                       cov[2][3] = -373;
+    ; ;                                       cov[2][3] = -0.373;
 
     for (int i = 0; i < tot_parK;i++) {
         for (int j = i + 1; j < tot_parK;j++) {
@@ -168,7 +190,7 @@ int main(int argc, char** argv) {
             cov[j][i] = cov[i][j];
         }
     }
-
+    make_the_matrix_positive(cov, tot_parK);
 
 
     double** tmp = fake_sampling_covariance("jack", mean, Njack, tot_parK, cov, seed);
@@ -181,8 +203,8 @@ int main(int argc, char** argv) {
     printf("E3    M3_re   M3_im      Kdf_re  kdf_im  Finf_re  Finf_im\n");
 
 
-    double Emin = 3.015;
-    double Emax = 3.03;
+    double Emin = 3.021;
+    double Emax = 3.02125;
     // double Emin = 3.02;
     // double Emax = 3.03;
 
@@ -234,9 +256,9 @@ int main(int argc, char** argv) {
     }
     double*** M3;
 
-    compute_M3(NE, Emin, dE, Njack, E3, M3, N, Npar, P, compute_kcot, PKiso, compute_kiso, eps);
-    write_M3(NE, Njack, E3, M3, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
-    // read_M3(NE, Njack, E3, M3, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
+    // compute_M3(NE, Emin, dE, Njack, E3, M3, N, Npar, P, compute_kcot, PKiso, compute_kiso, eps);
+    // write_M3(NE, Njack, E3, M3, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
+    read_M3(NE, Njack, E3, M3, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
 
     data_all jackall;
     jackall.ens = NE;
@@ -373,6 +395,48 @@ int main(int argc, char** argv) {
         struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_M3, fit_info, namefile);
         fit_info.band_range = { Emin , Emax };
         print_fit_band(argv, jackall, fit_info, fit_info, namefile, "E_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, fit_info.myen.size() - 1, 0.0002);
+        fit_info.restore_default();
+
+    }
+
+    {
+        fit_type fit_info;
+        fit_info.Njack = Njack;
+        fit_info.N = 2;
+        fit_info.myen = std::vector<int>(NE);
+        for (int e = 0; e < fit_info.myen.size(); e++) fit_info.myen[e] = e;
+        fit_info.Nvar = 2;
+        fit_info.Npar = 4;
+        fit_info.function = rhs_BW;
+
+        fit_info.malloc_x();
+
+        int scount = 0;
+        for (int n = 0;n < fit_info.N;n++) {
+            for (int e = 0;e < fit_info.myen.size();e++) {
+                for (int j = 0;j < fit_info.Njack;j++) {
+                    fit_info.x[0][scount][j] = E3[e];
+                    fit_info.x[1][scount][j] = 0;
+                }
+                scount++;
+            }
+        }
+
+        fit_info.acc = 0.01;
+        fit_info.h = 1e-5;
+        fit_info.devorder = 2;
+        fit_info.verbosity = 3;
+        fit_info.repeat_start = 1;
+        fit_info.guess = { 3.02112, -1.18582e-06, -252.892, 10.7525, };
+        fit_info.precision_sum = 0;
+        // fit_info.noderiv=true;
+        // fit_info.Prange={0.1, 1e-6,  1 ,1, 0.001,0.001};
+        char namefile[NAMESIZE];
+
+        mysprintf(namefile, NAMESIZE, "int_eq_g20_BW_npar%d", fit_info.Npar);
+        struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_M3, fit_info, namefile);
+        fit_info.band_range = { Emin , Emax };
+        print_fit_band(argv, jackall, fit_info, fit_info, namefile, "E_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, fit_info.myen.size() - 1, 2e-5);
         fit_info.restore_default();
 
     }
