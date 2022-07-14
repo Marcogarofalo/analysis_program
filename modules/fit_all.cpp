@@ -386,7 +386,7 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
             double a = timestamp();
             non_linear_fit_result single_jack_fit = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
             fit[j] = single_jack_fit.P;
-            fit_out.chi2[j] = single_jack_fit.chi2/(en_tot - Npar);
+            fit_out.chi2[j] = single_jack_fit.chi2 / (en_tot - Npar);
 
             if (fit_info.verbosity > 0) {
                 printf("jack =%d  chi2/dof=%g   chi2=%g   time=%g   \nfinal set: ", j, fit_out.chi2[j], fit_out.chi2[j] * (en_tot - Npar), timestamp() - a);
@@ -404,10 +404,18 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
         int j = Njack - 1;
         non_linear_fit_result single_jack_fit = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
         fit[j] = single_jack_fit.P;
-        fit_out.chi2[j] = single_jack_fit.chi2/(en_tot - Npar);
-        
-        // for the other jackboot add a white noise to the mean
-        double** C = covariance_non_linear_fit_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function);
+        fit_out.chi2[j] = single_jack_fit.chi2 / (en_tot - Npar);
+
+        // generate the other jackboot with the covariance matrix
+        // it needs to be computed fully, with the second derivative term.
+                printf("computing covariance\n");
+
+        bool store_value_seconderiv = fit_info.second_deriv;
+        fit_info.second_deriv = true;
+        double** C = covariance_non_linear_fit_Nf(N, en, x[j], y[j], fit[j], Nvar, Npar, fit_info.function, fit_info);
+        printf("HERE\n");
+        fit_info.second_deriv = store_value_seconderiv;
+
         for (int ip = 0; ip < Npar;ip++)
             for (int ik = 0; ik < Npar;ik++)
                 fit_out.C[ip][ik][j] = C[ip][ik];
@@ -422,6 +430,7 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
                     fit_out.C[ip][ik][j1] = C[ip][ik];
                 }
             }
+            fit_out.chi2[j1] = single_jack_fit.chi2 / (en_tot - Npar);
         }
         free_2(Npar, tmp);
         free_2(Npar, C);
