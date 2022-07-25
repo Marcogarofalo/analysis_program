@@ -66,6 +66,9 @@ int main(int argc, char** argv) {
 
     double Emin = 3.021;
     double Emax = 3.02125;
+    // double Emin = 3.015;
+    // double Emax = 3.027;
+    
     // double Emin = 3.02;
     // double Emax = 3.03;
 
@@ -290,6 +293,50 @@ int main(int argc, char** argv) {
 
     }
     
+
+    {//abs
+        fit_type fit_info;
+        fit_info.Njack = Njack;
+        fit_info.N = 1;
+        fit_info.myen = std::vector<int>(NE);
+        for (int e = 0; e < fit_info.myen.size(); e++) fit_info.myen[e] = e;
+        fit_info.Nvar = 2;
+        fit_info.Npar = 4;
+        fit_info.function = rhs_absBW;
+
+        fit_info.malloc_x();
+
+        int scount = 0;
+        for (int n = 0;n < fit_info.N;n++) {
+            for (int e = 0;e < fit_info.myen.size();e++) {
+                for (int j = 0;j < fit_info.Njack;j++) {
+                    fit_info.x[0][scount][j] = E3[e];
+                    fit_info.x[1][scount][j] = 0;
+                }
+                scount++;
+            }
+        }
+
+        fit_info.acc = 0.01;
+        fit_info.h = 1e-5;
+        fit_info.devorder = 2;
+        fit_info.verbosity = 3;
+        fit_info.repeat_start = 1;
+        fit_info.guess = { 3.02112, -1.18582e-06, -252.892, 10.7525, };
+        fit_info.precision_sum = 0;
+        // fit_info.noderiv=true;
+        // fit_info.Prange={0.1, 1e-6,  1 ,1, 0.001,0.001};
+        char namefile[NAMESIZE];
+
+        mysprintf(namefile, NAMESIZE, "int_eq_g20_absBW_npar%d", fit_info.Npar);
+        struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_absM3, fit_info, namefile);
+        fit_info.band_range = { Emin , Emax };
+        print_fit_band(argv, jackall, fit_info, fit_info, namefile, "E_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, fit_info.myen.size() - 1, 2e-5);
+        fit_info.restore_default();
+
+    }
+
+
     {
         fit_type fit_info;
         fit_info.Njack = Njack;

@@ -90,9 +90,9 @@ int main(int argc, char** argv) {
     }
     double*** M3, *** F;
 
-    compute_M3(NE, Emin, dE, Njack, E3, M3, F, N, Npar, P, compute_kcot, PKiso, compute_kiso, eps);
-    write_M3(NE, Njack, E3, M3, F, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
-    // read_M3(NE, Njack, E3, M3, F, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
+    // compute_M3(NE, Emin, dE, Njack, E3, M3, F, N, Npar, P, compute_kcot, PKiso, compute_kiso, eps);
+    // write_M3(NE, Njack, E3, M3, F, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
+    read_M3(NE, Njack, E3, M3, F, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
 
     data_all jackall = setup_data_for_fits(NE, Njack, M3, F);
 

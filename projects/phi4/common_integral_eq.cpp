@@ -145,6 +145,22 @@ double rhs_BW(int n, int Nvar, double* x, int Npar, double* P) {
     else { printf("%s\n", __func__);  exit(1); }
 }
 
+
+double rhs_absBW(int n, int Nvar, double* x, int Npar, double* P) {
+    error(Npar % 2 != 0, 1, "rhs_laurent_pole:", "Npar=%d but it must be multiple of two since the parameters are complex", Npar);
+    std::complex<double> E(x[0], x[1]);
+
+    std::complex<double> r = P[2] / (E - P[0] + 1i * P[1] / 2.0);
+
+    if (Npar >= 4) {
+        r += P[3];
+    }
+    r = 1. / r;
+
+    if (n == 0)      return std::abs(r);
+    else { printf("%s\n", __func__);  exit(1); }
+}
+
 double rhs_F(int n, int Nvar, double* x, int Npar, double* P) {
 
     std::complex<double> F = P[0] + 1i * P[1] + (P[2] + 1i * P[3]) * (x[0] + 1i * x[1]) * (x[0] + 1i * x[1]);
@@ -212,6 +228,23 @@ double lhs_M3(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     else if (n == 1) {
         r = M3.imag();
     }
+    else {
+        r = 0;  printf("lhs_M3 n=%d not implemented\n", n); exit(1);
+    }
+    return  r;
+}
+
+
+double lhs_absM3(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double r;
+
+    std::complex<double> M3(gjack.en[e].jack[0][j], gjack.en[e].jack[1][j]);
+    M3 = 1.0 / M3;
+
+    if (n == 0) {
+        r = std::abs(M3);
+    }
+    
     else {
         r = 0;  printf("lhs_M3 n=%d not implemented\n", n); exit(1);
     }

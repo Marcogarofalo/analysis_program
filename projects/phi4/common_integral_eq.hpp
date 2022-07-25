@@ -11,8 +11,11 @@ void compute_M3(int NE, double Emin, double dE, int Njack, std::vector<double>& 
 
 double rhs_laurent_pole(int n, int Nvar, double* x, int Npar, double* P);
 double rhs_BW(int n, int Nvar, double* x, int Npar, double* P);
+double rhs_absBW(int n, int Nvar, double* x, int Npar, double* P);
 double rhs_F(int n, int Nvar, double* x, int Npar, double* P);
 double lhs_M3(int n, int e, int j, data_all gjack, struct fit_type fit_info);
+double lhs_absM3(int n, int e, int j, data_all gjack, struct fit_type fit_info);
+
 double lhs_F(int n, int e, int j, data_all gjack, struct fit_type fit_info);
 double compute_kiso(double E3_m, double* P);
 double denom_M(int n, int Nvar, double* x, int Npar, double* P);
