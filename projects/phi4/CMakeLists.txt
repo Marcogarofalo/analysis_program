@@ -58,5 +58,7 @@ endmacro()
 add_target_with_int_eq_lib(integral_eq_g5_largeL integral_eq_g5_largeL.cpp)
 add_target_with_int_eq_lib(integral_eq_g10 integral_eq_g10.cpp)
 add_target_with_int_eq_lib(integral_eq_g20 integral_eq_g20.cpp)
+add_target_with_int_eq_lib(integral_eq_scratchpad integral_eq_scratchpad.cpp)
+
 
 add_target_with_lib(checks_phi4 checks_phi4.cpp)

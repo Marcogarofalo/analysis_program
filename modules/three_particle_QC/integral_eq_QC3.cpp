@@ -9,7 +9,7 @@ using namespace std::complex_literals;
 
 inline double compute_kmax(double E3_m) {
     double xmin = 0.02;
-    return sqrt(pow( ((E3_m * E3_m + 1) / (4.) - xmin )* 2 / E3_m, 2) - 1);
+    return sqrt(pow(((E3_m * E3_m + 1) / (4.) - xmin) * 2 / E3_m, 2) - 1);
 }
 inline double compute_d(double kmax, int N) {
     return kmax / ((double)N - 1.);
@@ -41,7 +41,7 @@ std::complex<double> M2_from_kcot(int Nvar, double* x, int Npar, double* P, doub
 }
 
 inline double J(double x) {
-    double xmin = 0.02;// fernando set them to these values
+    double xmin = 0.02-1e-12;// fernando set them to these values
     double xmax = 0.97;
 
     if (x < xmin) return 0;
@@ -62,6 +62,7 @@ double H(double k, double p, double E3_m) {
     // if (k == 0 || p == 0)
     //     printf("k,p=%g %g  omega_k=%g omega_p=%g  Es_mk2=%g  Es_mp2=%g\n", k, p, omega_k, omega_p, Es_mk2, Es_mp2);
     // alpha hard coded to -1
+    // printf("call H (%.12g, %.12g)=%.12g  %.12g",Es_mk2,Es_mp2,J(Es_mk2 / 4.) , J(Es_mp2 / 4.));
     return J(Es_mk2 / 4.) * J(Es_mp2 / 4.);
 
 }
@@ -85,7 +86,7 @@ std::complex<double> Gs_pke(double k, double p, double E3_m, double d, double ep
         // r *= -H(k, p, E3_m) / (4 * pk);
         double alpha = pow(E3_m - omega_k - omega_p, 2) - p * p - k * k - 1.;
         r = -1 * H(k, p, E3_m) / (4 * p * k) * log((alpha - 2 * p * k + 1i * eps) / (alpha + 2 * p * k + 1i * eps));
-
+        // printf("alpha=%g   H=%g\n",alpha,H(k, p, E3_m));
         // std::cout << "log=" << r << std::endl;
 
     // std::cout << "H=" << -H(k, p, E3_m) / (4 * pk) << std::endl;
@@ -126,7 +127,14 @@ Eigen::MatrixXcd compute_D(double E3_m, int N, int Npar, double* P, double kcot(
             MGM(i, j) += m2 * G * M2_from_kcot(Nvar, x, Npar, P, kcot, eps);
             // std::cout << "m2(p)=" << M2_from_kcot(Nvar, x, Npar, P, kcot) << std::endl;
         }
+       
+        // for (int j = 0; j < N;j++) {
+        //     double k = d * j;
+        //     std::complex<double> G = Gs_pke(p, k, E3_m, d, eps);
+        //     printf("1pMGP(%d,%d)=(%.12g,  %.12g)  m2=(%.12g,  %.12g)  G=(%.12g,  %.12g) pk=%g d=%g k=%g\n", i, j, oneplusMGP(i, j).real(), oneplusMGP(i, j).imag(), m2.real(), m2.imag(),G.real(), G.imag(),Pk(k, d) , d, k);
+        // }
     }
+    // exit(666);
     Eigen::MatrixXcd oneplusMGP1 = oneplusMGP.inverse();
     Eigen::MatrixXcd D = -1 * oneplusMGP1 * MGM;
     // for (int i = 0; i < N;i++) {
@@ -148,7 +156,7 @@ std::complex<double> rho(double k_m, double E3_m) {
     long double Es_mk2 = pow(E3_m - omega_k, 2) - k_m * k_m;
     std::complex<double> r = J(Es_mk2 / 4.) / (16. * M_PI * sqrt(Es_mk2));
     if (Es_mk2 >= 4)
-        r *= -1i * ((double) sqrt(Es_mk2 / 4. - 1));
+        r *= -1i * ((double)sqrt(Es_mk2 / 4. - 1));
     else
         r *= sqrt(-(Es_mk2 / 4. - 1));
     // printf("rho= %.12g     %.12Lg   %.12g \n",k_m, Es_mk2 / 4., J(Es_mk2 / 4.) );
@@ -158,22 +166,34 @@ std::complex<double> rho(double k_m, double E3_m) {
 Eigen::VectorXcd  cal_L(double E3_m, Eigen::MatrixXcd D, int N, int Npar, double* P, double kcot(int, double*, int, double*), double eps) {
     int Nvar = 1; // kcotd can have only one variable, k_m
     double x[2];
+    typedef Eigen::Matrix< std::complex<  long double >, Eigen::Dynamic, 1 > VectorXcld;
+    VectorXcld Ld(N);
     Eigen::VectorXcd L(N);
     double kmax = compute_kmax(E3_m);
     double d = compute_d(kmax, N);
     for (int i = 0;i < N;i++) {
         double k = i * d;
-        L(i) = std::complex<double>(1. / 3., 0);
+        Ld(i) = std::complex<long double>(1. / 3., 0);
         x[0] = k;
         x[1] = E3_m;
-        L(i) -= M2_from_kcot(Nvar, x, Npar, P, kcot, eps) * rho(k, E3_m);
+        Ld(i) -= M2_from_kcot(Nvar, x, Npar, P, kcot, 0) * rho(k, E3_m);
+        // if (i == 100  ) {
+        //     printf("M2=(%.12g,%.12g)   rho=(%.12g,%.12g)\n",  M2_from_kcot(Nvar, x, Npar, P, kcot, 0.0).real(),
+        //              M2_from_kcot(Nvar, x, Npar, P, kcot, 0.0).imag(), rho(k, E3_m).real(), rho(k, E3_m).imag());
+        // }
         // std::cout << "M2="<<M2_from_kcot(Nvar, x, Npar, P, kcot) << "   rho=" << rho(k, E3_m)<< std::endl;
         for (int j = 0;j < N;j++) {
             double p = j * d;
-            // std::cout << "D =" << D(i, j) << "  pk" << Pk(p, d) << "  rho" << rho(p, E3_m) << std::endl;
-            L(i) -= D(i, j) * Pk(p, d) * rho(p, E3_m);
+            // if (i == 100  ) {
+            //     printf("D(%d,%d)=(%.12g,%.12g)  pk=%.12g  rho=(%.12g,%.12g) L=(%.12Lf, %.12Lf)\n", i,j,D(i, j).real(),
+            //         D(i, j).imag(), Pk(p, d), rho(p, E3_m).real(), rho(p, E3_m).imag(),Ld(i).real(),Ld(i).imag() );
+            // }
+            Ld(i) -= D(i, j) * Pk(p, d) * rho(p, E3_m);
         }
+        L(i)=Ld(i);
+        // printf("L(%d)=(%.12g  %.12g)\n",i,L[i].real(),L[i].imag());
     }
+    
     return L;
 }
 
@@ -194,7 +214,7 @@ Eigen::VectorXcd  cal_L1(double E3_m, Eigen::MatrixXcd D, int N, int Npar, doubl
         L(i) = std::complex<double>(1. / 3., 0);
         x[0] = k[i];
         x[1] = E3_m;
-        L(i) -= M2_from_kcot(Nvar, x, Npar, P, kcot, eps) * rho(k[i], E3_m);
+        L(i) -= M2_from_kcot(Nvar, x, Npar, P, kcot, 0) * rho(k[i], E3_m);
 
         int i_min = k[i] / d;
         int i_max = k[i] / d + 1;
@@ -218,18 +238,17 @@ Eigen::VectorXcd  cal_L1(double E3_m, Eigen::MatrixXcd D, int N, int Npar, doubl
 
 std::complex<double> comput_Finf(double E3_m, Eigen::MatrixXcd D, int N, int Npar, double* P, double kcot(int, double*, int, double*), double eps) {
     std::complex<double> F = std::complex<double>(0, 0);
-    Eigen::VectorXcd L = cal_L(E3_m, D, N , Npar, P, kcot, eps);
+    Eigen::VectorXcd L = cal_L(E3_m, D, N, Npar, P, kcot, eps);
     double kmax = compute_kmax(E3_m);
     double d = compute_d(kmax, N);
     for (int i = 0;i < N;i++) {
         double k = i * d;
 
         F += Pk(k, d) * L(i) * rho(k, E3_m);
-        // printf("%-18.10g%-18.10g%-18.10g%-18.10g%-18.10g%-18.10g\n",k,rho(k, E3_m).real(), rho(k, E3_m).imag(), L(i).real(), L(i).imag(),Pk(k, d)  );
-        // std::cout << k << "  "<<  rho(k, E3_m) << "  " << L(i) << Pk(k, d) << std::endl;
-        // std::cout << i << "   " << Pk(k, d) << "   " << L(i) << "   " << rho(k, E3_m) <<"  "<< F << std::endl;
+        // if (i == N - 1) printf("%-18.12g%-18.12g%-18.12g%-18.12g%-18.12g%-18.12g\n", k, rho(k, E3_m).real(), rho(k, E3_m).imag(), L(i).real(), L(i).imag(), Pk(k, d));
+        
     }
-    
+
     return F;
 }
 
