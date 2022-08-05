@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
     mean[0] = 96.629;
     mean[1] = 9.12853;
     mean[2] = 1773.18;
-    mean[3] = -0.15631;
+    mean[3] = -0.149458;
     double** cov = double_calloc_2(tot_parK, tot_parK);
     cov[0][0] = pow(16, 2);
     cov[1][1] = pow(0.0017, 2);
@@ -57,7 +57,6 @@ int main(int argc, char** argv) {
 
     int N = 600;
     // int N = 1000;
-    double d = 0.005;
     double eps = 0.0005;
     printf("E3    M3_re   M3_im      Kdf_re  kdf_im  Finf_re  Finf_im\n");
 
@@ -66,10 +65,10 @@ int main(int argc, char** argv) {
     // double Emax = 3.03;
     // double Emin = 3.02;
     // double Emax = 3.03;
-    double Emin = 3.021;
-    double Emax = 3.025;
+    double Emin = 3.02;
+    double Emax = 3.021;
 
-    int NE = 20;
+    int NE = 1;
     double dE = (Emax - Emin) / ((double)NE);
 
     std::vector<double> E3(NE);
@@ -89,9 +88,12 @@ int main(int argc, char** argv) {
     }
     double*** M3, ***F;
 
-    // compute_M3(NE, Emin, dE, Njack, E3, M3,F, N, Npar, P, compute_kcot, PKiso, compute_kiso, eps);
+    compute_M3(NE, Emin, dE, Njack, E3, M3,F, N, Npar, P, compute_kcot, PKiso, compute_kiso, eps);
+    printf("E=%g\n", E3[0]);
+    printf("F3=%12.g  %12.g  \n", F[0][0][0],F[0][1][0] );
+    exit(1);
     // write_M3(NE, Njack, E3, M3,F, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
-    read_M3(NE, Njack, E3, M3, F, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
+    //read_M3(NE, Njack, E3, M3, F, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
 
     data_all jackall = setup_data_for_fits(NE, Njack, M3, F);
 

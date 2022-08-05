@@ -162,6 +162,28 @@ double* cholesky_solver(int n, double** a, double* b)
     return x;
 }
 
+void make_the_matrix_positive(double** M, int N, double eps) {
+    double yn = is_it_positive(M, N);
+    while (yn > 0) {
+        yn *= 2;
+        printf("make_the_matrix_positive: covariance matrix not positive defined, adding cov[0][0]*%g*I \n", yn * eps);
+        for (int i = 0;i < N;i++)
+            M[i][i] += M[0][0] * eps * yn;
+        for (int i = 0;i < N;i++) {
+            for (int j = 0;j < N;j++)
+                printf("%g\t", M[i][j]);
+            printf("\n");
+        }
+        yn *= is_it_positive(M, N);
+        if (yn < 0) {
+            printf("make_the_matrix_positive:\n Cannot make the covariance matrix positive defined\n");
+            exit(1);
+        }
+    }
+    printf("now the matrix is positive defined.  %g\n", yn);
+}
+
+
 //return the vector x: the solution of Mx=b
 //M is a matrix 
 //it uses the LU decomposition see Numerical Receipes

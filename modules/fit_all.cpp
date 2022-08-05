@@ -241,9 +241,9 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
     for (int n = 0;n < N;n++) {
         for (int e = 0;e < en[n];e++) {
             for (int v = 0; v < Nvar;v++) {
-                fprintf(f, " %g\t ", x[Njack - 1][e + count][v]);
+                fprintf(f, " %.12g\t ", x[Njack - 1][e + count][v]);
             }
-            fprintf(f, " %g   %g  \t ", y[Njack - 1][e + count][0], y[Njack - 1][e + count][1]);
+            fprintf(f, " %.12g   %.12g  \t ", y[Njack - 1][e + count][0], y[Njack - 1][e + count][1]);
             fprintf(f, " %d   \n ", n);
         }
         count += en[n];
