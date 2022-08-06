@@ -2,7 +2,15 @@
 
 
 
-add_target_with_lib(reph reph.cpp)
-add_target_with_lib(fit_all_reph fit_all_reph.cpp)
-add_target_with_lib(binning_reph binning_reph.cpp)
+macro(add_target_realphoton TARGETNAME)
+    # Make the executable
+    add_target_with_lib(${TARGETNAME} ${ARGN})
+    target_link_libraries(${TARGETNAME} PUBLIC global_reph)
+    target_link_libraries(${TARGETNAME} PUBLIC continuum_reph)
+    target_link_libraries(${TARGETNAME} PUBLIC fve)
+endmacro()
+
+add_target_realphoton(reph reph.cpp)
+add_target_realphoton(fit_all_reph fit_all_reph.cpp)
+add_target_realphoton(binning_reph binning_reph.cpp)
 
