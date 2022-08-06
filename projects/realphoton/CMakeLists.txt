@@ -7,6 +7,7 @@ macro(add_target_realphoton TARGETNAME)
     add_target_with_lib(${TARGETNAME} ${ARGN})
     target_link_libraries(${TARGETNAME} PUBLIC global_reph)
     target_link_libraries(${TARGETNAME} PUBLIC continuum_reph)
+    target_link_libraries(${TARGETNAME} PUBLIC fve)
 endmacro()
 
 add_target_realphoton(reph reph.cpp)
