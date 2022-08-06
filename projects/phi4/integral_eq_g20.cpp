@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
     int N = 600;
     // int N = 1000;
     double d = 0.005;
-    double eps = 0.0005;
+    double eps = 0.000005;
     printf("E3    M3_re   M3_im      Kdf_re  kdf_im  Finf_re  Finf_im\n");
 
 
