@@ -12,6 +12,8 @@
 #include "non_linear_fit.hpp"
 #include "linear_fit.hpp"
 #include "minimizer.hpp"
+#include "tower.hpp"
+#include "resampling.hpp"
 
 #include "common_integral_eq.hpp"
 

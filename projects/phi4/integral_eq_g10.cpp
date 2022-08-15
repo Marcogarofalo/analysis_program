@@ -12,6 +12,9 @@
 #include "non_linear_fit.hpp"
 #include "common_integral_eq.hpp"
 #include "minimizer.hpp"
+#include "tower.hpp"
+#include "resampling.hpp"
+
 
 
 int main(int argc, char** argv) {

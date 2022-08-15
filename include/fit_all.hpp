@@ -3,9 +3,7 @@
 
 #include "global.hpp"
 // #include "non_linear_fit.hpp"
-#include "tower.hpp"
 #include <iostream>
-#include "resampling.hpp"
 
 class generic_header {
 public:
@@ -74,32 +72,10 @@ public:
 
     std::string resampling;
 
-    void init_error() {
-        if (!init_err) {
-            errors = (double*)malloc(sizeof(double) * Nobs);
-            computed = (bool*)malloc(sizeof(bool) * Nobs);
-            if (strcmp(resampling.c_str(), "jack") == 0)
-                compute_mean_and_error = mean_and_error_jack_biased;
-            else if (strcmp(resampling.c_str(), "boot") == 0)
-                compute_mean_and_error = mean_and_error_boot;
-            for (int j = 0;j < Nobs;j++) {
-                computed[j] = false;
-            }
-            init_err = true;
-        }
-    }
+    void init_error() ;
     void reset_error();
 
-    double error_jack(int i) {
-        if (!init_err) init_error();
-        if (!computed[i]) {
-            double* r = compute_mean_and_error(Njack, jack[i]);
-            errors[i] = r[1];
-            free(r);
-            computed[i] = true;
-        }
-        return errors[i];
-    }
+    double error_jack(int i) ;
 
     // useless function, you can not cut the jackknife, you need to cut the confs from the beginning  
     // void cut_confs(int N);

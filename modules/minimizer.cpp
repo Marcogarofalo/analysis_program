@@ -3,6 +3,8 @@
 #include <vector>
 #include "non_linear_fit.hpp"
 #include "mutils.hpp"
+#include "tower.hpp"
+#include "resampling.hpp"
 #include <random>
 
 

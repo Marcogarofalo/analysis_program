@@ -20,6 +20,7 @@
 #include <random>
 #include "fit_all.hpp"
 #include "sorting.hpp"
+#include "resampling.hpp"
 
 
 void fit_type::compute_cov_fit(char** argv, data_all gjack, double lhs_fun(int, int, int, data_all, struct fit_type), struct fit_type fit_info) {

@@ -78,8 +78,35 @@ void data_all::add_fit(struct fit_result fit_out) {
 
 
 }
+
+void data_single::init_error() {
+    if (!init_err) {
+        errors = (double*)malloc(sizeof(double) * Nobs);
+        computed = (bool*)malloc(sizeof(bool) * Nobs);
+        if (strcmp(resampling.c_str(), "jack") == 0)
+            compute_mean_and_error = mean_and_error_jack_biased;
+        else if (strcmp(resampling.c_str(), "boot") == 0)
+            compute_mean_and_error = mean_and_error_boot;
+        for (int j = 0;j < Nobs;j++) {
+            computed[j] = false;
+        }
+        init_err = true;
+    }
+}
+
 void data_single::reset_error() {
     if (init_err) { free(errors); free(computed); }
+}
+
+double data_single::error_jack(int i) {
+    if (!init_err) init_error();
+    if (!computed[i]) {
+        double* r = compute_mean_and_error(Njack, jack[i]);
+        errors[i] = r[1];
+        free(r);
+        computed[i] = true;
+    }
+    return errors[i];
 }
 
 
@@ -408,7 +435,7 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
 
         // generate the other jackboot with the covariance matrix
         // it needs to be computed fully, with the second derivative term.
-                printf("computing covariance\n");
+        printf("computing covariance\n");
 
         bool store_value_seconderiv = fit_info.second_deriv;
         fit_info.second_deriv = true;
