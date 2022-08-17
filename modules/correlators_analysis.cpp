@@ -632,7 +632,7 @@ double* plateau_correlator_function(char** option, struct kinematic kinematic_2p
 
     r = double_malloc_2(file_head.l0, Njack);
     // mt = (double**)malloc(sizeof(double*) * file_head.l0);
-    mt = double_malloc_2(file_head.l0, 2);
+    mt = double_malloc_2(file_head.l0/2, 2);
     fprintf(outfile, " \n\n");
     fprintf(outfile, "#m_eff(t) of %s  propagators:1) mu %.5f r %d theta %.5f 2) mu %.5f r %d theta %.5f\n", name,
         kinematic_2pt.k2, kinematic_2pt.r2, kinematic_2pt.mom2,
@@ -702,7 +702,7 @@ struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic
     for (i = 0; i < file_head.l0; i++)
         r[i] = (double*)malloc(sizeof(double) * Njack);
     // mt = (double**)malloc(sizeof(double*) * file_head.l0);
-    mt = double_malloc_2(file_head.l0, 2);
+    mt = double_malloc_2(file_head.l0/2, 2);
 
     fprintf(outfile, " \n\n");
     fprintf(outfile, "#m_eff(t) of %s  propagators:1) mu %.5f r %d theta %.5f 2) mu %.5f r %d theta %.5f\n", name,
@@ -762,7 +762,7 @@ struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinemat
     for (i = 0; i < file_head.l0; i++)
         r[i] = (double*)malloc(sizeof(double) * Njack);
     // mt = (double**)malloc(sizeof(double*) * file_head.l0);
-    mt = double_malloc_2(file_head.l0, 2);
+    mt = double_malloc_2(file_head.l0/2, 2);
 
     fprintf(outfile, " \n\n");
     fprintf(outfile, "#m_eff(t) of %s  propagators:1) mu %.5f r %d theta %.5f 2) mu %.5f r %d theta %.5f\n", name,
