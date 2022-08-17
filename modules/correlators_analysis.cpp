@@ -670,7 +670,7 @@ double* plateau_correlator_function(char** option, struct kinematic kinematic_2p
 
     free_fit_result(fit_info, fit_out);
 
-    for (i = 1; i < file_head.l0 / 2; i++)
+    for (i = 0; i < file_head.l0 / 2; i++)
         free(mt[i]);
     free(mt);
     free_2(file_head.l0, r);
@@ -726,7 +726,7 @@ struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic
 
     fwrite(fit_out.P[0], sizeof(double), Njack, file_jack);
 
-    for (i = 1; i < file_head.l0 / 2; i++)
+    for (i = 0; i < file_head.l0 / 2; i++)
         free(mt[i]);
     free(mt);
     for (i = 0; i < file_head.l0; i++)
@@ -788,7 +788,7 @@ struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinemat
 
     fwrite(fit_out.P[0], sizeof(double), Njack, file_jack);
 
-    for (i = 1; i < file_head.l0 / 2; i++)
+    for (i = 0; i < file_head.l0 / 2; i++)
         free(mt[i]);
     free(mt);
     for (i = 0; i < file_head.l0; i++)
