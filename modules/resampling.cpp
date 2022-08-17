@@ -66,7 +66,8 @@ double ***read_jack(int N, int var, int T){
     FILE **f;
     double ***jack;
     char **datafile;
-    
+    int fi=0;
+
     f=(FILE**) malloc(sizeof(FILE*)*var);
     datafile=(char**) malloc(sizeof(char*)*var);
     for (i=0;i<var;i++){
@@ -83,7 +84,7 @@ double ***read_jack(int N, int var, int T){
         for (i=0;i<var;i++){
             jack[j][i]=(double*) malloc(sizeof(double)*T);
 	    for (k=0;k<T;k++){
-                 fscanf(f[i],"%lf\n",&jack[j][i][k]);
+                fi+=fscanf(f[i],"%lf\n",&jack[j][i][k]);
             } 
         }
     }

@@ -9,6 +9,7 @@
 #include "non_linear_fit.hpp"
 #include "read.hpp"
 #include "resampling.hpp"
+#include "resampling_new.hpp"
 #include "tower.hpp"
 #include <complex.h>
 #include <math.h>
@@ -399,8 +400,9 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
         for (i = tmin; i <= tmax; i += sep) {
             for (j = 0; j < Njack; j++) {
                 y[j][count][0] = corr_J[i][j];
-                y[j][count][1] = error_jackboot(option[4], Njack, corr_J[i]);
-                ; // corr_ave[i][1];
+                // y[j][count][1] = error_jackboot(option[4], Njack, corr_J[i]);
+                y[j][count][1] =myres->comp_error(corr_J[i]);
+                
             }
             count++;
         }
@@ -497,7 +499,10 @@ struct fit_result fit_fun_to_corr(char** option, struct kinematic kinematic_2pt,
                 fprintf(fit_info.f_plateaux_scan, "%d   %d ", tmin, tmax);
                 fprintf(fit_info.f_plateaux_scan, " %.5g \t", tmp.chi2[Njack - 1]);
                 for (int i = 0; i < fit_info.Npar; i++) {
-                    fprintf(fit_info.f_plateaux_scan, "%.15g    %.15g    \t", tmp.P[i][Njack - 1], error_jackboot(option[4], Njack, tmp.P[i]));
+                    fprintf(fit_info.f_plateaux_scan, "%.15g    %.15g    \t", tmp.P[i][Njack - 1],
+                        // error_jackboot(option[4], Njack, tmp.P[i])
+                         myres->comp_error(tmp.P[i])
+                    );
                 }
                 free_fit_result(fit_info, tmp);
                 fprintf(fit_info.f_plateaux_scan, "\n");
@@ -626,8 +631,8 @@ double* plateau_correlator_function(char** option, struct kinematic kinematic_2p
     int i, j, yn;
 
     r = double_malloc_2(file_head.l0, Njack);
-    mt = (double**)malloc(sizeof(double*) * file_head.l0);
-
+    // mt = (double**)malloc(sizeof(double*) * file_head.l0);
+    mt = double_malloc_2(file_head.l0, 2);
     fprintf(outfile, " \n\n");
     fprintf(outfile, "#m_eff(t) of %s  propagators:1) mu %.5f r %d theta %.5f 2) mu %.5f r %d theta %.5f\n", name,
         kinematic_2pt.k2, kinematic_2pt.r2, kinematic_2pt.mom2,
@@ -637,10 +642,12 @@ double* plateau_correlator_function(char** option, struct kinematic kinematic_2p
             // shift
             r[i][j] = fun(i, file_head.l0, conf_jack[j][index]);
         }
-        if (strcmp(option[4], "jack") == 0)
-            mt[i] = mean_and_error_jack(Njack, r[i]);
-        if (strcmp(option[4], "boot") == 0)
-            mt[i] = mean_and_error_boot(Njack, r[i]);
+        mt[i][0] = r[i][Njack - 1];
+        mt[i][1] = myres->comp_error(r[i]);
+        // if (strcmp(option[4], "jack") == 0)
+        //     mt[i] = mean_and_error_jack(Njack, r[i]);
+        // if (strcmp(option[4], "boot") == 0)
+        //     mt[i] = mean_and_error_boot(Njack, r[i]);
         // fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
     }
 
@@ -694,7 +701,8 @@ struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic
     r = (double**)malloc(sizeof(double*) * file_head.l0);
     for (i = 0; i < file_head.l0; i++)
         r[i] = (double*)malloc(sizeof(double) * Njack);
-    mt = (double**)malloc(sizeof(double*) * file_head.l0);
+    // mt = (double**)malloc(sizeof(double*) * file_head.l0);
+    mt = double_malloc_2(file_head.l0, 2);
 
     fprintf(outfile, " \n\n");
     fprintf(outfile, "#m_eff(t) of %s  propagators:1) mu %.5f r %d theta %.5f 2) mu %.5f r %d theta %.5f\n", name,
@@ -704,11 +712,12 @@ struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic
         for (j = 0; j < Njack; j++) {
             r[i][j] = conf_jack[j][index][i][re_im];
         }
-
-        if (strcmp(option[4], "jack") == 0)
-            mt[i] = mean_and_error_jack(Njack, r[i]);
-        if (strcmp(option[4], "boot") == 0)
-            mt[i] = mean_and_error_boot(Njack, r[i]);
+        mt[i][0] = r[i][Njack - 1];
+        mt[i][1] = myres->comp_error(r[i]);
+        // if (strcmp(option[4], "jack") == 0)
+        //     mt[i] = mean_and_error_jack(Njack, r[i]);
+        // if (strcmp(option[4], "boot") == 0)
+        //     mt[i] = mean_and_error_boot(Njack, r[i]);
         // fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
     }
 
@@ -752,7 +761,9 @@ struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinemat
     r = (double**)malloc(sizeof(double*) * file_head.l0);
     for (i = 0; i < file_head.l0; i++)
         r[i] = (double*)malloc(sizeof(double) * Njack);
-    mt = (double**)malloc(sizeof(double*) * file_head.l0);
+    // mt = (double**)malloc(sizeof(double*) * file_head.l0);
+    mt = double_malloc_2(file_head.l0, 2);
+
     fprintf(outfile, " \n\n");
     fprintf(outfile, "#m_eff(t) of %s  propagators:1) mu %.5f r %d theta %.5f 2) mu %.5f r %d theta %.5f\n", name,
         kinematic_2pt.k2, kinematic_2pt.r2, kinematic_2pt.mom2,
@@ -763,11 +774,12 @@ struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinemat
             // r[i][j]= conf_jack[j][index][i][re_im];
             r[i][j] = fun_of_corr(j, conf_jack, i, fit_info);
         }
-
-        if (strcmp(option[4], "jack") == 0)
-            mt[i] = mean_and_error_jack(Njack, r[i]);
-        if (strcmp(option[4], "boot") == 0)
-            mt[i] = mean_and_error_boot(Njack, r[i]);
+        mt[i][0] = r[i][Njack - 1];
+        mt[i][1] = myres->comp_error(r[i]);
+        // if (strcmp(option[4], "jack") == 0)
+        //     mt[i] = mean_and_error_jack(Njack, r[i]);
+        // if (strcmp(option[4], "boot") == 0)
+        //     mt[i] = mean_and_error_boot(Njack, r[i]);
         // fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
     }
 

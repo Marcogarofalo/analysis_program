@@ -250,4 +250,8 @@ EXTERN struct data_jack* dataJ, * gjack;
 EXTERN struct result_jack result;
 EXTERN int** index_a;
 EXTERN int corr_counter;
+
+EXTERN class resampling_f *myres;
+
+
 #endif

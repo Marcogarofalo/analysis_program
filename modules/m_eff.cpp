@@ -301,7 +301,7 @@ void replace_plateau(struct kinematic kinematic_2pt ,const char* description,int
         mysprintf(instruction,NAMESIZE,"sed -i \"%ds/.*/%d  %d  %d/\"  %s",line,tmin,tmax,sep,kinematic_2pt.plateau_f);
     }
 
-    system(instruction);
+    int fi=system(instruction);
     
 }
 

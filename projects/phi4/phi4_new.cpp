@@ -9,6 +9,7 @@
 
 #include "global.hpp"
 #include "resampling.hpp"
+#include "resampling_new.hpp"
 #include "read.hpp"
 #include "m_eff.hpp"
 #include "gnuplot.hpp"
@@ -28,6 +29,7 @@
 #include <fstream>
 #include <memory>
 using namespace std;
+
 
 int id_GEVP_031_p1;
 
@@ -925,7 +927,6 @@ int main(int argc, char** argv) {
     int* iconf, confs;
     double**** data, **** data_bin, ** out, ** tmp;
     char c;
-    clock_t t1, t2;
     double* in;
 
     double**** M, **** vec, **** projected_O;
@@ -1066,10 +1067,14 @@ int main(int argc, char** argv) {
     cout << "effective configurations after binning (" << bin << "):  " << Neff << endl;
 
     int Njack;
-    if (strcmp(argv[7], "jack") == 0)
+    if (strcmp(argv[7], "jack") == 0){
         Njack = Neff + 1;
-    else if (strcmp(argv[7], "boot") == 0)
+        myres=new resampling_jack(Njack);
+    }
+    else if (strcmp(argv[7], "boot") == 0){
         Njack = Nbootstrap + 1;
+        myres=new resampling_boot(Njack);
+    }
     else {
         Njack = 0;
         error(1 == 1, 1, "main", "argv[7]= %s is not jack or boot", argv[7]);
@@ -1163,7 +1168,8 @@ int main(int argc, char** argv) {
 
     free_corr(confs, var, file_head.l0, data);
 
-    conf_jack = create_resampling(option[4], Neff, var, file_head.l0, data_bin);
+    // conf_jack = create_resampling(option[4], Neff, var, file_head.l0, data_bin);
+    conf_jack = myres->create(Neff, var, file_head.l0, data_bin);
     free_corr(Neff, var, file_head.l0, data_bin);
 
     ////////////////// symmetrization/////////////////////////////////////////////
@@ -1213,6 +1219,7 @@ int main(int argc, char** argv) {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     //print all the effective masses correlators
     //set the option to not read for a plateaux
+    double t1=timestamp();
     char  save_option[NAMESIZE];
     sprintf(save_option, "%s", option[1]);
     sprintf(option[1], "blind");
@@ -5945,7 +5952,7 @@ int main(int argc, char** argv) {
 
     free(file_head.k);
     fclose(jack_file);
-
+    printf("time computing observables: %g s\n",timestamp()-t1);
     return 0;
 }
 

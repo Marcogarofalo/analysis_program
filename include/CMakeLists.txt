@@ -27,6 +27,18 @@ target_link_libraries(resampling PUBLIC tower)
 target_link_libraries(resampling PUBLIC rand)
 target_include_directories(resampling PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
+
+add_library(
+    resampling_new STATIC
+    resampling_new.hpp
+    ../modules/resampling_new.cpp
+) 
+
+target_link_libraries(resampling_new PUBLIC tower)
+target_link_libraries(resampling_new PUBLIC rand)
+target_include_directories(resampling_new PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+
+
 add_library(
     mutils STATIC
     mutils.hpp
@@ -255,6 +267,8 @@ add_library(
 ) 
 target_link_libraries(correlators_analysis PUBLIC read)
 target_link_libraries(correlators_analysis PUBLIC non_linear_fit)
+target_link_libraries(correlators_analysis PUBLIC resampling_new)
+set_target_properties(correlators_analysis PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(correlators_analysis PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 

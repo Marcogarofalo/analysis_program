@@ -115,33 +115,33 @@ static void  read_file_head_bin(FILE *stream)
 {
     int i,dsize;
     double *dstd;
+    int fi=0;
+    fi+=fread(&file_head.twist,sizeof(int),1,stream);
+    fi+=fread(&file_head.nf,sizeof(int),1,stream);
+    fi+=fread(&file_head.nsrc,sizeof(int),1,stream);
+    fi+=fread(&file_head.l0,sizeof(int),1,stream);
+    fi+=fread(&file_head.l1,sizeof(int),1,stream);
+    fi+=fread(&file_head.l2,sizeof(int),1,stream);
+    fi+=fread(&file_head.l3,sizeof(int),1,stream);
+    fi+=fread(&file_head.nk,sizeof(int),1,stream);
+    fi+=fread(&file_head.nmoms,sizeof(int),1,stream);
     
-    fread(&file_head.twist,sizeof(int),1,stream);
-    fread(&file_head.nf,sizeof(int),1,stream);
-    fread(&file_head.nsrc,sizeof(int),1,stream);
-    fread(&file_head.l0,sizeof(int),1,stream);
-    fread(&file_head.l1,sizeof(int),1,stream);
-    fread(&file_head.l2,sizeof(int),1,stream);
-    fread(&file_head.l3,sizeof(int),1,stream);
-    fread(&file_head.nk,sizeof(int),1,stream);
-    fread(&file_head.nmoms,sizeof(int),1,stream);
-    
-    fread(&file_head.beta,sizeof(double),1,stream);
-    fread(&file_head.ksea,sizeof(double),1,stream);
-    fread(&file_head.musea,sizeof(double),1,stream);
-    fread(&file_head.csw,sizeof(double),1,stream);
+    fi+=fread(&file_head.beta,sizeof(double),1,stream);
+    fi+=fread(&file_head.ksea,sizeof(double),1,stream);
+    fi+=fread(&file_head.musea,sizeof(double),1,stream);
+    fi+=fread(&file_head.csw,sizeof(double),1,stream);
    
     file_head.k=(double*) malloc(sizeof(double)*2*file_head.nk);
     for(i=0;i<2*file_head.nk;++i)
-    	fread(&file_head.k[i],sizeof(double),1,stream);
+    	fi+=fread(&file_head.k[i],sizeof(double),1,stream);
     
     file_head.mom=(double**) malloc(sizeof(double*)*file_head.nmoms);
     for(i=0;i<file_head.nmoms;i++) {
     	file_head.mom[i]=(double*) malloc(sizeof(double)*4);
-        fread(&file_head.mom[i][0],sizeof(double),1,stream);
-        fread(&file_head.mom[i][1],sizeof(double),1,stream);
-        fread(&file_head.mom[i][2],sizeof(double),1,stream);
-        fread(&file_head.mom[i][3],sizeof(double),1,stream);
+        fi+=fread(&file_head.mom[i][0],sizeof(double),1,stream);
+        fi+=fread(&file_head.mom[i][1],sizeof(double),1,stream);
+        fi+=fread(&file_head.mom[i][2],sizeof(double),1,stream);
+        fi+=fread(&file_head.mom[i][3],sizeof(double),1,stream);
 
     }
 }
@@ -175,8 +175,9 @@ void read_nconfs(int *s, int *c, FILE *stream){
 
    FILE *f1;
    long int tmp;
+   int fi=0;
 
-   fread(s,sizeof(int),1,stream);
+   fi+=fread(s,sizeof(int),1,stream);
    f1=stream;
    
    fseek(stream, 0, SEEK_END);
@@ -187,7 +188,7 @@ void read_nconfs(int *s, int *c, FILE *stream){
  
   rewind(stream);
   read_file_head_bin(stream);
-  fread(s,sizeof(int),1,stream);
+  fi+=fread(s,sizeof(int),1,stream);
 
 }
 
@@ -292,7 +293,7 @@ void read_twopt(FILE *stream,int size, int iconf , double **to_write,int si, int
    fseek(stream, tmp, SEEK_SET);
 
    obs=(double*) malloc(size*sizeof(double)); 
-   fread(obs,sizeof(double),size,stream);   
+   int fi=fread(obs,sizeof(double),size,stream);   
    
    mimom1=index_minus_theta(imom1);
    mimom2=index_minus_theta(imom2);
@@ -535,12 +536,12 @@ int main(int argc, char **argv){
    cout << "the file contain data up to t= ? (reply <=0 to say T)  "  << endl;
    int Tcorr_max=T;
    int CMI;
-   scanf("%d",&Tcorr_max);
+   int fi=scanf("%d",&Tcorr_max);
    if (Tcorr_max<=0)
         Tcorr_max=T;
    else{
        cout << "CMI format? no=0  yes=1"<<endl;
-       scanf("%d",&CMI);
+       fi+=scanf("%d",&CMI);
    }
 
 
@@ -569,7 +570,7 @@ int main(int argc, char **argv){
            //tt=t;
            //fscanf(infile," %lf",&data[iconf][0][t][0]);
             if (t< Tcorr_max){
-                fscanf(infile,"%d  %d %d %lf %lf",&a,&b,&tt,&data[iconf][0][t][0],&data[iconf][0][t][1]);
+                fi+=fscanf(infile,"%d  %d %d %lf %lf",&a,&b,&tt,&data[iconf][0][t][0],&data[iconf][0][t][1]);
                 error(t!=tt, 1, "main: reading","time do not match  conf=%d   t=%d  read %d",iconf ,t,tt);
             } else{
                 data[iconf][0][t][0]=0;
@@ -585,7 +586,7 @@ int main(int argc, char **argv){
                 int tt;
                 int a ,b,c;
                 if (t< Tcorr_max){
-                    fscanf(infile1,"%d  %d %d %lf %lf",&a,&b,&tt,&data[iconf][1][t][0],&data[iconf][1][t][1]);
+                    fi+=fscanf(infile1,"%d  %d %d %lf %lf",&a,&b,&tt,&data[iconf][1][t][0],&data[iconf][1][t][1]);
                     error(t!=tt, 1, "main: reading","time do not match  conf=%d   t=%d  read %d",iconf ,t,tt);
                 } else{
                     data[iconf][0][t][0]=0;
