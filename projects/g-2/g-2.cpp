@@ -446,7 +446,6 @@ int main(int argc, char** argv) {
     int* iconf, confs;
     double**** data, **** data_bin, ** out;
     char c;
-    clock_t t1, t2;
     double* in;
 
     double**** M, **** vec, **** projected_O;
@@ -701,10 +700,12 @@ int main(int argc, char** argv) {
     // cout << "effective configurations after binning ( bin size " << confs / bin << "):  " << Neff << endl;
 
     int Njack;
-    if (strcmp(argv[9], "jack") == 0)
+    if (strcmp(argv[9], "jack") == 0) {
         Njack = Neff + 1;
-    else if (strcmp(argv[9], "boot") == 0)
+    }
+    else if (strcmp(argv[9], "boot") == 0) {
         Njack = Nbootstrap + 1;
+    }
     else {
         Njack = 0;
         error(1 == 1, 1, "main", "argv[9]= %s is not jack or boot", argv[9]);
@@ -1504,10 +1505,42 @@ int main(int argc, char** argv) {
     free(mc_JPsi);
     free_2(3, mc);
 
+    ///////////////////////////////////// correlator
+    {
+        double t1 = 0.2;
+        fit_type fit_info;
+        
+        fit_info.Npar = 4;
+        fit_info.Nvar = 1;
+        fit_info.N = 1;
+        fit_info.Njack = Njack;
+        fit_info.n_ext_P = 3;
+        fit_info.ext_P = double_malloc_2(fit_info.n_ext_P, Njack);
 
+        for (int j = 0;j < Njack; j++) {
+            fit_info.ext_P[0][j] = t1;
+            fit_info.ext_P[1][j] = ZV[j];
+            fit_info.ext_P[2][j] = a[j];
+        }
 
+        fit_info.function = rhs_poly;
 
-    free(amu_sdeq_s);free(amu_sdeq_s1);free(amu_sd_sphys);
+        fit_info.codeplateaux = true;
+        fit_info.tmin = ((int)(t1 / a[Njack - 1])) - 1;
+        fit_info.tmax = fit_info.tmin + 3 ;
+        
+        fit_info.repeat_start=10;
+        fit_info.verbosity=0;
+        
+
+        fit_result ct = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, lhs_ct<2>, "C_{l}^{eq}", fit_info, jack_file);
+        write_jack(ct.P[0], Njack, jack_file);
+        check_correlatro_counter(114);
+        for (int i = 0;i < fit_info.n_ext_P; i++)   free(fit_info.ext_P[i]);
+
+        fit_info.restore_default();
+    }
+    free(amu_sdeq_s);free(amu_sdeq_s1);
 
     for (int i = 0;i < Nstrange;i++) {
         Meta[i] = nullptr;
