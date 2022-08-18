@@ -63,7 +63,7 @@ double* interpol_etacr(int Nmus, int Njack, double* x, double** y, double tau) {
     free_2(Nmus, matrix);
     printf("tau    eta_cr\n");
     for (int i = 0;i < Nmus;i++) {
-        printf("%g   %g\n", x[i], y[i][Njack - 1], error_jackboot("jack", Njack - 1, y[i]));
+        printf("%g  %g   %g\n", x[i], y[i][Njack - 1], error_jackboot("jack", Njack - 1, y[i]));
     }
     printf("extrapolated to %g  :%g  %g\n", tau, Zint[Njack - 1], error_jackboot("jack", Njack - 1, Zint));
     return(Zint);

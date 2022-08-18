@@ -346,7 +346,7 @@ void print_fit_output(char** argv, vector<data_BSM> gjack, struct fit_type fit_i
     f = open_file(namefile, "w+");
 
     for (int i = 0;i < Npar;i++) {
-        fprintf(f, "%g   %g    %g\n", i, fit_out.P[i][Njack - 1], error_jackboot(argv[1], Njack, fit_out.P[i]), fit_out.chi2[Njack - 1]);
+        fprintf(f, "%d    %g   %g    %g\n", i, fit_out.P[i][Njack - 1], error_jackboot(argv[1], Njack, fit_out.P[i]), fit_out.chi2[Njack - 1]);
     }
     double** tif = swap_indices(fit_info.Npar, Njack, fit_out.P);
     fclose(f);

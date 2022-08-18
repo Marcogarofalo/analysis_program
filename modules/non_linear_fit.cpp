@@ -171,6 +171,10 @@ void fit_type::restore_default() {
     }
     covariancey = false;
     second_deriv = false;
+
+    codeplateaux = false;
+    tmin = -1;
+    tmax = -1;
 }
 
 

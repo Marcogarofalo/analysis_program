@@ -25,6 +25,7 @@ add_library(
 
 target_link_libraries(resampling PUBLIC tower)
 target_link_libraries(resampling PUBLIC rand)
+target_link_libraries(resampling PUBLIC resampling_new)
 target_include_directories(resampling PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 

@@ -13,10 +13,11 @@
 #include "global.hpp"
 #include "mutils.hpp"
 #include "resampling.hpp"
+#include "resampling_new.hpp"
 
 
 double new_error_jack_biased(int Np1, double* in) {
-    double r[2];
+    double r[2]={0,0};
     int i, N;
 
     N = Np1 - 1;
@@ -39,8 +40,8 @@ double new_error_jack_biased(int Np1, double* in) {
 }
 
 int main() {
-    int Njack = 50;
-    int Nr = 100;
+    int Njack = 20;
+    int Nr = 1e+4;
     double* jack = new double[Njack];
     for (int j = 0; j < Njack; j++) {
         jack[j] = j;
@@ -66,6 +67,15 @@ int main() {
 
     {
         double a = timestamp();
+        myres = new resampling_jack(Njack);
+        for (int r = 0; r < Nr; r++) {
+
+            double da = myres->comp_error(jack);
+        }
+        printf("time class virtual func = %g\n", timestamp() - a);
+    }
+    {
+        double a = timestamp();
         double (*p)(int, double*);
         p = new_error_jack_biased;
         for (int r = 0; r < Nr; r++) {
@@ -73,8 +83,9 @@ int main() {
             double da = p(Njack, jack);
 
         }
-        printf("time best = %g\n", timestamp() - a);
+        printf("time func pointer = %g\n", timestamp() - a);
     }
+
     delete[] jack;
 
 }

@@ -401,8 +401,8 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
             for (j = 0; j < Njack; j++) {
                 y[j][count][0] = corr_J[i][j];
                 // y[j][count][1] = error_jackboot(option[4], Njack, corr_J[i]);
-                y[j][count][1] =myres->comp_error(corr_J[i]);
-                
+                y[j][count][1] = corr_ave[i][1];
+
             }
             count++;
         }
@@ -491,70 +491,54 @@ struct fit_result fit_fun_to_corr(char** option, struct kinematic kinematic_2pt,
     char jack_name[NAMESIZE];
     double* chi2;
 
-    if (fit_info.plateaux_scan) {
-        fprintf(fit_info.f_plateaux_scan, "\n\n#tmin tmax chi2 P1 P1err ...\n");
-        for (tmin = 1; tmin < file_head.l0 / 2 - fit_info.Npar; tmin++) {
-            for (tmax = tmin + fit_info.Npar; tmax < file_head.l0 / 2; tmax++) {
-                fit_result tmp = try_fit(option, tmin, tmax, sep, mt, r, Njack, &chi2, fit_info);
-                fprintf(fit_info.f_plateaux_scan, "%d   %d ", tmin, tmax);
-                fprintf(fit_info.f_plateaux_scan, " %.5g \t", tmp.chi2[Njack - 1]);
-                for (int i = 0; i < fit_info.Npar; i++) {
-                    fprintf(fit_info.f_plateaux_scan, "%.15g    %.15g    \t", tmp.P[i][Njack - 1],
-                        // error_jackboot(option[4], Njack, tmp.P[i])
-                         myres->comp_error(tmp.P[i])
-                    );
+    if (fit_info.codeplateaux) {
+        tmin = fit_info.tmin;
+        tmax = fit_info.tmax;
+        if (tmin < 1) { printf("error: tmin=%d too small\n",tmin); exit(1); }
+        if (tmax >= file_head.l0 / 2) { printf("error: tmax=%d too small\n",tmax); exit(1); }
+        if (tmax<0){ printf("error: tmax=%d not initilized\n",tmax); exit(1); }
+    }
+    else {
+        yn = 1;
+        if (strcmp(option[1], "read_plateaux") == 0) {
+            int l = line_read_plateaux(option, description, tmin, tmax, sep, plateaux_masses);
+
+        }
+        else if (fit_info.plateaux_scan) {
+            fprintf(fit_info.f_plateaux_scan, "\n\n#tmin tmax chi2 P1 P1err ...\n");
+            for (tmin = 1; tmin < file_head.l0 / 2 - fit_info.Npar; tmin++) {
+                for (tmax = tmin + fit_info.Npar; tmax < file_head.l0 / 2; tmax++) {
+                    fit_result tmp = try_fit(option, tmin, tmax, sep, mt, r, Njack, &chi2, fit_info);
+                    fprintf(fit_info.f_plateaux_scan, "%d   %d ", tmin, tmax);
+                    fprintf(fit_info.f_plateaux_scan, " %.5g \t", tmp.chi2[Njack - 1]);
+                    for (int i = 0; i < fit_info.Npar; i++) {
+                        fprintf(fit_info.f_plateaux_scan, "%.15g    %.15g    \t", tmp.P[i][Njack - 1],
+                            // error_jackboot(option[4], Njack, tmp.P[i])
+                            myres->comp_error(tmp.P[i])
+                        );
+                    }
+                    free_fit_result(fit_info, tmp);
+                    fprintf(fit_info.f_plateaux_scan, "\n");
                 }
-                free_fit_result(fit_info, tmp);
-                fprintf(fit_info.f_plateaux_scan, "\n");
             }
         }
-    }
-
-    yn = 1;
-    if (strcmp(option[1], "see") == 0) {
-        while (yn > 0) {
-            printf("#%s 1) mu %g r %d theta %g 2) mu %g r %d theta %g \n",
-                description,
-                kinematic_2pt.k2, kinematic_2pt.r2, kinematic_2pt.mom2,
-                kinematic_2pt.k1, kinematic_2pt.r1, kinematic_2pt.mom1);
-            plotting(file_head.l0, mt, &tmin, &tmax, &sep);
-            fit_out = try_fit(option, tmin, tmax, sep, mt, r, Njack, &chi2, fit_info);
-            double* m = mean_and_error(option[4], Njack, fit_out.P[0]);
-            yn = plotting_fit(file_head.l0, mt, tmin, tmax, m, fit_out.chi2);
-            // to_do:    add test of the fit
-            // yn=0;
-            free(m);
-            free_fit_result(fit_info, fit_out);
+        else if (strcmp(option[1], "see") == 0) {
+            while (yn > 0) {
+                printf("#%s 1) mu %g r %d theta %g 2) mu %g r %d theta %g \n",
+                    description,
+                    kinematic_2pt.k2, kinematic_2pt.r2, kinematic_2pt.mom2,
+                    kinematic_2pt.k1, kinematic_2pt.r1, kinematic_2pt.mom1);
+                plotting(file_head.l0, mt, &tmin, &tmax, &sep);
+                fit_out = try_fit(option, tmin, tmax, sep, mt, r, Njack, &chi2, fit_info);
+                double* m = mean_and_error(option[4], Njack, fit_out.P[0]);
+                yn = plotting_fit(file_head.l0, mt, tmin, tmax, m, fit_out.chi2);
+                // to_do:    add test of the fit
+                // yn=0;
+                free(m);
+                free_fit_result(fit_info, fit_out);
+            }
         }
-    }
-    if (strcmp(option[1], "read_plateaux") == 0) {
-        int l = line_read_plateaux(option, description, tmin, tmax, sep, plateaux_masses);
-        // m=try_linear_fit(option, tmin,  tmax,sep , mt, r, Njack );
-        //         fit_out=try_fit(option, tmin,  tmax,sep , mt, r, Njack ,&chi2,fit_info);
-        //         yn=1;
-        //         if(fit_out.chi2[Njack-1]>5.5){
-        //              free_fit_result( fit_info, fit_out);
-        //              while(yn>0){
-        //                    fit_out=try_fit(option, tmin,  tmax,sep , mt, r, Njack ,&chi2 ,fit_info);
-        //                    printf("#%s from %s 1) mu %g r %d theta %g 2) mu %g r %d theta %g  line_plateaux=%d\n",
-        //                         description,name,
-        //                     kinematic_2pt.k2,kinematic_2pt.r2,kinematic_2pt.mom2,
-        //                     kinematic_2pt.k1,kinematic_2pt.r1,kinematic_2pt.mom1,kinematic_2pt.ik2+kinematic_2pt.ik1*(file_head.nk+1)+1 );
-        //                     printf("The chi2 in the range [%d,%d] is %g  consider changing time interval\n",tmin,tmax,fit_out.chi2[Njack-1]);
-        //                     //plotting( file_head.l0, mt , &tmin,&tmax, &sep);
-        //                     //yn=plotting_fit(file_head.l0, mt , tmin,tmax,m,chi2);
-        //                      // to_do:    add test of the fit
-        //                     yn=0;
-        //                     if (yn>0){
-        //                         plotting( file_head.l0, mt , &tmin,&tmax, &sep);
-        //                         free_fit_result( fit_info, fit_out);
-        //                     }
-        //             }
-        //             //to_do
-        //             //replace_plateau(  kinematic_2pt ,  description,tmin,tmax,sep);
-        //
-        //          }
-        //          free_fit_result( fit_info, fit_out);
+
     }
 
     fit_out = try_fit(option, tmin, tmax, sep, mt, r, Njack, &chi2, fit_info);
@@ -572,7 +556,7 @@ struct fit_result fit_fun_to_corr(char** option, struct kinematic kinematic_2pt,
             x[i + xs] = fit_info.ext_P[i][Njack - 1];
 
         for (int j = 0; j < Njack; j++)
-            tmp[j] = fit_info.function(0, fit_info.Nvar, x, fit_info.Nvar, tif[j]);
+            tmp[j] = fit_info.function(0, fit_info.Nvar+fit_info.n_ext_P, x, fit_info.Npar, tif[j]);
         double* f_val = mean_and_error(option[4], Njack, tmp);
 
         fprintf(outfile, "   %.15e    %.15e\t", f_val[0], f_val[1]);
@@ -580,13 +564,13 @@ struct fit_result fit_fun_to_corr(char** option, struct kinematic kinematic_2pt,
 
         x[0] = t + 0.33;
         for (int j = 0; j < Njack; j++)
-            tmp[j] = fit_info.function(0, fit_info.Nvar, x, fit_info.Nvar, tif[j]);
+            tmp[j] = fit_info.function(0, fit_info.Nvar+fit_info.n_ext_P, x, fit_info.Npar, tif[j]);
         f_val = mean_and_error(option[4], Njack, tmp);
         fprintf(outfile, "%.15e   %.15e    %.15e\t", x[0], f_val[0], f_val[1]);
         free(f_val);
         x[0] = t + 0.66;
         for (int j = 0; j < Njack; j++)
-            tmp[j] = fit_info.function(0, fit_info.Nvar, x, fit_info.Nvar, tif[j]);
+            tmp[j] = fit_info.function(0, fit_info.Nvar+fit_info.n_ext_P, x, fit_info.Npar, tif[j]);
         f_val = mean_and_error(option[4], Njack, tmp);
         fprintf(outfile, "%.15e   %.15e    %.15e\n", x[0], f_val[0], f_val[1]);
         free(f_val);
@@ -632,7 +616,7 @@ double* plateau_correlator_function(char** option, struct kinematic kinematic_2p
 
     r = double_malloc_2(file_head.l0, Njack);
     // mt = (double**)malloc(sizeof(double*) * file_head.l0);
-    mt = double_malloc_2(file_head.l0/2, 2);
+    mt = double_malloc_2(file_head.l0 / 2, 2);
     fprintf(outfile, " \n\n");
     fprintf(outfile, "#m_eff(t) of %s  propagators:1) mu %.5f r %d theta %.5f 2) mu %.5f r %d theta %.5f\n", name,
         kinematic_2pt.k2, kinematic_2pt.r2, kinematic_2pt.mom2,
@@ -702,7 +686,7 @@ struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic
     for (i = 0; i < file_head.l0; i++)
         r[i] = (double*)malloc(sizeof(double) * Njack);
     // mt = (double**)malloc(sizeof(double*) * file_head.l0);
-    mt = double_malloc_2(file_head.l0/2, 2);
+    mt = double_malloc_2(file_head.l0 / 2, 2);
 
     fprintf(outfile, " \n\n");
     fprintf(outfile, "#m_eff(t) of %s  propagators:1) mu %.5f r %d theta %.5f 2) mu %.5f r %d theta %.5f\n", name,
@@ -762,7 +746,7 @@ struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinemat
     for (i = 0; i < file_head.l0; i++)
         r[i] = (double*)malloc(sizeof(double) * Njack);
     // mt = (double**)malloc(sizeof(double*) * file_head.l0);
-    mt = double_malloc_2(file_head.l0/2, 2);
+    mt = double_malloc_2(file_head.l0 / 2, 2);
 
     fprintf(outfile, " \n\n");
     fprintf(outfile, "#m_eff(t) of %s  propagators:1) mu %.5f r %d theta %.5f 2) mu %.5f r %d theta %.5f\n", name,
