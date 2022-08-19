@@ -1187,17 +1187,40 @@ void print_fit_band_amu_W_l(char** argv, data_all gjack, struct fit_type fit_inf
 }
 
 
+double rhs_2exp(int n, int Nvar, double* x, int Npar, double* P) {
+    double r = 0;
+    double xpower = 1;
+    double t = x[0];
+    double t0 = x[1];
+    double a = x[3];
+
+    return P[0] * (P[0] * exp(P[1] * (t * a)) + P[2] * exp(P[3] * (t * a))) / P[0] * exp(P[1] * (t0)) + P[2] * exp(P[3] * (t0));
+}
+
+double rhs_1exp(int n, int Nvar, double* x, int Npar, double* P) {
+    double r = 0;
+    double xpower = 1;
+    double t = x[0];
+    double t0 = x[1];
+    double a = x[3];
+    return P[0] * exp(P[1] * (t * a - t0));
+}
+
 double rhs_poly(int n, int Nvar, double* x, int Npar, double* P) {
     double r = 0;
     double xpower = 1;
     double t = x[0];
-    double t0 = x[1 ];
+    double t0 = x[1];
     double a = x[3];
-    // for (int i = 0;i < Npar;i++) {
-    //     r += P[i] * xpower;
-    //     xpower *= (t * a -  t0);
-    
-    // }
-    // return r;
-    return P[0]*(P[0]*exp(P[1]*(t * a ))+P[2]*exp(P[3]*(t * a )) )/P[0]*exp(P[1]*(t0 ))+P[2]*exp(P[3]*(t0 )) ;
+    for (int i = 0;i < Npar;i++) {
+        r += P[i] * xpower;
+        xpower *= (t * a - t0);
+    }
+    if(isnan(r)){
+        printf("nan found:\n");
+        printf("t= %g  t0=%g   a=%g  \n",t,t0,a);
+        for (int i = 0;i < Npar;i++) printf("P[%d]=%g\t",i,P[i]);
+        printf("Nvar= %d  Npar=%d  \n",Nvar, Npar);
+    }
+    return r;
 }

@@ -9,6 +9,7 @@
 
 #include "global.hpp"
 #include "resampling.hpp"
+#include "resampling_new.hpp"
 #include "read.hpp"
 #include "m_eff.hpp"
 #include "gnuplot.hpp"
@@ -733,6 +734,7 @@ int main(int argc, char** argv) {
     // free_corr(bin, var, file_head.l0, data);
     conf_jack = create_resampling(option[4], Neff, var, file_head.l0, data);
     free_corr(Neff, var, file_head.l0, data);
+    
 
     // ////////////////// symmetrization/////////////////////////////////////////////
     // for (int i = 0;i <= 7;i++) { symmetrise_jackboot(Njack, i, file_head.l0, conf_jack); }
@@ -1509,8 +1511,8 @@ int main(int argc, char** argv) {
     {
         double t1 = 0.2;
         fit_type fit_info;
-        
-        fit_info.Npar = 4;
+
+
         fit_info.Nvar = 1;
         fit_info.N = 1;
         fit_info.Njack = Njack;
@@ -1522,24 +1524,151 @@ int main(int argc, char** argv) {
             fit_info.ext_P[1][j] = ZV[j];
             fit_info.ext_P[2][j] = a[j];
         }
-
-        fit_info.function = rhs_poly;
-
+        fit_info.repeat_start = 10;
+        fit_info.verbosity = 0;
+        ///////////////// 4 points fits
         fit_info.codeplateaux = true;
         fit_info.tmin = ((int)(t1 / a[Njack - 1])) - 1;
-        fit_info.tmax = fit_info.tmin + 3 ;
-        
-        fit_info.repeat_start=10;
-        fit_info.verbosity=0;
-        
+        fit_info.tmax = fit_info.tmin + 3;
 
-        fit_result ct = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, lhs_ct<2>, "C_{l}^{eq}", fit_info, jack_file);
-        write_jack(ct.P[0], Njack, jack_file);
+        fit_info.Npar = 4;
+        fit_info.function = rhs_2exp;
+
+        fit_result ct_2exp = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, lhs_ct<2>, "C_{l}^{eq}_2exp", fit_info, jack_file);
+        // write_jack(ct_2exp.P[0], Njack, jack_file);
+        check_correlatro_counter(113);
+
+        free_fit_result(fit_info, ct_2exp);
+
+        fit_info.Npar = 4;
+        fit_info.function = rhs_poly;
+
+        fit_result ct_poly3 = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, lhs_ct<2>, "C_{l}^{eq}_poly3", fit_info, jack_file);
+        // write_jack(ct_poly3.P[0], Njack, jack_file);
         check_correlatro_counter(114);
+        free_fit_result(fit_info, ct_poly3);
+
+        fit_info.Npar = 3;
+        fit_info.function = rhs_poly;
+        fit_info.repeat_start = 1000;
+        fit_info.acc = 1e-4;
+        fit_info.precision_sum = 2;
+
+        fit_result ct_poly2 = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, lhs_ct<2>, "C_{l}^{eq}_poly2", fit_info, jack_file);
+        // write_jack(ct_poly2.P[0], Njack, jack_file);
+        check_correlatro_counter(115);
+        free_fit_result(fit_info, ct_poly2);
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////// 3 points fits
+        fit_info.tmax = fit_info.tmin + 2;
+
+        fit_info.Npar = 2;
+        fit_info.function = rhs_1exp;
+        fit_info.repeat_start = 1;
+        fit_result ct_1exp = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, lhs_ct<2>, "C_{l}^{eq}_1exp", fit_info, jack_file);
+        // write_jack(ct_1exp.P[0], Njack, jack_file);
+        check_correlatro_counter(116);
+        free_fit_result(fit_info, ct_1exp);
+
+
+
+        fit_info.Npar = 3;
+        fit_info.function = rhs_poly;
+
+        fit_result ct_poly2_3pt = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, lhs_ct<2>, "C_{l}^{eq}_poly2_3pt", fit_info, jack_file);
+        // write_jack(ct_poly2_3pt.P[0], Njack, jack_file);
+        check_correlatro_counter(117);
+        free_fit_result(fit_info, ct_poly2_3pt);
+
+        ///// end fits
         for (int i = 0;i < fit_info.n_ext_P; i++)   free(fit_info.ext_P[i]);
 
         fit_info.restore_default();
     }
+    {
+        double t1 = 0.2;
+        fit_type fit_info;
+
+        fit_info.Nvar = 1;
+        fit_info.N = 1;
+        fit_info.Njack = Njack;
+        fit_info.n_ext_P = 3;
+        fit_info.ext_P = double_malloc_2(fit_info.n_ext_P, Njack);
+
+        for (int j = 0;j < Njack; j++) {
+            fit_info.ext_P[0][j] = t1;
+            fit_info.ext_P[1][j] = ZA[j];
+            fit_info.ext_P[2][j] = a[j];
+        }
+        fit_info.repeat_start = 10;
+        fit_info.verbosity = 0;
+        ///////////////// 4 points fits
+        fit_info.codeplateaux = true;
+        fit_info.tmin = ((int)(t1 / a[Njack - 1])) - 1;
+        fit_info.tmax = fit_info.tmin + 3;
+
+        fit_info.Npar = 4;
+        fit_info.function = rhs_2exp;
+
+        fit_result ct_2exp = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile, lhs_ct<5>, "C_{l}^{op}_2exp", fit_info, jack_file);
+        // write_jack(ct_2exp.P[0], Njack, jack_file);
+        check_correlatro_counter(118);
+
+        free_fit_result(fit_info, ct_2exp);
+    }
+    //////////////////////////////
+    /////////////// Strange
+    {
+        double t1 = 0.2;
+        fit_type fit_info;
+
+        fit_info.Nvar = 1;
+        fit_info.N = 1;
+        fit_info.Njack = Njack;
+        fit_info.n_ext_P = 3;
+        fit_info.ext_P = double_malloc_2(fit_info.n_ext_P, Njack);
+
+        for (int j = 0;j < Njack; j++) {
+            fit_info.ext_P[0][j] = t1;
+            fit_info.ext_P[1][j] = ZV[j];
+            fit_info.ext_P[2][j] = a[j];
+        }
+        fit_info.repeat_start = 10;
+        fit_info.verbosity = 0;
+        ///////////////// 4 points fits
+        fit_info.codeplateaux = true;
+        fit_info.tmin = ((int)(t1 / a[Njack - 1])) - 1;
+        fit_info.tmax = fit_info.tmin + 3;
+
+        fit_info.Npar = 4;
+        fit_info.function = rhs_2exp;
+
+        fit_result ct_2exp = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile,
+            lhs_ct<8>, "C_{s1}^{eq}_2exp", fit_info, jack_file);
+        check_correlatro_counter(119);
+
+
+        fit_result ct_2exp1 = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile,
+            lhs_ct<14>, "C_{s2}^{eq}_2exp", fit_info, jack_file);
+        check_correlatro_counter(120);
+        printf("%.12g    %.12g\n",conf_jack[0][8][0][0],conf_jack[0][14][0][0]);
+        double** cts = (double**)malloc(sizeof(double*) * Nstrange);
+        cts[0] = ct_2exp.P[0];
+        cts[1] = ct_2exp1.P[0];
+
+
+        double* ctst0 = interpol_Z(Nstrange, Njack, Meta, cts, jack_aMetas_MeV_exp, outfile, "C_{s,Meta}^{eq}_2exp", resampling);
+        write_jack(ctst0, Njack, jack_file);
+        printf("amu_sd(eq,shys) = %g  %g\n", ctst0[Njack - 1], myres->comp_error(ctst0));
+
+        check_correlatro_counter(121);
+        free(ctst0);
+        free_fit_result(fit_info, ct_2exp);
+        free_fit_result(fit_info, ct_2exp1);
+    }
+
+
+
     free(amu_sdeq_s);free(amu_sdeq_s1);
 
     for (int i = 0;i < Nstrange;i++) {
