@@ -642,6 +642,7 @@ double* plateau_correlator_function(char** option, struct kinematic kinematic_2p
     fit_info.Njack = Njack;
     fit_info.function = constant_fit;
     fit_info.n_ext_P = 0;
+    fit_info.linear_fit = true;
 
     // fit=fit_plateaux(option, kinematic_2pt ,  name,description/*"M_{PS}^{ll}"*/,mt,r,  Njack,*plateaux_masses,outfile);
     struct fit_result fit_out = fit_fun_to_corr(option, kinematic_2pt, name, description, mt, r, Njack, plateaux_masses, outfile, fit_info);

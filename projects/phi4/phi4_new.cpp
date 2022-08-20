@@ -1067,13 +1067,13 @@ int main(int argc, char** argv) {
     cout << "effective configurations after binning (" << bin << "):  " << Neff << endl;
 
     int Njack;
-    if (strcmp(argv[7], "jack") == 0){
+    if (strcmp(argv[7], "jack") == 0) {
         Njack = Neff + 1;
-        myres=new resampling_jack(Njack);
+        myres = new resampling_jack(Njack);
     }
-    else if (strcmp(argv[7], "boot") == 0){
+    else if (strcmp(argv[7], "boot") == 0) {
         Njack = Nbootstrap + 1;
-        myres=new resampling_boot(Njack);
+        myres = new resampling_boot(Njack);
     }
     else {
         Njack = 0;
@@ -1219,7 +1219,7 @@ int main(int argc, char** argv) {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     //print all the effective masses correlators
     //set the option to not read for a plateaux
-    double t1=timestamp();
+    double t1 = timestamp();
     char  save_option[NAMESIZE];
     sprintf(save_option, "%s", option[1]);
     sprintf(option[1], "blind");
@@ -2488,7 +2488,7 @@ int main(int argc, char** argv) {
         fit_info.Njack = Njack;
         fit_info.n_ext_P = 0;
         fit_info.function = constant_fit;
-
+        fit_info.linear_fit = true;
         file_head.k[2] = mu1;    file_head.k[3] = mu2;
         if (params.data.L[0] < 50)
             fit_info.plateaux_scan = true;
@@ -2541,7 +2541,7 @@ int main(int argc, char** argv) {
             strcmp(argv[4], "G2t_T64_L21_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0_bin1000_merged_bin100") == 0 ||
             strcmp(argv[4], "G2t_T64_L24_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0_bin1000_merged_bin100") == 0 ||
             strcmp(argv[4], "G2t_T64_L25_msq0-1.230000_msq1-0.370000_l00.000000_l10.000000_mu0.000000_g10.000000_rep0_bin1000_merged_bin100") == 0 ||
-            strcmp(argv[4], "G2t_T64_L24_msq0-1.241300_msq1-0.380000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0_bin1000_merged_bin100") == 0 
+            strcmp(argv[4], "G2t_T64_L24_msq0-1.241300_msq1-0.380000_l00.000000_l10.000000_mu0.000000_g5.000000_rep0_bin1000_merged_bin100") == 0
             ) {
             fit_info.repeat_start = 6;
             fit_info.acc = 1e-5;
@@ -5953,7 +5953,7 @@ int main(int argc, char** argv) {
 
     free(file_head.k);
     fclose(jack_file);
-    printf("time computing observables: %g s\n",timestamp()-t1);
+    printf("time computing observables: %g s\n", timestamp() - t1);
     return 0;
 }
 

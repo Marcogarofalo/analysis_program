@@ -23,6 +23,18 @@
 #include "resampling.hpp"
 
 
+double* fit_type::linear_function(int n, int  Nvar, double* x, int Npar) {
+    double* P = (double*)calloc(Npar, sizeof(double));
+    double* r = (double*)malloc(Npar * sizeof(double));
+    for (int i = 0;i < Npar;i++) {
+        P[i] = 1.;
+        r[i] = this->function(n, Nvar, x, Npar, P);
+        P[i] = 0.;
+    }
+    free(P);
+    return r;
+}
+
 void fit_type::compute_cov_fit(char** argv, data_all gjack, double lhs_fun(int, int, int, data_all, struct fit_type), struct fit_type fit_info) {
     ////// allocation
     int* en = (int*)malloc(sizeof(int) * N);// we need to init en and en_tot to allocate the other 
@@ -172,6 +184,7 @@ void fit_type::restore_default() {
     covariancey = false;
     second_deriv = false;
 
+    linear_fit=false;
     codeplateaux = false;
     tmin = -1;
     tmax = -1;
@@ -1140,6 +1153,76 @@ double compute_sd_NM(double* centroid, double** points, int Npar) {
     return sd;
 }
 
+
+
+//fit N data (x[N][Nvariables],y[N][value/error])  with the function sum_{i=0;i<M}  a_i f_i(x)
+//*fit_functions is a function such that fit_function(int Nfunc, int Nvar,double *x,int Npar)[i]=f_i
+//Nvariables is not required in this function but you need to be consistend in the declaration of fit_function and x
+//it returns a[i][value,error]
+double* linear_fit_Nf(int *Npoints, double** x, double** y, fit_type fit_info) {
+    int Nfunc=fit_info.N;
+    int Nvar=fit_info.Nvar;
+    int Npar=fit_info.Npar;
+    
+    double** alpha, * X, * beta, ** a, ** C, * sigma;
+    int i, j, k, e, count, n;
+    double* r;
+
+
+    beta = (double*)calloc(Npar, sizeof(double));
+    r = (double*)malloc(Npar * sizeof(double));
+    a = (double**)malloc(Npar * sizeof(double*));
+    alpha = (double**)malloc(sizeof(double*) * Npar);
+    for (j = 0;j < Npar;j++) {
+        alpha[j] = (double*)calloc(Npar, sizeof(double));
+        a[j] = (double*)calloc(2, sizeof(double));
+    }
+    count = 0;
+    for (n = 0;n < Nfunc;n++) {
+        for (e = 0;e < Npoints[n];e++) {
+            i = e + count;
+            X = fit_info.linear_function(n, Nvar, x[i], Npar);
+            for (j = 0;j < Npar;j++) {
+                beta[j] += y[i][0] * X[j] / (y[i][1] * y[i][1]);
+                for (k = 0;k < Npar;k++) {
+                    alpha[j][k] += X[j] * X[k] / (y[i][1] * y[i][1]);
+                }
+            }
+            free(X);
+        }
+        count += Npoints[n];
+    }
+    if (Npar == 1) {
+        C = (double**)malloc(sizeof(double*) * 1);
+        C[0] = (double*)malloc(sizeof(double) * 1);
+        C[0][0] = 1. / alpha[0][0];
+    }
+    else
+        C = matrix_inverse(Npar, alpha);
+
+    for (j = 0;j < Npar;j++) {
+        for (k = 0;k < Npar;k++) {
+            a[j][0] += C[j][k] * beta[k];
+        }
+        a[j][1] = sqrt(C[j][j]);
+    }
+    for (j = 0;j < Npar;j++) {
+        r[j] = a[j][0];
+    }
+
+    for (j = 0;j < Npar;j++) {
+        free(alpha[j]);    free(a[j]);
+        free(C[j]);
+    }
+    free(C);free(alpha);free(beta); free(a);
+
+
+
+    return r;
+}
+
+
+
 /*********************************************************************************
  * x[ensemble][variable number] ,   y[ensemble][0=mean,1=error],
  * fun(index_function,Nvariables,variables[], Nparameters,parameters[])
@@ -1147,8 +1230,7 @@ double compute_sd_NM(double* centroid, double** points, int Npar) {
  * devorder can be negative, in that case each parameter has is own h[i]=Parameter[i] *h
  ***********************************************************************************/
 non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar, double fun(int, int, double*, int, double*), double* guess, fit_type fit_info) {
-
-
+    
     double lambda = fit_info.lambda;
     double acc = fit_info.acc;
     std::vector< double > h;
@@ -1206,7 +1288,15 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
     else {
         error(true, 1, "non_linear_fit_Nf", "order of the derivative must be 4 (default) , 2,  -2 to set a step different for each parameter h[i]=P[i]*h    ");
     }
-
+    if (fit_info.linear_fit) {
+        error(fit_info.covariancey, 2, "non_linear_fit_Nf ","linear fit with covarince not implemented" ); 
+        non_linear_fit_result output;
+        // double *(linear_function)(int , int  , double *, int );
+        // linear_function=fit_info.linear_function;
+        output.P = linear_fit_Nf( ensemble,  x,  y, fit_info);
+        output.chi2 = chi2_fun(N, ensemble, x, y, output.P, Nvar, Npar, fun, fit_info);
+        return output;
+    }
 
     double** alpha, * X, * beta, ** a, ** C, * sigma;
     int i, j, k, e;

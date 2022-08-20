@@ -60,6 +60,8 @@ struct  fit_type {
     double (*function)(int, int, double*, int, double*);//N, Nvar, x ,Npar,P
     double (*f1)(int, int, double*, int, double*);
     double (*f2)(int, int, double*, int, double*);
+    double *linear_function(int n, int  Nvar, double *x, int Npar);
+    bool linear_fit=false;
     double** ext_P;  //parameter to not fit, they will be add to the Nvar,  Nvar=variables+(prameter to not fit)
 
     int N, Npar, Nvar, Njack;

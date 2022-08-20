@@ -65,6 +65,7 @@ add_library(
     ../modules/linear_fit.cpp
 ) 
 target_link_libraries(linear_fit PUBLIC resampling)
+target_link_libraries(linear_fit PUBLIC non_linear_fit)
 target_include_directories(linear_fit PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 
@@ -77,6 +78,7 @@ add_library(
 target_link_libraries(non_linear_fit PUBLIC fit_all) 
 target_link_libraries(non_linear_fit PUBLIC linear_fit)
 target_link_libraries(non_linear_fit PUBLIC mutils)
+target_link_libraries(non_linear_fit PUBLIC sorting)
 target_include_directories(non_linear_fit PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 
