@@ -1288,13 +1288,14 @@ int main(int argc, char** argv) {
         }
     }
     // fit_info.guess = { 23.6528,    9.14173, 2622.92, -0.156144 };
-    fit_info.guess = {13.6528, 9.14173, 2972.92, -0.156144};
-    fit_info.guess = {21.0993,  9.143,  2725.42,  -0.1589688};
+    // fit_info.guess = {13.6528, 9.14173, 2972.92, -0.156144};
+    // fit_info.guess = {21.0993,  9.143,  2725.42,  -0.1589688};
+    fit_info.guess = {37.5592,  9.14254,  2787.75,  -0.157101}; 
     // fit_info.noderiv = true;
     // fit_info.Prange = { 10 , 1e-3, 100,1e-2 };
 
     fit_info.NM = true;
-    fit_info.h = { 1 , 1e-4, 10, 1e-3 };
+    fit_info.h = { 0.1 , 1e-4, 10, 1e-3 };
     fit_info.acc = 0.01;
     fit_info.mean_only = false;
 
