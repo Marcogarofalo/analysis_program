@@ -36,11 +36,14 @@ jobs:
     - name: eigen 
       run: sudo apt-get install -y libeigen3-dev
 
-    - name: fftw 
-      run: sudo apt-get install  libfftw3-bin libfftw3-long3 libfftw3-quad3 libfftw3-single3 libfftw3-dev  libfftw3-doc
+    #- name: fftw 
+    #  run: sudo apt-get install  libfftw3-bin libfftw3-long3 libfftw3-quad3 libfftw3-single3 libfftw3-dev  libfftw3-doc
 
     - name: gsl
       run: sudo apt-get install -y libgsl-dev
+
+    - name: python.h
+      run: sudo apt-get install python3-dev  # for python3.x installs
       
     - name: Configure CMake
       # Use a bash shell so we can use the same syntax for environment variable
