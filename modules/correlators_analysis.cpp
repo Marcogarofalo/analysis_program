@@ -494,9 +494,9 @@ struct fit_result fit_fun_to_corr(char** option, struct kinematic kinematic_2pt,
     if (fit_info.codeplateaux) {
         tmin = fit_info.tmin;
         tmax = fit_info.tmax;
-        if (tmin < 1) { printf("error: tmin=%d too small\n",tmin); exit(1); }
-        if (tmax >= file_head.l0 / 2) { printf("error: tmax=%d too small\n",tmax); exit(1); }
-        if (tmax<0){ printf("error: tmax=%d not initilized\n",tmax); exit(1); }
+        if (tmin < 1) { printf("error: tmin=%d too small\n", tmin); exit(1); }
+        if (tmax >= file_head.l0 / 2) { printf("error: tmax=%d too small\n", tmax); exit(1); }
+        if (tmax < 0) { printf("error: tmax=%d not initilized\n", tmax); exit(1); }
     }
     else {
         yn = 1;
@@ -556,7 +556,7 @@ struct fit_result fit_fun_to_corr(char** option, struct kinematic kinematic_2pt,
             x[i + xs] = fit_info.ext_P[i][Njack - 1];
 
         for (int j = 0; j < Njack; j++)
-            tmp[j] = fit_info.function(0, fit_info.Nvar+fit_info.n_ext_P, x, fit_info.Npar, tif[j]);
+            tmp[j] = fit_info.function(0, fit_info.Nvar + fit_info.n_ext_P, x, fit_info.Npar, tif[j]);
         double* f_val = mean_and_error(option[4], Njack, tmp);
 
         fprintf(outfile, "   %.15e    %.15e\t", f_val[0], f_val[1]);
@@ -564,13 +564,13 @@ struct fit_result fit_fun_to_corr(char** option, struct kinematic kinematic_2pt,
 
         x[0] = t + 0.33;
         for (int j = 0; j < Njack; j++)
-            tmp[j] = fit_info.function(0, fit_info.Nvar+fit_info.n_ext_P, x, fit_info.Npar, tif[j]);
+            tmp[j] = fit_info.function(0, fit_info.Nvar + fit_info.n_ext_P, x, fit_info.Npar, tif[j]);
         f_val = mean_and_error(option[4], Njack, tmp);
         fprintf(outfile, "%.15e   %.15e    %.15e\t", x[0], f_val[0], f_val[1]);
         free(f_val);
         x[0] = t + 0.66;
         for (int j = 0; j < Njack; j++)
-            tmp[j] = fit_info.function(0, fit_info.Nvar+fit_info.n_ext_P, x, fit_info.Npar, tif[j]);
+            tmp[j] = fit_info.function(0, fit_info.Nvar + fit_info.n_ext_P, x, fit_info.Npar, tif[j]);
         f_val = mean_and_error(option[4], Njack, tmp);
         fprintf(outfile, "%.15e   %.15e    %.15e\n", x[0], f_val[0], f_val[1]);
         free(f_val);
