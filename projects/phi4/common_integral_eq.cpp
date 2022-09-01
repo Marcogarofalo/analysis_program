@@ -81,20 +81,33 @@ void compute_M3(int NE, double Emin, double dE, int Njack, std::vector<double>& 
 
     M3 = double_malloc_3(NE, 2, Njack);
     F = double_malloc_3(NE, 2, Njack);
-
+    #pragma omp parallel for   shared(NE,Njack,Emin,dE,Npar,P,eps) 
     for (int i = 0;i < NE;i++) {
         for (int j = 0;j < Njack;j++) {
             E3[i] = Emin + i * dE;
             // E3[i] = 3.02;printf("\n\n MODIFY HERE \n\n");
 
 
-            std::complex<double> m3 = compute_M3_sym(E3[i], N, Npar, P[j], compute_kcot, PKiso[j], compute_kiso, eps);
-            M3[i][0][j] = m3.real(); M3[i][1][j] = m3.imag();
+            // std::complex<double> m3 = compute_M3_sym(E3[i], N, Npar, P[j], compute_kcot, PKiso[j], compute_kiso, eps);
+            
 
             // std::complex<double> Kdf = compute_kiso(E3[i], PKiso[j]);
             Eigen::MatrixXcd D = compute_D(E3[i], N, Npar, P[j], compute_kcot, eps);
             std::complex<double> Finf = comput_Finf(E3[i], D, N, Npar, P[j], compute_kcot, eps);
             F[i][0][j] = Finf.real(); F[i][1][j] = Finf.imag();
+            Eigen::VectorXcd  L = cal_L1(E3[i], D, N, Npar, P[j], compute_kcot, eps);
+
+
+            std::complex<double> kiso = compute_kiso(E3[i], PKiso[j]);
+            std::complex<double> m3 = std::complex<double>(0, 0);
+            for (int i = 0;i < 3; i++) {
+                for (int j = 0;j < 3; j++) {
+                    // std::cout << j <<"   " << L(j)<<"   " << (1. / (1. / kiso + Finf))<<   std::endl;
+                    m3 += L(i) * (1. / (1. / kiso + Finf)) * L(j);
+                    // M3 += (1. / (1. / kiso + Finf)) ;
+                }
+            }
+            M3[i][0][j] = m3.real(); M3[i][1][j] = m3.imag();
             // printf("jack =%-4d%-18.8g%-14g%-18g%-14g%-18g||%-25g%-25g%-25g%-25g\n",
             //     j, E3[i], real(m3), imag(m3), real(Kdf), imag(Kdf), PKiso[Njack-1][0], PKiso[Njack-1][1], PKiso[Njack-1][2], P[Njack-1][3]);
             // printf("%-18.8g%-14g%-18g%-14g%-18g%-18.12g%-20.12g\n", E3[i], real(m3), imag(m3), real(Kdf), imag(Kdf), real(Finf), imag(Finf));
@@ -103,8 +116,8 @@ void compute_M3(int NE, double Emin, double dE, int Njack, std::vector<double>& 
 
         printf("EMFP:%-20.8g%-20.12g%-18g%-20.12g%-18g%-20.12g%-18g%-22.12g%-20g\n", E3[i], M3[i][0][Njack - 1], error_jackboot("jack", Njack, M3[i][0]),
             M3[i][1][Njack - 1], error_jackboot("jack", Njack, M3[i][1]),
-             F[i][0][Njack - 1], error_jackboot("jack", Njack, F[i][0]), F[i][1][Njack - 1], error_jackboot("jack", Njack, F[i][1])
-             );
+            F[i][0][Njack - 1], error_jackboot("jack", Njack, F[i][0]), F[i][1][Njack - 1], error_jackboot("jack", Njack, F[i][1])
+        );
     }
 }
 
@@ -133,10 +146,10 @@ double rhs_BW(int n, int Nvar, double* x, int Npar, double* P) {
     error(Npar % 2 != 0, 1, "rhs_laurent_pole:", "Npar=%d but it must be multiple of two since the parameters are complex", Npar);
     std::complex<double> E(x[0], x[1]);
 
-    std::complex<double> r = P[2] / (E - P[0] + 1i * P[1] / 2.0);
+    std::complex<double> r = P[2] + 1i * P[3] / (E - P[0] + 1i * P[1] / 2.0);
 
-    if (Npar >= 4) {
-        r += P[3];
+    if (Npar >= 5) {
+        r += P[4] + 1i * P[5];
     }
     r = 1. / r;
 
@@ -244,7 +257,7 @@ double lhs_absM3(int n, int e, int j, data_all gjack, struct fit_type fit_info) 
     if (n == 0) {
         r = std::abs(M3);
     }
-    
+
     else {
         r = 0;  printf("lhs_M3 n=%d not implemented\n", n); exit(1);
     }

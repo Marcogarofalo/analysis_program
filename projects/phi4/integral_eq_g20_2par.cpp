@@ -26,26 +26,24 @@ int main(int argc, char** argv) {
 
 
     int Npar = 1;
-    
-    int NPkiso = 3;
-    
+
+    int NPkiso = 2;
+
 
     int Njack = 15;
     int seed = 1;
     int tot_parK = NPkiso + Npar;
     double* mean = (double*)malloc(sizeof(double) * tot_parK);
-    mean[0] = 210.135;
-    mean[1] = 9.12063;
-    mean[2] = 2227.37;
-    mean[3] = -0.148414;
+    mean[0] = 178.79;
+    mean[1] = 9.11996;
+    mean[2] = -0.144965;
     double** cov = double_calloc_2(tot_parK, tot_parK);
-    cov[0][0] = pow(23, 2);
+    cov[0][0] = pow(17, 2);
     cov[1][1] = pow(0.0013, 2);
-    cov[2][2] = pow(6e+2, 2);
-    cov[3][3] = pow(0.0016, 2);
-    cov[0][1] = 0.06;   cov[0][2] = 0.629;  cov[0][3] = -0.0076;
-    ;                     cov[1][2] = 0.188;   cov[1][3] = -0.0878;
-    ; ;                                       cov[2][3] = -0.254;
+    cov[2][2] = pow(0.0017, 2);
+    cov[0][1] = -0.473;   cov[0][2] = 5.8;
+    ;                     cov[1][2] = 8.36e-5;
+
 
     for (int i = 0; i < tot_parK;i++) {
         for (int j = i + 1; j < tot_parK;j++) {
@@ -68,10 +66,9 @@ int main(int argc, char** argv) {
 
     double Emin = 3.021;
     double Emax = 3.02125;
-    
     // double Emin = 3.015;
-    // double Emax = 3.0264;
-    
+    // double Emax = 3.027;
+
     // double Emin = 3.02;
     // double Emax = 3.03;
 
@@ -87,21 +84,20 @@ int main(int argc, char** argv) {
 
 
 
-
-
     double** P = double_malloc_2(Njack, Npar);
     double** PKiso = double_malloc_2(Njack, NPkiso);
     for (int j = 0;j < Njack;j++) {
-        P[j][0] = tmp[3][j];
-        PKiso[j][0] = tmp[0][j];
-        PKiso[j][1] = tmp[1][j];
-        PKiso[j][2] = tmp[2][j];
+        P[j][0] = tmp[tot_parK - 1][j];
+        for (int i = 0; i < NPkiso;i++) {
+            PKiso[j][i] = tmp[i][j];
+        }
+
     }
     double*** M3, *** F;
 
     // compute_M3(NE, Emin, dE, Njack, E3, M3, F, N, Npar, P, compute_kcot, PKiso, compute_kiso, eps);
     // write_M3(NE, Njack, E3, M3, F, "data_M3_kcot_1par_kiso_2par.txt", argv[3]);
-    read_M3(NE, Njack, E3, M3, F, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
+    read_M3(NE, Njack, E3, M3, F, "data_M3_kcot_1par_kiso_2par.txt", argv[3]);
 
     data_all jackall = setup_data_for_fits(NE, Njack, M3, F);
 
@@ -139,7 +135,7 @@ int main(int argc, char** argv) {
         fit_info.precision_sum = 0;
         char namefile[NAMESIZE];
 
-        mysprintf(namefile, NAMESIZE, "int_eq_g20_npar%d", fit_info.Npar);
+        mysprintf(namefile, NAMESIZE, "int_eq_g20_npar%d_2par", fit_info.Npar);
         struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_M3, fit_info, namefile);
         fit_info.band_range = { Emin , Emax };
         print_fit_band(argv, jackall, fit_info, fit_info, namefile, "E_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, fit_info.myen.size() - 1, 0.0002);
@@ -180,7 +176,7 @@ int main(int argc, char** argv) {
         fit_info.precision_sum = 0;
         char namefile[NAMESIZE];
 
-        mysprintf(namefile, NAMESIZE, "int_eq_g20_close_to_the_pole_npar%d", fit_info.Npar);
+        mysprintf(namefile, NAMESIZE, "int_eq_g20_close_to_the_pole_npar%d_2par", fit_info.Npar);
         struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_M3, fit_info, namefile);
         fit_info.band_range = { Emin , Emax };
         print_fit_band(argv, jackall, fit_info, fit_info, namefile, "E_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, fit_info.myen.size() - 1, 0.0002);
@@ -222,7 +218,7 @@ int main(int argc, char** argv) {
         // fit_info.Prange={0.1, 1e-6,  1 ,1, 0.001,0.001};
         char namefile[NAMESIZE];
 
-        mysprintf(namefile, NAMESIZE, "int_eq_g20_npar%d", fit_info.Npar);
+        mysprintf(namefile, NAMESIZE, "int_eq_g20_npar%d_2par", fit_info.Npar);
         struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_M3, fit_info, namefile);
         fit_info.band_range = { Emin , Emax };
         print_fit_band(argv, jackall, fit_info, fit_info, namefile, "E_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, fit_info.myen.size() - 1, 0.0002);
@@ -256,7 +252,7 @@ int main(int argc, char** argv) {
         fit_info.acc = 0.01;
         fit_info.h = 1e-5;
         fit_info.devorder = 2;
-        fit_info.verbosity = 0;
+        fit_info.verbosity = 3;
         fit_info.repeat_start = 1;
         fit_info.guess = { 3.02112, -1.18582e-06, -252.892, 10.7525, };
         fit_info.precision_sum = 0;
@@ -264,14 +260,15 @@ int main(int argc, char** argv) {
         // fit_info.Prange={0.1, 1e-6,  1 ,1, 0.001,0.001};
         char namefile[NAMESIZE];
 
-        mysprintf(namefile, NAMESIZE, "int_eq_g20_BW_npar%d", fit_info.Npar);
+        mysprintf(namefile, NAMESIZE, "int_eq_g20_BW_npar%d_2par", fit_info.Npar);
         struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_M3, fit_info, namefile);
+        printf("Gamma= %g (%g)\n", kcot_1lev_and_kiso_pole_3par.P[1][Njack-1], error_jackboot("jack", Njack, kcot_1lev_and_kiso_pole_3par.P[1]));
         fit_info.band_range = { Emin , Emax };
         print_fit_band(argv, jackall, fit_info, fit_info, namefile, "E_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, fit_info.myen.size() - 1, 2e-5);
         fit_info.restore_default();
 
     }
-    
+
 
     {//abs
         fit_type fit_info;
@@ -307,7 +304,7 @@ int main(int argc, char** argv) {
         // fit_info.Prange={0.1, 1e-6,  1 ,1, 0.001,0.001};
         char namefile[NAMESIZE];
 
-        mysprintf(namefile, NAMESIZE, "int_eq_g20_absBW_npar%d", fit_info.Npar);
+        mysprintf(namefile, NAMESIZE, "int_eq_g20_absBW_npar%d_2par", fit_info.Npar);
         struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_absM3, fit_info, namefile);
         fit_info.band_range = { Emin , Emax };
         print_fit_band(argv, jackall, fit_info, fit_info, namefile, "E_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, fit_info.myen.size() - 1, 2e-5);
@@ -348,7 +345,7 @@ int main(int argc, char** argv) {
         fit_info.precision_sum = 0;
         char namefile[NAMESIZE];
 
-        mysprintf(namefile, NAMESIZE, "F3_line%d", fit_info.Npar);
+        mysprintf(namefile, NAMESIZE, "F3_line%d_2par", fit_info.Npar);
         struct fit_result fit_F = fit_all_data(argv, jackall, lhs_F, fit_info, namefile);
         fit_info.band_range = { Emin , Emax };
         print_fit_band(argv, jackall, fit_info, fit_info, namefile, "E_m", fit_F, fit_F, 0, fit_info.myen.size() - 1, 2e-5);
@@ -392,6 +389,7 @@ int main(int argc, char** argv) {
         printf("LM minimizer buildin functions\n min=%g   %g   chi2=%g\n", min.P[0][Njack - 1], min.P[1][Njack - 1], min.chi2[Njack - 1]);
         printf("min=%g (%g) +i  %g  (%g) chi2=%g\n", min.P[0][Njack - 1], error_jackboot("jack", Njack, min.P[0]), min.P[1][Njack - 1], error_jackboot("jack", Njack, min.P[1]), min.chi2[Njack - 1]);
         printf("Gamma= %g  (%g)\n", 2*min.P[1][Njack - 1], 2*error_jackboot("jack", Njack, min.P[1]));
+
         free_fit_result(fit_info, min);
         fit_info.restore_default();
     }

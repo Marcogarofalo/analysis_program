@@ -1150,15 +1150,17 @@ int main(int argc, char** argv) {
         }
     }
     // fit_info.guess = { 81.5648, 9.12952, 1455.65, -0.155717 };
-    fit_info.guess = { 95.0925, 9.12815, 1544, -0.155809 };
+    // fit_info.guess = { 95.0925, 9.12815, 1544, -0.155809 };
+    // fit_info.NM = true;
+    // fit_info.h = { 2, 0.001,  2, 0.001 };
 
-    fit_info.NM = true;
-    fit_info.h = { 2, 0.001,  2, 0.001 };
+    fit_info.guess={94.2217,  9.12838,  1545.35,  -0.155928 };
+    fit_info.h = { 1e-2, 1e-5, 1, 1e-4 };
 
     fit_info.compute_cov1_fit();
     mysprintf(namefile, NAMESIZE, "kcot_1par_1lev_and_kiso_pole_3par_cov", fit_info.Npar);
     struct fit_result kcot_1lev_and_kiso_pole_3par_cov = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
-    fit_info.band_range = { 5.65,7.2 };
+    fit_info.band_range = { 5.2,7.5 };
     print_fit_band(argv, jackall, fit_info, fit_info, namefile, "L_m", kcot_1lev_and_kiso_pole_3par_cov, kcot_1lev_and_kiso_pole_3par_cov, 0, myen.size() - 1, 0.15);
     fit_info.restore_default();
 

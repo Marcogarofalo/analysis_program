@@ -65,8 +65,11 @@ macro(add_target_with_int_eq_lib TARGETNAME)
 endmacro()
 
 add_target_with_int_eq_lib(integral_eq_g5_largeL integral_eq_g5_largeL.cpp)
+add_target_with_int_eq_lib(integral_eq_g5_2par_largeL integral_eq_g5_2par_largeL.cpp)
 add_target_with_int_eq_lib(integral_eq_g10 integral_eq_g10.cpp)
+add_target_with_int_eq_lib(integral_eq_g10_2par integral_eq_g10_2par.cpp)
 add_target_with_int_eq_lib(integral_eq_g20 integral_eq_g20.cpp)
+add_target_with_int_eq_lib(integral_eq_g20_2par integral_eq_g20_2par.cpp)
 add_target_with_int_eq_lib(integral_eq_scratchpad integral_eq_scratchpad.cpp)
 
 add_target_with_int_eq_lib(checks_phi4 checks_phi4.cpp)

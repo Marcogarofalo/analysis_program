@@ -205,8 +205,8 @@ Eigen::VectorXcd  cal_L1(double E3_m, Eigen::MatrixXcd D, int N, int Npar, doubl
 
     double k[3];
     k[0] = 0;
-    k[1] = sqrt(pow(E3_m - 1, 2) - 4);
-    k[2] = sqrt(pow(E3_m - 1, 2) - 4);// this with a minus
+    k[1] = sqrt(pow(E3_m - 1, 2)/4.0 - 1);
+    k[2] = sqrt(pow(E3_m - 1, 2)/4.0 - 1);// this with a minus but the modulus is the same
     double kmax = compute_kmax(E3_m);
     double d = compute_d(kmax, N);
     for (int i = 0;i < 3;i++) {
