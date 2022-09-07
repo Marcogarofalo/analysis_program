@@ -297,7 +297,7 @@ add_library(
 set_target_properties(dzeta_function PROPERTIES LINKER_LANGUAGE C)
 target_link_libraries(dzeta_function PUBLIC quadmath)
 target_link_libraries(dzeta_function PUBLIC init_zeta_function)
-target_link_libraries(dzeta_function PUBLIC GSL::gsl)
+target_link_libraries(dzeta_function PUBLIC gsl gslcblas)
 target_include_directories(dzeta_function PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
  
 
