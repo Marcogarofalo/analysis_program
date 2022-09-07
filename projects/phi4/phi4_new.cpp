@@ -1068,12 +1068,12 @@ int main(int argc, char** argv) {
 
     int Njack;
     if (strcmp(argv[7], "jack") == 0) {
-        Njack = Neff + 1;
-        myres = new resampling_jack(Njack);
+        Njack = Neff +1;
+        myres = new resampling_jack(Neff);
     }
     else if (strcmp(argv[7], "boot") == 0) {
-        Njack = Nbootstrap + 1;
-        myres = new resampling_boot(Njack);
+        Njack = (Neff*2 + 1);
+        myres = new resampling_boot(Neff*2);
     }
     else {
         Njack = 0;

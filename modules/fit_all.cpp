@@ -246,6 +246,41 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
 
 }
 
+void subMatrix(double **mat, double **temp, int p, int q, int N) {
+   int i = 0, j = 0;
+   // filling the sub matrix
+   for (int row = 0; row < N; row++) {
+      for (int col = 0; col < N; col++) {
+         // skipping if the current row or column is not equal to the current
+         // element row and column
+         if (row != p && col != q) {
+            temp[i][j++] = mat[row][col];
+            if (j == N - 1) {
+               j = 0;
+               i++;
+            }
+         }
+      }
+   }
+}
+int determinantOfMatrix(double **matrix, int N) {
+   int determinant = 0;
+   if (N == 1) {
+      return matrix[0][0];
+   }
+   if (N == 2) {
+      return (matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0]);
+   }
+   int sign = 1;
+   double **temp= double_malloc_2(N,N);
+   for (int i = 0; i < N; i++) {
+      subMatrix(matrix, temp, 0, i, N);
+      determinant += sign * matrix[0][i] * determinantOfMatrix(temp, N - 1);
+      sign = -sign;
+   }
+   return determinant;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// print output
@@ -299,6 +334,7 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
         }
     }
 
+    double det=determinantOfMatrix(cov, Npar);
 
     fprintf(f, "{\\tiny\\begin{gather}\n C=\\begin{pmatrix}\n");
     for (int i = 0;i < fit_info.Npar;i++) {
@@ -321,7 +357,7 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
         if (i != fit_info.Npar) fprintf(f, "\\\\ \n");
         else fprintf(f, "\n");
     }
-    fprintf(f, "\\end{pmatrix}\n\\end{gather}}\n");
+    fprintf(f, "\\end{pmatrix}\n\\\\det=%g\\\\ \\end{gather}}\n",det);
     free_2(Npar, cov);
     fclose(f);
 
@@ -405,7 +441,7 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
     ///////////////// the fit 
     // scan the parameter of the fit with the last jack
     if (fit_info.guess.size() == 0 || fit_info.repeat_start > 1) {
-        guess = guess_for_non_linear_fit_Nf(N, en, x[Njack - 1], y[Njack - 1], Nvar, Npar, fit_info.function, guess);
+        guess = guess_for_non_linear_fit_Nf(N, en, x[Njack - 1], y[Njack - 1], Nvar, Npar, fit_info.function, guess, fit_info);
     }
     if (fit_info.mean_only == false) {
         for (int j = Njack - 1;j >= 0;j--) {

@@ -14,6 +14,8 @@
 #include "minimizer.hpp"
 #include "tower.hpp"
 #include "resampling.hpp"
+#include "resampling_new.hpp"
+
 
 
 
@@ -97,7 +99,7 @@ int main(int argc, char** argv) {
     read_M3(NE, Njack, E3, M3, F, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
 
     data_all jackall = setup_data_for_fits(NE, Njack, M3, F);
-
+    myres=new resampling_jack(Njack-1);
 
     {
 
@@ -157,7 +159,7 @@ int main(int argc, char** argv) {
         // double Emax_fit = 3.025;
 
         double Emin_fit = 3.021;
-        double Emax_fit = 3.023;
+        double Emax_fit = 3.0225;
         
         int N1=0;
         for (int e = 0;e < NE;e++) if (E3[e]>Emin_fit && E3[e]<Emax_fit) N1++;
@@ -187,26 +189,101 @@ int main(int argc, char** argv) {
             }
         }
 
-        fit_info.acc = 0.01;
-        fit_info.h = 1e-5;
+        fit_info.acc = 0.001;
+        fit_info.h = 1e-4;
         fit_info.devorder = 2;
         fit_info.verbosity = 0;
-        fit_info.repeat_start = 1;
-        fit_info.guess = { 3.02112, -1.18582e-06, -252.892, 10.7525, };
+        fit_info.repeat_start = 10;
+        // fit_info.guess = { 3.0147, 0.253398, -6.78571e+06, 2.35556e+06  };
+        fit_info.guess = {3.02112, -1.18582e-06, -252.892, 10.7525};
         fit_info.precision_sum = 0;
         // fit_info.noderiv=true;
         // fit_info.Prange={0.1, 1e-6,  1 ,1, 0.001,0.001};
-        char namefile[NAMESIZE];
+        
 
+        // fit_info.h = {0.1, 0.001, 10, 1};
+        // fit_info.NM=true;
+        // fit_info.covariancey = true;
+        // fit_info.compute_cov_fit(argv, jackall, lhs_M3, fit_info);
+        // fit_info.compute_cov1_fit();
+
+        char namefile[NAMESIZE];
         mysprintf(namefile, NAMESIZE, "int_eq_g10_BW_npar%d", fit_info.Npar);
         struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_M3, fit_info, namefile);
         fit_info.band_range = { Emin , Emax };
         printf("Gamma= %g (%g)\n", kcot_1lev_and_kiso_pole_3par.P[1][Njack - 1], error_jackboot("jack", Njack, kcot_1lev_and_kiso_pole_3par.P[1]));
         print_fit_band(argv, jackall, fit_info, fit_info, namefile, "E_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, fit_info.myen.size() - 1, 2e-5);
         fit_info.restore_default();
+    }
+    ////
 
+    {   // fit only a small area
+        fit_type fit_info;
+        fit_info.Njack = Njack;
+        fit_info.N = 2;
+        // double Emin_fit = 3.021;
+        // double Emax_fit = 3.025;
+
+        double Emin_fit = 3.021;
+        double Emax_fit = 3.0225;
+        
+        int N1=0;
+        for (int e = 0;e < NE;e++) if (E3[e]>Emin_fit && E3[e]<Emax_fit) N1++;
+        fit_info.myen = std::vector<int>(N1);
+        int count=0;
+        for (int e = 0;e < NE;e++){
+             if (E3[e]>Emin_fit && E3[e]<Emax_fit) {
+                fit_info.myen[count] = e;
+                count++;
+             }
+        }
+        
+        fit_info.Nvar = 2;
+        fit_info.Npar = 4;
+        fit_info.function = rhs_BW;
+
+        fit_info.malloc_x();
+
+        int scount = 0;
+        for (int n = 0;n < fit_info.N;n++) {
+            for (int e : fit_info.myen) {
+                for (int j = 0;j < fit_info.Njack;j++) {
+                    fit_info.x[0][scount][j] = E3[e];
+                    fit_info.x[1][scount][j] = 0;
+                }
+                scount++;
+            }
+        }
+
+        fit_info.acc = 0.001;
+        fit_info.h = 1e-4;
+        fit_info.devorder = 2;
+        fit_info.verbosity = 0;
+        fit_info.repeat_start = 10;
+        // fit_info.guess = { 3.0147, 0.253398, -6.78571e+06, 2.35556e+06  };
+        fit_info.guess = {3.02112, -1.18582e-06, -252.892, 10.7525};
+        fit_info.precision_sum = 2;
+        // fit_info.noderiv=true;
+        // fit_info.Prange={0.1, 1e-6,  1 ,1, 0.001,0.001};
+        
+
+        fit_info.h = {2, 0.001, 10, 1};
+        fit_info.NM=true;
+        fit_info.covariancey = true;
+        fit_info.compute_cov_fit(argv, jackall, lhs_M3, fit_info);
+        
+        // fit_info.compute_cov1_fit();
+
+        char namefile[NAMESIZE];
+        mysprintf(namefile, NAMESIZE, "int_eq_g10_BW_cov_npar%d", fit_info.Npar);
+        struct fit_result kcot_1lev_and_kiso_pole_3par = fit_all_data(argv, jackall, lhs_M3, fit_info, namefile);
+        fit_info.band_range = { Emin , Emax };
+        printf("Gamma= %g (%g)\n", kcot_1lev_and_kiso_pole_3par.P[1][Njack - 1], error_jackboot("jack", Njack, kcot_1lev_and_kiso_pole_3par.P[1]));
+        print_fit_band(argv, jackall, fit_info, fit_info, namefile, "E_m", kcot_1lev_and_kiso_pole_3par, kcot_1lev_and_kiso_pole_3par, 0, fit_info.myen.size() - 1, 2e-5);
+        fit_info.restore_default();
     }
 
+    ////
     {
         fit_type fit_info;
         fit_info.Njack = Njack;

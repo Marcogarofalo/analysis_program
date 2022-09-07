@@ -184,7 +184,7 @@ void fit_type::restore_default() {
     covariancey = false;
     second_deriv = false;
 
-    linear_fit=false;
+    linear_fit = false;
     codeplateaux = false;
     tmin = -1;
     tmax = -1;
@@ -965,6 +965,7 @@ bool compute_alpha_cov1(double* beta, double** alpha, int N, int* ensemble,
         count = 0;
         for (int n = 0;n < N;n++) {
             for (int e = 0;e < ensemble[n];e++) {
+                printf("second derivative %i  %i\n", n ,e);
                 double** fkk = der2_O2_fun_Nf_h(n, Nvar, x[e + count], Npar, P_tmp, fun, h);
                 int count1 = 0;
                 for (int n1 = 0;n1 < N;n1++) {
@@ -1049,21 +1050,6 @@ double** covariance_non_linear_fit_Nf(int N, int* ensemble, double** x, double**
         C[0][0] = 1. / alpha[0][0];
     }
     else {
-        // double yn = is_it_positive(alpha, Npar);
-        // while (yn > 0) {
-        //     yn *= 2;
-        //     printf("covariance matrix not positive defined adding eps*cov[0][0]*I*%g \n", yn);
-        //     for (int i = 0;i < Npar;i++)
-        //         alpha[i][i] += alpha[0][0] * 1e-10 * yn;
-        //     for (int i = 0;i < Npar;i++) {
-        //         for (int j = 0;j < Npar;j++)
-        //             printf("%g\t", alpha[i][j]);
-        //         printf("\n");
-        //     }
-        //     yn *= is_it_positive(alpha, Npar);
-        //     error(yn < 0, 1, "covariance_non_linear_fit_Nf", "Cannot make the covariance matrix positive defined\n");
-        // }
-        // printf("now the matrix is positive defined.  %d\n", yn);
         make_the_matrix_positive(alpha, Npar);
         C = symmetric_matrix_inverse(Npar, alpha);
     }
@@ -1159,11 +1145,11 @@ double compute_sd_NM(double* centroid, double** points, int Npar) {
 //*fit_functions is a function such that fit_function(int Nfunc, int Nvar,double *x,int Npar)[i]=f_i
 //Nvariables is not required in this function but you need to be consistend in the declaration of fit_function and x
 //it returns a[i][value,error]
-double* linear_fit_Nf(int *Npoints, double** x, double** y, fit_type fit_info) {
-    int Nfunc=fit_info.N;
-    int Nvar=fit_info.Nvar;
-    int Npar=fit_info.Npar;
-    
+double* linear_fit_Nf(int* Npoints, double** x, double** y, fit_type fit_info) {
+    int Nfunc = fit_info.N;
+    int Nvar = fit_info.Nvar;
+    int Npar = fit_info.Npar;
+
     double** alpha, * X, * beta, ** a, ** C, * sigma;
     int i, j, k, e, count, n;
     double* r;
@@ -1178,19 +1164,49 @@ double* linear_fit_Nf(int *Npoints, double** x, double** y, fit_type fit_info) {
         a[j] = (double*)calloc(2, sizeof(double));
     }
     count = 0;
-    for (n = 0;n < Nfunc;n++) {
-        for (e = 0;e < Npoints[n];e++) {
-            i = e + count;
-            X = fit_info.linear_function(n, Nvar, x[i], Npar);
-            for (j = 0;j < Npar;j++) {
-                beta[j] += y[i][0] * X[j] / (y[i][1] * y[i][1]);
-                for (k = 0;k < Npar;k++) {
-                    alpha[j][k] += X[j] * X[k] / (y[i][1] * y[i][1]);
-                }
+    if (fit_info.covariancey == true) {
+        int en_tot = 0;
+        for (int n = 0;n < Nfunc;n++)
+            for (int e = 0;e < Npoints[n];e++)
+                en_tot += 1;
+
+        double** df_value = (double**)malloc(sizeof(double*) * en_tot);
+        for (int n = 0;n < Nfunc;n++){
+            for (int e = 0;e < Npoints[n];e++){
+                df_value[count] = fit_info.linear_function(n, Nvar, x[count], Npar);
+                count++;
             }
-            free(X);
         }
-        count += Npoints[n];
+
+        for (int j = 0;j < Npar;j++) {
+            for (int i = 0;i < en_tot;i++)
+                for (int ii = 0;ii < en_tot;ii++)
+                    beta[j] += (df_value[i][j]) * fit_info.cov1[i][ii] * y[ii][0];
+
+            for (int k = 0;k < Npar;k++) {
+                for (int i = 0;i < en_tot;i++)
+                    for (int ii = 0;ii < en_tot;ii++)
+                        alpha[j][k] += df_value[i][j] * fit_info.cov1[i][ii] * df_value[ii][k];
+            }
+        }
+        
+        free_2(en_tot, df_value);
+    }
+    else {
+        for (n = 0;n < Nfunc;n++) {
+            for (e = 0;e < Npoints[n];e++) {
+                i = e + count;
+                X = fit_info.linear_function(n, Nvar, x[i], Npar);
+                for (j = 0;j < Npar;j++) {
+                    beta[j] += y[i][0] * X[j] / (y[i][1] * y[i][1]);
+                    for (k = 0;k < Npar;k++) {
+                        alpha[j][k] += X[j] * X[k] / (y[i][1] * y[i][1]);
+                    }
+                }
+                free(X);
+            }
+            count += Npoints[n];
+        }
     }
     if (Npar == 1) {
         C = (double**)malloc(sizeof(double*) * 1);
@@ -1230,7 +1246,7 @@ double* linear_fit_Nf(int *Npoints, double** x, double** y, fit_type fit_info) {
  * devorder can be negative, in that case each parameter has is own h[i]=Parameter[i] *h
  ***********************************************************************************/
 non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double** y, int Nvar, int Npar, double fun(int, int, double*, int, double*), double* guess, fit_type fit_info) {
-    
+
     double lambda = fit_info.lambda;
     double acc = fit_info.acc;
     std::vector< double > h;
@@ -1289,11 +1305,11 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
         error(true, 1, "non_linear_fit_Nf", "order of the derivative must be 4 (default) , 2,  -2 to set a step different for each parameter h[i]=P[i]*h    ");
     }
     if (fit_info.linear_fit) {
-        error(fit_info.covariancey, 2, "non_linear_fit_Nf ","linear fit with covarince not implemented" ); 
+        // error(fit_info.covariancey, 2, "non_linear_fit_Nf ", "linear fit with covarince not implemented");
         non_linear_fit_result output;
         // double *(linear_function)(int , int  , double *, int );
         // linear_function=fit_info.linear_function;
-        output.P = linear_fit_Nf( ensemble,  x,  y, fit_info);
+        output.P = linear_fit_Nf(ensemble, x, y, fit_info);
         output.chi2 = chi2_fun(N, ensemble, x, y, output.P, Nvar, Npar, fun, fit_info);
         return output;
     }

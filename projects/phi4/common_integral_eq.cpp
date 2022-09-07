@@ -146,7 +146,7 @@ double rhs_BW(int n, int Nvar, double* x, int Npar, double* P) {
     error(Npar % 2 != 0, 1, "rhs_laurent_pole:", "Npar=%d but it must be multiple of two since the parameters are complex", Npar);
     std::complex<double> E(x[0], x[1]);
 
-    std::complex<double> r = P[2] + 1i * P[3] / (E - P[0] + 1i * P[1] / 2.0);
+    std::complex<double> r = (P[2] + 1i * P[3]) / (E - P[0] + 1i * P[1] / 2.0);
 
     if (Npar >= 5) {
         r += P[4] + 1i * P[5];
