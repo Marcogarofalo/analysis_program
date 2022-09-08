@@ -254,6 +254,10 @@ double M_eff_log(int t, int T, double** in) {
 double identity(int t, int T, double** in) {
     return in[t][0];
 }
+double identity_im(int t, int T, double** in) {
+    return in[t][1];
+}
+
 
 double log_corr(int t, int T, double** in) {
 
@@ -419,7 +423,7 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
         chi2j[j] = output_fit.chi2 / (en_tot - Npar);
         int max = 0;
 
-        while (fabs(chi2j[j] - chi2j[Njack - 1]) / chi2j[Njack - 1] > fit_info.chi2_gap_jackboot && max < fit_info.guess_per_jack) {
+        while (fabs(chi2j[j] - chi2j[Njack - 1]) / chi2j[Njack - 1] > fit_info.chi2_gap_jackboot && max < fit_info.guess_per_jack && !fit_info.linear_fit) {
             std::mt19937 mt_rand(max);
             printf("jack %d has a chi2= %g   while the mean has chi2=%g \n retry\n", j, chi2j[j], chi2j[Njack - 1]);
 
