@@ -76,6 +76,47 @@ void read_twopt(FILE* stream, double*** to_write, generic_header head) {
 
 
 
+double DeltaM(int j, double**** in, int t, struct fit_type fit_info) {
+
+    double m = fit_info.ext_P[0][j];
+    double A = fit_info.ext_P[1][j];
+    double T = fit_info.T;
+    // double f = A * (t * exp(-m * t) + (T - t) * exp(-m * (T - t)));
+    // double fp = A * ((t + 1.) * exp(-m * (t + 1)) + (T - (t + 1.)) * exp(-m * (T - (t + 1))));
+    double f = (t * exp(-m * t) + (T - t) * exp(-m * (T - t))) / (exp(-m * t) + exp(-m * (T - t)));
+    double fp = ((t + 1.) * exp(-m * (t + 1)) + (T - (t + 1.)) * exp(-m * (T - (t + 1)))) / (exp(-m * (t + 1)) + exp(-m * (T - (t + 1))));
+
+
+    double r = -(in[j][3][t + 1][1] / in[j][0][t + 1][0] - in[j][3][t][1] / in[j][0][t][0]) / (fp - f);
+
+    return r;
+}
+
+
+double me_P5P5(int j, double**** in, int t, struct fit_type fit_info) {
+
+    double m = fit_info.ext_P[0][j];
+    double T = fit_info.T;
+    double r = in[j][0][t][0] / (exp(-m * t) + exp(-m * (T - t)));
+
+    return r;
+}
+
+double DeltaMt(int j, double**** in, int t, struct fit_type fit_info) {
+
+    double T = fit_info.T;
+
+    double m = M_eff_T(t, T, in[j][0]);
+    double mp = M_eff_T(t + 1, T, in[j][0]);
+    double A = me_P5P5(j, in, t, fit_info);
+    double Ap = me_P5P5(j, in, t + 1, fit_info);
+    double f = A * (t * exp(-m * t) + (T - t) * exp(-m * (T - t)));
+    double fp = Ap * ((t + 1) * exp(-mp * (t + 1)) + (T - (t + 1)) * exp(-mp * (T - (t + 1))));
+
+    double r = -(in[j][3][t + 1][1] / in[j][0][t + 1][0] - in[j][3][t][1] / in[j][0][t][0]) / (fp - f);
+
+    return r;
+}
 double mpcac(int j, double**** in, int t, struct fit_type fit_info) {
 
 
@@ -91,6 +132,18 @@ double deltam(int j, double**** in, int t, struct fit_type fit_info) {
 
     return r;
 }
+
+double deltam_sub(int j, double**** in, int t, struct fit_type fit_info) {
+    double T = fit_info.T;
+    double m = fit_info.ext_P[0][j];
+    double DM = fit_info.ext_P[1][j];
+    double g = DM * (t * exp(-m * t) - (T - t) * exp(-m * (T - t))) / (exp(-m * t) - exp(-m * (T - t)));
+    double r =  (2. * in[j][4][t][0])/in[j][1][t][1]  -2* g;
+
+    return 1/r;
+}
+
+
 
 int main(int argc, char** argv) {
     error(argc != 7, 1, "nissa_mpcac ",
@@ -176,6 +229,7 @@ int main(int argc, char** argv) {
 
     printf("confs=%d\n", confs);
     printf("ncorr=%d\n", head.ncorr);
+    printf("kappa=%g\n", head.kappa);
     for (int iconf = 0; iconf < confs;iconf++) {
         read_twopt(infile, data[iconf], head);
     }
@@ -243,6 +297,10 @@ int main(int argc, char** argv) {
     symmetrise_jackboot(Njack, 0, head.T, conf_jack);
     symmetrise_jackboot(Njack, 1, head.T, conf_jack, -1);
     symmetrise_jackboot(Njack, 2, head.T, conf_jack, -1);
+    //insP
+    symmetrise_jackboot(Njack, 3, head.T, conf_jack);
+    symmetrise_jackboot(Njack, 4, head.T, conf_jack, -1);
+    symmetrise_jackboot(Njack, 5, head.T, conf_jack, -1);
 
     fit_info_silent.restore_default();
     sprintf(option[1], "%s", save_option);// restore option
@@ -253,6 +311,64 @@ int main(int argc, char** argv) {
 
     struct fit_type fit_info;
     struct fit_result  fit_out;
+
+    fit_info.Nvar = 1;
+    fit_info.Npar = 1;
+    fit_info.N = 1;
+    fit_info.Njack = Njack;
+    fit_info.n_ext_P = 1;
+    fit_info.ext_P = (double**)malloc(sizeof(double*) * 1);
+    fit_info.ext_P[0] = M_PS;
+    fit_info.function = constant_fit;
+    fit_info.linear_fit = true;
+    fit_info.T = head.T;
+
+    //c++ 1 || r 2
+    struct fit_result fit_me_P5P5 = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"P5P5", conf_jack, namefile_plateaux, outfile, me_P5P5, "me_P5P5", fit_info, jack_file);
+    // free_fit_result(fit_info, fit_out);
+    fit_info.restore_default();
+
+
+    fit_info.Nvar = 1;
+    fit_info.Npar = 1;
+    fit_info.N = 1;
+    fit_info.Njack = Njack;
+    fit_info.n_ext_P = 2;
+    fit_info.ext_P = (double**)malloc(sizeof(double*) * 2);
+    fit_info.ext_P[0] = M_PS;
+    fit_info.ext_P[1] = fit_me_P5P5.P[0];
+
+    fit_info.function = constant_fit;
+    fit_info.linear_fit = true;
+    fit_info.T = head.T;
+
+    //c++ 1 || r 2
+    struct fit_result fit_DeltaM = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"P5P5", conf_jack, namefile_plateaux, outfile, DeltaM, "DeltaM", fit_info, jack_file);
+    // free_fit_result(fit_info, fit_out);
+    fit_info.restore_default();
+
+
+    fit_info.Nvar = 1;
+    fit_info.Npar = 1;
+    fit_info.N = 1;
+    fit_info.Njack = Njack;
+    fit_info.n_ext_P = 2;
+    fit_info.ext_P = (double**)malloc(sizeof(double*) * 2);
+    fit_info.ext_P[0] = M_PS;
+    fit_info.ext_P[1] = fit_me_P5P5.P[0];
+
+    fit_info.function = constant_fit;
+    fit_info.linear_fit = true;
+    fit_info.T = head.T;
+
+    //c++ 1 || r 2
+    struct fit_result fit_DeltaMt = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"P5P5", conf_jack, namefile_plateaux, outfile, DeltaMt, "DeltaMt", fit_info, jack_file);
+    // free_fit_result(fit_info, fit_out);
+    fit_info.restore_default();
+
+
+
+
     fit_info.Nvar = 1;
     fit_info.Npar = 1;
     fit_info.N = 1;
@@ -266,6 +382,9 @@ int main(int argc, char** argv) {
     fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"P5P5", conf_jack, namefile_plateaux, outfile, mpcac, "mpcac", fit_info, jack_file);
     free_fit_result(fit_info, fit_out);
     fit_info.restore_default();
+
+
+
 
 
     fit_info.Nvar = 1;
@@ -288,6 +407,28 @@ int main(int argc, char** argv) {
     free_fit_result(fit_info, fit_out);
     fit_info.restore_default();
 
+    fit_info.Nvar = 1;
+    fit_info.Npar = 1;
+    fit_info.N = 1;
+    fit_info.Njack = Njack;
+    fit_info.n_ext_P = 2;
+    fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
+    fit_info.ext_P[0] = M_PS;
+    fit_info.ext_P[1] = fit_DeltaM.P[0];
+    fit_info.T = head.T;
+    fit_info.function = constant_fit;
+    fit_info.linear_fit = true;
+
+    //c++ 1 || r 2
+    fit_out = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"P5P5", conf_jack, namefile_plateaux, outfile, deltam_sub, "deltam_sub", fit_info, jack_file);
+    double* true_kappa_sub = (double*)malloc(sizeof(double) * Njack);
+    for (int j = 0; j < Njack;j++) {
+        true_kappa_sub[j] = head.kappa / (1. + 2. * fit_out.P[0][j] * head.kappa);
+    }
+    fprintf(outfile, "%.12g   %.12g\n", true_kappa_sub[Njack - 1], myres->comp_error(true_kappa_sub));
+    printf("true_kappa_sub=%.12g   %.12g\n", true_kappa_sub[Njack - 1], myres->comp_error(true_kappa_sub));
+    free_fit_result(fit_info, fit_out);
+    fit_info.restore_default();
 
 
 }
