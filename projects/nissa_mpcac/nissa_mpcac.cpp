@@ -31,6 +31,9 @@
 using namespace std;
 struct  kinematic kinematic_2pt;
 
+double afm=0.0908026;
+double aMeV=0.0908026/ 197.326963;
+
 generic_header read_head(FILE* stream) {
     generic_header header;
     size_t fi = 0;
@@ -308,7 +311,12 @@ int main(int argc, char** argv) {
 
     double* M_PS = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 0, "M_{PS}", M_eff_T, jack_file);
     check_correlatro_counter(0);
-
+    double *MPSMEV=(double*) malloc(sizeof(double)*Njack);
+    for(int j=0; j<Njack;j++){
+        MPSMEV[j]=M_PS[j]/aMeV;
+    }
+    fprintf(outfile,"%g  %g %g %g\n",aMeV,0.0,MPSMEV[Njack-1], myres->comp_error(MPSMEV));
+ 
     struct fit_type fit_info;
     struct fit_result  fit_out;
 
