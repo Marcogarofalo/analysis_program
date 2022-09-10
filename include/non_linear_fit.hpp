@@ -135,6 +135,7 @@ struct  fit_type {
 struct fit_result {
     int Njack;
     int Npar;
+    int dof;
     double** P;// [par][jack]
     double* chi2;
     double*** C;

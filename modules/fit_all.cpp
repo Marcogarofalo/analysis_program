@@ -516,6 +516,7 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
             fit_out.P[i][j] = fit[j][i];
 
     fit_out.Npar = fit_info.Npar;
+    fit_out.dof = (en_tot - Npar);
     // fit_out.name=label;
     mysprintf(fit_out.name, NAMESIZE, "%s", label);
     /////////////////////////////////////////////////////////////////////writing the result
