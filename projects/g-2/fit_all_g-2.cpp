@@ -187,7 +187,7 @@ void compute_syst_eq28(data_all in, const char* outpath, const char* filename) {
     err = sqrt(err / (double)N);
 
     for (int i = 0; i < N; i++) {
-        fprintf(f, "%s    %g     %g   %g   %g  %g\n", in.fits[i].name, aves[i], errors[i], ave, err, in.fits[i].chi2[Njack - 1]);
+        fprintf(f, "%s    %g     %g   %g   %g  %g  %d  %d\n", in.fits[i].name, aves[i], errors[i], ave, err, in.fits[i].chi2[Njack - 1], in.fits[i].dof, in.fits[i].Npar );
     }
     printf("systematics  %s: N=%d\n", filename, N);
     printf("mean(eq28)= %g  %g \n", ave, err);
@@ -1017,7 +1017,7 @@ int main(int argc, char** argv) {
         // print_fit_band(argv, jackall, fit_info, fit_info, "amu_W_l_common_a2", "afm", amu_W_l_common_a2, amu_W_l_common_a2, 0, myen.size() - 1, 0.0005, xcont);
         print_fit_band_amu_W_l(argv, jackall, fit_info, fit_info, namefit, "afm", amu_W_l_common_a2, amu_W_l_common_a2, 0, myen.size() - 1, 0.0005, xcont, lhs_amu_common_GS);
         syst_amu_W_l_cov.add_fit(amu_W_l_common_a2);
-        if (integration == "reinman") sum_amu_W.add_fit(amu_W_l_common_a2);
+        // if (integration == "reinman") sum_amu_W.add_fit(amu_W_l_common_a2);
 
         fit_info.restore_default();
     }
@@ -1267,7 +1267,7 @@ int main(int argc, char** argv) {
             fit_result amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.0081 };
             syst_amu_W_s_cov.add_fit(amu_SD_s_common_a4);
-            if (interpolation == "eta" && integration == "reinman") sum_amu_W.add_fit(amu_SD_s_common_a4);
+            // if (interpolation == "eta" && integration == "reinman") sum_amu_W.add_fit(amu_SD_s_common_a4);
 
             print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_s_common_a4, amu_SD_s_common_a4, 0, myen.size() - 1, 0.001);
 
@@ -1547,7 +1547,7 @@ int main(int argc, char** argv) {
             fit_result amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.009 };
             syst_amu_SD_c_cov.add_fit(amu_SD_s_common_a4);
-            if (integration == "reinman" && interpolation == "etac")  sum_amu_SD.add_fit(amu_SD_s_common_a4);
+            // if (integration == "reinman" && interpolation == "etac")  sum_amu_SD.add_fit(amu_SD_s_common_a4);
 
             print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_s_common_a4, amu_SD_s_common_a4, 0, fit_info.myen.size() - 1, 0.001);
 
