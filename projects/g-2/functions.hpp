@@ -984,6 +984,151 @@ double rhs_amu_common_a2_FVE(int n, int Nvar, double* x, int Npar, double* P) {
 }
 
 
+double rhs_amu_common_a2_FVE_log_eq(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    double GS = x[1];
+    double Mpi = x[2];
+    double Mpiphys = x[3];
+    double w02 = 0.17383 * 0.17383;
+    if (n == 0)      r = P[0] + a2 * P[1] / pow(log(a2 / w02), 3) - (10.0 / 9.0) * GS * (P[3] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+    else if (n == 1) r = P[0] + a2 * P[2] - (10.0 / 9.0) * GS * (P[4] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+
+    return r;
+}
+double rhs_amu_common_a2_FVE_log_op(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    double GS = x[1];
+    double Mpi = x[2];
+    double Mpiphys = x[3];
+    double w02 = 0.17383 * 0.17383;
+    if (n == 0)      r = P[0] + a2 * P[1] - (10.0 / 9.0) * GS * (P[3] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+    else if (n == 1) r = P[0] + a2 * P[2] / pow(log(a2 / w02), 3) - (10.0 / 9.0) * GS * (P[4] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+
+    return r;
+}
+
+double rhs_amu_common_a2_FVE_log_eq_op(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    double GS = x[1];
+    double Mpi = x[2];
+    double Mpiphys = x[3];
+    double w02 = 0.17383 * 0.17383;
+    if (n == 0)      r = P[0] + a2 * P[1] / pow(log(a2 / w02), 3) - (10.0 / 9.0) * GS * (P[3] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+    else if (n == 1) r = P[0] + a2 * P[2] / pow(log(a2 / w02), 3) - (10.0 / 9.0) * GS * (P[4] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+
+    return r;
+}
+
+
+
+double rhs_amu_common_a2_FVE_log_a4(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    double GS = x[1];
+    double Mpi = x[2];
+    double Mpiphys = x[3];
+    double w02 = 0.17383 * 0.17383;
+    int ilog =x[4];
+    int a4 = x[5];
+    if (n == 0)      r = P[0] + a2 * P[1] - (10.0 / 9.0) * GS * (P[3] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+    else if (n == 1) r = P[0] + a2 * P[2] - (10.0 / 9.0) * GS * (P[4] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+
+    if (ilog == 0) {
+        // nothing    
+    }
+    else if (ilog == 1) {
+        if (n == 0)      r += a2 * P[1]*(-1 + 1. / pow( log(a2 / w02), 3) );
+    }
+    else if (ilog == 2) {
+        if (n == 1)      r += a2 * P[2]*(-1 + 1. / pow(log(a2 / w02), 3) );
+    }
+    else if (ilog == 3) {
+        if (n == 0)      r += a2 * P[1]*(-1 + 1. / pow(log(a2 / w02), 3) );
+        if (n == 1)      r += a2 * P[2]*(-1 + 1. / pow(log(a2 / w02), 3) );
+    }
+
+    if(a4==0 ){
+
+    }
+    if(a4==1){
+         if (n == 0)      r += + a2 * a2 * P[6] ;
+    }
+    if(a4==2){
+         if (n == 1)      r += + a2 * a2 * P[6] ;
+    }
+
+
+
+    return r;
+}
+
+double rhs_amu_common_a2_FVE_log_eq_a4_eq(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    double GS = x[1];
+    double Mpi = x[2];
+    double Mpiphys = x[3];
+    double w02 = 0.17383 * 0.17383;
+    if (n == 0)      r = P[0] + a2 * P[1] / pow(log(a2 / w02), 3) - (10.0 / 9.0) * GS * (P[3] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963)) + a2 * a2 * P[6];
+    else if (n == 1) r = P[0] + a2 * P[2] - (10.0 / 9.0) * GS * (P[4] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+
+    return r;
+}
+double rhs_amu_common_a2_FVE_log_op_a4_eq(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    double GS = x[1];
+    double Mpi = x[2];
+    double Mpiphys = x[3];
+    double w02 = 0.17383 * 0.17383;
+    if (n == 0)      r = P[0] + a2 * P[1] - (10.0 / 9.0) * GS * (P[3] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963)) + a2 * a2 * P[6];
+    else if (n == 1) r = P[0] + a2 * P[2] / pow(log(a2 / w02), 3) - (10.0 / 9.0) * GS * (P[4] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+
+    return r;
+}
+
+double rhs_amu_common_a2_FVE_log_eq_op_a4_eq(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    double GS = x[1];
+    double Mpi = x[2];
+    double Mpiphys = x[3];
+    double w02 = 0.17383 * 0.17383;
+    if (n == 0)      r = P[0] + a2 * P[1] / pow(log(a2 / w02), 3) - (10.0 / 9.0) * GS * (P[3] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+    else if (n == 1) r = P[0] + a2 * P[2] / pow(log(a2 / w02), 3) - (10.0 / 9.0) * GS * (P[4] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+
+    return r;
+}
+
+
+double rhs_amu_common_a2_FVE_a4_eq(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    double GS = x[1];
+    double Mpi = x[2];
+    double Mpiphys = x[3];
+    if (n == 0)      r = P[0] + a2 * P[1] - (10.0 / 9.0) * GS * (P[3] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963)) + a2 * a2 * P[6];
+    else if (n == 1) r = P[0] + a2 * P[2] - (10.0 / 9.0) * GS * (P[4] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+
+    return r;
+}
+
+double rhs_amu_common_a2_FVE_a4_op(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    double GS = x[1];
+    double Mpi = x[2];
+    double Mpiphys = x[3];
+    if (n == 0)      r = P[0] + a2 * P[1] - (10.0 / 9.0) * GS * (P[3] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+    else if (n == 1) r = P[0] + a2 * P[2] - (10.0 / 9.0) * GS * (P[4] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963)) + a2 * a2 * P[6];
+
+    return r;
+}
+
+
 double rhs_amu_common_a4(int n, int Nvar, double* x, int Npar, double* P) {
     double r;
     double a2 = x[0];
@@ -1216,11 +1361,11 @@ double rhs_poly(int n, int Nvar, double* x, int Npar, double* P) {
         r += P[i] * xpower;
         xpower *= (t * a - t0);
     }
-    if(isnan(r)){
+    if (isnan(r)) {
         printf("nan found:\n");
-        printf("t= %g  t0=%g   a=%g  \n",t,t0,a);
-        for (int i = 0;i < Npar;i++) printf("P[%d]=%g\t",i,P[i]);
-        printf("Nvar= %d  Npar=%d  \n",Nvar, Npar);
+        printf("t= %g  t0=%g   a=%g  \n", t, t0, a);
+        for (int i = 0;i < Npar;i++) printf("P[%d]=%g\t", i, P[i]);
+        printf("Nvar= %d  Npar=%d  \n", Nvar, Npar);
     }
     return r;
 }
