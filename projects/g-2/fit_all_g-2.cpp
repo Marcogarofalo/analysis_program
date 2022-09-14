@@ -20,6 +20,8 @@
 #include "non_linear_fit.hpp"
 #include "tower.hpp"
 #include "fit_all.hpp"
+#include "resampling_new.hpp"
+#include "global.hpp"
 
 #include <string>
 #include <cstring> 
@@ -233,6 +235,7 @@ int main(int argc, char** argv) {
     data_all jackall = read_all_the_files(files, argv[1]);
     jackall.create_generalised_resampling();
 
+
     std::vector<int> myen_full(jackall.ens);
     for (int e = 0; e < jackall.ens; e++) {
         myen_full[e] = e;
@@ -245,6 +248,12 @@ int main(int argc, char** argv) {
     int Njack = jackall.en[0].Njack;
     std::vector<int> myen_charm = { 0, 2, 3, 4, 5, 6 };
 
+    if (strcmp(argv[1], "jack") == 0) {
+        myres = new resampling_jack(Njack - 1);
+    }
+    else if (strcmp(argv[1], "boot") == 0) {
+        myres = new resampling_boot(Njack-1);
+    }
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -909,7 +918,7 @@ int main(int argc, char** argv) {
 
     double* jack_Mpi_MeV_exp = fake_sampling(argv[1], Mpi_MeV, Mpi_MeV_err, Njack, 1003);
 
-    
+
     data_all  syst_amu_W_l;
     syst_amu_W_l.resampling = argv[1];
     for (auto integration : integrations) {
@@ -1520,6 +1529,8 @@ int main(int argc, char** argv) {
                         ie++;
                     }
                 }
+                fit_info.compute_cov1_fit();
+
                 std::string logname;
                 if (l == 0) { logname = ""; }
                 if (l == 1) { logname = "log_eq"; }
@@ -1792,6 +1803,8 @@ int main(int argc, char** argv) {
                     ie++;
                 }
             }
+            fit_info.compute_cov1_fit();
+
             mysprintf(namefit, NAMESIZE, "amu_W_s_%s_%s_a4_cov", interpolation.c_str(), integration.c_str());
             fit_result amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.0081 };
@@ -1836,6 +1849,8 @@ int main(int argc, char** argv) {
                     ie++;
                 }
             }
+            fit_info.compute_cov1_fit();
+
             mysprintf(namefit, NAMESIZE, "amu_W_s_%s_%s_a4_eq_cov", interpolation.c_str(), integration.c_str());
             amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.0081 };
@@ -1880,6 +1895,9 @@ int main(int argc, char** argv) {
                     ie++;
                 }
             }
+
+            fit_info.compute_cov1_fit();
+
             mysprintf(namefit, NAMESIZE, "amu_W_s_%s_%s_a4_op_cov", interpolation.c_str(), integration.c_str());
             amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.0081 };
@@ -2072,6 +2090,8 @@ int main(int argc, char** argv) {
                     ie++;
                 }
             }
+            fit_info.compute_cov1_fit();
+
             mysprintf(namefit, NAMESIZE, "amu_SD_c_%s_%s_a4_cov", interpolation.c_str(), integration.c_str());
             fit_result amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.009 };
@@ -2117,6 +2137,8 @@ int main(int argc, char** argv) {
                     ie++;
                 }
             }
+            fit_info.compute_cov1_fit();
+
             mysprintf(namefit, NAMESIZE, "amu_SD_c_%s_%s_a4_eq_cov", interpolation.c_str(), integration.c_str());
             amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.009 };
@@ -2161,6 +2183,8 @@ int main(int argc, char** argv) {
                     ie++;
                 }
             }
+            fit_info.compute_cov1_fit();
+
             mysprintf(namefit, NAMESIZE, "amu_SD_c_%s_%s_a4_op_cov", interpolation.c_str(), integration.c_str());
             amu_SD_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.009 };
@@ -2359,6 +2383,9 @@ int main(int argc, char** argv) {
                     ie++;
                 }
             }
+            fit_info.compute_cov1_fit();
+
+            // fit_info.error_chi2 = true;
             mysprintf(namefit, NAMESIZE, "amu_W_c_%s_%s_a4_cov", interpolation.c_str(), integration.c_str());
             fit_result amu_W_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.009 };
@@ -2369,6 +2396,8 @@ int main(int argc, char** argv) {
 
             free_fit_result(fit_info, amu_W_s_common_a4);
             fit_info.restore_default();
+            // exit(0);
+
             ///////////////////////////////////////////////////////////////////////////////////////////////////
             printf("\n/////////////////////////////////     amu_W_c_common_a4_eq    //////////////////\n");
             //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2404,6 +2433,8 @@ int main(int argc, char** argv) {
                     ie++;
                 }
             }
+            fit_info.compute_cov1_fit();
+
             mysprintf(namefit, NAMESIZE, "amu_W_c_%s_%s_a4_eq_cov", interpolation.c_str(), integration.c_str());
             amu_W_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.009 };
@@ -2449,6 +2480,8 @@ int main(int argc, char** argv) {
                     ie++;
                 }
             }
+            fit_info.compute_cov1_fit();
+
             mysprintf(namefit, NAMESIZE, "amu_W_c_%s_%s_a4_op_cov", interpolation.c_str(), integration.c_str());
             amu_W_s_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
             fit_info.band_range = { 0,0.009 };

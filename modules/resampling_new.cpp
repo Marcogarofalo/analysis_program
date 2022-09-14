@@ -204,7 +204,7 @@ double resampling_jack::comp_error(double* in) {
     r[1] *= (N - 1.) / ((double)N);
     r[1] = sqrt(r[1]);
 
-    r[0] = in[N];
+    // r[0] = in[N];
 
     return r[1];
 }

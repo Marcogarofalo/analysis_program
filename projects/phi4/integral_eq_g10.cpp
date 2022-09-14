@@ -20,8 +20,8 @@
 
 
 int main(int argc, char** argv) {
-    error(argc != 4, 1, "main ",
-        "usage:./integral_eq  whatever   whatever   output_dir");
+    // error(argc != 4, 1, "main ",
+    //     "usage:./integral_eq  whatever   whatever   output_dir");
 
     mysprintf(argv[1], NAMESIZE, "%s", "jack");
     mysprintf(argv[2], NAMESIZE, "%s", "./");
@@ -60,10 +60,10 @@ int main(int argc, char** argv) {
     double** tmp = fake_sampling_covariance("jack", mean, Njack, tot_parK, cov, seed);
 
 
-    int N = 1000;
+    int N = atoi(argv[4]);
     // int N = 1000;
     double d = 0.005;
-    double eps = 0.00005;
+    double eps = 1e-7;
     printf("E3    M3_re   M3_im      Kdf_re  kdf_im  Finf_re  Finf_im\n");
 
 

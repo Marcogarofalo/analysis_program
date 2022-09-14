@@ -363,6 +363,71 @@ double**** create_boot(int  N, int Nboot, int var, int t, double**** in, int see
     return  boot;
 }
 
+double**** create_boot_of_boot_from_jack(int  Njack, int Nboot, int en_tot, double*** in, int seed = 123) {
+    double**** boot;
+    int i, j, k, l, b, ib;
+
+    srand(seed);
+
+    boot = (double****)malloc(sizeof(double***) * (Nboot));
+    for (i = 0;i < Nboot;i++) {
+        boot[i] = (double***)malloc(sizeof(double**) * (Nboot));
+        for (j = 0;j < Nboot;j++) {
+            boot[i][j] = (double**)malloc(sizeof(double*) * en_tot);
+            for (k = 0;k < en_tot;k++)
+                boot[i][j][k] = (double*)calloc(2, sizeof(double));
+        }
+    }
+
+
+    for (ib = 0;ib < Nboot - 1;ib++) {
+        for (int ibb = 0;ibb < Nboot - 1;ibb++) {
+            for (i = 0;i < Njack - 1;i++) {
+                b = (int)rand() % (Njack - 1);  //have to stay here, because I want that all the var, t , l to have the same random number 
+                for (int e = 0;e < en_tot;e++) {
+                    boot[ib][ibb][e][0] += in[b][e][0];
+                    // boot[ib][ibb][e][1] += in[0][e][1];// the error is always the same 
+                }
+            }
+        }
+    }
+    for (ib = 0;ib < Nboot - 1;ib++) {
+        for (int ibb = 0;ibb < Nboot - 1;ibb++) {
+            for (int e = 0;e < en_tot;e++) {
+                boot[ib][ibb][e][0] /= ((double)(Njack));
+            }
+        }
+    }
+    // set the last one to the mean
+    for (ib = 0;ib < Nboot;ib++) {
+        for (int e = 0;e < en_tot;e++) {
+            boot[ib][Nboot - 1][e][0] = in[Njack - 1][e][0];
+            boot[Nboot - 1][ib][e][0] = in[Njack - 1][e][0];
+        }
+
+    }
+
+
+    double* tmp = (double*)malloc(sizeof(double) * Nboot + 1);
+    resampling_boot  myb(Nboot - 1);
+    for (int e = 0;e < en_tot;e++) {
+        for (int ib = 0;ib < Nboot;ib++) {
+            for (int ibb = 0;ibb < Nboot;ibb++) {
+                tmp[ibb] = boot[ib][ibb][e][0];
+            }
+            double err = myb.comp_error(tmp);
+            for (int ibb = 0;ibb < Nboot;ibb++) {
+                boot[ib][ibb][e][1] = err* (Njack - 2);
+            }
+            printf("%d    %d    %g  %g   %g\n", e, ib, boot[ib][Nboot-1][e][0], boot[ib][Nboot-1][e][1], in[0][e][1]);
+        }
+    }
+
+
+    return  boot;
+}
+
+
 double* fake_boot(double mean, double error, int Njack, int seed) {
     int i;
     double* r;
@@ -484,10 +549,10 @@ double**** create_resampling(const char* option, int  N, int var, int t, double*
         Nboot = N + 1;
         myres = new resampling_jack(Nboot);
     }
-    else if (strcmp(option, "boot") == 0){
+    else if (strcmp(option, "boot") == 0) {
         r = create_boot(N, Nboot, var, t, in, seed);
         Nboot = Nbootstrap + 1;
-        myres = new resampling_boot(Nboot,seed);
+        myres = new resampling_boot(Nboot, seed);
     }
     else {
         error(strcmp(option, "jack") != 0 || strcmp(option, "boot") != 0, 1, "create_resampling call", "create_resampling called with %s while the only options supported are jack or boot", option);

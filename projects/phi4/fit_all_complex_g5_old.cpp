@@ -190,14 +190,14 @@ void print_fit_band_E3_vs_L(char** argv, vector<data_phi> gjack, struct fit_type
 				tmpx[6] = 1;//k
 				tmpx[7] = 1;//MpiL
 
-//                 double *x=(double*) malloc(sizeof(double)*myen.size());
-//                 double *y=(double*) malloc(sizeof(double)*myen.size());
-//                 for (int e=0; e<myen.size();e++){
-//                     y[e]= lhs_E3_m(n,myen[e],j,params,gjack,fit_info);// E3( \vec{n} )/mass
-//                     x[e]=params[myen[e]].data.L[1];
-//                 }
-//                 tmpx[8]=inter_spline( tmpx[0], myen.size(), x, y   ); // tmpx[0]=L 
-//                 free(x);free(y);
+				//                 double *x=(double*) malloc(sizeof(double)*myen.size());
+				//                 double *y=(double*) malloc(sizeof(double)*myen.size());
+				//                 for (int e=0; e<myen.size();e++){
+				//                     y[e]= lhs_E3_m(n,myen[e],j,params,gjack,fit_info);// E3( \vec{n} )/mass
+				//                     x[e]=params[myen[e]].data.L[1];
+				//                 }
+				//                 tmpx[8]=inter_spline( tmpx[0], myen.size(), x, y   ); // tmpx[0]=L 
+				//                 free(x);free(y);
 
 				tmpx[8] = E3_m[Njack - 1];// E3( \vec{n} )/mass
 				// as error on E3/m  we take the error on the ensemble=0
@@ -569,6 +569,13 @@ int main(int argc, char** argv) {
 	for (int i = 0;i < Ne; i++)  myen[i] = i;
 
 	int Njack = gjack[0].Njack;
+	if (strcmp(argv[1], "jack") == 0) {
+		myres = new resampling_jack(Njack - 1);
+	}
+	else if (strcmp(argv[1], "boot") == 0) {
+		myres = new resampling_boot(Njack - 1);
+	}
+	
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	// init zeta func
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1044,7 +1051,7 @@ int main(int argc, char** argv) {
 	fit_info.devorder = 2;
 	fit_info.verbosity = 3;
 	fit_info.repeat_start = 1;
-	
+
 	fit_info.guess = { 8.28416, 9.65554, -1504.59, -0.141698, -2.91195 };
 	fit_info.mean_only = true;
 	fit_info.precision_sum = 2;

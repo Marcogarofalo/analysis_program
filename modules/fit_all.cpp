@@ -22,6 +22,8 @@
 #include "non_linear_fit.hpp"
 #include "mutils.hpp"
 #include "resampling.hpp"
+#include "resampling_new.hpp"
+
 
 // void data_single::cut_confs(int N) {
 //     if (N >= Njack - 1) { printf("error: trying to cut the configuration up to N= %d > Njack = %d", N, Njack); exit(1); }
@@ -246,39 +248,39 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
 
 }
 
-void subMatrix(double **mat, double **temp, int p, int q, int N) {
-   int i = 0, j = 0;
-   // filling the sub matrix
-   for (int row = 0; row < N; row++) {
-      for (int col = 0; col < N; col++) {
-         // skipping if the current row or column is not equal to the current
-         // element row and column
-         if (row != p && col != q) {
-            temp[i][j++] = mat[row][col];
-            if (j == N - 1) {
-               j = 0;
-               i++;
+void subMatrix(double** mat, double** temp, int p, int q, int N) {
+    int i = 0, j = 0;
+    // filling the sub matrix
+    for (int row = 0; row < N; row++) {
+        for (int col = 0; col < N; col++) {
+            // skipping if the current row or column is not equal to the current
+            // element row and column
+            if (row != p && col != q) {
+                temp[i][j++] = mat[row][col];
+                if (j == N - 1) {
+                    j = 0;
+                    i++;
+                }
             }
-         }
-      }
-   }
+        }
+    }
 }
-int determinantOfMatrix(double **matrix, int N) {
-   int determinant = 0;
-   if (N == 1) {
-      return matrix[0][0];
-   }
-   if (N == 2) {
-      return (matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0]);
-   }
-   int sign = 1;
-   double **temp= double_malloc_2(N,N);
-   for (int i = 0; i < N; i++) {
-      subMatrix(matrix, temp, 0, i, N);
-      determinant += sign * matrix[0][i] * determinantOfMatrix(temp, N - 1);
-      sign = -sign;
-   }
-   return determinant;
+int determinantOfMatrix(double** matrix, int N) {
+    int determinant = 0;
+    if (N == 1) {
+        return matrix[0][0];
+    }
+    if (N == 2) {
+        return (matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0]);
+    }
+    int sign = 1;
+    double** temp = double_malloc_2(N, N);
+    for (int i = 0; i < N; i++) {
+        subMatrix(matrix, temp, 0, i, N);
+        determinant += sign * matrix[0][i] * determinantOfMatrix(temp, N - 1);
+        sign = -sign;
+    }
+    return determinant;
 }
 
 
@@ -334,7 +336,7 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
         }
     }
 
-    double det=determinantOfMatrix(cov, Npar);
+    double det = determinantOfMatrix(cov, Npar);
 
     fprintf(f, "{\\tiny\\begin{gather}\n C=\\begin{pmatrix}\n");
     for (int i = 0;i < fit_info.Npar;i++) {
@@ -357,7 +359,7 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
         if (i != fit_info.Npar) fprintf(f, "\\\\ \n");
         else fprintf(f, "\n");
     }
-    fprintf(f, "\\end{pmatrix}\n\\\\det=%g\\\\ \\end{gather}}\n",det);
+    fprintf(f, "\\end{pmatrix}\n\\\\det=%g\\\\ \\end{gather}}\n", det);
     free_2(Npar, cov);
     fclose(f);
 
@@ -508,6 +510,49 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
         //     }
         //     printf("\n");
         // }
+
+    }
+    if (fit_info.error_chi2 == true) {
+        int Nboot = 10;
+        // first we need to compute the boot of boot, from the jack
+        double**** bby = create_boot_of_boot_from_jack(Njack, Nboot, en_tot, y);
+        double* boot_chi2 = (double*)malloc(sizeof(double) * Nboot);
+
+        for (int j = 0;j < Nboot-1;j++) {
+            // ari-calcola la correlazione
+            if (fit_info.covariancey) {
+                double** yy = double_malloc_2(en_tot, Nboot);
+                for (int i = 0;i < en_tot;i++)
+                    for (int ib = 0;ib < Nboot;ib++) {
+                        yy[i][ib] = bby[j][ib][i][0];
+                    }
+                double** cov = covariance("boot", en_tot, Nboot, yy);
+
+                for (int ie = 0;ie < en_tot;ie++)
+                    for (int ie1 = 0;ie1 < en_tot;ie1++)
+                        if (fit_info.cov[ie][ie1] != 0) {
+                            // printf("%d  %d   %g   %g\n", ie, ie1, fit_info.cov[ie][ie1], cov[ie][ie1] * (Njack - 2) * (Njack - 2));
+                            fit_info.cov[ie][ie1] = cov[ie][ie1] * (Njack - 2) * (Njack - 2);
+                            
+                        }
+               
+                fit_info.compute_cov1_fit();
+                
+            }
+            non_linear_fit_result single_jack_fit = non_linear_fit_Nf(N, en, x[j], bby[j][Nboot - 1], Nvar, Npar, fit_info.function, guess, fit_info);
+            // fit[j] = single_jack_fit.P;  // we do not care at the value
+            boot_chi2[j] = single_jack_fit.chi2 / (en_tot - Npar);
+        }
+        double dchi2 = error_jackboot("boot", Nboot, boot_chi2) * (Njack - 2);
+        printf("boot chi2:\n");
+        for (int j = 0;j < Nboot-1;j++) {
+            printf("%g\t", boot_chi2[j]);
+            if (j < Njack) printf("%g\n", fit_out.chi2[j]);
+            else printf("\n");
+        }
+        printf("chi2=  %g   +- %g   or %g\n", fit_out.chi2[Njack - 1], dchi2, myres->comp_error(fit_out.chi2));
+        free_4(Nboot, Nboot, en_tot, bby);
+        free(boot_chi2); 
 
     }
 

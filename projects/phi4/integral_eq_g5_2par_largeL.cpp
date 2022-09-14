@@ -14,6 +14,8 @@
 #include "minimizer.hpp"
 #include "tower.hpp"
 #include "resampling.hpp"
+#include "resampling_new.hpp"
+#include "global.hpp"
 
 
 
@@ -40,9 +42,9 @@ int main(int argc, char** argv) {
     cov[0][0] = pow(8.4, 2);
     cov[1][1] = pow(0.0012, 2);
     cov[2][2] = pow(0.0012, 2);
-    cov[0][1] = -0.000336; cov[0][2] = 0.366;    
-        ;                  cov[1][2] = -0.0113;      
-                           
+    cov[0][1] = -0.000336; cov[0][2] = 0.366;
+    ;                  cov[1][2] = -0.0113;
+
 
     for (int i = 0; i < tot_parK;i++) {
         for (int j = i + 1; j < tot_parK;j++) {
@@ -63,7 +65,7 @@ int main(int argc, char** argv) {
     printf("E3    M3_re   M3_im      Kdf_re  kdf_im  Finf_re  Finf_im\n");
 
 
-   
+
     double Emin = 3.015;
     double Emax = 3.030;
 
@@ -92,6 +94,7 @@ int main(int argc, char** argv) {
     read_M3(NE, Njack, E3, M3, F, "data_M3_kcot_1par_kiso_2par.txt", argv[3]);
 
     data_all jackall = setup_data_for_fits(NE, Njack, M3, F);
+    myres = new resampling_jack(Njack - 1);
 
 
     {
@@ -153,18 +156,18 @@ int main(int argc, char** argv) {
 
         double Emin_fit = 3.020;
         double Emax_fit = 3.028;
-        
-        int N1=0;
-        for (int e = 0;e < NE;e++) if (E3[e]>Emin_fit && E3[e]<Emax_fit) N1++;
+
+        int N1 = 0;
+        for (int e = 0;e < NE;e++) if (E3[e] > Emin_fit && E3[e] < Emax_fit) N1++;
         fit_info.myen = std::vector<int>(N1);
-        int count=0;
-        for (int e = 0;e < NE;e++){
-             if (E3[e]>Emin_fit && E3[e]<Emax_fit) {
+        int count = 0;
+        for (int e = 0;e < NE;e++) {
+            if (E3[e] > Emin_fit && E3[e] < Emax_fit) {
                 fit_info.myen[count] = e;
                 count++;
-             }
+            }
         }
-        
+
         fit_info.Nvar = 2;
         fit_info.Npar = 4;
         fit_info.function = rhs_BW;
@@ -208,16 +211,16 @@ int main(int argc, char** argv) {
         fit_info.N = 2;
         double Emin_fit = 3.020;
         double Emax_fit = 3.028;
-        
-        int N1=0;
-        for (int e = 0;e < NE;e++) if (E3[e]>Emin_fit && E3[e]<Emax_fit) N1++;
+
+        int N1 = 0;
+        for (int e = 0;e < NE;e++) if (E3[e] > Emin_fit && E3[e] < Emax_fit) N1++;
         fit_info.myen = std::vector<int>(N1);
-        int count=0;
-        for (int e = 0;e < NE;e++){
-             if (E3[e]>Emin_fit && E3[e]<Emax_fit) {
+        int count = 0;
+        for (int e = 0;e < NE;e++) {
+            if (E3[e] > Emin_fit && E3[e] < Emax_fit) {
                 fit_info.myen[count] = e;
                 count++;
-             }
+            }
         }
         fit_info.Nvar = 2;
         fit_info.Npar = 4;
