@@ -25,6 +25,8 @@
 #include <string>
 #include <fstream>
 #include <memory>
+#include "resampling_new.hpp"
+#include "global.hpp"
 
 
 //local folder
@@ -557,6 +559,12 @@ int main(int argc, char** argv) {
     for (int i = 0;i < Ne; i++)  myen[i] = i;
 
     int Njack = gjack[0].Njack;
+    if (strcmp(argv[1], "jack") == 0) {
+        myres = new resampling_jack(Njack - 1);
+    }
+    else if (strcmp(argv[1], "boot") == 0) {
+        myres = new resampling_boot(Njack - 1);
+    }
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     // init zeta func
     //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -20,6 +20,8 @@
 #include <string>
 #include "correlators_analysis.hpp"
 #include "eigensystem.hpp"
+#include "resampling_new.hpp"
+#include "global.hpp"
 
 #include <cstring> 
 #include <string>
@@ -442,7 +444,12 @@ int main(int argc, char** argv) {
 
     int Njack = gjack[0].Njack;
 
-
+    if (strcmp(argv[1], "jack") == 0) {
+        myres = new resampling_jack(Njack - 1);
+    }
+    else if (strcmp(argv[1], "boot") == 0) {
+        myres = new resampling_boot(Njack - 1);
+    }
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     // start fitting
     //////////////////////////////////////////////////////////////////////////////////////////////////

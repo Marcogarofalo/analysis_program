@@ -14,6 +14,9 @@ public:
     std::vector<double> mus{};
     std::vector<double> thetas{};
     double beta;
+    double kappa;
+    int size;
+    int ncorr;
     // generic_header() : T(0), L(0), mus{}, thetas{} {
     //     // std::cout << "header constr 0" << std::endl;
     // }

@@ -14,6 +14,8 @@
 #include "minimizer.hpp"
 #include "tower.hpp"
 #include "resampling.hpp"
+#include "resampling_new.hpp"
+#include "global.hpp"
 
 
 
@@ -97,7 +99,7 @@ int main(int argc, char** argv) {
     read_M3(NE, Njack, E3, M3, F, "data_M3_kcot_1par_kiso_2par.txt", argv[3]);
 
     data_all jackall = setup_data_for_fits(NE, Njack, M3, F);
-
+    myres=new resampling_jack(Njack-1);
 
     {
 

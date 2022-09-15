@@ -146,6 +146,7 @@ void fit_type::restore_default() {
 
     unstable = false; // if true avoid thing that may return error
     noderiv = false;
+    error_chi2 = false;
 
     plateaux_scan = false;
     guess_per_jack = 0;
@@ -249,6 +250,7 @@ struct  fit_result   malloc_copy_fit_result(struct fit_result fit_out) {
         fit_tmp.chi2[j] = fit_out.chi2[j];
     }
     fit_tmp.Npar = fit_out.Npar;
+    fit_tmp.dof = fit_out.dof;
     mysprintf(fit_tmp.name, NAMESIZE, "%s", fit_out.name);
     return fit_tmp;
 }
@@ -965,7 +967,7 @@ bool compute_alpha_cov1(double* beta, double** alpha, int N, int* ensemble,
         count = 0;
         for (int n = 0;n < N;n++) {
             for (int e = 0;e < ensemble[n];e++) {
-                printf("second derivative %i  %i\n", n ,e);
+                printf("second derivative %i  %i\n", n, e);
                 double** fkk = der2_O2_fun_Nf_h(n, Nvar, x[e + count], Npar, P_tmp, fun, h);
                 int count1 = 0;
                 for (int n1 = 0;n1 < N;n1++) {
@@ -1171,8 +1173,8 @@ double* linear_fit_Nf(int* Npoints, double** x, double** y, fit_type fit_info) {
                 en_tot += 1;
 
         double** df_value = (double**)malloc(sizeof(double*) * en_tot);
-        for (int n = 0;n < Nfunc;n++){
-            for (int e = 0;e < Npoints[n];e++){
+        for (int n = 0;n < Nfunc;n++) {
+            for (int e = 0;e < Npoints[n];e++) {
                 df_value[count] = fit_info.linear_function(n, Nvar, x[count], Npar);
                 count++;
             }
@@ -1189,7 +1191,7 @@ double* linear_fit_Nf(int* Npoints, double** x, double** y, fit_type fit_info) {
                         alpha[j][k] += df_value[i][j] * fit_info.cov1[i][ii] * df_value[ii][k];
             }
         }
-        
+
         free_2(en_tot, df_value);
     }
     else {
@@ -1815,7 +1817,7 @@ double* guess_for_non_linear_fit_Nf(int N, int* ensemble, double** x, double** y
             }
         }
     }
-    if (fit_info.verbosity >= 0) printf("final chi2=%f\n", chi2);
+    if (fit_info.verbosity >= 0) printf("final guess uncorrelated chi2=%f\n", chi2);
     free(guess);
     return P;
 }

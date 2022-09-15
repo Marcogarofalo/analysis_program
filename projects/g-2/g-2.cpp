@@ -65,6 +65,11 @@ using namespace std;
 
 struct  kinematic kinematic_2pt;
 
+class replica_class {
+public:
+    int id;
+    std::vector<int> i_conf;
+};
 
 class configuration_class {
 public:
@@ -72,6 +77,9 @@ public:
     std::vector<int> to_bin;//0 last, 1 alone, 2 first, 3 in the list
     std::vector<int> next_to_bin;
     int confs_after_binning;
+    std::vector<int> order;
+    std::vector<replica_class>   rep;
+
 
 
     void check_binnign() {
@@ -100,6 +108,10 @@ public:
         // for (int i = 0; i < iconfs.size(); i++) {
         //     printf("%s   %d    %d\n", iconfs[i].c_str(), to_bin[i], next_to_bin[i]);
         // }
+
+    }
+
+    void setup_order() {
 
     }
 
@@ -255,22 +267,46 @@ void return_conf_binned(double* tmp_b, double** tmp, configuration_class confs, 
 
 }
 
-void read_twopt(const char namefile[NAMESIZE], configuration_class confs, int T, double**** to_write, int id, int Nb) {
+void read_twopt(const char namefile[NAMESIZE], configuration_class& confs, int T, double**** to_write, int id, int Nb) {
     // char tmp[NAMESIZE];
     int sd = 0;
     std::fstream newfile;
     newfile.open(namefile, std::ios::in);
     double** tmp = double_malloc_2(confs.iconfs.size(), T / 2 + 2);
 
+    confs.rep = std::vector<replica_class>(1);
+    confs.rep[0].id = 0;
     if (newfile.is_open()) { // checking whether the file is open
         std::string tp;
         for (int i = 0;i < confs.iconfs.size();i++) {
             getline(newfile, tp);
             // cout<< tp<< endl;
             getline(newfile, tp);
+            // printf("%s \n", tp.c_str());
+            if (tp.compare(0, 1, "#") == 0) {
+                string tp1 = tp;
+                int r = stoi(tp1.erase(0, 8));
+                int ic = stoi(tp.erase(7).erase(0, 1).c_str());
+                // printf("%s  %d   %d\n",tp.c_str(), r, ic);
+                bool new_rep = true;
+                for (int ir = 0; ir < confs.rep.size(); ir++) {
+                    if (r == ir) {
+                        confs.rep[ir].i_conf.emplace_back(i);
+                        new_rep = false;
+                        break;
+                    }
+                }
+                if (new_rep) {
+                    replica_class tmp;
+                    tmp.id = r;
+                    tmp.i_conf.emplace_back(i);
+                    confs.rep.emplace_back(tmp);
+                }
+            }
             // cout<< tp<< endl;
             getline(newfile, tp);
             // cout<< tp<< endl;
+
             for (int t = 0;t < T / 2 + 1;t++) {
                 getline(newfile, tp);
                 // to_write[i][id][t][0] = stod(tp);
@@ -285,19 +321,51 @@ void read_twopt(const char namefile[NAMESIZE], configuration_class confs, int T,
             "unable to open %s", namefile);
     }
 
-    double** data = double_calloc_2(confs.confs_after_binning, T / 2 + 1);
+    printf("We found %ld streams\n", confs.rep.size());
+    for (auto r : confs.rep) {
+        printf("  stream: %d   confs:  %ld\n", r.id, r.i_conf.size());
+    }
+
+    double** data = double_calloc_2(confs.iconfs.size(), T / 2 + 1);
     int count = 0;
-    for (int i = 0;i < confs.iconfs.size();i++) {
-        if (confs.to_bin[i] == 1 || confs.to_bin[i] == 2) { // if it is alone or it is first of the list
-            double* tmp_b = (double*)calloc((T / 2 + 2), sizeof(double));
-            return_conf_binned(tmp_b, tmp, confs, i, T);
-            for (int t = 0;t < T / 2 + 1;t++) {
-                data[count][t] = tmp_b[t];
+    for (auto r : confs.rep) {
+        if (r.id % 2 == 0) {
+            for (int ic = r.i_conf.size() - 1; ic >= 0; ic--) {
+                // printf("%d  %d %d\n", r.id, r.i_conf[ic], ic);
+                for (int t = 0;t < T / 2 + 1;t++) {
+                    data[count][t] = tmp[r.i_conf[ic]][t];
+                }
+                count++;
             }
-            free(tmp_b);
-            count++;
+        }
+        if (r.id % 2 == 1) {
+            for (int ic = 0; ic < r.i_conf.size(); ic++) {
+                // printf("%d  %d\n", r.id, r.i_conf[ic]);
+
+                for (int t = 0;t < T / 2 + 1;t++) {
+                    data[count][t] = tmp[r.i_conf[ic]][t];
+                }
+                count++;
+            }
         }
     }
+
+
+    // double** data = double_calloc_2(confs.confs_after_binning, T / 2 + 1);
+    // int count = 0;
+    // for (int i = 0;i < confs.iconfs.size();i++) {
+    //     if (confs.to_bin[i] == 1 || confs.to_bin[i] == 2) { // if it is alone or it is first of the list
+    //         double* tmp_b = (double*)calloc((T / 2 + 2), sizeof(double));
+    //         return_conf_binned(tmp_b, tmp, confs, i, T);
+    //         for (int t = 0;t < T / 2 + 1;t++) {
+    //             data[count][t] = tmp_b[t];
+    //         }
+    //         free(tmp_b);
+    //         count++;
+    //     }
+    // }
+
+
     // int bin = confs.confs_after_binning / Nb;
     // int leftover = confs.confs_after_binning - bin * Nb;
     // printf("confs=%d Nb=%d  bin=%d  lefover=%d\n",confs.confs_after_binning ,Nb,bin,leftover);
@@ -315,7 +383,10 @@ void read_twopt(const char namefile[NAMESIZE], configuration_class confs, int T,
     //     }
     // }
 
-    double clustSize = ((double)confs.confs_after_binning) / ((double)Nb);
+    double clustSize = ((double)confs.iconfs.size()) / ((double)Nb);
+    // double clustSize = ((double)confs.confs_after_binning) / ((double)Nb);
+
+
     for (size_t iClust = 0;iClust < Nb;iClust++) {
         /// Initial time of the bin
         const double binBegin = iClust * clustSize;
@@ -348,7 +419,8 @@ void read_twopt(const char namefile[NAMESIZE], configuration_class confs, int T,
 
     }
 
-    free_2(confs.confs_after_binning, data);
+    free_2(confs.iconfs.size(), data);
+    // free_2(confs.confs_after_binning, data);
     free_2(confs.iconfs.size(), tmp);
 
 }
@@ -734,7 +806,7 @@ int main(int argc, char** argv) {
     // free_corr(bin, var, file_head.l0, data);
     conf_jack = create_resampling(option[4], Neff, var, file_head.l0, data);
     free_corr(Neff, var, file_head.l0, data);
-    
+
 
     // ////////////////// symmetrization/////////////////////////////////////////////
     // for (int i = 0;i <= 7;i++) { symmetrise_jackboot(Njack, i, file_head.l0, conf_jack); }
@@ -1651,7 +1723,7 @@ int main(int argc, char** argv) {
         fit_result ct_2exp1 = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"A1P1phi", conf_jack, namefile_plateaux, outfile,
             lhs_ct<14>, "C_{s2}^{eq}_2exp", fit_info, jack_file);
         check_correlatro_counter(120);
-        printf("%.12g    %.12g\n",conf_jack[0][8][0][0],conf_jack[0][14][0][0]);
+        printf("%.12g    %.12g\n", conf_jack[0][8][0][0], conf_jack[0][14][0][0]);
         double** cts = (double**)malloc(sizeof(double*) * Nstrange);
         cts[0] = ct_2exp.P[0];
         cts[1] = ct_2exp1.P[0];

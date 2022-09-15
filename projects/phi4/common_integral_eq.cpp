@@ -81,8 +81,9 @@ void compute_M3(int NE, double Emin, double dE, int Njack, std::vector<double>& 
 
     M3 = double_malloc_3(NE, 2, Njack);
     F = double_malloc_3(NE, 2, Njack);
-    #pragma omp parallel for   shared(NE,Njack,Emin,dE,Npar,P,eps) 
+    // #pragma omp parallel for   shared(NE,Njack,Emin,dE,Npar,P,eps) 
     for (int i = 0;i < NE;i++) {
+        #pragma omp parallel for   shared(NE,Njack,Emin,dE,Npar,P,eps) 
         for (int j = 0;j < Njack;j++) {
             E3[i] = Emin + i * dE;
             // E3[i] = 3.02;printf("\n\n MODIFY HERE \n\n");
@@ -114,10 +115,12 @@ void compute_M3(int NE, double Emin, double dE, int Njack, std::vector<double>& 
             // printf("%-18.8g%-14g%-18g%\n", E3[i], real(m3), imag(m3));
         }
 
-        printf("EMFP:%-20.8g%-20.12g%-18g%-20.12g%-18g%-20.12g%-18g%-22.12g%-20g\n", E3[i], M3[i][0][Njack - 1], error_jackboot("jack", Njack, M3[i][0]),
-            M3[i][1][Njack - 1], error_jackboot("jack", Njack, M3[i][1]),
-            F[i][0][Njack - 1], error_jackboot("jack", Njack, F[i][0]), F[i][1][Njack - 1], error_jackboot("jack", Njack, F[i][1])
-        );
+        // printf("EMFP:%-20.8g%-20.12g%-18g%-20.12g%-18g%-20.12g%-18g%-22.12g%-20g\n", E3[i], M3[i][0][Njack - 1], error_jackboot("jack", Njack, M3[i][0]),
+        //     M3[i][1][Njack - 1], error_jackboot("jack", Njack, M3[i][1]),
+        //     F[i][0][Njack - 1], error_jackboot("jack", Njack, F[i][0]), F[i][1][Njack - 1], error_jackboot("jack", Njack, F[i][1])
+        // );
+        // printf("%-10g%-10d%-10g%-20.12g%-18g%-22.12g%-20g\n",E3[i],N,eps, F[i][0][Njack - 1], error_jackboot("jack", Njack, F[i][0]), F[i][1][Njack - 1], error_jackboot("jack", Njack, F[i][1]));
+        // exit(0);
     }
 }
 

@@ -25,6 +25,8 @@
 #include <string>
 #include <fstream>
 #include <memory>
+#include "resampling_new.hpp"
+#include "global.hpp"
 
 
 //local folder
@@ -551,6 +553,12 @@ int main(int argc, char** argv) {
     for (int i = 0;i < Ne; i++)  myen[i] = i;
 
     int Njack = gjack[0].Njack;
+    if (strcmp(argv[1], "jack") == 0) {
+        myres = new resampling_jack(Njack - 1);
+    }
+    else if (strcmp(argv[1], "boot") == 0) {
+        myres = new resampling_boot(Njack - 1);
+    }
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     // init zeta func
     //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1186,8 +1194,8 @@ int main(int argc, char** argv) {
     fit_info.verbosity = 3;
     fit_info.repeat_start = 1;
     // fit_info.guess = { 85.28, 9.1294,  -0.155809 };
-    fit_info.guess = { -155 ,   3.0381, -0.145604};
-    fit_info.guess ={1157.5, 3.03435, -0.150604};
+    fit_info.guess = { -155 ,   3.0381, -0.145604 };
+    fit_info.guess = { 1157.5, 3.03435, -0.150604 };
 
     // fit_info.mean_only = true;
     fit_info.precision_sum = 2;

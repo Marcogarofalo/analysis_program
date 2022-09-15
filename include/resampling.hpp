@@ -188,7 +188,7 @@ double **error_covariance(const char *option , int Nobs, int Np1, double **in);
 
 
 double **fake_sampling_covariance(const char *option,double *mean, int Njack,int N, double **cov,int seed);
-
+double**** create_boot_of_boot_from_jack(int  Njack, int Nboot, int en_tot, double*** in, int seed = 123);
 
 ///////////////////////////////////////////////////////
 double* malloc_copy_jackboot(int Np1,  double *a);
