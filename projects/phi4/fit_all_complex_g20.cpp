@@ -872,6 +872,34 @@ int main(int argc, char** argv) {
         }
     }
 
+    fit_info_E3_poly.covariancey = true;
+    fit_info_E3_poly.compute_cov_fit(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info);
+    {
+        int ie = 0, ie1 = 0;
+        for (int n = 0;n < fit_info_E3_poly.N;n++) {
+            for (int e = 0;e < fit_info_E3_poly.myen.size();e++) {
+                ie1 = 0;
+                for (int n1 = 0;n1 < fit_info_E3_poly.N;n1++) {
+                    for (int e1 = 0;e1 < fit_info_E3_poly.myen.size();e1++) {
+                        if (e != e1)   fit_info_E3_poly.cov[ie][ie1] = 0;
+                        ie1++;
+                    }
+                }
+                ie++;
+            }
+        }
+    }
+    fit_info_E3_poly.compute_cov1_fit();
+
+    // fit_info_E3_poly.NM=true;
+    // fit_info_E3_poly.repeat_start=1;
+    fit_info_E3_poly.guess={3.1283, -0.064,  -0.012, -0.00079, 3.8, -0.33, 0.044, -0.0019};
+    // fit_info_E3_poly.h={1, 1e-1, 1e-2, 1e-2, 1, 1e-2, 1e-3, 1e-6};
+    fit_info_E3_poly.acc = 0.0001;
+    // fit_info_E3_poly.verbosity=3;
+    fit_info_E3_poly.linear_fit = true;
+    // fit_info_E3_poly.mean_only = true;
+
     fit_result fit_QC3_poly = fit_all_data(argv, jackall, lhs_E3_m_new, fit_info_E3_poly, "fit_QC3_poly");
 
     fit_info_E3_poly.band_range = { 5.5, 7.5 };
@@ -1274,8 +1302,9 @@ int main(int argc, char** argv) {
         }
     }
     fit_info.compute_cov1_fit();
-    fit_info.guess = { 210.135, 9.12063,  2227.37,  -0.148414   };
-    fit_info.h = { 1e-2, 1e-5, 1, 1e-4 };
+    fit_info.guess = { 210.135, 9.12063,  2227.37,  -0.148414 };
+    // fit_info.h = { 1e-2, 1e-5, 1, 1e-4 };
+    fit_info.h = { 1, 1e-4, 1, 1e-4 };
 
     // fit_info.noderiv = false;
     // fit_info.Prange = { 10 , 1e-3, 100,1e-2 };
@@ -1289,7 +1318,8 @@ int main(int argc, char** argv) {
     // fit_info.h = { 0.1 , 1e-4, 0.1, 1e-3 };
     // fit_info.acc = 0.01;
     // fit_info.devorder = 2;
-    // fit_info.mean_only = false;
+
+    fit_info.mean_only = true;
 
     mysprintf(namefile, NAMESIZE, "kcot_1par_1lev_and_kiso_pole_3par_cov", fit_info.Npar);
     struct fit_result kcot_1lev_and_kiso_pole_3par_cov = fit_all_data(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info, namefile);
