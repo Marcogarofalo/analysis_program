@@ -20,8 +20,8 @@
 
 
 int main(int argc, char** argv) {
-    // error(argc != 4, 1, "main ",
-    //     "usage:./integral_eq  whatever   whatever   output_dir");
+    error(argc != 5, 1, "main ",
+         "usage:./integral_eq  whatever   whatever   output_dir    N");
 
     mysprintf(argv[1], NAMESIZE, "%s", "jack");
     mysprintf(argv[2], NAMESIZE, "%s", "./");

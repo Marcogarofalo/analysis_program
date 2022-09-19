@@ -231,7 +231,36 @@ double denom_M(int n, int Nvar, double* x, int Npar, double* P) {
 
     return sqrt(real(F * conj(F)));
 }
+double denom_M_direct(int n, int Nvar, double* x, int Npar, double* P) {
 
+
+    //to minimize we need change parameters with variables
+    
+    std::complex<double> E3_m(P[0],P[1]);
+    int N=800;
+    double eps=1e-7;
+    int Npar_cot=1;
+    double* Pf = (double*)malloc(sizeof(double) * Npar_cot);
+    Pf[0]=x[0];
+
+    Eigen::MatrixXcd D = compute_D(E3_m, N, Npar_cot, P, compute_kcot, eps);
+    std::complex<double> F=comput_Finf(E3_m,  D,  N, Npar, P, compute_kcot, eps) ;
+
+    double* PK = (double*)malloc(sizeof(double) * 3);
+    
+    PK[0] = x[1];
+    PK[1] = x[2];
+    PK[2] = x[3];
+    
+
+    std::complex<double> K = compute_kiso_complex(std::complex<double>(P[0], P[1]), PK);
+    
+    F = F + 1. / K;
+    
+    free(PK);free(Pf);
+
+    return sqrt(real(F * conj(F)));
+}
 double lhs_M3(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double r;
 

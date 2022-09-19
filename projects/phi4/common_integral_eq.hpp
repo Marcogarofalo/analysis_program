@@ -19,6 +19,7 @@ double lhs_absM3(int n, int e, int j, data_all gjack, struct fit_type fit_info);
 double lhs_F(int n, int e, int j, data_all gjack, struct fit_type fit_info);
 double compute_kiso(double E3_m, double* P);
 double denom_M(int n, int Nvar, double* x, int Npar, double* P);
+double denom_M_direct(int n, int Nvar, double* x, int Npar, double* P);
 double compute_kcot(int Nvar, double* x, int Npar, double* P);
 
 #endif
