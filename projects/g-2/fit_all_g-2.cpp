@@ -965,7 +965,7 @@ int main(int argc, char** argv) {
                         if (!(l == 3 && l == 2))       syst_amu_SD_s_cov.add_fit(amu_SD_s_common_a4);
 
                         // if (l == 4)exit(1);
-                        if (integration == "reinman" && a == 0 && iM == 0 && l == 0) sum_amu_SD.add_fit(amu_SD_s_common_a4);
+                        // if (integration == "reinman" && a == 0 && iM == 0 && l == 0) sum_amu_SD.add_fit(amu_SD_s_common_a4);
 
                         free_fit_result(fit_info, amu_SD_s_common_a4);
                         fit_info.restore_default();
