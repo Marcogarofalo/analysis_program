@@ -962,6 +962,263 @@ double* compute_DVt_and_integrate(int L, int Njack, double* Mpi, double* Mrho, d
 
 
 ///////////////
+
+double rhs_amu_log_a4(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    double Mpi = x[2];
+    double Mpiphys = x[3];
+
+    int ilog = x[4];
+    int ia4 = x[5];
+    int iMpi = x[6];
+    int idc = 3;
+    double w02 = 0.17383 * 0.17383;
+
+
+    if (n == 0)      r = P[0] + a2 * P[1];
+    else if (n == 1) r = P[0] + a2 * P[2];
+
+    if (ilog == 0) {
+        // nothing    
+    }
+    else if (ilog == 1) {
+        if (n == 0)      r += a2 * P[1] * (-1 + 1. / pow(log(a2 / w02), 3));
+    }
+    else if (ilog == 2) {
+        if (n == 1)      r += a2 * P[2] * (-1 + 1. / pow(log(a2 / w02), 3));
+    }
+    else if (ilog == 3) {
+        if (n == 0)      r += a2 * P[1] * (-1 + 1. / pow(log(a2 / w02), 3));
+        if (n == 1)      r += a2 * P[2] * (-1 + 1. / pow(log(a2 / w02), 3));
+    }
+    else if (ilog == 4) {
+        if (n == 0)      r += a2 * P[1] * (-1 + 1. / pow(log(a2 / w02), 2));
+    }
+    else if (ilog == 5) {
+        if (n == 1)      r += a2 * P[2] * (-1 + 1. / pow(log(a2 / w02), 2));
+    }
+    else if (ilog == 6) {
+        if (n == 0)      r += a2 * P[1] * (-1 + 1. / pow(log(a2 / w02), 2));
+        if (n == 1)      r += a2 * P[2] * (-1 + 1. / pow(log(a2 / w02), 2));
+    }
+    else if (ilog == 7) {
+        if (n == 0)      r += a2 * P[1] * (-1 + 1. / pow(log(a2 / w02), 1));
+    }
+    else if (ilog == 8) {
+        if (n == 1)      r += a2 * P[2] * (-1 + 1. / pow(log(a2 / w02), 1));
+    }
+    else if (ilog == 9) {
+        if (n == 0)      r += a2 * P[1] * (-1 + 1. / pow(log(a2 / w02), 1));
+        if (n == 1)      r += a2 * P[2] * (-1 + 1. / pow(log(a2 / w02), 1));
+    }
+
+
+    if (ia4 == 0) {
+
+    }
+    if (ia4 == 1) {
+        if (n == 0)      r += +a2 * a2 * P[idc];
+        idc++;
+    }
+    if (ia4 == 2) {
+        if (n == 1)      r += +a2 * a2 * P[idc];
+        idc++;
+    }
+    if (ia4 == 3) {
+        if (n == 0)           r += +a2 * a2 * P[idc];
+        else if (n == 1)      r += +a2 * a2 * P[idc + 1];
+        idc += 2;
+    }
+
+    switch (iMpi) {
+    case 0:
+        break;
+    case 1:
+        if (n == 0)  r += P[idc] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+        idc++;
+        break;
+    case 2:
+        if (n == 1)  r += P[idc] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+        idc++;
+        break;
+    case 3:
+        if (n == 0)  r += P[idc] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+        if (n == 1)  r += P[idc] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+        idc ++;
+        break;
+
+    default:
+        break;
+    }
+
+    return r;
+}
+
+
+
+double rhs_amu_RF(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    double Mpi = x[2];
+    double Mpiphys = x[3];
+
+    int ilog = x[4];
+    int ia4 = x[5];
+    int iMpi = x[6];
+    double iw = x[7];
+    int plog = x[9];
+    int idc = 3;
+    double w02 = 0.17383 * 0.17383 / (iw);
+
+
+    if (n == 0)      r = P[0] + a2 * P[1];
+    else if (n == 1) r = P[0] + a2 * P[2];
+    switch (ilog) {
+    case 0:
+        break;
+    case 1:
+        if (n == 0)      r += a2 * P[1] * (-1 + 1. / pow(log(w02 / a2), 3));
+        break;
+    case 2:
+        if (n == 1)      r += a2 * P[2] * (-1 + 1. / pow(log(w02 / a2), 3));
+        break;
+    case 3:
+        if (n == 0)      r += a2 * P[1] * (-1 + 1. / pow(log(w02 / a2), 3));
+        if (n == 1)      r += a2 * P[2] * (-1 + 1. / pow(log(w02 / a2), 3));
+        break;
+    case 4:
+        if (n == 0)      r += a2 * P[1] * (-1 + 1. / pow(log(w02 / a2), 2));
+        break;
+    case 5:
+        if (n == 1)      r += a2 * P[2] * (-1 + 1. / pow(log(w02 / a2), 2));
+        break;
+    case 6:
+        if (n == 0)      r += a2 * P[1] * (-1 + 1. / pow(log(w02 / a2), 2));
+        if (n == 1)      r += a2 * P[2] * (-1 + 1. / pow(log(w02 / a2), 2));
+        break;
+    case 7:
+        if (n == 0)      r += a2 * P[1] * (-1 + 1. / pow(log(w02 / a2), 1));
+        break;
+    case 8:
+        if (n == 1)      r += a2 * P[2] * (-1 + 1. / pow(log(w02 / a2), 1));
+        break;
+    case 9:
+        if (n == 0)      r += a2 * P[1] * (-1 + 1. / pow(log(w02 / a2), 1));
+        if (n == 1)      r += a2 * P[2] * (-1 + 1. / pow(log(w02 / a2), 1));
+        break;
+    case 10:
+        if (n == 0)      r += a2 * P[1] * (-1 + 1. / pow(log(w02 / a2), -0.2));
+        break;
+    case 11:
+        if (n == 1)      r += a2 * P[2] * (-1 + 1. / pow(log(w02 / a2), -0.2));
+        break;
+    case 12:
+        if (n == 0)      r += a2 * P[1] * (-1 + 1. / pow(log(w02 / a2), -0.2));
+        if (n == 1)      r += a2 * P[2] * (-1 + 1. / pow(log(w02 / a2), -0.2));
+        break;
+
+    case 13:
+        if (n == 0)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 3));
+        idc++;
+        break;
+    case 14:
+        if (n == 1)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 3));
+        idc++;
+        break;
+    case 15:
+        if (n == 0)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 3));
+        if (n == 1)      r += a2 * P[idc+1] * ( 1. / pow(log(w02 / a2), 3));
+        idc++;idc++;
+        break;
+    case 16:
+        if (n == 0)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 2));
+        idc++;
+        break;
+    case 17:
+        if (n == 1)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 2));
+        idc++;
+        break;
+    case 18:
+        if (n == 0)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 2));
+        if (n == 1)      r += a2 * P[idc+1] * ( 1. / pow(log(w02 / a2), 2));
+        idc++;idc++;
+        break;
+    case 19:
+        if (n == 0)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 1));
+        idc++;
+        break;
+    case 20:
+        if (n == 1)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 1));
+        idc++;
+        break;
+    case 21:
+        if (n == 0)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 1));
+        if (n == 1)      r += a2 * P[idc+1] * ( 1. / pow(log(w02 / a2), 1));
+        idc++;idc++;
+        break;
+    case 22:
+        if (n == 0)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), -0.2));
+        idc++;
+        break;
+    case 23:
+        if (n == 1)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), -0.2));
+        idc++;
+        break;
+    case 24:
+        if (n == 0)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), -0.2));
+        if (n == 1)      r += a2 * P[idc+1] * ( 1. / pow(log(w02 / a2), -0.2));
+        idc++;idc++;
+        break;
+    default:
+        break;
+    }
+
+    
+
+
+
+    if (ia4 == 0) {
+    }
+    if (ia4 == 1) {
+        if (n == 0)      r += +a2 * a2 * P[idc];
+        idc++;
+    }
+    if (ia4 == 2) {
+        if (n == 1)      r += +a2 * a2 * P[idc];
+        idc++;
+    }
+    if (ia4 == 3) {
+        if (n == 0)           r += +a2 * a2 * P[idc];
+        else if (n == 1)      r += +a2 * a2 * P[idc + 1];
+        idc += 2;
+    }
+
+    switch (iMpi) {
+    case 0:
+        break;
+    case 1:
+        if (n == 0)  r += P[idc] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+        idc++;
+        break;
+    case 2:
+        if (n == 1)  r += P[idc] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+        idc++;
+        break;
+    case 3:
+        if (n == 0)  r += P[idc] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+        if (n == 1)  r += P[idc] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
+        idc++;
+        break;
+
+    default:
+        break;
+    }
+
+    return r;
+}
+
+
 double rhs_amu_common(int n, int Nvar, double* x, int Npar, double* P) {
     double r;
     double a = x[0];
@@ -970,6 +1227,8 @@ double rhs_amu_common(int n, int Nvar, double* x, int Npar, double* P) {
 
     return r;
 }
+
+
 
 double rhs_amu_common_a2_FVE(int n, int Nvar, double* x, int Npar, double* P) {
     double r;
@@ -1031,7 +1290,7 @@ double rhs_amu_common_a2_FVE_log_a4(int n, int Nvar, double* x, int Npar, double
     double Mpi = x[2];
     double Mpiphys = x[3];
     double w02 = 0.17383 * 0.17383;
-    int ilog =x[4];
+    int ilog = x[4];
     int a4 = x[5];
     if (n == 0)      r = P[0] + a2 * P[1] - (10.0 / 9.0) * GS * (P[3] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
     else if (n == 1) r = P[0] + a2 * P[2] - (10.0 / 9.0) * GS * (P[4] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
@@ -1040,24 +1299,24 @@ double rhs_amu_common_a2_FVE_log_a4(int n, int Nvar, double* x, int Npar, double
         // nothing    
     }
     else if (ilog == 1) {
-        if (n == 0)      r += a2 * P[1]*(-1 + 1. / pow( log(a2 / w02), 3) );
+        if (n == 0)      r += a2 * P[1] * (-1 + 1. / pow(log(a2 / w02), 3));
     }
     else if (ilog == 2) {
-        if (n == 1)      r += a2 * P[2]*(-1 + 1. / pow(log(a2 / w02), 3) );
+        if (n == 1)      r += a2 * P[2] * (-1 + 1. / pow(log(a2 / w02), 3));
     }
     else if (ilog == 3) {
-        if (n == 0)      r += a2 * P[1]*(-1 + 1. / pow(log(a2 / w02), 3) );
-        if (n == 1)      r += a2 * P[2]*(-1 + 1. / pow(log(a2 / w02), 3) );
+        if (n == 0)      r += a2 * P[1] * (-1 + 1. / pow(log(a2 / w02), 3));
+        if (n == 1)      r += a2 * P[2] * (-1 + 1. / pow(log(a2 / w02), 3));
     }
 
-    if(a4==0 ){
+    if (a4 == 0) {
 
     }
-    if(a4==1){
-         if (n == 0)      r += + a2 * a2 * P[6] ;
+    if (a4 == 1) {
+        if (n == 0)      r += +a2 * a2 * P[6];
     }
-    if(a4==2){
-         if (n == 1)      r += + a2 * a2 * P[6] ;
+    if (a4 == 2) {
+        if (n == 1)      r += +a2 * a2 * P[6];
     }
 
 
