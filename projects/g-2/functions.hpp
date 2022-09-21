@@ -1045,7 +1045,7 @@ double rhs_amu_log_a4(int n, int Nvar, double* x, int Npar, double* P) {
     case 3:
         if (n == 0)  r += P[idc] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
         if (n == 1)  r += P[idc] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
-        idc ++;
+        idc++;
         break;
 
     default:
@@ -1068,7 +1068,7 @@ double rhs_amu_RF(int n, int Nvar, double* x, int Npar, double* P) {
     int iMpi = x[6];
     double iw = x[7];
     int plog = x[9];
-    int idc = 3;
+    int idc = Npar - 1;
     double w02 = 0.17383 * 0.17383 / (iw);
 
 
@@ -1119,62 +1119,62 @@ double rhs_amu_RF(int n, int Nvar, double* x, int Npar, double* P) {
         break;
 
     case 13:
-        if (n == 0)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 3));
-        idc++;
+        if (n == 0)      r += a2 * P[idc] * (1. / pow(log(w02 / a2), 3));
+        idc--;
         break;
     case 14:
-        if (n == 1)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 3));
-        idc++;
+        if (n == 1)      r += a2 * P[idc] * (1. / pow(log(w02 / a2), 3));
+        idc--;
         break;
     case 15:
-        if (n == 0)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 3));
-        if (n == 1)      r += a2 * P[idc+1] * ( 1. / pow(log(w02 / a2), 3));
-        idc++;idc++;
+        if (n == 0)      r += a2 * P[idc] * (1. / pow(log(w02 / a2), 3));
+        if (n == 1)      r += a2 * P[idc - 1] * (1. / pow(log(w02 / a2), 3));
+        idc--;idc--;
         break;
     case 16:
-        if (n == 0)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 2));
-        idc++;
+        if (n == 0)      r += a2 * P[idc] * (1. / pow(log(w02 / a2), 2));
+        idc--;
         break;
     case 17:
-        if (n == 1)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 2));
-        idc++;
+        if (n == 1)      r += a2 * P[idc] * (1. / pow(log(w02 / a2), 2));
+        idc--;
         break;
     case 18:
-        if (n == 0)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 2));
-        if (n == 1)      r += a2 * P[idc+1] * ( 1. / pow(log(w02 / a2), 2));
-        idc++;idc++;
+        if (n == 0)      r += a2 * P[idc] * (1. / pow(log(w02 / a2), 2));
+        if (n == 1)      r += a2 * P[idc - 1] * (1. / pow(log(w02 / a2), 2));
+        idc--;idc--;
         break;
     case 19:
-        if (n == 0)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 1));
-        idc++;
+        if (n == 0)      r += a2 * P[idc] * (1. / pow(log(w02 / a2), 1));
+        idc--;
         break;
     case 20:
-        if (n == 1)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 1));
-        idc++;
+        if (n == 1)      r += a2 * P[idc] * (1. / pow(log(w02 / a2), 1));
+        idc--;
         break;
     case 21:
-        if (n == 0)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), 1));
-        if (n == 1)      r += a2 * P[idc+1] * ( 1. / pow(log(w02 / a2), 1));
-        idc++;idc++;
+        if (n == 0)      r += a2 * P[idc] * (1. / pow(log(w02 / a2), 1));
+        if (n == 1)      r += a2 * P[idc - 1] * (1. / pow(log(w02 / a2), 1));
+        idc--;idc--;
         break;
     case 22:
-        if (n == 0)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), -0.2));
-        idc++;
+        if (n == 0)      r += a2 * P[idc] * (1. / pow(log(w02 / a2), -0.2));
+        idc--;
         break;
     case 23:
-        if (n == 1)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), -0.2));
-        idc++;
+        if (n == 1)      r += a2 * P[idc] * (1. / pow(log(w02 / a2), -0.2));
+        idc--;
         break;
     case 24:
-        if (n == 0)      r += a2 * P[idc] * ( 1. / pow(log(w02 / a2), -0.2));
-        if (n == 1)      r += a2 * P[idc+1] * ( 1. / pow(log(w02 / a2), -0.2));
-        idc++;idc++;
+        if (n == 0)      r += a2 * P[idc] * (1. / pow(log(w02 / a2), -0.2));
+        if (n == 1)      r += a2 * P[idc - 1] * (1. / pow(log(w02 / a2), -0.2));
+        idc--;idc--;
         break;
     default:
         break;
     }
 
-    
+
 
 
 
@@ -1182,15 +1182,15 @@ double rhs_amu_RF(int n, int Nvar, double* x, int Npar, double* P) {
     }
     if (ia4 == 1) {
         if (n == 0)      r += +a2 * a2 * P[idc];
-        idc++;
+        idc--;
     }
     if (ia4 == 2) {
         if (n == 1)      r += +a2 * a2 * P[idc];
-        idc++;
+        idc--;
     }
     if (ia4 == 3) {
         if (n == 0)           r += +a2 * a2 * P[idc];
-        else if (n == 1)      r += +a2 * a2 * P[idc + 1];
+        else if (n == 1)      r += +a2 * a2 * P[idc - 1];
         idc += 2;
     }
 
@@ -1199,16 +1199,16 @@ double rhs_amu_RF(int n, int Nvar, double* x, int Npar, double* P) {
         break;
     case 1:
         if (n == 0)  r += P[idc] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
-        idc++;
+        idc--;
         break;
     case 2:
         if (n == 1)  r += P[idc] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
-        idc++;
+        idc--;
         break;
     case 3:
         if (n == 0)  r += P[idc] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
         if (n == 1)  r += P[idc] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
-        idc++;
+        idc--;
         break;
 
     default:
@@ -1218,13 +1218,20 @@ double rhs_amu_RF(int n, int Nvar, double* x, int Npar, double* P) {
     return r;
 }
 
+double rhs_amu_FVE_RF(int n, int Nvar, double* x, int Npar, double* P) {
+    double GS = x[1];
+    double a2 = x[0];
+    double r = rhs_amu_RF(n, Nvar, x, Npar, P);
+    if (n == 0)      r += -(10.0 / 9.0) * GS * (P[3] * a2);
+    else if (n == 1) r += -(10.0 / 9.0) * GS * (P[4] * a2);
+    return r;
+}
 
 double rhs_amu_common(int n, int Nvar, double* x, int Npar, double* P) {
     double r;
     double a = x[0];
     if (n == 0)      r = P[0] + a * P[1];
     else if (n == 1) r = P[0] + a * P[2];
-
     return r;
 }
 
@@ -1238,7 +1245,6 @@ double rhs_amu_common_a2_FVE(int n, int Nvar, double* x, int Npar, double* P) {
     double Mpiphys = x[3];
     if (n == 0)      r = P[0] + a2 * P[1] - (10.0 / 9.0) * GS * (P[3] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
     else if (n == 1) r = P[0] + a2 * P[2] - (10.0 / 9.0) * GS * (P[4] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
-
     return r;
 }
 
@@ -1252,7 +1258,6 @@ double rhs_amu_common_a2_FVE_log_eq(int n, int Nvar, double* x, int Npar, double
     double w02 = 0.17383 * 0.17383;
     if (n == 0)      r = P[0] + a2 * P[1] / pow(log(a2 / w02), 3) - (10.0 / 9.0) * GS * (P[3] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
     else if (n == 1) r = P[0] + a2 * P[2] - (10.0 / 9.0) * GS * (P[4] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
-
     return r;
 }
 double rhs_amu_common_a2_FVE_log_op(int n, int Nvar, double* x, int Npar, double* P) {
@@ -1264,7 +1269,6 @@ double rhs_amu_common_a2_FVE_log_op(int n, int Nvar, double* x, int Npar, double
     double w02 = 0.17383 * 0.17383;
     if (n == 0)      r = P[0] + a2 * P[1] - (10.0 / 9.0) * GS * (P[3] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
     else if (n == 1) r = P[0] + a2 * P[2] / pow(log(a2 / w02), 3) - (10.0 / 9.0) * GS * (P[4] * a2) + P[5] * (Mpi - Mpiphys * (sqrt(a2) / 197.326963));
-
     return r;
 }
 
@@ -1489,6 +1493,8 @@ void print_fit_band_amu_W_l(char** argv, data_all gjack, struct fit_type fit_inf
 
     double** tif = swap_indices(fit_info.Npar, Njack, fit_out.P);
     double** tif_m0 = swap_indices(fit_info_m0.Npar, Njack, fit_out_m0.P);
+    double* tmpx = (double*)malloc(sizeof(double) * Nvar);
+
     double min, max;
     if (fit_info.band_range.size() != 2) {
         min = fit_info.x[var][0][Njack - 1];
@@ -1524,9 +1530,25 @@ void print_fit_band_amu_W_l(char** argv, data_all gjack, struct fit_type fit_inf
                 // if (j == Njack - 1 && n == 0) printf("y =%g   GS=%g  FVE=%g  e=%d  \n", tmpj[j],
                 //     (10.0 / 9.0) * fit_info.x[1][e][j],
                 //     (10.0 / 9.0) * fit_info.x[1][e][j] * (1 - fit_out.P[3][j] * fit_info.x[0][e][j]), e);
-                if (n == 0)  tmpj[j] += (10.0 / 9.0) * fit_info.x[1][e][j] * (fit_out.P[3][j] * fit_info.x[0][e][j])
-                    - fit_out.P[5][j] * (fit_info.x[2][e][j] - fit_info.x[3][e][j] * (sqrt(fit_info.x[0][e][j]) / 197.326963));
-                else if (n == 1)  tmpj[j] += (10.0 / 9.0) * fit_info.x[1][e][j] * (fit_out.P[4][j] * fit_info.x[0][e][j]) - fit_out.P[5][j] * (fit_info.x[2][e][j] - fit_info.x[3][e][j] * (sqrt(fit_info.x[0][e][j]) / 197.326963));
+                for (int i = 0; i < Nvar; i++) {
+                    tmpx[i] = fit_info.x[i][e + count][j];
+                }
+                double DGS= fit_info.function(n, Nvar, tmpx, Npar, tif[j]);
+                tmpx[1]=0;
+                DGS -=  fit_info.function(n, Nvar, tmpx, Npar, tif[j]);
+                tmpx[1]=fit_info.x[1][e + count][j];
+
+                double DMpi= fit_info.function(n, Nvar, tmpx, Npar, tif[j]);
+                tmpx[2]=0; tmpx[3]=0;
+                DMpi -=  fit_info.function(n, Nvar, tmpx, Npar, tif[j]);
+                
+                double compare=(10.0 / 9.0) * fit_info.x[1][e][j] * (fit_out.P[4][j] * fit_info.x[0][e][j])
+                     - fit_out.P[5][j] * (fit_info.x[2][e][j] - fit_info.x[3][e][j] * (sqrt(fit_info.x[0][e][j]) / 197.326963));
+
+                tmpj[j]-=(DGS+DMpi);
+                // if (n == 0)  tmpj[j] += (10.0 / 9.0) * fit_info.x[1][e][j] * (fit_out.P[3][j] * fit_info.x[0][e][j])
+                //     - fit_out.P[5][j] * (fit_info.x[2][e][j] - fit_info.x[3][e][j] * (sqrt(fit_info.x[0][e][j]) / 197.326963));
+                // else if (n == 1)  tmpj[j] += (10.0 / 9.0) * fit_info.x[1][e][j] * (fit_out.P[4][j] * fit_info.x[0][e][j]) - fit_out.P[5][j] * (fit_info.x[2][e][j] - fit_info.x[3][e][j] * (sqrt(fit_info.x[0][e][j]) / 197.326963));
             }
             double err = error_jackboot(argv[1], Njack, tmpj);
             for (int j = 0;j < Njack;j++) {
@@ -1546,7 +1568,6 @@ void print_fit_band_amu_W_l(char** argv, data_all gjack, struct fit_type fit_inf
 
         mysprintf(namefile, NAMESIZE, "%s/%s_fit_out_n%d_%s.txt", argv[3], label, n, dir_name);
         f = open_file(namefile, "w+");
-        double* tmpx = (double*)malloc(sizeof(double) * Nvar);
         double* tmpy = (double*)malloc(sizeof(double) * Njack);
         printf("writing: %s\n", namefile);
 
@@ -1579,9 +1600,10 @@ void print_fit_band_amu_W_l(char** argv, data_all gjack, struct fit_type fit_inf
             fprintf(f, "%g  \t %g  %g\n", pos, tmpy[Njack - 1], error_jackboot(argv[1], Njack, tmpy));
             pos += h;
         }
-        free(tmpy);free(tmpx);
+        free(tmpy);
         fclose(f);
     }
+    free(tmpx);
     fclose(fy);
     free_2(Njack, tif);
     free_2(Njack, tif_m0);
