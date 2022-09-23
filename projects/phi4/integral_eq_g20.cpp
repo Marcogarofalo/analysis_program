@@ -399,11 +399,8 @@ int main(int argc, char** argv) {
         printf("Gamma= %g  (%g)\n", 2 * min.P[1][Njack - 1], 2 * error_jackboot("jack", Njack, min.P[1]));
         free_fit_result(fit_info, min);
         fit_info.restore_default();
-    }
 
-    {
-        // minimize |(1/K+F)|^2 to find the pole 
-        fit_type fit_info;
+        /////////////////////////////////////
         fit_info.N = 1;
         fit_info.myen = { 1 };
         fit_info.Njack = Njack;
@@ -411,16 +408,17 @@ int main(int argc, char** argv) {
         fit_info.noderiv = false;
         fit_info.second_deriv = true;
         fit_info.mean_only = false;
-        fit_info.Nvar = 4; // it is important that the value is correct since we need to pass all the x
+        fit_info.Nvar = 4 + 4; // it is important that the value is correct since we need to pass all the x
         fit_info.Npar = 2; // what we are minimizing
         fit_info.function = denom_M_direct;
+        fit_info.resampling = jackall.resampling;
         fit_info.verbosity = 3;
         fit_info.acc = 1e-12;
-        fit_info.h = { 0.001, 1e-5 };
+        fit_info.h = { 1e-4, 1e-5 };
         fit_info.guess = { 3.02098,   -3.2415e-07 };
         fit_info.malloc_x();
 
-        int scount = 0;
+        scount = 0;
         for (int n = 0;n < fit_info.N;n++) {
             for (int e = 0;e < fit_info.myen.size();e++) {
                 for (int j = 0;j < fit_info.Njack;j++) {
@@ -429,12 +427,15 @@ int main(int argc, char** argv) {
                     fit_info.x[2][scount][j] = PKiso[j][1];
                     fit_info.x[3][scount][j] = PKiso[j][2];
 
-
+                    fit_info.x[4][scount][j] = fit_F.P[0][j];
+                    fit_info.x[5][scount][j] = fit_F.P[1][j];
+                    fit_info.x[6][scount][j] = fit_F.P[2][j];
+                    fit_info.x[7][scount][j] = fit_F.P[3][j];
                 }
                 scount++;
             }
         }
-        fit_result min = minimize_functions_Nf(fit_info);
+        min = minimize_functions_Nf(fit_info);
         printf("LM minimizer buildin functions\n min=%g   %g   chi2=%g\n", min.P[0][Njack - 1], min.P[1][Njack - 1], min.chi2[Njack - 1]);
         printf("min=%g (%g) +i  %g  (%g) chi2=%g\n", min.P[0][Njack - 1], error_jackboot("jack", Njack, min.P[0]), min.P[1][Njack - 1], error_jackboot("jack", Njack, min.P[1]), min.chi2[Njack - 1]);
         printf("Gamma= %g  (%g)\n", 2 * min.P[1][Njack - 1], 2 * error_jackboot("jack", Njack, min.P[1]));

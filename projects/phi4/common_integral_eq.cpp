@@ -83,14 +83,14 @@ void compute_M3(int NE, double Emin, double dE, int Njack, std::vector<double>& 
     F = double_malloc_3(NE, 2, Njack);
     // #pragma omp parallel for   shared(NE,Njack,Emin,dE,Npar,P,eps) 
     for (int i = 0;i < NE;i++) {
-        #pragma omp parallel for   shared(NE,Njack,Emin,dE,Npar,P,eps) 
+#pragma omp parallel for   shared(NE,Njack,Emin,dE,Npar,P,eps) 
         for (int j = 0;j < Njack;j++) {
             E3[i] = Emin + i * dE;
             // E3[i] = 3.02;printf("\n\n MODIFY HERE \n\n");
 
 
             // std::complex<double> m3 = compute_M3_sym(E3[i], N, Npar, P[j], compute_kcot, PKiso[j], compute_kiso, eps);
-            
+
 
             // std::complex<double> Kdf = compute_kiso(E3[i], PKiso[j]);
             Eigen::MatrixXcd D = compute_D(E3[i], N, Npar, P[j], compute_kcot, eps);
@@ -235,28 +235,47 @@ double denom_M_direct(int n, int Nvar, double* x, int Npar, double* P) {
 
 
     //to minimize we need change parameters with variables
-    
-    std::complex<double> E3_m(P[0],P[1]);
-    int N=800;
-    double eps=1e-7;
-    int Npar_cot=1;
+
+    std::complex<double> E3_m(P[0], P[1]);
+    int N = 800;
+    double eps = 1e-7;
+    int Npar_cot = 1;
     double* Pf = (double*)malloc(sizeof(double) * Npar_cot);
-    Pf[0]=x[0];
+    Pf[0] = x[0];
 
-    Eigen::MatrixXcd D = compute_D(E3_m, N, Npar_cot, P, compute_kcot, eps);
-    std::complex<double> F=comput_Finf(E3_m,  D,  N, Npar, P, compute_kcot, eps) ;
+    Eigen::MatrixXcd D = compute_D(E3_m, N, Npar_cot, Pf, compute_kcot, eps);
+    std::complex<double> F = comput_Finf(E3_m, D, N, Npar, Pf, compute_kcot, eps);
+    //////////////////////////////////////////
+    double* Pf1 = (double*)malloc(sizeof(double) * 4);
+    double* xf = (double*)malloc(sizeof(double) * 2);
 
+    Pf1[0] = x[4];
+    Pf1[1] = x[5];
+    Pf1[2] = x[6];
+    Pf1[3] = x[7];
+
+    xf[0] = P[0];
+    xf[1] = P[1];
+    double Fre = rhs_F(0, Nvar, xf, Npar, Pf1);
+    double Fim = rhs_F(1, Nvar, xf, Npar, Pf1);
+    std::complex<double> F1(Fre, Fim);
+
+    // if (abs(F1 - F) > 1e-10)
+    printf("  E=(%g,%g) arg=%g    F=(%g,%g)    F1=(%g,%g) \n", P[0], P[1], std::arg(E3_m), F.real(), F.imag(), F1.real(), F1.imag());
+
+    free(xf);free(Pf1);
+    //////////////////////////////////////////
     double* PK = (double*)malloc(sizeof(double) * 3);
-    
+
     PK[0] = x[1];
     PK[1] = x[2];
     PK[2] = x[3];
-    
+
 
     std::complex<double> K = compute_kiso_complex(std::complex<double>(P[0], P[1]), PK);
-    
+
     F = F + 1. / K;
-    
+
     free(PK);free(Pf);
 
     return sqrt(real(F * conj(F)));

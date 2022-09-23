@@ -50,9 +50,20 @@ std::complex<double> M2_from_kcot_complex(int Nvar, double* x, int Npar, double*
     double omega_k = sqrt(k_m * k_m + 1);
     std::complex<double> Es_mk2 = pow(E3_m_c - omega_k, 2) - k_m * k_m + 1i * eps;
 
+    double iq = (Es_mk2 / 4. - 1.).imag();
     std::complex<double> q = sqrt(Es_mk2 / 4. - 1.);
+    if (iq < 0)  q = -q;
+    // std::cout << "Es_mk2 / 4. - 1.  ="<<Es_mk2 / 4. - 1.<<"\n";
+    // std::cout << "q  ="<<q<<"\n";
+    // q =-conj(q);
 
-    return 16. * M_PI * sqrt(Es_mk2) / (k_mcotd - 1i * q);
+    // std::cout << "-conj(q)  ="<<q<<"\n";
+    double iE = (Es_mk2).imag();
+    std::complex<double> sE = sqrt(Es_mk2);
+    // if (iE<0)  sE= -sE;
+    // sE=-conj(sE);
+    return 16. * M_PI * sE / (k_mcotd - 1i * q);
+
 }
 
 inline double J(double x) {
@@ -148,10 +159,12 @@ std::complex<double> Gs_pke(double k, double p, std::complex<double> E3_m, doubl
         r = H(k, p, E3_m) / (1.0 + E3_m * E3_m + 1i * eps + 2. * omega_p - 2. * E3_m * (1. + omega_p));
     }
     else {
-
         std::complex<double> alpha = pow(E3_m - omega_k - omega_p, 2) - p * p - k * k - 1.;
         r = -1. * H(k, p, E3_m) / (4 * p * k) * log((alpha - 2 * p * k + 1i * eps) / (alpha + 2 * p * k + 1i * eps));
-
+        // std::cout<< "   a=" << (alpha - 2 * p * k + 1i * eps) / (alpha + 2 * p * k + 1i * eps)<< std::endl;
+        // std::cout<< " arg=" << std::arg((alpha - 2 * p * k + 1i * eps) / (alpha + 2 * p * k + 1i * eps))<< std::endl;
+        // std::cout<< " abs=" << std::abs((alpha - 2 * p * k + 1i * eps) / (alpha + 2 * p * k + 1i * eps))<< std::endl;
+        // std::cout<< "loga=" << log((alpha - 2 * p * k + 1i * eps) / (alpha + 2 * p * k + 1i * eps))<< std::endl;
     }
     return r;
 }
@@ -232,12 +245,9 @@ Eigen::MatrixXcd compute_D(std::complex<double> E3_m, int N, int Npar, double* P
         for (int j = 0; j < N;j++) {
             double k = d * j;
             std::complex<double> G = Gs_pke(p, k, E3_m, d, eps);
-
-
             oneplusMGP(i, j) += m2 * G * Pk(k, d);
             x[0] = k;
-            MGM(i, j) += m2 * G * M2_from_kcot(Nvar, x, Npar, P, kcot, eps);
-
+            MGM(i, j) += m2 * G * M2_from_kcot_complex(Nvar, x, Npar, P, kcot, eps);
         }
     }
     Eigen::MatrixXcd oneplusMGP1 = oneplusMGP.inverse();
@@ -262,9 +272,18 @@ std::complex<double> rho(double k_m, std::complex<double> E3_m) {
     double omega_k = sqrt(k_m * k_m + 1);
     std::complex<double> Es_mk2 = pow(E3_m - omega_k, 2) - k_m * k_m;
     std::complex<double> r = J(Es_mk2 / 4.) / (16. * M_PI * sqrt(Es_mk2));
+    // if (Es_mk2.imag() < 0) r *= -1.0;
 
-    r *= -1i * sqrt((Es_mk2 / 4. - 1.0));
-    // printf("rho= %.12g     %.12Lg   %.12g \n",k_m, Es_mk2 / 4., J(Es_mk2 / 4.) );
+
+    double a = (Es_mk2 / 4. - 1.0).imag();
+    std::complex<double> rhoc = sqrt(Es_mk2 / 4. - 1.0);
+    if (a < 0)  rhoc = -(rhoc);
+
+    // std::complex<double> rho1 = -1i * sqrt(Es_mk2 / 4. - 1.0);
+    r *= -1i * rhoc;
+    // if (abs(rhoc - rho1) > 1e-4) {
+    //     printf("\n\n different  E=(%g,%g) rhoc=(%g,%g)   rho1=(%g,%g) \n\n", Es_mk2.real(), Es_mk2.imag(), rhoc.real(), rhoc.imag(), rho1.real(), rho1.imag());
+    // }
     return r;
 }
 
@@ -392,13 +411,11 @@ std::complex<double> comput_Finf(std::complex<double> E3_m, Eigen::MatrixXcd D, 
     double d = compute_d(kmax, N);
     for (int i = 0;i < N;i++) {
         double k = i * d;
-
         F += Pk(k, d) * L(i) * rho(k, E3_m);
         // if (i == N - 1) printf("%-18.12g%-18.12g%-18.12g%-18.12g%-18.12g%-18.12g\n", k, rho(k, E3_m).real(), rho(k, E3_m).imag(), L(i).real(), L(i).imag(), Pk(k, d));
-
     }
-
-    return F;
+    if (E3_m.imag() < 0) return conj(F);
+    return (F);
 }
 
 
