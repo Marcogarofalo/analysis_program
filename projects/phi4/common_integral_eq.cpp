@@ -216,26 +216,22 @@ double denom_M(int n, int Nvar, double* x, int Npar, double* P) {
     double Fim = rhs_F(1, Nvar, xf, Npar, Pf);
     std::complex<double> F(Fre, Fim);
 
-    double* PK = (double*)malloc(sizeof(double) * 4);
-    double* xK = (double*)malloc(sizeof(double) * 1);
+    double* PK = (double*)malloc(sizeof(double) * 3);
     PK[0] = x[4];
     PK[1] = x[5];
     PK[2] = x[6];
-    xK[0] = P[0];
 
     std::complex<double> K = compute_kiso_complex(std::complex<double>(P[0], P[1]), PK);
     // printf("F=%g  %g   E=%g   pF=%g   %g  %g  %g\n", real(F ), imag(F), P[0], Pf[0],Pf[1],Pf[2],Pf[3]);
     F = F + 1. / K;
     // printf("D=%g   E=%g   F=%g   %g  K=%g\n", real(F * conj(F)), P[0], F.real(), F.imag(),K);
-    free(xK);free(PK);free(xf);free(Pf);
+    free(PK);free(xf);free(Pf);
 
     return sqrt(real(F * conj(F)));
 }
 double denom_M_direct(int n, int Nvar, double* x, int Npar, double* P) {
 
-
     //to minimize we need change parameters with variables
-
     std::complex<double> E3_m(P[0], P[1]);
     int N = 800;
     double eps = 1e-7;
@@ -248,7 +244,6 @@ double denom_M_direct(int n, int Nvar, double* x, int Npar, double* P) {
     //////////////////////////////////////////
     double* Pf1 = (double*)malloc(sizeof(double) * 4);
     double* xf = (double*)malloc(sizeof(double) * 2);
-
     Pf1[0] = x[4];
     Pf1[1] = x[5];
     Pf1[2] = x[6];
@@ -261,23 +256,18 @@ double denom_M_direct(int n, int Nvar, double* x, int Npar, double* P) {
     std::complex<double> F1(Fre, Fim);
 
     // if (abs(F1 - F) > 1e-10)
-    printf("  E=(%g,%g) arg=%g    F=(%g,%g)    F1=(%g,%g) \n", P[0], P[1], std::arg(E3_m), F.real(), F.imag(), F1.real(), F1.imag());
-
+    // printf("  E=(%g,%g) arg=%g    F=(%g,%g)    F1=(%g,%g) \n", P[0], P[1], std::arg(E3_m), F.real(), F.imag(), F1.real(), F1.imag());
+    // std::complex<double> F = F1;
     free(xf);free(Pf1);
     //////////////////////////////////////////
     double* PK = (double*)malloc(sizeof(double) * 3);
-
     PK[0] = x[1];
     PK[1] = x[2];
     PK[2] = x[3];
-
-
-    std::complex<double> K = compute_kiso_complex(std::complex<double>(P[0], P[1]), PK);
-
+    std::complex<double> K = compute_kiso_complex(E3_m, PK);
     F = F + 1. / K;
 
     free(PK);free(Pf);
-
     return sqrt(real(F * conj(F)));
 }
 double lhs_M3(int n, int e, int j, data_all gjack, struct fit_type fit_info) {

@@ -412,10 +412,10 @@ int main(int argc, char** argv) {
         fit_info.Npar = 2; // what we are minimizing
         fit_info.function = denom_M_direct;
         fit_info.resampling = jackall.resampling;
-        fit_info.verbosity = 3;
+        fit_info.verbosity = 0;
         fit_info.acc = 1e-12;
         fit_info.h = { 1e-4, 1e-5 };
-        fit_info.guess = { 3.02098,   -3.2415e-07 };
+        fit_info.guess = {3.02098,  -3.2415e-07 };
         fit_info.malloc_x();
 
         scount = 0;
