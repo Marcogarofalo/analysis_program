@@ -370,6 +370,17 @@ int main(int argc, char** argv) {
         printf("LM minimizer buildin functions\n min=%g   %g   chi2=%g\n", min.P[0][Njack - 1], min.P[1][Njack - 1], min.chi2[Njack - 1]);
         printf("min=%g (%g) +i  %g  (%g) chi2=%g\n", min.P[0][Njack - 1], error_jackboot("jack", Njack, min.P[0]), min.P[1][Njack - 1], error_jackboot("jack", Njack, min.P[1]), min.chi2[Njack - 1]);
         printf("Gamma= %g  (%g)\n", -2 * min.P[1][Njack - 1], 2 * error_jackboot("jack", Njack, min.P[1]));
+        double** covE = covariance(jackall.resampling.c_str(), 2, Njack, min.P);
+        printf("Re=%.12g  %.12g\n",min.P[0][Njack-1], myres->comp_error(min.P[0]));
+        printf("Im=%.12g  %.12g\n",min.P[1][Njack-1], myres->comp_error(min.P[1]));
+        printf("covariance:\n");
+        for (int i : {0, 1}) {
+            for (int j : {0, 1}) {
+                printf("%-20.12g",covE[i][j]);
+            }
+            printf("\n");
+        }
+        free_2(2,covE);
         free_fit_result(fit_info, min);
         fit_info.restore_default();
     }
