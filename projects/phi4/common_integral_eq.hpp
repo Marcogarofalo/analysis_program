@@ -1,4 +1,4 @@
-#ifndef common_integral_eq_H
+#ifndef common_integral_eq_QC3_H
 #define common_integral_eq_QC3_H
 using namespace std::complex_literals;
 

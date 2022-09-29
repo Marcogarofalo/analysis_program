@@ -60,10 +60,10 @@ int main(int argc, char** argv) {
     double** tmp = fake_sampling_covariance("jack", mean, Njack, tot_parK, cov, seed);
 
 
-    int N = 1000;
+    int N = 2000;
     // int N = 1000;
     double d = 0.005;
-    double eps = 0.00005;
+    double eps = 1e-7;
     printf("E3    M3_re   M3_im      Kdf_re  kdf_im  Finf_re  Finf_im\n");
 
 
@@ -94,12 +94,12 @@ int main(int argc, char** argv) {
     }
     double*** M3, *** F;
 
-    // compute_M3(NE, Emin, dE, Njack, E3, M3,F, N, Npar, P, compute_kcot, PKiso, compute_kiso, eps);
-    // write_M3(NE, Njack, E3, M3,F, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
+    // compute_M3(NE, Emin, dE, Njack, E3, M3, F, N, Npar, P, compute_kcot, PKiso, compute_kiso, eps);
+    // write_M3(NE, Njack, E3, M3, F, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
     read_M3(NE, Njack, E3, M3, F, "data_M3_kcot_1par_kiso_3par.txt", argv[3]);
 
     data_all jackall = setup_data_for_fits(NE, Njack, M3, F);
-    myres=new resampling_jack(Njack-1);
+    myres = new resampling_jack(Njack - 1);
 
     {
 
@@ -160,18 +160,18 @@ int main(int argc, char** argv) {
 
         double Emin_fit = 3.019;
         double Emax_fit = 3.028;
-        
-        int N1=0;
-        for (int e = 0;e < NE;e++) if (E3[e]>Emin_fit && E3[e]<Emax_fit) N1++;
+
+        int N1 = 0;
+        for (int e = 0;e < NE;e++) if (E3[e] > Emin_fit && E3[e] < Emax_fit) N1++;
         fit_info.myen = std::vector<int>(N1);
-        int count=0;
-        for (int e = 0;e < NE;e++){
-             if (E3[e]>Emin_fit && E3[e]<Emax_fit) {
+        int count = 0;
+        for (int e = 0;e < NE;e++) {
+            if (E3[e] > Emin_fit && E3[e] < Emax_fit) {
                 fit_info.myen[count] = e;
                 count++;
-             }
+            }
         }
-        
+
         fit_info.Nvar = 2;
         fit_info.Npar = 4;
         fit_info.function = rhs_BW;
@@ -215,16 +215,16 @@ int main(int argc, char** argv) {
         fit_info.N = 2;
         double Emin_fit = 3.020;
         double Emax_fit = 3.028;
-        
-        int N1=0;
-        for (int e = 0;e < NE;e++) if (E3[e]>Emin_fit && E3[e]<Emax_fit) N1++;
+
+        int N1 = 0;
+        for (int e = 0;e < NE;e++) if (E3[e] > Emin_fit && E3[e] < Emax_fit) N1++;
         fit_info.myen = std::vector<int>(N1);
-        int count=0;
-        for (int e = 0;e < NE;e++){
-             if (E3[e]>Emin_fit && E3[e]<Emax_fit) {
+        int count = 0;
+        for (int e = 0;e < NE;e++) {
+            if (E3[e] > Emin_fit && E3[e] < Emax_fit) {
                 fit_info.myen[count] = e;
                 count++;
-             }
+            }
         }
         fit_info.Nvar = 2;
         fit_info.Npar = 4;
@@ -296,6 +296,17 @@ int main(int argc, char** argv) {
         printf("LM minimizer buildin functions\n min=%g   %g   chi2=%g\n", min.P[0][Njack - 1], min.P[1][Njack - 1], min.chi2[Njack - 1]);
         printf("min=%g (%g) +i  %g  (%g) chi2=%g\n", min.P[0][Njack - 1], error_jackboot("jack", Njack, min.P[0]), min.P[1][Njack - 1], error_jackboot("jack", Njack, min.P[1]), min.chi2[Njack - 1]);
         printf("Gamma= %g  (%g)\n", -2 * min.P[1][Njack - 1], 2 * error_jackboot("jack", Njack, min.P[1]));
+        double** covE = covariance(jackall.resampling.c_str(), 2, Njack, min.P);
+        printf("Re=%.12g  %.12g\n", min.P[0][Njack - 1], myres->comp_error(min.P[0]));
+        printf("Im=%.12g  %.12g\n",min.P[1][Njack-1], myres->comp_error(min.P[1]));
+        printf("covariance:\n");
+        for (int i : {0, 1}) {
+            for (int j : {0, 1}) {
+                printf("%-20.12g", covE[i][j]);
+            }
+            printf("\n");
+        }
+        free_2(2, covE);
         free_fit_result(fit_info, min);
         fit_info.restore_default();
     }

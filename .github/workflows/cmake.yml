@@ -54,9 +54,10 @@ jobs:
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: |
+           bash create_project.sh  test_project
            mkdir build 
            cd build  
-           cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..  -DWITH_PYTHON=ON
+           cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..  -DWITH_PYTHON=ON  -Dtest_project=ON
            
     - name: compiling
       working-directory: ${{github.workspace}}/build
@@ -66,7 +67,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: |
            cd phi4
-           ./phi4_new read_plateaux -p ../../tests/phi4  G2t_T48_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin40_merged_bin1000  -bin 1 jack
+           ./phi4_new read_plateaux -p ../../tests/phi4  G2t_T48_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_bin40_merged_bin1000  -bin 1 jack > /dev/null
            ./test ../../tests/phi4/jackknife/jack_G2t_T48_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0_reference ../../tests/phi4/jackknife/jack_G2t_T48_L20_msq0-4.925000_msq1-4.850000_l02.500000_l12.500000_mu5.000000_g0.000000_rep0
 
     - name: test minimizer
@@ -79,6 +80,6 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: |
            cd tests
-           ././test_non_linear_fit
+           ./test_non_linear_fit
               
          
