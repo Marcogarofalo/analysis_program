@@ -360,9 +360,24 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
         else fprintf(f, "\n");
     }
     fprintf(f, "\\end{pmatrix}\n\\\\det=%g\\\\ \\end{gather}}\n", det);
-    free_2(Npar, cov);
     fclose(f);
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    mysprintf(namefile, NAMESIZE, "%s/%s_fit_P.dat", argv[3], label);
+    f = open_file(namefile, "w+");
+    fprintf(f, "npar   %d \n", fit_out.Npar);//error_jackboot(argv[1], Njack, fit_out.chi2)
+    fprintf(f, "chi2dof   %g \n", fit_out.chi2[Njack - 1]);//error_jackboot(argv[1], Njack, fit_out.chi2)
+    for (int i = 0;i < Npar;i++) {
+        fprintf(f, "P[%d]   %-20g    %-20g  \n", i, fit_out.P[i][Njack - 1], myres->comp_error(fit_out.P[i]));
+    }
+    for (int i = 0;i < fit_info.Npar;i++) {
+        for (int j = 0;j < fit_info.Npar;j++) {
+            fprintf(f, "%-16.3g", cov[i][j]);
 
+        }
+        fprintf(f, "\n");
+    }
+    fclose(f);
+    free_2(Npar, cov);
 
 
 }
@@ -518,7 +533,7 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
         double**** bby = create_boot_of_boot_from_jack(Njack, Nboot, en_tot, y);
         double* boot_chi2 = (double*)malloc(sizeof(double) * Nboot);
 
-        for (int j = 0;j < Nboot-1;j++) {
+        for (int j = 0;j < Nboot - 1;j++) {
             // ari-calcola la correlazione
             if (fit_info.covariancey) {
                 double** yy = double_malloc_2(en_tot, Nboot);
@@ -533,11 +548,11 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
                         if (fit_info.cov[ie][ie1] != 0) {
                             // printf("%d  %d   %g   %g\n", ie, ie1, fit_info.cov[ie][ie1], cov[ie][ie1] * (Njack - 2) * (Njack - 2));
                             fit_info.cov[ie][ie1] = cov[ie][ie1] * (Njack - 2) * (Njack - 2);
-                            
+
                         }
-               
+
                 fit_info.compute_cov1_fit();
-                
+
             }
             non_linear_fit_result single_jack_fit = non_linear_fit_Nf(N, en, x[j], bby[j][Nboot - 1], Nvar, Npar, fit_info.function, guess, fit_info);
             // fit[j] = single_jack_fit.P;  // we do not care at the value
@@ -545,14 +560,14 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
         }
         double dchi2 = error_jackboot("boot", Nboot, boot_chi2) * (Njack - 2);
         printf("boot chi2:\n");
-        for (int j = 0;j < Nboot-1;j++) {
+        for (int j = 0;j < Nboot - 1;j++) {
             printf("%g\t", boot_chi2[j]);
             if (j < Njack) printf("%g\n", fit_out.chi2[j]);
             else printf("\n");
         }
         printf("chi2=  %g   +- %g   or %g\n", fit_out.chi2[Njack - 1], dchi2, myres->comp_error(fit_out.chi2));
         free_4(Nboot, Nboot, en_tot, bby);
-        free(boot_chi2); 
+        free(boot_chi2);
 
     }
 

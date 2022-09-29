@@ -2727,7 +2727,7 @@ int main(int argc, char** argv) {
         for (int l = 0;l < 25;l++) {
             for (int a = 0;a < 4;a++) {
                 for (int w = 0;w < 2;w++) {
-                    for (int iM = 0;iM < 1;iM++) {
+                    for (int iM :{0,3}) {
                         fit_info.Npar = 3;
 
                         if (a > 0) fit_info.Npar++;
@@ -2828,7 +2828,7 @@ int main(int argc, char** argv) {
                         if (a == 3) {
                             if (l >= 13) continue;
                         }
-
+                        
                         std::string aname;
                         if (a == 0) { aname = ""; }
                         if (a == 1) { aname = "a4_eq"; }
