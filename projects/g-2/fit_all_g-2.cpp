@@ -3198,7 +3198,7 @@ int main(int argc, char** argv) {
                         fit_info.Npar = 5;
 
                         if (a > 0) fit_info.Npar++;
-                        if (a >= 3) fit_info.Npar++;
+                        if (a == 3) fit_info.Npar++;
                         if (l >= 13) {
                             fit_info.Npar++;
                             if (l % 3 == 0)fit_info.Npar++;
@@ -3231,7 +3231,13 @@ int main(int argc, char** argv) {
                         }
                         fit_info.corr_id = { id0, id1 };
                         fit_info.function = rhs_amu_FVE_RF;
+                        fit_info.linear_fit = true;
                         fit_info.covariancey = true;
+                        // fit_info.acc= 1e-6;
+                        // fit_info.chi2_gap_jackboot=0.1;
+                        // fit_info.guess_per_jack=5;
+                        // fit_info.repeat_start=5;
+                        fit_info.verbosity=3;
                         fit_info.compute_cov_fit(argv, jackall, lhs_amu_common_GS, fit_info);
                         int ie = 0, ie1 = 0;
                         for (int n = 0;n < fit_info.N;n++) {
@@ -3293,6 +3299,7 @@ int main(int argc, char** argv) {
                             if (l >= 13) continue;
                         }
                         if (a == 4 && iM > 0 && l >= 13) continue;
+                        if (a == 4 && iM > 0) continue;
 
 
                         std::string aname;
@@ -3320,7 +3327,7 @@ int main(int argc, char** argv) {
                         print_fit_band_amu_W_l(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_l_common_a4, amu_SD_l_common_a4, 0, myen.size() - 1, 0.0005, xcont, lhs_amu_common_GS);
                         syst_amu_W_l_RF.add_fit(amu_SD_l_common_a4);
 
-
+                        // if(iM==3 && a ==4 ) exit(1);
                         free_fit_result(fit_info, amu_SD_l_common_a4);
                         fit_info.restore_default();
 
