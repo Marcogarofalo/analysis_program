@@ -1158,11 +1158,9 @@ double* linear_fit_Nf(int* Npoints, double** x, double** y, fit_type fit_info) {
 
 
     beta = (double*)calloc(Npar, sizeof(double));
-    a = (double**)malloc(Npar * sizeof(double*));
     alpha = (double**)malloc(sizeof(double*) * Npar);
     for (int j = 0;j < Npar;j++) {
         alpha[j] = (double*)calloc(Npar, sizeof(double));
-        a[j] = (double*)calloc(2, sizeof(double));
     }
     count = 0;
     if (fit_info.covariancey == true) {
