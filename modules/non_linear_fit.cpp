@@ -1153,15 +1153,14 @@ double* linear_fit_Nf(int* Npoints, double** x, double** y, fit_type fit_info) {
     int Npar = fit_info.Npar;
 
     double** alpha, * X, * beta, ** a, ** C, * sigma;
-    int i, j, k, e, count, n;
+    int count;
     double* r;
 
 
     beta = (double*)calloc(Npar, sizeof(double));
-    r = (double*)malloc(Npar * sizeof(double));
     a = (double**)malloc(Npar * sizeof(double*));
     alpha = (double**)malloc(sizeof(double*) * Npar);
-    for (j = 0;j < Npar;j++) {
+    for (int j = 0;j < Npar;j++) {
         alpha[j] = (double*)calloc(Npar, sizeof(double));
         a[j] = (double*)calloc(2, sizeof(double));
     }
@@ -1195,13 +1194,13 @@ double* linear_fit_Nf(int* Npoints, double** x, double** y, fit_type fit_info) {
         free_2(en_tot, df_value);
     }
     else {
-        for (n = 0;n < Nfunc;n++) {
-            for (e = 0;e < Npoints[n];e++) {
-                i = e + count;
+        for (int n = 0;n < Nfunc;n++) {
+            for (int e = 0;e < Npoints[n];e++) {
+                int i = e + count;
                 X = fit_info.linear_function(n, Nvar, x[i], Npar);
-                for (j = 0;j < Npar;j++) {
+                for (int j = 0;j < Npar;j++) {
                     beta[j] += y[i][0] * X[j] / (y[i][1] * y[i][1]);
-                    for (k = 0;k < Npar;k++) {
+                    for (int k = 0;k < Npar;k++) {
                         alpha[j][k] += X[j] * X[k] / (y[i][1] * y[i][1]);
                     }
                 }
@@ -1210,31 +1209,16 @@ double* linear_fit_Nf(int* Npoints, double** x, double** y, fit_type fit_info) {
             count += Npoints[n];
         }
     }
-    if (Npar == 1) {
-        C = (double**)malloc(sizeof(double*) * 1);
-        C[0] = (double*)malloc(sizeof(double) * 1);
-        C[0][0] = 1. / alpha[0][0];
+    
+    if (Npar==1){
+        r=(double*) malloc(sizeof(double));
+        r[0]=beta[0] / alpha[0][0];
+    } else
+    r=cholesky_solver_if_possible(Npar, alpha, beta);
+    for (int j = 0;j < Npar;j++) {
+        free(alpha[j]);
     }
-    else
-        C = matrix_inverse(Npar, alpha);
-
-    for (j = 0;j < Npar;j++) {
-        for (k = 0;k < Npar;k++) {
-            a[j][0] += C[j][k] * beta[k];
-        }
-        a[j][1] = sqrt(C[j][j]);
-    }
-    for (j = 0;j < Npar;j++) {
-        r[j] = a[j][0];
-    }
-
-    for (j = 0;j < Npar;j++) {
-        free(alpha[j]);    free(a[j]);
-        free(C[j]);
-    }
-    free(C);free(alpha);free(beta); free(a);
-
-
+    free(alpha);free(beta);
 
     return r;
 }

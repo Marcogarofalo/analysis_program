@@ -367,7 +367,7 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
     fprintf(f, "npar   %d \n", fit_out.Npar);//error_jackboot(argv[1], Njack, fit_out.chi2)
     fprintf(f, "chi2dof   %g \n", fit_out.chi2[Njack - 1]);//error_jackboot(argv[1], Njack, fit_out.chi2)
     for (int i = 0;i < Npar;i++) {
-        fprintf(f, "P[%d]   %-20g    %-20g  \n", i, fit_out.P[i][Njack - 1], myres->comp_error(fit_out.P[i]));
+        fprintf(f, "P[%d]   %-20.12g    %-20.12g  \n", i, fit_out.P[i][Njack - 1], myres->comp_error(fit_out.P[i]));
     }
     for (int i = 0;i < fit_info.Npar;i++) {
         for (int j = 0;j < fit_info.Npar;j++) {
