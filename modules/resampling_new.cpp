@@ -63,17 +63,17 @@ void resampling_f::write_res_bin(int N, double* jack, char* outname) {
 resampling_jack::resampling_jack(int N) {
     Njack = N + 1;
     mysprintf(option, NAMESIZE, "jack");
-};
+}
 resampling_boot::resampling_boot(int N) {
     Njack = N + 1;
     mysprintf(option, NAMESIZE, "boot");
     seed = 123;
-};
+}
 resampling_boot::resampling_boot(int N, int o_seed) {
     Njack = N + 1;
     mysprintf(option, NAMESIZE, "boot");
     seed = o_seed;
-};
+}
 
 //create_jack
 //in[#conf.][#variable][#time_cordinate][#re or im]

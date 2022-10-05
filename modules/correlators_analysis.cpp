@@ -353,13 +353,12 @@ int line_read_plateaux(char** option, const char* corr, int& tmin, int& tmax, in
 struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** corr_ave, double** corr_J, int Njack, double** chi2, struct fit_type fit_info) {
 
     double*** y, *** x, * r, ** tmp;
-    int i, j;
     double* chi2j;
     int Npar = fit_info.Npar; // parameters
     int Nvar = fit_info.Nvar + fit_info.n_ext_P;
     int N = fit_info.N;                                // functions to fit
     int* en = (int*)malloc(sizeof(int) * fit_info.N); // data to fit for each function
-    for (i = 0; i < fit_info.N; i++)
+    for (int i = 0; i < fit_info.N; i++)
         en[0] = (tmax - tmin) / sep + 1;
     int en_tot = 0; // total data to fit
     for (int n = 0; n < N; n++) {
@@ -367,7 +366,7 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
     }
 
     double* guess = (double*)malloc(sizeof(double) * fit_info.Npar); // initial guess for the parameter
-    for (i = 0; i < fit_info.Npar; i++)
+    for (int i = 0; i < fit_info.Npar; i++)
         guess[i] = 1.;
 
     if (fit_info.guess.size() > 0) {
@@ -383,7 +382,7 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
     y = double_malloc_3(Njack, tmax - tmin + 1, 2);
     x = double_malloc_3(Njack, en_tot, Nvar);
 
-    for (j = 0; j < Njack; j++) {
+    for (int j = 0; j < Njack; j++) {
         int count = 0;
         for (int n = 0; n < N; n++) {
             for (int e = 0; e < en[n]; e++) {
@@ -401,8 +400,8 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
 
     int count = 0;
     for (int n = 0; n < N; n++) {
-        for (i = tmin; i <= tmax; i += sep) {
-            for (j = 0; j < Njack; j++) {
+        for (int i = tmin; i <= tmax; i += sep) {
+            for (int j = 0; j < Njack; j++) {
                 y[j][count][0] = corr_J[i][j];
                 // y[j][count][1] = error_jackboot(option[4], Njack, corr_J[i]);
                 y[j][count][1] = corr_ave[i][1];
@@ -414,7 +413,7 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
     //     if(fit_info.guess.size()==0)
     guess = guess_for_non_linear_fit_Nf(N, en, x[Njack - 1], y[Njack - 1], Nvar, Npar, fit_info.function, guess, fit_info);
     // for (j=0;j<Njack;j++){
-    for (j = Njack - 1; j >= 0; j--) {
+    for (int j = Njack - 1; j >= 0; j--) {
         // tmp=linear_fit( (tmax-tmin)/sep +1, x, y[j],  1,constant_fit_to_try );
 
 
@@ -458,8 +457,8 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
     }
 
     struct fit_result fit_out = malloc_fit(fit_info);
-    for (i = 0; i < Npar; i++) {
-        for (j = 0; j < Njack; j++) {
+    for (int i = 0; i < Npar; i++) {
+        for (int j = 0; j < Njack; j++) {
             fit_out.P[i][j] = fit[j][i];
         }
 
@@ -471,7 +470,7 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
             }
         }*/
     }
-    for (j = 0; j < Njack; j++) {
+    for (int j = 0; j < Njack; j++) {
         fit_out.chi2[j] = chi2j[j];
     }
 
@@ -679,16 +678,14 @@ double* plateau_correlator_function(char** option, struct kinematic kinematic_2p
 
 struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic_2pt, char* name, double**** conf_jack, const char* plateaux_masses, FILE* outfile, int index, int re_im, const char* description, struct fit_type fit_info, FILE* file_jack) {
 
-    int line = kinematic_2pt.ik2 + kinematic_2pt.ik1 * (file_head.nk + 1);
     /*if ( strcmp(option[1],"read_plateaux")==0 )
      go_to_line(*plateaux_masses,line);
     */
     int Njack = fit_info.Njack;
     double** r, * m, ** mt, * fit;
-    int i, j, yn;
 
     r = (double**)malloc(sizeof(double*) * file_head.l0);
-    for (i = 0; i < file_head.l0; i++)
+    for (int i = 0; i < file_head.l0; i++)
         r[i] = (double*)malloc(sizeof(double) * Njack);
     // mt = (double**)malloc(sizeof(double*) * file_head.l0);
     mt = double_malloc_2(file_head.l0 / 2, 2);
@@ -697,8 +694,8 @@ struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic
     fprintf(outfile, "#m_eff(t) of %s  propagators:1) mu %.5f r %d theta %.5f 2) mu %.5f r %d theta %.5f\n", name,
         kinematic_2pt.k2, kinematic_2pt.r2, kinematic_2pt.mom2,
         kinematic_2pt.k1, kinematic_2pt.r1, kinematic_2pt.mom1);
-    for (i = 1; i < file_head.l0 / 2; i++) {
-        for (j = 0; j < Njack; j++) {
+    for (int i = 1; i < file_head.l0 / 2; i++) {
+        for (int j = 0; j < Njack; j++) {
             r[i][j] = conf_jack[j][index][i][re_im];
         }
         mt[i][0] = r[i][Njack - 1];
@@ -715,10 +712,10 @@ struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic
 
     fwrite(fit_out.P[0], sizeof(double), Njack, file_jack);
 
-    for (i = 0; i < file_head.l0 / 2; i++)
+    for (int i = 0; i < file_head.l0 / 2; i++)
         free(mt[i]);
     free(mt);
-    for (i = 0; i < file_head.l0; i++)
+    for (int i = 0; i < file_head.l0; i++)
         free(r[i]);
     free(r);
 
