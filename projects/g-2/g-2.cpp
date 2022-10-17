@@ -62,7 +62,6 @@ constexpr double Metac_MeV_err = 0.004 * 1000;
 
 using namespace std;
 
-
 struct  kinematic kinematic_2pt;
 
 class replica_class {
@@ -540,11 +539,13 @@ int main(int argc, char** argv) {
     char namefile[NAMESIZE];
     srand(1);
 
+    int ncorr_new;
 
-
-    error(argc != 17, 1, "main ",
+    error(argc < 17 || argc > 19, 1, "main ",
         "usage:./g-2  blind/see/read_plateaux -p path basename -bin $bin"
-        "   -L L jack/boot  -mu mul    mus1 mus2     muc1 muc2 muc3 ");
+        "   -L L jack/boot  -mu mul    mus1 mus2     muc1 muc2 muc3   [mul'] [bolla]");
+
+
     error(strcmp(argv[1], "blind") != 0 && strcmp(argv[1], "see") != 0 && strcmp(argv[1], "read_plateaux") != 0, 1, "main ",
         "argv[1] only options:  blind/see/read_plateaux ");
 
@@ -591,11 +592,14 @@ int main(int argc, char** argv) {
     double muc1 = atof(argv[14]);
     double muc2 = atof(argv[15]);
     double muc3 = atof(argv[16]);
+    double mul1;
+    if (argc > 17) { mul1 = atof(argv[17]); }
 
     generic_header header;
     header.L = file_head.l1;
     header.T = file_head.l0;
     header.mus = { mu, mus1, mus2 ,muc1, muc2, muc3 };
+    if (argc > 17)  header.mus.emplace_back(mul1);
     header.thetas = {};
 
     mysprintf(namefile, NAMESIZE, "%s_mu.%f", argv[4], mu);
@@ -697,7 +701,7 @@ int main(int argc, char** argv) {
     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.3f_VKVK.txt", argv[3], argv[4], mus2);//17
     correlators.emplace_back(namefile);
 
-    //charms
+    //charms  here I mess up the names in the opposite (TM) file there are the equal (OS) correlators
     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5A0.txt", argv[3], argv[4], muc1);//18
     correlators.emplace_back(namefile);
     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5P5.txt", argv[3], argv[4], muc1);//19
@@ -738,6 +742,39 @@ int main(int argc, char** argv) {
     mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_VKVK.txt", argv[3], argv[4], muc3);//35
     correlators.emplace_back(namefile);
 
+    if (argc > 17) {
+        mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.7f_P5A0.txt", argv[3], argv[4], mul1);//36
+        correlators.emplace_back(namefile);
+        mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.7f_P5P5.txt", argv[3], argv[4], mul1);//37
+        correlators.emplace_back(namefile);
+        mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.7f_VKVK.txt", argv[3], argv[4], mul1);//38
+        correlators.emplace_back(namefile);
+        mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.7f_P5A0.txt", argv[3], argv[4], mul1);//39
+        correlators.emplace_back(namefile);
+        mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.7f_P5P5.txt", argv[3], argv[4], mul1);//40
+        correlators.emplace_back(namefile);
+        mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.7f_VKVK.txt", argv[3], argv[4], mul1);//41
+        correlators.emplace_back(namefile);
+    }
+    if (argc > 18) {
+        mysprintf(namefile, NAMESIZE, "%s/%s_mu.%.5f_bolla_std.txt", argv[3], argv[4], mu);//42
+        correlators.emplace_back(namefile);
+    }
+    if (argc > 17) {
+        mysprintf(namefile, NAMESIZE, "%s/%s_small_stat_r.equal_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);//43
+        correlators.emplace_back(namefile);
+        mysprintf(namefile, NAMESIZE, "%s/%s_small_stat_r.equal_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);//44
+        correlators.emplace_back(namefile);
+        mysprintf(namefile, NAMESIZE, "%s/%s_small_stat_r.equal_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);//45
+        correlators.emplace_back(namefile);
+        mysprintf(namefile, NAMESIZE, "%s/%s_small_stat_r.opposite_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);//46
+        correlators.emplace_back(namefile);
+        mysprintf(namefile, NAMESIZE, "%s/%s_small_stat_r.opposite_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);//47
+        correlators.emplace_back(namefile);
+        mysprintf(namefile, NAMESIZE, "%s/%s_small_stat_r.opposite_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);//48
+        correlators.emplace_back(namefile);
+    }
+
     // printf("reading confs from file: %s", correlators[0].c_str());
     // auto iconfs = read_nconfs(correlators[0].c_str());
     std::vector<configuration_class> myconfs;
@@ -759,6 +796,7 @@ int main(int argc, char** argv) {
         // }
         // error(confs != check_confs.iconfs.size(), 1, "reading number of configuration", "not all the files have the same confs");
     }
+
     // which_confs_are_the_same(std::vector<std::string> iconfs);
 
     // FILE* infile_equal_P5A0 = open_file(namefile, "r+");
@@ -790,13 +828,23 @@ int main(int argc, char** argv) {
     get_kinematic(0, 0, 1, 0, 0, 0);
 
     int var = correlators.size();
-    data = calloc_corr(bin, var, file_head.l0);
+    data = calloc_corr(bin, var + 3, file_head.l0);
 
     for (int i = 0; i < var; i++) {
         // read correlators[i] and store in data[conf][i][t][re/im]
         read_twopt(correlators[i].c_str(), myconfs[i], T, data, i, bin);
     }
-
+    correlators.emplace_back("bP5P5");
+    correlators.emplace_back("bVKVKeq");
+    correlators.emplace_back("bVKVKop");
+    for (int b = 0; b < bin; b++) {
+        for (int t = 0;t < T / 2 + 1;t++) {
+            data[b][var][t][0] = data[b][42][t][0] * data[b][4][t][0]; // bolla * P5P5_op // 49
+            data[b][var + 1][t][0] = data[b][42][t][0] * data[b][2][t][0]; // bolla * VKVK_eq // 50
+            data[b][var + 2][t][0] = data[b][42][t][0] * data[b][5][t][0]; // bolla * VKVK_op // 51
+        }
+    }
+    ncorr_new = correlators.size();
     // data_bin = binning(confs, var, file_head.l0, data, bin);
     // data_bin = binning_toNb(confs, var, file_head.l0, data, bin);
     // //if you want to do the gamma analysis you need to do before freeing the raw data
@@ -804,8 +852,8 @@ int main(int argc, char** argv) {
     // // effective_mass_phi4_gamma(option, kinematic_2pt, (char*)"P5P5", data_bin, Neff, namefile_plateaux, out_gamma, 1, "M_{PS1}^{ll}");
     // //effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,namefile_plateaux,out_gamma,3,"M_{PS}^{ll}");
     // free_corr(bin, var, file_head.l0, data);
-    conf_jack = create_resampling(option[4], Neff, var, file_head.l0, data);
-    free_corr(Neff, var, file_head.l0, data);
+    conf_jack = create_resampling(option[4], Neff,  correlators.size(), file_head.l0, data);
+    free_corr(Neff,  correlators.size(), file_head.l0, data);
 
 
     // ////////////////// symmetrization/////////////////////////////////////////////
@@ -1185,21 +1233,20 @@ int main(int argc, char** argv) {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     int_scheme = integrate_reinman;
-    double* amu_W = compute_amu_W(conf_jack, 2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "amu_{W}(eq,l)", resampling);
-    write_jack(amu_W, Njack, jack_file);
+    double* amu_W_eq0 = compute_amu_W(conf_jack, 2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "amu_{W}(eq,l)", resampling);
+    write_jack(amu_W_eq0, Njack, jack_file);
     check_correlatro_counter(42);
-    printf("amu_W(W,l) = %g  %g\n", amu_W[Njack - 1], error_jackboot(resampling, Njack, amu_W));
-    free(amu_W);
+    printf("amu_W(eq1,l) = %g  %g\n", amu_W_eq0[Njack - 1], error_jackboot(resampling, Njack, amu_W_eq0));
 
-    amu_W = compute_amu_W(conf_jack, 5, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "amu_{W}(op,l)", resampling);
-    write_jack(amu_W, Njack, jack_file);
+    double* amu_W_op0 = compute_amu_W(conf_jack, 5, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "amu_{W}(op,l)", resampling);
+    write_jack(amu_W_op0, Njack, jack_file);
     check_correlatro_counter(43);
-    printf("amu_W(op,l) = %g  %g\n", amu_W[Njack - 1], error_jackboot(resampling, Njack, amu_W));
-    free(amu_W);
+    printf("amu_W(op,l) = %g  %g\n", amu_W_op0[Njack - 1], error_jackboot(resampling, Njack, amu_W_op0));
+
 
 
     int_scheme = integrate_simpson38;
-    amu_W = compute_amu_W(conf_jack, 2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "amu_{W,simpson38}(eq,l)", resampling);
+    double* amu_W = compute_amu_W(conf_jack, 2, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "amu_{W,simpson38}(eq,l)", resampling);
     write_jack(amu_W, Njack, jack_file);
     check_correlatro_counter(44);
     printf("amu_W_simpson38(eq,l) = %g  %g\n", amu_W[Njack - 1], error_jackboot(resampling, Njack, amu_W));
@@ -1324,30 +1371,11 @@ int main(int argc, char** argv) {
     for (int j = 0;j < Njack;j++) {
         MpiMev[j] = M_PS_op[j] / (a[j] / 197.326963);
     }
-    // double** DVt;
-    // if (strcmp("cA.53.24", argv[4]) == 0 || strcmp("cA.40.24", argv[4]) == 0 || strcmp("cA.30.32", argv[4]) == 0) {
-    //     DVt = double_calloc_2(T, Njack);
-    // }
-    // else {
-    //     DVt = compute_DVt(header.L, Njack,  MpiMev /* jack_Mpi_MeV_exp */, jack_Mrho_MeV_exp, a, jack_grhopipi, outfile, "DVt", resampling);
-    // }
-    // delete[] MpiMev;
 
-    // fit_info.N = 1;
-    // int ncorr_new = var;
-    // printf("%d\n", ncorr_new);
-    // add_one_correlators(option, ncorr_new, conf_jack, fit_info, DVt);
-    // printf("%d\n", ncorr_new);
-
-    // // int_scheme = integrate_reinman;
-    // int_scheme = integrate_simpson38;
-    // double* one_jack = fake_sampling(resampling, 1, 1e-8, Njack, 1);
-    // double* DV = compute_amu_W(conf_jack, ncorr_new - 1, Njack, one_jack, a, 1.0, int_scheme, outfile, "DV_{W}(op,l)", resampling);
-    // write_jack(DV, Njack, jack_file);
-    // check_correlatro_counter(58);
     {   // continuum FVE GS 
         double* DV;
-        if (strcmp("cA.53.24", argv[4]) == 0 || strcmp("cA.40.24", argv[4]) == 0 || strcmp("cA.30.32", argv[4]) == 0) {
+        if (strcmp("cA.53.24", argv[4]) == 0 || strcmp("cA.40.24", argv[4]) == 0 || strcmp("cA.30.32", argv[4]) == 0 || true) {
+            printf("\n\n                we are not computing FVE \n\n");
             DV = (double*)calloc(Njack, sizeof(double));
             write_jack(DV, Njack, jack_file);
             check_correlatro_counter(58);
@@ -1737,6 +1765,63 @@ int main(int argc, char** argv) {
         free(ctst0);
         free_fit_result(fit_info, ct_2exp);
         free_fit_result(fit_info, ct_2exp1);
+    }
+
+    if (argc == 19) {
+        fit_type fit_info;
+
+        fit_info.corr_id = { 4,4,var };//P5P5, P5P5dmu , bolla*P5P5dmu
+        fit_info.guess = { mu,mul1 };
+        add_correlators(option, ncorr_new, conf_jack, corr_plus_dm, fit_info);
+
+        fit_info.corr_id = { 2,2,var+1 };//VKVKeq, VKVKeqdmu , bolla*VKVKeqdmu
+        fit_info.guess = { mu,mul1 };
+        add_correlators(option, ncorr_new, conf_jack, corr_plus_dm, fit_info);
+
+        fit_info.corr_id = { 5,5,var+2 };//VKVKop, VKVKopdmu , bolla*VKVKopdmu
+        fit_info.guess = { mu,mul1 };
+        add_correlators(option, ncorr_new, conf_jack, corr_plus_dm, fit_info);
+
+        ///////////////////////////////////
+        double* M_PS1 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, ncorr_new - 3, "M_{PS1}^{op}", M_eff_T, jack_file);
+        check_correlatro_counter(122);
+        free(M_PS1);
+
+
+        ////////////////////////////
+        int_scheme = integrate_reinman;
+        double* amu_W_eq2 = compute_amu_W(conf_jack, 38, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "valence1_amu_{W}(eq,l)", resampling);
+        write_jack(amu_W_eq2, Njack, jack_file);
+        check_correlatro_counter(123);
+        printf("valence_amu_W(eq2,l) = %g  %g\n", amu_W_eq2[Njack - 1], error_jackboot(resampling, Njack, amu_W_eq2));
+
+        double* amu_W_eq01 = compute_amu_W(conf_jack, 45, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "valence3_amu_{W}(eq,l)", resampling);
+        write_jack(amu_W_eq01, Njack, jack_file);
+        check_correlatro_counter(124);
+        printf("valence_amu_W(eq01,l) = %g  %g\n", amu_W_eq01[Njack - 1], error_jackboot(resampling, Njack, amu_W_eq01));
+
+
+        double* diff_valence = (double*)malloc(sizeof(double) * Njack);
+        for (int j=0; j<Njack; j++){
+            diff_valence[j]=(amu_W_eq2[j]-amu_W_eq01[j]);
+        }
+        printf("diff_valence_amu_W(eq,l) = %g  %g\n", diff_valence[Njack - 1], myres->comp_error(diff_valence));
+        
+
+        double* amu_W_op2 = compute_amu_W(conf_jack, 41, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "valence_amu_{W}(op,l)", resampling);
+        write_jack(amu_W_op2, Njack, jack_file);
+        check_correlatro_counter(125);
+        printf("valence_amu_W(op2,l) = %g  %g\n", amu_W_op2[Njack - 1], error_jackboot(resampling, Njack, amu_W_op2));
+
+        double* amu_W_op02 = compute_amu_W(conf_jack, 48, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "valence_amu_{W}(op,l)", resampling);
+        write_jack(amu_W_op02, Njack, jack_file);
+        check_correlatro_counter(126);
+        printf("valence_amu_W(op01,l) = %g  %g\n", amu_W_op02[Njack - 1], error_jackboot(resampling, Njack, amu_W_op02));
+        for (int j=0; j<Njack; j++){
+            diff_valence[j]=(amu_W_op2[j]-amu_W_op02[j]);
+        }
+        printf("diff_valence_amu_W(op,l) = %g  %g\n", diff_valence[Njack - 1], myres->comp_error(diff_valence));
+        
     }
 
 

@@ -1739,3 +1739,15 @@ double rhs_poly(int n, int Nvar, double* x, int Npar, double* P) {
     }
     return r;
 }
+
+
+double** corr_plus_dm(int j, double**** in, int t, struct fit_type fit_info) {
+    double** r = double_calloc_2(fit_info.N , 2);
+    double dmu=fit_info.guess[1] - fit_info.guess[0];
+    int id0=fit_info.corr_id[0];
+    int id1=fit_info.corr_id[1];
+    int ibolla=42;
+    int ibcorr=fit_info.corr_id[2];
+    r[0][0]=in[j][id1][t][0]+dmu*( in[j][ibcorr][t][0] -in[j][ibolla][t][0]*in[j][id1][t][0] );
+    return r;
+}
