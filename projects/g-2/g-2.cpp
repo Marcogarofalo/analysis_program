@@ -19,7 +19,6 @@
 #include "mutils.hpp"
 #include "functions.hpp"
 #include "correlators_analysis.hpp"
-#include "eigensystem.hpp"
 #include "non_linear_fit.hpp"
 #include "tower.hpp"
 #include "fit_all.hpp"
@@ -116,6 +115,7 @@ public:
 
 
     configuration_class(const char stream[NAMESIZE]) {
+        printf("first construction\n");
 
         long int tmp;
         int s = file_head.l1 + 1 + 3;
@@ -140,6 +140,32 @@ public:
         to_bin = std::vector<int>(iconfs.size());
         next_to_bin = std::vector<int>(iconfs.size());
     }
+    configuration_class(const char stream[NAMESIZE], int T) {
+        printf("second construction\n");
+        long int tmp;
+        int s = T + 1 + 3;
+        int count = 0;
+        string line;
+        ifstream file(stream);
+        while (getline(file, line)) {
+            count++;
+            if (line.compare(0, 1, "#") == 0) {
+                line.erase(8);
+                line.erase(0, 1);
+                iconfs.emplace_back(line);
+                // printf("%s\n", line.c_str());
+            }
+
+        }
+        std::cout << "lines=" << count << std::endl;
+        error(count % s != 0, 1, "read_nconfs lines and T do not match", "lines=%i   T/2=%i", count, T);
+        int c = count / s;
+        std::cout << "confs=" << c << std::endl;
+
+        to_bin = std::vector<int>(iconfs.size());
+        next_to_bin = std::vector<int>(iconfs.size());
+    }
+
 };
 
 void get_kinematic(int ik2, int r2, int ik1, int r1, int imom2, int imom1) {
@@ -316,14 +342,15 @@ void read_twopt(const char namefile[NAMESIZE], configuration_class& confs, int T
         }
     }
     else {
-        error(0 == 0, 1, "correlators_analysis.cpp line_read_plateaux",
+        error(0 == 0, 1, "correlators_analysis.cpp ",
             "unable to open %s", namefile);
     }
 
-    printf("We found %ld streams\n", confs.rep.size());
+    printf("file:  %s We found %ld streams\n", namefile, confs.rep.size());
     for (auto r : confs.rep) {
         printf("  stream: %d   confs:  %ld\n", r.id, r.i_conf.size());
     }
+    newfile.close();
 
     double** data = double_calloc_2(confs.iconfs.size(), T / 2 + 1);
     int count = 0;
@@ -400,7 +427,7 @@ void read_twopt(const char namefile[NAMESIZE], configuration_class& confs, int T
             const double beg = binPos;
 
             /// Rectangle right point
-            const double end = std::min(binEnd, beg + 1.0);
+            const double end = std::min(binEnd, iConf + 1.0);
 
             /// Rectangle horizontal size
             const double weight = end - beg;
@@ -422,6 +449,51 @@ void read_twopt(const char namefile[NAMESIZE], configuration_class& confs, int T
     // free_2(confs.confs_after_binning, data);
     free_2(confs.iconfs.size(), tmp);
 
+}
+
+
+
+void bin_data(double**** to_write, int id, double**** data, int id1, int T, int Nconfs_bolla, int Nb) {
+
+
+    double clustSize = ((double)Nconfs_bolla) / ((double)Nb);
+    // double clustSize = ((double)confs.confs_after_binning) / ((double)Nb);
+
+    for (size_t iClust = 0;iClust < Nb;iClust++) {
+        for (int t = 0;t < T / 2 + 1;t++) {
+            to_write[iClust][id][t][0] = 0;
+        }
+        /// Initial time of the bin
+        const double binBegin = iClust * clustSize;
+        /// Final time of the bin
+        const double binEnd = binBegin + clustSize;
+        double binPos = binBegin;
+        do {
+            /// Index of the configuration related to the time
+            const size_t iConf = floor(binPos + 1e-10);
+
+            ///Rectangle left point
+            const double beg = binPos;
+
+            /// Rectangle right point
+            const double end = std::min(binEnd, iConf + 1.0);
+
+            /// Rectangle horizontal size
+            const double weight = end - beg;
+
+            // Perform the operation passing the info
+            for (int t = 0;t < T / 2 + 1;t++) {
+                to_write[iClust][id][t][0] += weight * data[iConf][id1][t][0];
+            }
+            // printf("Cluster=%ld  iConf=%ld  weight=%g  size=%g  end=%g  beg=%g\n",iClust,iConf,weight,clustSize, end,beg);
+            // Updates the position
+            binPos = end;
+        } while (binEnd - binPos > 1e-10);
+        for (int t = 0;t < T / 2 + 1;t++) {
+            to_write[iClust][id][t][0] /= ((double)clustSize);
+        }
+
+    }
 }
 
 // void read_twopt(FILE* stream, int iconf, double*** to_write, cluster::IO_params params, int index) {
@@ -510,7 +582,29 @@ void write_header_g2(FILE* stream, generic_header header) {
 
 }
 
+void check_confs_correlated(std::vector<configuration_class> in_confs, std::vector<std::string>  correlators, int i, int j) {
+    configuration_class& confs = in_confs[i];
+    configuration_class& confs1 = in_confs[j];
+    error(confs.iconfs.size() != confs1.iconfs.size(), 1, "check_confs_correlated", "file: %s  Nconf: %d\nfile: %s  Nconf: %d",
+        correlators[i].c_str(), confs.iconfs.size(),
+        correlators[j].c_str(), confs1.iconfs.size());
+    error(confs.rep.size() != confs1.rep.size(), 1, "check_confs_correlated", "file: %s  reps: %d\nfile: %s  reps: %d",
+        correlators[i].c_str(), confs.rep.size(),
+        correlators[j].c_str(), confs1.rep.size());
 
+    for (int k = 0; k < confs.iconfs.size();k++) {
+        // if (strcmp(confs.iconfs[k].c_str(), confs1.iconfs[k].c_str())==0) {printf("strcmp say that the confs are the same\n");}
+        // else  printf("strcmp say that the confs differs\n");
+
+        // if (confs.iconfs[k]==confs1.iconfs[k]) {printf("== say that the confs are the same\n");}
+        // else  printf("== say that the confs differs\n");
+        // printf("%ld  %ld\n",confs.iconfs[k].length(),confs1.iconfs[k].length());
+        error(strcmp(confs.iconfs[k].c_str(), confs1.iconfs[k].c_str()) != 0, 1, "check_confs_correlated", "file: %s  conf[%d]: %s\nfile: %s  conf[%d]: %s",
+            correlators[i].c_str(), k, confs.iconfs[k].c_str(),
+            correlators[j].c_str(), k, confs1.iconfs[k].c_str());
+
+    }
+}
 int main(int argc, char** argv) {
     int size;
     int i, j, t;
@@ -742,7 +836,7 @@ int main(int argc, char** argv) {
     mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_VKVK.txt", argv[3], argv[4], muc3);//35
     correlators.emplace_back(namefile);
 
-    if (argc > 17) {
+    if (argc > 17) { // cott mu+dm
         mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.7f_P5A0.txt", argv[3], argv[4], mul1);//36
         correlators.emplace_back(namefile);
         mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.7f_P5P5.txt", argv[3], argv[4], mul1);//37
@@ -760,7 +854,7 @@ int main(int argc, char** argv) {
         mysprintf(namefile, NAMESIZE, "%s/%s_mu.%.5f_bolla_std.txt", argv[3], argv[4], mu);//42
         correlators.emplace_back(namefile);
     }
-    if (argc > 17) {
+    if (argc > 17) { /// corr_mu+dm
         mysprintf(namefile, NAMESIZE, "%s/%s_small_stat_r.equal_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);//43
         correlators.emplace_back(namefile);
         mysprintf(namefile, NAMESIZE, "%s/%s_small_stat_r.equal_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);//44
@@ -774,6 +868,20 @@ int main(int argc, char** argv) {
         mysprintf(namefile, NAMESIZE, "%s/%s_small_stat_r.opposite_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);//48
         correlators.emplace_back(namefile);
     }
+    if (argc > 18) {
+        mysprintf(namefile, NAMESIZE, "%s/%s_corr_bolla_r.equal_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);//49
+        correlators.emplace_back(namefile);
+        mysprintf(namefile, NAMESIZE, "%s/%s_corr_bolla_r.equal_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);//50
+        correlators.emplace_back(namefile);
+        mysprintf(namefile, NAMESIZE, "%s/%s_corr_bolla_r.equal_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);//51
+        correlators.emplace_back(namefile);
+        mysprintf(namefile, NAMESIZE, "%s/%s_corr_bolla_r.opposite_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);//52
+        correlators.emplace_back(namefile);
+        mysprintf(namefile, NAMESIZE, "%s/%s_corr_bolla_r.opposite_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);//53
+        correlators.emplace_back(namefile);
+        mysprintf(namefile, NAMESIZE, "%s/%s_corr_bolla_r.opposite_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);//54
+        correlators.emplace_back(namefile);
+    }
 
     // printf("reading confs from file: %s", correlators[0].c_str());
     // auto iconfs = read_nconfs(correlators[0].c_str());
@@ -783,7 +891,12 @@ int main(int argc, char** argv) {
     int count = 0;
     for (auto name : correlators) {
         printf("reading  confs from file: %s\n", name.c_str());
-        myconfs.emplace_back(name.c_str());
+        if (count == 42) {
+            configuration_class tmp(name.c_str(), 0);
+            myconfs.emplace_back(tmp);
+        }
+        else
+            myconfs.emplace_back(name.c_str());
         // myconfs[cout]=read_nconfs(name.c_str());
         myconfs[count].check_binnign();
         cout << "number of different configurations:" << myconfs[count].confs_after_binning << endl;
@@ -832,19 +945,53 @@ int main(int argc, char** argv) {
 
     for (int i = 0; i < var; i++) {
         // read correlators[i] and store in data[conf][i][t][re/im]
-        read_twopt(correlators[i].c_str(), myconfs[i], T, data, i, bin);
+        if (i == 42) read_twopt(correlators[i].c_str(), myconfs[i], 0, data, i, bin);
+        else read_twopt(correlators[i].c_str(), myconfs[i], T, data, i, bin);
+
     }
-    correlators.emplace_back("bP5P5");
-    correlators.emplace_back("bVKVKeq");
-    correlators.emplace_back("bVKVKop");
-    for (int b = 0; b < bin; b++) {
-        for (int t = 0;t < T / 2 + 1;t++) {
-            data[b][var][t][0] = data[b][42][t][0] * data[b][4][t][0]; // bolla * P5P5_op // 49
-            data[b][var + 1][t][0] = data[b][42][t][0] * data[b][2][t][0]; // bolla * VKVK_eq // 50
-            data[b][var + 2][t][0] = data[b][42][t][0] * data[b][5][t][0]; // bolla * VKVK_op // 51
+    if (argc > 18) {
+        int Nconf_bolla = myconfs[42].iconfs.size();
+        double**** data_no_bin = calloc_corr(Nconf_bolla, 4 + 3, file_head.l0);
+        // error(Nconf_bolla!= myconfs[53].iconfs.size(),1,"main","conf of P5P5 correlated bolla are not the same of bolla");
+        // error(Nconf_bolla!= myconfs[51].iconfs.size(),1,"main","conf of VKVKeq correlated bolla are not the same of bolla");
+        // error(Nconf_bolla!= myconfs[54].iconfs.size(),1,"main","conf of VKVKop correlated bolla are not the same of bolla");
+        check_confs_correlated(myconfs, correlators, 42, 53);
+        check_confs_correlated(myconfs, correlators, 42, 51);
+        check_confs_correlated(myconfs, correlators, 42, 54);
+        for (int i=0;i<6;i++)
+            check_confs_correlated(myconfs, correlators, 36+i, 43+i);
+
+        read_twopt(correlators[42].c_str(), myconfs[42], 0, data_no_bin, 0, Nconf_bolla);
+        read_twopt(correlators[53].c_str(), myconfs[53], T, data_no_bin, 1, Nconf_bolla);
+        read_twopt(correlators[51].c_str(), myconfs[51], T, data_no_bin, 2, Nconf_bolla);
+        read_twopt(correlators[54].c_str(), myconfs[54], T, data_no_bin, 3, Nconf_bolla);
+
+
+        for (int b = 0; b < Nconf_bolla; b++) {
+            data_no_bin[b][0][0][0] = -data_no_bin[b][0][0][0];
+            for (int t = 0;t < T / 2 + 1;t++) {
+                data_no_bin[b][0][t][0] = data_no_bin[b][0][0][0];
+                data_no_bin[b][4][t][0] = data_no_bin[b][0][0][0] * data_no_bin[b][1][t][0]; // bolla * P5P5_op // 55
+                data_no_bin[b][5][t][0] = data_no_bin[b][0][0][0] * data_no_bin[b][2][t][0]; // bolla * VKVK_eq // 56
+                data_no_bin[b][6][t][0] = data_no_bin[b][0][0][0] * data_no_bin[b][3][t][0]; // bolla * VKVK_op // 57
+            }
         }
+
+        correlators.emplace_back("bP5P5");
+        correlators.emplace_back("bVKVKeq");
+        correlators.emplace_back("bVKVKop");
+        bin_data(data, 42, data_no_bin, 0, T, Nconf_bolla, bin); // bolla 
+        bin_data(data, var + 0, data_no_bin, 4, T, Nconf_bolla, bin); // bolla * P5P5_op // 55
+        bin_data(data, var + 1, data_no_bin, 5, T, Nconf_bolla, bin); // bolla * P5P5_op // 56
+        bin_data(data, var + 2, data_no_bin, 6, T, Nconf_bolla, bin); // bolla * P5P5_op // 57
+        error(var + 0 != 55, 1, "main", "error index do not match var+0=%d  expected 57", var + 0);
+        error(var + 1 != 56, 1, "main", "error index do not match var+1=%d  expected 57", var + 1);
+        error(var + 2 != 57, 1, "main", "error index do not match var+2=%d  expected 57", var + 2);
+        free_corr(Nconf_bolla, 4 + 3, file_head.l0, data_no_bin);
+        ncorr_new = correlators.size();
     }
-    ncorr_new = correlators.size();
+
+
     // data_bin = binning(confs, var, file_head.l0, data, bin);
     // data_bin = binning_toNb(confs, var, file_head.l0, data, bin);
     // //if you want to do the gamma analysis you need to do before freeing the raw data
@@ -852,8 +999,8 @@ int main(int argc, char** argv) {
     // // effective_mass_phi4_gamma(option, kinematic_2pt, (char*)"P5P5", data_bin, Neff, namefile_plateaux, out_gamma, 1, "M_{PS1}^{ll}");
     // //effective_mass_phi4_gamma(  option, kinematic_2pt,   (char*) "P5P5", data,  confs ,namefile_plateaux,out_gamma,3,"M_{PS}^{ll}");
     // free_corr(bin, var, file_head.l0, data);
-    conf_jack = create_resampling(option[4], Neff,  correlators.size(), file_head.l0, data);
-    free_corr(Neff,  correlators.size(), file_head.l0, data);
+    conf_jack = create_resampling(option[4], Neff, correlators.size(), file_head.l0, data);
+    free_corr(Neff, correlators.size(), file_head.l0, data);
 
 
     // ////////////////// symmetrization/////////////////////////////////////////////
@@ -1047,6 +1194,13 @@ int main(int argc, char** argv) {
         ZA = interpol_Z(Nstrange, Njack, Meta, Z, jack_aMetas_MeV_exp, outfile, "Z_A", resampling);
 
     }
+    if( strcmp("cD.54.96", argv[4]) == 0){
+        double Za_WI_strange = 0.773944;
+        double Za_WI_strange_err = 0.00014;
+        free(ZA);
+        double* ZA = myres->create_fake(Za_WI_strange, Za_WI_strange_err, 666);
+    }
+    
     write_jack(ZV, Njack, jack_file);
     check_correlatro_counter(22);
     write_jack(ZA, Njack, jack_file);
@@ -1767,62 +1921,207 @@ int main(int argc, char** argv) {
         free_fit_result(fit_info, ct_2exp1);
     }
 
+    int  id_P5P5_mudmu;
+    int  id_P5P5_cor_mudmu;
+    int  id_VKVKeq_mudm;
+    int  id_VKVKop_mudm;
+    int  id_sea_VKVKeq;
+    int  id_sea_VKVKop;
+
     if (argc == 19) {
         fit_type fit_info;
+        printf("Ncorrelator=%d\n", ncorr_new);
+        fit_info.corr_id = { 53,40,var/*55*/ };//P5P5_corr_bolla, P5P5dmu , bolla*P5P5dmu
+        fit_info.guess = { mu,mul1 };
+        id_P5P5_mudmu = ncorr_new;
+        add_correlators(option, ncorr_new, conf_jack, corr_plus_dm, fit_info);
 
-        fit_info.corr_id = { 4,4,var };//P5P5, P5P5dmu , bolla*P5P5dmu
+        fit_info.corr_id = { 2,2,var + 1 };//VKVKeq, VKVKeqdmu , bolla*VKVKeqdmu
         fit_info.guess = { mu,mul1 };
         add_correlators(option, ncorr_new, conf_jack, corr_plus_dm, fit_info);
 
-        fit_info.corr_id = { 2,2,var+1 };//VKVKeq, VKVKeqdmu , bolla*VKVKeqdmu
+        fit_info.corr_id = { 5,5,var + 2 };//VKVKop, VKVKopdmu , bolla*VKVKopdmu
         fit_info.guess = { mu,mul1 };
         add_correlators(option, ncorr_new, conf_jack, corr_plus_dm, fit_info);
 
-        fit_info.corr_id = { 5,5,var+2 };//VKVKop, VKVKopdmu , bolla*VKVKopdmu
+        fit_info.corr_id = { 4,47, 40, 53,var/*55*/ };//P5P5, P5P5_corr_dmu,  P5P5_mu+dm ,P5P5_corr_bolla, bolla*P5P5_cor_bolla
         fit_info.guess = { mu,mul1 };
-        add_correlators(option, ncorr_new, conf_jack, corr_plus_dm, fit_info);
+        id_P5P5_cor_mudmu = ncorr_new;
+        add_correlators(option, ncorr_new, conf_jack, corr_plus_dm_correlated, fit_info);
+
+        fit_info.corr_id = { 2,45, 38, 51,var + 1/*56*/ };//VKVK, VKVK_corr_dmu,  VKVK_mu+dm ,VKVK_corr_bolla, bolla*VKVK_cor_bolla
+        fit_info.guess = { mu,mul1 };
+        id_VKVKeq_mudm = ncorr_new;
+        add_correlators(option, ncorr_new, conf_jack, corr_plus_dm_correlated, fit_info);
+
+        fit_info.corr_id = { 5,48, 41, 54,var + 2/*57*/ };//VKVK, VKVK_corr_dmu,  VKVK_mu+dm ,VKVK_corr_bolla, bolla*VKVK_cor_bolla //op
+        fit_info.guess = { mu,mul1 };
+        id_VKVKop_mudm = ncorr_new;
+        add_correlators(option, ncorr_new, conf_jack, corr_plus_dm_correlated, fit_info);
+
+
+        fit_info.corr_id = { 2, 45, 38, 51, var + 1/*56*/ };//VKVK, VKVK_corr_dmu,  VKVK_mu+dm ,VKVK_corr_bolla, bolla*VKVK_cor_bolla
+        fit_info.guess = { mu, mul1 };
+        id_sea_VKVKeq = ncorr_new;
+        add_correlators(option, ncorr_new, conf_jack, mu_sea_correction, fit_info);
+
+        fit_info.corr_id = { 5, 48, 41, 54, var + 2/*57*/ };//VKVK, VKVK_corr_dmu,  VKVK_mu+dm ,VKVK_corr_bolla, bolla*VKVK_cor_bolla //op
+        fit_info.guess = { mu, mul1 };
+        id_sea_VKVKop = ncorr_new;
+        add_correlators(option, ncorr_new, conf_jack, mu_sea_correction, fit_info);
+
+
+        printf("Ncorrelator=%d\n", ncorr_new);
+
+
 
         ///////////////////////////////////
-        double* M_PS1 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, ncorr_new - 3, "M_{PS1}^{op}", M_eff_T, jack_file);
+        double* M_PS1 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, id_P5P5_mudmu, "M_{PS1}^{op}", M_eff_T, jack_file);
         check_correlatro_counter(122);
         free(M_PS1);
 
+        M_PS1 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, id_P5P5_cor_mudmu, "M_{PS1c}^{op}", M_eff_T, jack_file);
+        check_correlatro_counter(123);
 
-        ////////////////////////////
+
+        double* jack_Mpia_exp = new double[Njack];
+
+
+        int Nmu = 2;
+        double** Masses_pions = (double**)malloc(sizeof(double*) * Nstrange);
+        Masses_pions[0] = M_PS_op;
+        Masses_pions[1] = M_PS1;
+        double** mul_values = double_malloc_2(2, Njack);
+        for (int j = 0; j < Njack;j++) {
+            jack_Mpia_exp[j] = jack_Mpi_MeV_exp[j] * (a[j] / 197.326963);
+            mul_values[0][j] = mu;
+            mul_values[1][j] = mul1;
+        }
+        double* mu_phys = interpol_Z(Nmu, Njack, Masses_pions, mul_values, jack_Mpia_exp, outfile, "mu_phys", resampling);
+        printf("mu_phys = %g  %g\n", mu_phys[Njack - 1], myres->comp_error(mu_phys));
+        // free(M_PS1);
+
+        //////////////////////////// valence 
         int_scheme = integrate_reinman;
         double* amu_W_eq2 = compute_amu_W(conf_jack, 38, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "valence1_amu_{W}(eq,l)", resampling);
         write_jack(amu_W_eq2, Njack, jack_file);
-        check_correlatro_counter(123);
+        check_correlatro_counter(124);
         printf("valence_amu_W(eq2,l) = %g  %g\n", amu_W_eq2[Njack - 1], error_jackboot(resampling, Njack, amu_W_eq2));
 
         double* amu_W_eq01 = compute_amu_W(conf_jack, 45, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "valence3_amu_{W}(eq,l)", resampling);
         write_jack(amu_W_eq01, Njack, jack_file);
-        check_correlatro_counter(124);
+        check_correlatro_counter(125);
         printf("valence_amu_W(eq01,l) = %g  %g\n", amu_W_eq01[Njack - 1], error_jackboot(resampling, Njack, amu_W_eq01));
 
 
         double* diff_valence = (double*)malloc(sizeof(double) * Njack);
-        for (int j=0; j<Njack; j++){
-            diff_valence[j]=(amu_W_eq2[j]-amu_W_eq01[j]);
+        for (int j = 0; j < Njack; j++) {
+            diff_valence[j] = (amu_W_eq2[j] - amu_W_eq01[j]);
         }
         printf("diff_valence_amu_W(eq,l) = %g  %g\n", diff_valence[Njack - 1], myres->comp_error(diff_valence));
-        
+
 
         double* amu_W_op2 = compute_amu_W(conf_jack, 41, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "valence_amu_{W}(op,l)", resampling);
         write_jack(amu_W_op2, Njack, jack_file);
-        check_correlatro_counter(125);
+        check_correlatro_counter(126);
         printf("valence_amu_W(op2,l) = %g  %g\n", amu_W_op2[Njack - 1], error_jackboot(resampling, Njack, amu_W_op2));
 
         double* amu_W_op02 = compute_amu_W(conf_jack, 48, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "valence_amu_{W}(op,l)", resampling);
         write_jack(amu_W_op02, Njack, jack_file);
-        check_correlatro_counter(126);
+        check_correlatro_counter(127);
         printf("valence_amu_W(op01,l) = %g  %g\n", amu_W_op02[Njack - 1], error_jackboot(resampling, Njack, amu_W_op02));
-        for (int j=0; j<Njack; j++){
-            diff_valence[j]=(amu_W_op2[j]-amu_W_op02[j]);
+        for (int j = 0; j < Njack; j++) {
+            diff_valence[j] = (amu_W_op2[j] - amu_W_op02[j]);
         }
         printf("diff_valence_amu_W(op,l) = %g  %g\n", diff_valence[Njack - 1], myres->comp_error(diff_valence));
+
+        //////////////////////////// sea
+        double* sea_eq = compute_amu_W(conf_jack, id_sea_VKVKeq, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "sea_diff_amu_{W}(eq,l)", resampling);
+        write_jack(sea_eq, Njack, jack_file);
+        printf("sea_diff_amu_{W}(eq,l) = %g  %g\n", sea_eq[Njack - 1], myres->comp_error(sea_eq));
+        check_correlatro_counter(128);
+        free(sea_eq);
+
+
+        double* sea_op = compute_amu_W(conf_jack, id_sea_VKVKop, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "sea_diff_amu_{W}(op,l)", resampling);
+        write_jack(sea_op, Njack, jack_file);
+        printf("sea_diff_amu_{W}(op,l) = %g  %g\n", sea_op[Njack - 1], myres->comp_error(sea_op));
+        check_correlatro_counter(129);
+        free(sea_op);
+
+        /// total eq
+        double** amu_W_eq_mu = (double**)malloc(sizeof(double*) * 2);
+        amu_W_eq_mu[0] = (double*)malloc(sizeof(double) * Njack);
+        for (int j = 0;j < Njack;j++) {
+            amu_W_eq_mu[0][j] = amu_W_eq0[j];
+        }
+
+        amu_W_eq_mu[1] = compute_amu_W(conf_jack, id_VKVKeq_mudm, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "amu_{W}(eq,l1)", resampling);
+        write_jack(amu_W_eq_mu[1], Njack, jack_file);
+        printf("amu_{W}(eq,l1) = %g  %g\n", amu_W_eq_mu[1][Njack - 1], myres->comp_error(amu_W_eq_mu[1]));
+        check_correlatro_counter(130);
+
+        double* amu_W_eq_phys = interpol_Z(Nmu, Njack, Masses_pions, amu_W_eq_mu, jack_Mpia_exp, outfile, "amu_{W}(eq,phys)", resampling);
+        write_jack(amu_W_eq_phys, Njack, jack_file);
+        check_correlatro_counter(131);
+
+        free_2(2, amu_W_eq_mu);
+
+
+        /// total op
+        double** amu_W_op_mu = (double**)malloc(sizeof(double*) * 2);
+        amu_W_op_mu[0] = (double*)malloc(sizeof(double) * Njack);
+        for (int j = 0;j < Njack;j++) {
+            amu_W_op_mu[0][j] = amu_W_op0[j];
+        }
+        amu_W_op_mu[1] = compute_amu_W(conf_jack, id_VKVKop_mudm, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "amu_{W}(op,l1)", resampling);
+        printf("amu_{W}(op,l1) = %g  %g\n", amu_W_op_mu[1][Njack - 1], myres->comp_error(amu_W_op_mu[1]));
+        write_jack(amu_W_op_mu[1], Njack, jack_file);
+        check_correlatro_counter(132);
+        double* amu_W_op_phys = interpol_Z(Nmu, Njack, Masses_pions, amu_W_op_mu, jack_Mpia_exp, outfile, "amu_{W}(op,phys)", resampling);
+        write_jack(amu_W_op_phys, Njack, jack_file);
+        check_correlatro_counter(133);
+
+        free_2(2, amu_W_op_mu);
+
+        double* tmp_b = (double*)malloc(sizeof(double) * Njack);
+        for (int j = 0;j < Njack;j++) {
+            tmp_b[j] = conf_jack[j][42][0][0];
+        }
+        printf("<B> = %.12g  %g\n", tmp_b[Njack - 1], myres->comp_error(tmp_b));
+
+
+        for (int j = 0;j < Njack;j++) {
+            tmp_b[j] = conf_jack[j][var+1][0][0];
+        }
+        printf("<B*V_eq(t=0)> = %.12g  %g\n", tmp_b[Njack - 1], myres->comp_error(tmp_b));
+
+        for (int j = 0;j < Njack;j++) {
+            tmp_b[j] = conf_jack[j][var+2][0][0];
+        }
+        printf("<B*V_op(t=0)> = %.12g  %g\n", tmp_b[Njack - 1], myres->comp_error(tmp_b));
+
+        for (int j = 0;j < Njack;j++) {
+            tmp_b[j]=conf_jack[j][51][0][0];
+        }
+        printf("<V_eq(t=0)> = %.12g  %g\n", tmp_b[Njack - 1], myres->comp_error(tmp_b));
+        for (int j = 0;j < Njack;j++) {
+            tmp_b[j]=conf_jack[j][54][0][0];
+        }
+        printf("<V_op(t=0)> = %.12g  %g\n", tmp_b[Njack - 1], myres->comp_error(tmp_b));
         
+        for (int j = 0;j < Njack;j++) {
+            tmp_b[j]=  conf_jack[j][var+2][0][0]   -conf_jack[j][42][0][0]* conf_jack[j][54][0][0];
+        }
+        printf("<B*V_op(t=0)> -<B><V_op(t=0)> = %.12g  %g\n", tmp_b[Njack - 1], myres->comp_error(tmp_b));
+        
+
+        // double* trash = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 5, "trash", identity, jack_file);
+        // check_correlatro_counter(122);
+
     }
+    else{for(int i=122; i<=133 ;i++)  zero_corr(zeros, Njack, jack_file); }
+
 
 
 
