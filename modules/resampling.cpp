@@ -417,9 +417,9 @@ double**** create_boot_of_boot_from_jack(int  Njack, int Nboot, int en_tot, doub
             }
             double err = myb.comp_error(tmp);
             for (int ibb = 0;ibb < Nboot;ibb++) {
-                boot[ib][ibb][e][1] = err* (Njack - 2);
+                boot[ib][ibb][e][1] = err * (Njack - 2);
             }
-            printf("%d    %d    %g  %g   %g\n", e, ib, boot[ib][Nboot-1][e][0], boot[ib][Nboot-1][e][1], in[0][e][1]);
+            printf("%d    %d    %g  %g   %g\n", e, ib, boot[ib][Nboot - 1][e][0], boot[ib][Nboot - 1][e][1], in[0][e][1]);
         }
     }
 
@@ -546,12 +546,12 @@ double**** create_resampling(const char* option, int  N, int var, int t, double*
 
     if (strcmp(option, "jack") == 0) {
         r = create_jack(N, var, t, in);
-        Nboot = N + 1;
+        Nboot = N;
         myres = new resampling_jack(Nboot);
     }
     else if (strcmp(option, "boot") == 0) {
         r = create_boot(N, Nboot, var, t, in, seed);
-        Nboot = Nbootstrap + 1;
+        Nboot = Nbootstrap;
         myres = new resampling_boot(Nboot, seed);
     }
     else {

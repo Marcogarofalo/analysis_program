@@ -1742,12 +1742,42 @@ double rhs_poly(int n, int Nvar, double* x, int Npar, double* P) {
 
 
 double** corr_plus_dm(int j, double**** in, int t, struct fit_type fit_info) {
-    double** r = double_calloc_2(fit_info.N , 2);
-    double dmu=fit_info.guess[1] - fit_info.guess[0];
-    int id0=fit_info.corr_id[0];
-    int id1=fit_info.corr_id[1];
-    int ibolla=42;
-    int ibcorr=fit_info.corr_id[2];
-    r[0][0]=in[j][id1][t][0]+dmu*( in[j][ibcorr][t][0] -in[j][ibolla][t][0]*in[j][id1][t][0] );
+    double** r = double_calloc_2(fit_info.N, 2);
+    double dmu = fit_info.guess[1] - fit_info.guess[0];
+    int id0 = fit_info.corr_id[0];
+    int id1 = fit_info.corr_id[1];
+    int ibolla = 42;
+    int ibcorr = fit_info.corr_id[2];
+    r[0][0] = in[j][id1][t][0] - dmu * (in[j][ibcorr][t][0] - in[j][ibolla][t][0] * in[j][id0][t][0]);
+    return r;
+}
+
+double** corr_plus_dm_correlated(int j, double**** in, int t, struct fit_type fit_info) {
+    double** r = double_calloc_2(fit_info.N, 2);
+    double dmu = fit_info.guess[1] - fit_info.guess[0];
+    //{ 4,47, 40, 53,var/*55*/ };//P5P5, P5P5_corr_dmu,  P5P5_mu+dm ,P5P5_corr_bolla, bolla*P5P5dmu
+    int id0 = fit_info.corr_id[0];
+    int id_corr_dmu = fit_info.corr_id[1];
+    int id_dmu = fit_info.corr_id[2];
+    int id_corr_bolla = fit_info.corr_id[3];
+    int ibolla = 42;
+    int ibcorr = fit_info.corr_id[4];
+    r[0][0] = in[j][id0][t][0] - (in[j][id_corr_dmu][t][0] - in[j][id_dmu][t][0])
+        - dmu * (in[j][ibcorr][t][0] - in[j][ibolla][t][0] * in[j][id_corr_bolla][t][0]);
+    return r;
+}
+
+double** mu_sea_correction(int j, double**** in, int t, struct fit_type fit_info) {
+    double** r = double_calloc_2(fit_info.N, 2);
+    double dmu = fit_info.guess[1] - fit_info.guess[0];
+    //{ 4,47, 40, 53,var/*55*/ };//P5P5, P5P5_corr_dmu,  P5P5_mu+dm ,P5P5_corr_bolla, bolla*P5P5dmu
+    int id0 = fit_info.corr_id[0];
+    int id_corr_dmu = fit_info.corr_id[1];
+    int id_dmu = fit_info.corr_id[2];
+    int id_corr_bolla = fit_info.corr_id[3];
+    int ibolla = 42;
+    int ibcorr = fit_info.corr_id[4];
+    r[0][0] = -dmu * (in[j][ibcorr][t][0] - in[j][ibolla][t][0] * in[j][id_corr_bolla][t][0]);
+    r[0][1] = 0;
     return r;
 }
