@@ -196,7 +196,6 @@ void compute_syst_eq28(data_all in, const char* outpath, const char* filename) {
     fclose(f);
 }
 
-
 int main(int argc, char** argv) {
     error(argc != 4, 1, "main ",
         "usage:./fit_all_phi4  jack/boot   path_to_jack   output_dir");
@@ -213,7 +212,6 @@ int main(int argc, char** argv) {
     files.emplace_back(namefile);
     mysprintf(namefile, NAMESIZE, "%s/%s_cD.54.96_mu.0.000540", argv[2], argv[1]);
     files.emplace_back(namefile);
-
 
     std::vector<int> myen(files.size());
     for (int e = 0; e < files.size(); e++) {
@@ -3237,7 +3235,7 @@ int main(int argc, char** argv) {
                         // fit_info.chi2_gap_jackboot=0.1;
                         // fit_info.guess_per_jack=5;
                         // fit_info.repeat_start=5;
-                        fit_info.verbosity=3;
+                        fit_info.verbosity = 3;
                         fit_info.compute_cov_fit(argv, jackall, lhs_amu_common_GS, fit_info);
                         int ie = 0, ie1 = 0;
                         for (int n = 0;n < fit_info.N;n++) {
@@ -3340,7 +3338,7 @@ int main(int argc, char** argv) {
     compute_syst_eq28(syst_amu_W_l_RF, argv[3], "Systematics_amu_W_l_RF.txt");
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    printf("\n/////////////////////////////////   test   amu_W_l   //////////////////\n");
+    printf("\n/////////////////////////////////   diff   amu_W_l   //////////////////\n");
     //////////////////////////////////////////////////////////////////////////////////////////////////
     data_all  syst_amu_W_l_diff;
     syst_amu_W_l_diff.resampling = argv[1];
@@ -3353,7 +3351,7 @@ int main(int argc, char** argv) {
 
 
         for (int l = 0;l < 9;l++) {
-            for (int a = 0;a < 1;a++) {
+            for (int a = 0;a < 2;a++) {
                 for (int w = 0;w < 2;w++) {
                     for (int iM : {0, 1}) {
 
@@ -3790,6 +3788,250 @@ int main(int argc, char** argv) {
     }
 
     compute_syst_eq28(syst_amu_W_c_RF, argv[3], "Systematics_amu_W_c_RF.txt");
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////        we need to adjust the data for the mass correction that are missing
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    for (int j = 0; j < Njack;j++) {
+        jackall.en[B72_96].jack[131][j] = jackall.en[B72_96].jack[42][j]
+            + jackall.en[B72_64].jack[131][j] - jackall.en[B72_64].jack[42][j];
+        jackall.en[B72_96].jack[133][j] = jackall.en[B72_96].jack[43][j]
+            + jackall.en[B72_64].jack[133][j] - jackall.en[B72_64].jack[43][j];
+    }
+
+    fit_info.N = 2;
+    fit_info.Nvar = 2;
+    fit_info.Npar = 2;
+    fit_info.Njack = Njack;
+    fit_info.myen = { B72_64, D54 };
+    fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+    count = 0;
+    for (int n = 0;n < fit_info.N;n++) {
+        for (int e : fit_info.myen) {
+            for (int j = 0;j < Njack;j++) {
+                fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2); // a^2
+                fit_info.x[1][count][j] = jack_Mpi_MeV_exp[j];
+            }
+            count++;
+        }
+    }
+    fit_info.function = linear_fit_mu_correction;
+    mysprintf(namefit, NAMESIZE, "mu_correction");
+    fit_result dVmu = fit_all_data(argv, jackall, lhs_mu_corrections, fit_info, namefit);
+    fit_info.band_range = { 0,0.0081 };
+    print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", dVmu, dVmu, 0, fit_info.myen.size() - 1, 0.0005);
+    for (int j = 0; j < Njack;j++) {
+        double a = jackall.en[C06].jack[41][j];
+        double a_MeV = a / 197.326963;
+        double dM = (jack_Mpi_MeV_exp[j] - jackall.en[C06].jack[4][j] / a_MeV);
+        jackall.en[C06].jack[131][j] = jackall.en[C06].jack[42][j] + dM * dVmu.P[0][j];
+        jackall.en[C06].jack[133][j] = jackall.en[C06].jack[43][j] + dM * dVmu.P[1][j];
+    }
+
+
+    {/// fit just to print the W data after mass correction
+        printf("fit just to print the W data after mass correction\n");
+        fit_info.Npar = 3;
+        fit_info.N = 2;
+        fit_info.Nvar = 8;
+        fit_info.Njack = Njack;
+        fit_info.myen = myen;
+        fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+        count = 0;
+        for (int n = 0;n < fit_info.N;n++) {
+            for (int e : fit_info.myen) {
+                for (int j = 0;j < Njack;j++) {
+                    fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2); // a^2
+                    fit_info.x[1][count][j] = jackall.en[e].jack[58][j];  // Delta_FV_GS
+                    fit_info.x[2][count][j] = jackall.en[e].jack[1][j];  //Mpi
+                    fit_info.x[3][count][j] = jack_Mpi_MeV_exp[j];
+                    fit_info.x[4][count][j] = 0 + 1e-6;
+                    fit_info.x[5][count][j] = 0 + 1e-6;
+                    fit_info.x[6][count][j] = 0 + 1e-6;
+                    fit_info.x[7][count][j] = 0 + 1.0;
+                }
+                count++;
+            }
+        }
+        fit_info.corr_id = { 131, 133 };
+        fit_info.function = rhs_amu_RF;
+        mysprintf(namefit, NAMESIZE, "amu_W_simple_fit_after_mu_corrections_cov");
+        fit_result amu_SD_l_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
+        fit_info.band_range = { 0,0.0081 };
+        std::vector<double> xcont = { 0, 0 /*Delta*/, 0, 0,/*l, a,m*/ fit_info.x[4][0][Njack - 1],
+             fit_info.x[5][0][Njack - 1] , fit_info.x[6][0][Njack - 1], fit_info.x[7][0][Njack - 1] };
+        print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_l_common_a4, amu_SD_l_common_a4, 0, myen.size() - 1, 0.0005, xcont);
+
+        free_fit_result(fit_info, amu_SD_l_common_a4);
+        fit_info.restore_default();
+    }
+
+
+   ///////////////////////////////////////////////////////////////////////////////////////////////////
+    printf("\n/////////////////////////////////     amu_W_l phys   //////////////////\n");
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    data_all  syst_amu_W_l_phys;
+    syst_amu_W_l_phys.resampling = argv[1];
+
+    integrations = { "reinman" };
+    for (auto integration : integrations) {
+        int id0, id1;
+        if (integration == "reinman") { id0 = 131; id1 = 133; }
+
+
+        for (int l = 0;l < 25;l++) {
+            for (int a = 0;a < 5;a++) {
+                for (int w = 0;w < 2;w++) {
+                    for (int iM : {0}) {
+
+                        fit_info.Npar = 5;
+
+                        if (a > 0) fit_info.Npar++;
+                        if (a == 3) fit_info.Npar++;
+                        if (l >= 13) {
+                            fit_info.Npar++;
+                            if (l % 3 == 0)fit_info.Npar++;
+                        }
+                        if (iM > 0) fit_info.Npar++;
+
+
+                        fit_info.N = 2;
+                        fit_info.Nvar = 8;
+                        fit_info.Njack = Njack;
+                        fit_info.myen = myen;
+                        if (fit_info.Npar >= myen.size() * fit_info.N) { continue; }
+
+                        fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+                        count = 0;
+                        for (int n = 0;n < fit_info.N;n++) {
+                            for (int e = 0;e < fit_info.myen.size();e++) {
+                                for (int j = 0;j < Njack;j++) {
+                                    fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2); // a^2
+                                    fit_info.x[1][count][j] = jackall.en[e].jack[58][j];  // Delta_FV_GS
+                                    fit_info.x[2][count][j] = jackall.en[e].jack[1][j];  //Mpi
+                                    fit_info.x[3][count][j] = jack_Mpi_MeV_exp[j];
+                                    fit_info.x[4][count][j] = l + 1e-6;
+                                    fit_info.x[5][count][j] = a + 1e-6;
+                                    fit_info.x[6][count][j] = iM + 1e-6;
+                                    fit_info.x[7][count][j] = w + 1.0;
+                                }
+                                count++;
+                            }
+                        }
+                        fit_info.corr_id = { id0, id1 };
+                        fit_info.function = rhs_amu_FVE_RF;
+                        fit_info.linear_fit = true;
+                        fit_info.covariancey = true;
+                        // fit_info.acc= 1e-6;
+                        // fit_info.chi2_gap_jackboot=0.1;
+                        // fit_info.guess_per_jack=5;
+                        // fit_info.repeat_start=5;
+                        fit_info.verbosity = 3;
+                        fit_info.compute_cov_fit(argv, jackall, lhs_amu_common_GS, fit_info);
+                        int ie = 0, ie1 = 0;
+                        for (int n = 0;n < fit_info.N;n++) {
+                            for (int e = 0;e < fit_info.myen.size();e++) {
+                                ie1 = 0;
+                                for (int n1 = 0;n1 < fit_info.N;n1++) {
+                                    for (int e1 = 0;e1 < fit_info.myen.size();e1++) {
+                                        if (e != e1)   fit_info.cov[ie][ie1] = 0;
+                                        ie1++;
+                                    }
+                                }
+                                ie++;
+                            }
+                        }
+                        fit_info.compute_cov1_fit();
+
+                        std::string logname;
+                        if (l == 0) { logname = ""; }
+                        if (l == 1) { logname = "log_3eq"; }
+                        if (l == 2) { logname = "log_3op"; }
+                        if (l == 3) { logname = "log_3eq_3op"; }
+                        if (l == 4) { logname = "log_2eq"; }
+                        if (l == 5) { logname = "log_2op"; }
+                        if (l == 6) { logname = "log_2eq_2op"; }
+                        if (l == 7) { logname = "log_1eq"; }
+                        if (l == 8) { logname = "log_1op"; }
+                        if (l == 9) { logname = "log_1eq_1op"; }
+                        if (l == 10) { logname = "log_-0.2eq"; }
+                        if (l == 11) { logname = "log_-0.2op"; }
+                        if (l == 12) { logname = "log_-0.2eq_-0.2op"; }
+                        if (l == 13) { logname = "+log_3eq"; }
+                        if (l == 14) { logname = "+log_3op"; }
+                        if (l == 15) { logname = "+log_3eq_3op"; }
+                        if (l == 16) { logname = "+log_2eq"; }
+                        if (l == 17) { logname = "+log_2op"; }
+                        if (l == 18) { logname = "+log_2eq_2op"; }
+                        if (l == 19) { logname = "+log_1eq"; }
+                        if (l == 20) { logname = "+log_1op"; }
+                        if (l == 21) { logname = "+log_1eq_1op"; }
+                        if (l == 22) { logname = "+log_-0.2eq"; }
+                        if (l == 23) { logname = "+log_-0.2op"; }
+                        if (l == 24) { logname = "+log_-0.2eq_-0.2op"; }
+
+                        if (l == 0 && w > 0) continue;
+                        std::string wname;
+                        if (w == 0) { wname = "w1"; }
+                        if (w == 1) { wname = "w2"; }
+                        if (w == 2) { wname = "w3"; }
+
+                        if (a == 1) {
+                            if (l == 13 || l == 16 || l == 19 || l == 22 || l == 15 || l == 18 || l == 21 || l == 24)
+                                continue;
+                        }
+                        if (a == 2) {
+                            if (l == 14 || l == 17 || l == 20 || l == 23 || l == 15 || l == 18 || l == 21 || l == 24)
+                                continue;
+                        }
+                        if (a == 3) {
+                            if (l >= 13) continue;
+                        }
+                        if (a == 4 && iM > 0 && l >= 13) continue;
+                        if (a == 4 && iM > 0) continue;
+
+
+                        std::string aname;
+                        if (a == 0) { aname = ""; }
+                        if (a == 1) { aname = "a4_eq"; }
+                        if (a == 2) { aname = "a4_op"; }
+                        if (a == 3) { aname = "a4_eq_op"; }
+                        if (a == 4) { aname = "a4_eq_op_common"; }
+
+                        std::string Mname;
+                        if (iM == 0) { Mname = ""; }
+                        if (iM == 1) { Mname = "Mpi_eq"; }
+                        if (iM == 2) { Mname = "Mpi_op"; }
+                        if (iM == 3) { Mname = "Mpi_eq_op"; }
+
+                        mysprintf(namefit, NAMESIZE, "amu_W_l_phys_%s_%s_%s_%s_cov", logname.c_str(), wname.c_str(), aname.c_str(), Mname.c_str());
+                        fit_result amu_SD_l_common_a4 = fit_all_data(argv, jackall, lhs_amu_common_GS, fit_info, namefit);
+                        fit_info.band_range = { 0,0.0081 };
+                        std::vector<double> xcont = { 0, 0 /*Delta*/, 0, 0,/*l, a,m*/ fit_info.x[4][0][Njack - 1],
+                             fit_info.x[5][0][Njack - 1] , fit_info.x[6][0][Njack - 1], fit_info.x[7][0][Njack - 1] };
+
+                        // TODO: in order to print the band you need to subtract the
+                        //    FVE ok
+                        //    Mpi:   the index of the parameter do not match!   P[i]*(M_pi- M_pi_phys ) 
+                        print_fit_band_amu_W_l(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_l_common_a4, amu_SD_l_common_a4, 0, myen.size() - 1, 0.0005, xcont, lhs_amu_common_GS);
+                        syst_amu_W_l_phys.add_fit(amu_SD_l_common_a4);
+
+                        // if(iM==3 && a ==4 ) exit(1);
+                        free_fit_result(fit_info, amu_SD_l_common_a4);
+                        fit_info.restore_default();
+
+
+                    }
+                }
+            }
+        }
+    }
+    compute_syst_eq28(syst_amu_W_l_phys, argv[3], "Systematics_amu_W_l_phys.txt");
+
+
+
 
 
 }

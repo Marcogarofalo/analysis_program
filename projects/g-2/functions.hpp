@@ -16,6 +16,15 @@ constexpr double muon_mass_MeV = 105.6583755;
 constexpr double alpha_em = 0.0072973525693;
 constexpr double muon_mass_fm = muon_mass_MeV * 197.326963;
 
+enum enum_ensembles {
+    B72_64,
+    B72_96,
+    C06,
+    D54,
+    A53,
+    A40,
+    A30
+};
 
 double integrand_K(double x, void* params) {
     double z = *(double*)params;
@@ -1056,6 +1065,13 @@ double rhs_amu_log_a4(int n, int Nvar, double* x, int Npar, double* P) {
 }
 
 
+double linear_fit_mu_correction(int n, int Nvar, double* x, int Npar, double* P) {
+    double a2 = x[0];
+    double r;
+    if (n == 0) r =  P[0];
+    if (n == 1) r =  P[1];
+    return r;
+}
 
 double rhs_amu_RF(int n, int Nvar, double* x, int Npar, double* P) {
     double r;
@@ -1546,6 +1562,16 @@ double lhs_amu(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     if (fit_info.corr_id.size() != 2) { printf("error lhs_amu called without ids"); }
     if (n == 0)        r = gjack.en[e].jack[fit_info.corr_id[0]][j];
     else if (n == 1)   r = gjack.en[e].jack[fit_info.corr_id[1]][j];
+    return r;
+}
+
+
+double lhs_mu_corrections(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double r;
+    double MpiMeV_phys = fit_info.x[1][e][j];// in principle e--> e+n*fit_info.myen.size(), but htey should be the same
+    double a_MeV = sqrt(fit_info.x[0][e][j]) / 197.326963;
+    if (n == 0)        r = (gjack.en[e].jack[131][j] - gjack.en[e].jack[42][j]) / (MpiMeV_phys - gjack.en[e].jack[4][j] / a_MeV);
+    else if (n == 1)   r = (gjack.en[e].jack[133][j] - gjack.en[e].jack[43][j]) / (MpiMeV_phys - gjack.en[e].jack[4][j] / a_MeV);
     return r;
 }
 

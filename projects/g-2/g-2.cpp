@@ -1528,7 +1528,7 @@ int main(int argc, char** argv) {
 
     {   // continuum FVE GS 
         double* DV;
-        if (strcmp("cA.53.24", argv[4]) == 0 || strcmp("cA.40.24", argv[4]) == 0 || strcmp("cA.30.32", argv[4]) == 0 || true) {
+        if (strcmp("cA.53.24", argv[4]) == 0 || strcmp("cA.40.24", argv[4]) == 0 || strcmp("cA.30.32", argv[4]) == 0 ) {
             printf("\n\n                we are not computing FVE \n\n");
             DV = (double*)calloc(Njack, sizeof(double));
             write_jack(DV, Njack, jack_file);
