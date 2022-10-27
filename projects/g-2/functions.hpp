@@ -11,7 +11,7 @@ extern "C" {
 static int once = 0;
 
 using namespace std::complex_literals;
-
+constexpr double hbarc = 197.326963;
 constexpr double muon_mass_MeV = 105.6583755;
 constexpr double alpha_em = 0.0072973525693;
 constexpr double muon_mass_fm = muon_mass_MeV * 197.326963;
@@ -1068,8 +1068,16 @@ double rhs_amu_log_a4(int n, int Nvar, double* x, int Npar, double* P) {
 double linear_fit_mu_correction(int n, int Nvar, double* x, int Npar, double* P) {
     double a2 = x[0];
     double r;
-    if (n == 0) r =  P[0];
-    if (n == 1) r =  P[1];
+    if (n == 0) r = P[0];
+    if (n == 1) r = P[1];
+    return r;
+}
+
+double exp_MpiL(int n, int Nvar, double* x, int Npar, double* P) {
+    double MpiL = x[0];
+    double r;
+    if (n == 0) r = P[0] + P[2] * exp(-MpiL);
+    if (n == 1) r = P[1] + P[3] * exp(-MpiL);
     return r;
 }
 
@@ -1239,6 +1247,24 @@ double rhs_amu_RF(int n, int Nvar, double* x, int Npar, double* P) {
     return r;
 }
 
+double rhs_amu_separate(int n, int Nvar, double* x, int Npar, double* P) {
+    double GS = x[1];
+    double a2 = x[0];
+    int ia2 = x[5];
+    double r = 0;
+
+    if (n == 0)      r += P[0];
+    else if (n == 1) r += P[1];
+
+    if (ia2 == 1) {
+        if (n == 0)      r += a2 * P[2];
+        else if (n == 1) r += a2 * P[3];
+    }
+
+    return r;
+}
+
+
 double rhs_amu_FVE_RF(int n, int Nvar, double* x, int Npar, double* P) {
     double GS = x[1];
     double a2 = x[0];
@@ -1247,7 +1273,6 @@ double rhs_amu_FVE_RF(int n, int Nvar, double* x, int Npar, double* P) {
     else if (n == 1) r += -(10.0 / 9.0) * GS * (P[4] * a2);
     return r;
 }
-
 
 double rhs_amu_diff_RF(int n, int Nvar, double* x, int Npar, double* P) {
     double GS = x[1];
@@ -1316,6 +1341,65 @@ double rhs_amu_diff_RF(int n, int Nvar, double* x, int Npar, double* P) {
     default:
         break;
     }
+
+
+    return r;
+}
+
+double rhs_amu_diff(int n, int Nvar, double* x, int Npar, double* P) {
+    double GS = x[1];
+    double a2 = x[0];
+    double Mpi = x[2];
+    double Mpiphys = x[3];
+
+    int ilog = x[4];
+    int ia4 = x[5];
+    int iMpi = x[6];
+    double iw = x[7];
+    int plog = x[9];
+    int idc = Npar - 1;
+    double w02 = 0.17383 * 0.17383 / (iw);
+
+    double r = a2 * P[0];
+    
+    if (ia4 == 0) {
+    }
+    if (ia4 == 1) {
+        r += +a2 * a2 * P[1];
+        idc--;
+    }
+
+   
+
+
+    return r;
+}
+
+
+double rhs_amu_ratio(int n, int Nvar, double* x, int Npar, double* P) {
+    double GS = x[1];
+    double a2 = x[0];
+    double Mpi = x[2];
+    double Mpiphys = x[3];
+
+    int ilog = x[4];
+    int ia4 = x[5];
+    int iMpi = x[6];
+    double iw = x[7];
+    int plog = x[9];
+    int idc = Npar - 1;
+    double w02 = 0.17383 * 0.17383 / (iw);
+
+    double r = 1.+ a2 * P[0];
+    
+    if (ia4 == 0) {
+    }
+    if (ia4 == 1) {
+        r += +a2 * a2 * P[1];
+        idc--;
+    }
+
+   
 
 
     return r;
@@ -1547,6 +1631,8 @@ double lhs_amu_common_GS(int n, int e, int j, data_all gjack, struct fit_type fi
     return r;
 }
 
+
+
 double lhs_amu_common_GS_diff(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double r;
     double GS = gjack.en[e].jack[58][j];
@@ -1556,6 +1642,27 @@ double lhs_amu_common_GS_diff(int n, int e, int j, data_all gjack, struct fit_ty
     // else if (n == 1)   r = gjack.en[e].jack[iop][j] + (10.0 / 9.0) * GS;
     return r;
 }
+
+double lhs_amu_diff(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double r;
+    double GS = gjack.en[e].jack[58][j];
+    int ieq = fit_info.corr_id[0];
+    int iop = fit_info.corr_id[1];
+    r = gjack.en[e].jack[iop][j]  - gjack.en[e].jack[ieq][j];
+    // else if (n == 1)   r = gjack.en[e].jack[iop][j] + (10.0 / 9.0) * GS;
+    return r;
+}
+
+double lhs_amu_ratio(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double r;
+    double GS = gjack.en[e].jack[58][j];
+    int ieq = fit_info.corr_id[0];
+    int iop = fit_info.corr_id[1];
+    r = gjack.en[e].jack[iop][j]  / gjack.en[e].jack[ieq][j];
+    // else if (n == 1)   r = gjack.en[e].jack[iop][j] + (10.0 / 9.0) * GS;
+    return r;
+}
+
 
 double lhs_amu(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double r;

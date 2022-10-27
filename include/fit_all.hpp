@@ -174,6 +174,7 @@ public:
     // useless function, you can not cut the jackknife, you need to cut the confs from the beginning  
     // void cut_confs(int N);
     void create_generalised_resampling();
+    void add_space_for_n_observables(int n);
     // data_all() {};
 
     // data_all(int N) : ens(N) {

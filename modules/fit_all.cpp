@@ -176,6 +176,32 @@ void data_all::create_generalised_resampling() {
     }
 
 }
+
+void data_all::add_space_for_n_observables(int n) {
+    int Nobs = en[0].Nobs;
+    int Njack =en[0].Njack;
+    for (int e = 0;e < ens;e++) {
+
+        double** tmp = double_malloc_2(Nobs + n, Njack);
+
+        for (int j = 0; j < en[e].Njack ; j++) {
+            for (int o = 0; o < Nobs; o++) {
+                tmp[o][j] = en[e].jack[o][j];
+            }
+            for (int o = Nobs; o < Nobs+n-1; o++) {
+                tmp[o][j] = 0;
+            }
+        }
+        en[e].reset_error();
+        free_2(en[e].Nobs, en[e].jack);
+        en[e].jack = tmp;
+        en[e].Nobs = Nobs+n;
+        en[e].Njack = Njack;
+    }
+    return;
+
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// print band
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
