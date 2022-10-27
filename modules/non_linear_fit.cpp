@@ -1147,20 +1147,22 @@ double compute_sd_NM(double* centroid, double** points, int Npar) {
 //*fit_functions is a function such that fit_function(int Nfunc, int Nvar,double *x,int Npar)[i]=f_i
 //Nvariables is not required in this function but you need to be consistend in the declaration of fit_function and x
 //it returns a[i][value,error]
+template<class T>
 double* linear_fit_Nf(int* Npoints, double** x, double** y, fit_type fit_info) {
     int Nfunc = fit_info.N;
     int Nvar = fit_info.Nvar;
     int Npar = fit_info.Npar;
 
-    double** alpha, * X, * beta, ** a, ** C, * sigma;
+    T** alpha,  * beta, ** a, ** C, * sigma;
+    double *X;
     int count;
     double* r;
 
 
-    beta = (double*)calloc(Npar, sizeof(double));
-    alpha = (double**)malloc(sizeof(double*) * Npar);
+    beta = (T*)calloc(Npar, sizeof(T));
+    alpha = (T**)malloc(sizeof(T*) * Npar);
     for (int j = 0;j < Npar;j++) {
-        alpha[j] = (double*)calloc(Npar, sizeof(double));
+        alpha[j] = (T*)calloc(Npar, sizeof(T));
     }
     count = 0;
     if (fit_info.covariancey == true) {
@@ -1207,12 +1209,18 @@ double* linear_fit_Nf(int* Npoints, double** x, double** y, fit_type fit_info) {
             count += Npoints[n];
         }
     }
-    
-    if (Npar==1){
-        r=(double*) malloc(sizeof(double));
-        r[0]=beta[0] / alpha[0][0];
-    } else
-    r=cholesky_solver_if_possible(Npar, alpha, beta);
+
+    if (Npar == 1) {
+        r = (double*)malloc(sizeof(double));
+        r[0] =(double) beta[0] / alpha[0][0];
+    }
+    else {
+        T* rl = LU_decomposition_solver<T>(Npar, alpha, beta);
+        r = (double*)malloc(sizeof(double)*Npar);
+        for (int j = 0;j < Npar;j++)
+            r[j] =(double) rl[j];
+        free(rl);
+    }
     for (int j = 0;j < Npar;j++) {
         free(alpha[j]);
     }
@@ -1220,7 +1228,6 @@ double* linear_fit_Nf(int* Npoints, double** x, double** y, fit_type fit_info) {
 
     return r;
 }
-
 
 
 /*********************************************************************************
@@ -1289,12 +1296,16 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
         error(true, 1, "non_linear_fit_Nf", "order of the derivative must be 4 (default) , 2,  -2 to set a step different for each parameter h[i]=P[i]*h    ");
     }
     if (fit_info.linear_fit) {
-        // error(fit_info.covariancey, 2, "non_linear_fit_Nf ", "linear fit with covarince not implemented");
         non_linear_fit_result output;
-        // double *(linear_function)(int , int  , double *, int );
-        // linear_function=fit_info.linear_function;
-        output.P = linear_fit_Nf(ensemble, x, y, fit_info);
-        output.chi2 = chi2_fun(N, ensemble, x, y, output.P, Nvar, Npar, fun, fit_info);
+        if (precision_sum > 1) {
+            chi2_fun = compute_chi_non_linear_Nf_long;
+            output.P = linear_fit_Nf<long double>(ensemble, x, y, fit_info);
+            output.chi2 = chi2_fun(N, ensemble, x, y, output.P, Nvar, Npar, fun, fit_info);
+        }
+        else {
+            output.P = linear_fit_Nf<double>(ensemble, x, y, fit_info);
+            output.chi2 = chi2_fun(N, ensemble, x, y, output.P, Nvar, Npar, fun, fit_info);
+        }
         return output;
     }
 

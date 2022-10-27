@@ -179,23 +179,23 @@ void data_all::create_generalised_resampling() {
 
 void data_all::add_space_for_n_observables(int n) {
     int Nobs = en[0].Nobs;
-    int Njack =en[0].Njack;
+    int Njack = en[0].Njack;
     for (int e = 0;e < ens;e++) {
 
         double** tmp = double_malloc_2(Nobs + n, Njack);
 
-        for (int j = 0; j < en[e].Njack ; j++) {
+        for (int j = 0; j < en[e].Njack; j++) {
             for (int o = 0; o < Nobs; o++) {
                 tmp[o][j] = en[e].jack[o][j];
             }
-            for (int o = Nobs; o < Nobs+n-1; o++) {
+            for (int o = Nobs; o < Nobs + n - 1; o++) {
                 tmp[o][j] = 0;
             }
         }
         en[e].reset_error();
         free_2(en[e].Nobs, en[e].jack);
         en[e].jack = tmp;
-        en[e].Nobs = Nobs+n;
+        en[e].Nobs = Nobs + n;
         en[e].Njack = Njack;
     }
     return;
@@ -437,6 +437,7 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
             guess[i] = mt_rand() / ((double)mt_rand.max());//rand()/((double)RAND_MAX);
     }
     else {
+        error(fit_info.guess.size() > Npar, 1, "fit_all_data", "there are more guees than parameter in fit %s", label);
         for (int i = 0;i < fit_info.guess.size();i++)
             guess[i] = fit_info.guess[i];
         for (int i = fit_info.guess.size();i < Npar;i++)

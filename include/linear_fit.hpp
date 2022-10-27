@@ -19,6 +19,8 @@ double** symmetric_matrix_inverse(int N, double** M);
 //M is a matrix 
 //it uses the LU decomposition see Numerical Receipes
 double* LU_decomposition_solver(int N, double** M, double* b);
+template<class T> T* LU_decomposition_solver(int N, T** M, T* b);
+
 //return the inverse matrix of M
 double** matrix_inverse(int N, double** M);
 

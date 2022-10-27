@@ -92,6 +92,7 @@ int is_it_positive(double** a, int n) {
                      }
                      printf("}\n");
                      */
+                    free_2(n, L);
                     return 1;
 
                 }
@@ -101,7 +102,7 @@ int is_it_positive(double** a, int n) {
         }
     }
 
-
+    free_2(n, L);
     return 0;
 }
 
@@ -244,6 +245,71 @@ double* LU_decomposition_solver(int N, double** M, double* b) {
     return x;
 
 }
+
+
+//return the vector x: the solution of Mx=b
+//M is a matrix 
+//it uses the LU decomposition see Numerical Receipes
+template<class T>
+T* LU_decomposition_solver(int N, T** M, T* b) {
+    T** U, ** L, * y, * x;
+    int i, j, k;
+
+    x = (T*)malloc(sizeof(T) * N);
+    y = (T*)malloc(sizeof(T) * N);
+    L = (T**)malloc(sizeof(T*) * N);
+    U = (T**)malloc(sizeof(T*) * N);
+    for (i = 0;i < N;i++) {
+        U[i] = (T*)calloc(N, sizeof(T));
+        L[i] = (T*)calloc(N, sizeof(T));
+    }
+
+    for (i = 0;i < N;i++)
+        L[i][i] = 1;
+
+    for (j = 0;j < N;j++) {
+        for (i = 0;i <= j;i++) {
+            U[i][j] = M[i][j];
+            for (k = 0;k < i;k++)
+                U[i][j] -= L[i][k] * U[k][j];
+        }
+        for (i = j + 1;i < N;i++) {
+            L[i][j] = M[i][j];
+            for (k = 0;k < j;k++)
+                L[i][j] -= L[i][k] * U[k][j];
+            L[i][j] /= U[j][j];
+        }
+    }
+
+    y[0] = b[0] / L[0][0];
+    for (i = 0;i < N;i++) {
+        y[i] = b[i];
+        for (k = 0;k < i;k++)
+            y[i] -= L[i][k] * y[k];
+        y[i] /= L[i][i];
+    }
+
+    x[N - 1] = y[N - 1] / U[N - 1][N - 1];
+    for (i = N - 2;i >= 0;i--) {
+        x[i] = y[i];
+        for (k = i + 1;k < N;k++)
+            x[i] -= U[i][k] * x[k];
+        x[i] /= U[i][i];
+    }
+
+    free(y);
+    for (i = 0;i < N;i++) {
+        free(L[i]);
+        free(U[i]);
+    }
+    free(U);
+    free(L);
+
+    return x;
+
+}
+template long double* LU_decomposition_solver<long double>(int, long double**, long double*);
+template double* LU_decomposition_solver<double>(int, double**, double*);
 
 //return the inverse matrix of M
 double** matrix_inverse(int N, double** M) {

@@ -1091,7 +1091,7 @@ double rhs_amu_RF(int n, int Nvar, double* x, int Npar, double* P) {
     int ia4 = x[5];
     int iMpi = x[6];
     double iw = x[7];
-    int plog = x[9];
+    // int plog = x[9];
     int idc = Npar - 1;
     double w02 = 0.17383 * 0.17383 / (iw);
 
@@ -1284,7 +1284,7 @@ double rhs_amu_diff_RF(int n, int Nvar, double* x, int Npar, double* P) {
     int ia4 = x[5];
     int iMpi = x[6];
     double iw = x[7];
-    int plog = x[9];
+    // int plog = x[9];
     int idc = Npar - 1;
     double w02 = 0.17383 * 0.17383 / (iw);
 
@@ -1356,7 +1356,7 @@ double rhs_amu_diff(int n, int Nvar, double* x, int Npar, double* P) {
     int ia4 = x[5];
     int iMpi = x[6];
     double iw = x[7];
-    int plog = x[9];
+    // int plog = x[9];
     int idc = Npar - 1;
     double w02 = 0.17383 * 0.17383 / (iw);
 
@@ -1386,7 +1386,7 @@ double rhs_amu_ratio(int n, int Nvar, double* x, int Npar, double* P) {
     int ia4 = x[5];
     int iMpi = x[6];
     double iw = x[7];
-    int plog = x[9];
+    // int plog = x[9];
     int idc = Npar - 1;
     double w02 = 0.17383 * 0.17383 / (iw);
 
@@ -1763,8 +1763,8 @@ void print_fit_band_amu_W_l(char** argv, data_all gjack, struct fit_type fit_inf
                 tmpx[2] = 0; tmpx[3] = 0;
                 DMpi -= fit_info.function(n, Nvar, tmpx, Npar, tif[j]);
 
-                double compare = (10.0 / 9.0) * fit_info.x[1][e][j] * (fit_out.P[4][j] * fit_info.x[0][e][j])
-                    - fit_out.P[5][j] * (fit_info.x[2][e][j] - fit_info.x[3][e][j] * (sqrt(fit_info.x[0][e][j]) / 197.326963));
+                // double compare = (10.0 / 9.0) * fit_info.x[1][e][j] * (fit_out.P[4][j] * fit_info.x[0][e][j])
+                //     - fit_out.P[5][j] * (fit_info.x[2][e][j] - fit_info.x[3][e][j] * (sqrt(fit_info.x[0][e][j]) / 197.326963));
 
                 tmpj[j] -= (DGS + DMpi);
                 // if(compare==-(DGS+DMpi)){ printf("error  compare=%.12g    , %.12g\n", compare, -(DGS+DMpi) )  ; exit(1); }
@@ -1830,7 +1830,7 @@ void print_fit_band_amu_W_l(char** argv, data_all gjack, struct fit_type fit_inf
     free_2(Njack, tif);
     free_2(Njack, tif_m0);
     free_3(Njack, en_tot, y);
-
+    free(ens);
 
 }
 

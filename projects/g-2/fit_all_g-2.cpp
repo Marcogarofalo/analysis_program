@@ -701,6 +701,7 @@ int main(int argc, char** argv) {
     fit_info.band_range = { 0,0.0081 };
     print_fit_band(argv, jackall, fit_info, fit_info, "amu_SD_s_common", "afm", amu_SD_s_common, amu_SD_s_common, 0, myen.size() - 1, 0.001);
 
+    free_fit_result(fit_info, amu_SD_s_common);
     fit_info.restore_default();
 
     std::vector<std::string>   interpolations = { "eta", "phi" };
@@ -769,6 +770,7 @@ int main(int argc, char** argv) {
             syst_amu_SD_s.add_fit(amu_SD_s_common_a4);
             print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_s_common_a4, amu_SD_s_common_a4, 0, myen.size() - 1, 0.001);
 
+            free_fit_result(fit_info, amu_SD_s_common_a4);
             fit_info.restore_default();
 
             ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -798,6 +800,7 @@ int main(int argc, char** argv) {
 
             print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_s_common_a4, amu_SD_s_common_a4, 0, myen.size() - 1, 0.001);
 
+            free_fit_result(fit_info, amu_SD_s_common_a4);
             fit_info.restore_default();
             // ///////////////////////////////////////////////////////////////////////////////////////////////////
             // printf("\n/////////////////////////////////     amu_SD_s_common_log_eq    //////////////////\n");
@@ -1182,6 +1185,7 @@ int main(int argc, char** argv) {
                 syst_amu_W_l.add_fit(amu_W_l_common_a2);
                 if (integration == "reinman" && a == 0 && l == 0) sum_amu_W.add_fit(amu_W_l_common_a2);
 
+                free_fit_result(fit_info, amu_W_l_common_a2);
                 fit_info.restore_default();
 
 
@@ -1754,6 +1758,7 @@ int main(int argc, char** argv) {
                 syst_amu_W_l_cov.add_fit(amu_W_l_common_a2);
                 // if (integration == "reinman") sum_amu_W.add_fit(amu_W_l_common_a2);
 
+                free_fit_result(fit_info, amu_W_l_common_a2);
                 fit_info.restore_default();
 
 
@@ -3830,7 +3835,7 @@ int main(int argc, char** argv) {
         jackall.en[C06].jack[131][j] = jackall.en[C06].jack[42][j] + dM * dVmu.P[0][j];
         jackall.en[C06].jack[133][j] = jackall.en[C06].jack[43][j] + dM * dVmu.P[1][j];
     }
-
+    free_fit_result(fit_info, dVmu);
 
     {/// fit just to print the W data after mass correction
         printf("fit just to print the W data after mass correction\n");
@@ -4066,6 +4071,7 @@ int main(int argc, char** argv) {
         }
     }
     fit_info.function = exp_MpiL;
+    fit_info.guess = { 2.0359e-8, 2.0647e-8,  7.2e-10, -5.37e-9 };
     fit_info.corr_id = { Nobs - 2, Nobs - 1 };
     mysprintf(namefit, NAMESIZE, "MpiL_correction");
     fit_result eMpiL = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
@@ -4078,7 +4084,7 @@ int main(int argc, char** argv) {
         jackall.en[B72_64].jack[Nobs - 2][j] = exp(-Mpi_MeV * L_ref / hbarc) * eMpiL.P[2][j] + eMpiL.P[0][j];
         jackall.en[B72_64].jack[Nobs - 1][j] = exp(-Mpi_MeV * L_ref / hbarc) * eMpiL.P[3][j] + eMpiL.P[1][j];
     }
-
+    fit_info.restore_default();
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     printf("\n/////////////////////////////////     amu_W_l Lref   //////////////////\n");
     //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4092,13 +4098,13 @@ int main(int argc, char** argv) {
 
 
         for (int l = 0;l < 1;l++) {
-            for (int a : {0,1}) {
+            for (int a : {0, 1}) {
                 for (int w = 0;w < 1;w++) {
                     for (int iM : {0}) {
 
                         fit_info.Npar = 2;
 
-                        if (a > 0) fit_info.Npar+=2;
+                        if (a > 0) fit_info.Npar += 2;
                         if (a == 3) fit_info.Npar++;
                         if (l >= 13) {
                             fit_info.Npar++;
@@ -4116,7 +4122,7 @@ int main(int argc, char** argv) {
                         fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
                         count = 0;
                         for (int n = 0;n < fit_info.N;n++) {
-                            for (int e: fit_info.myen) {
+                            for (int e : fit_info.myen) {
                                 for (int j = 0;j < Njack;j++) {
                                     fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2); // a^2
                                     fit_info.x[1][count][j] = jackall.en[e].jack[58][j];  // Delta_FV_GS
@@ -4248,7 +4254,7 @@ int main(int argc, char** argv) {
     integrations = { "reinman" };
     for (auto integration : integrations) {
         int id0, id1;
-        if (integration == "reinman") { id0 = Nobs - 2; id1 = Nobs - 1;}
+        if (integration == "reinman") { id0 = Nobs - 2; id1 = Nobs - 1; }
         // if (integration == "simpson") { id0 = 44; id1 = 45; }
 
 
@@ -4276,7 +4282,7 @@ int main(int argc, char** argv) {
                         fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
                         count = 0;
                         for (int n = 0;n < fit_info.N;n++) {
-                            for (int e :fit_info.myen) {
+                            for (int e : fit_info.myen) {
                                 for (int j = 0;j < Njack;j++) {
                                     fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2); // a^2
                                     fit_info.x[1][count][j] = jackall.en[e].jack[58][j];  // Delta_FV_GS
@@ -4373,7 +4379,7 @@ int main(int argc, char** argv) {
     integrations = { "reinman" };
     for (auto integration : integrations) {
         int id0, id1;
-        if (integration == "reinman") { id0 = Nobs - 2; id1 = Nobs - 1;}
+        if (integration == "reinman") { id0 = Nobs - 2; id1 = Nobs - 1; }
         // if (integration == "simpson") { id0 = 44; id1 = 45; }
 
 
@@ -4396,12 +4402,12 @@ int main(int argc, char** argv) {
                         fit_info.Nvar = 8;
                         fit_info.Njack = Njack;
                         fit_info.myen = { B72_64, C06, D54 };;
-                        if (fit_info.Npar >= myen.size() * fit_info.N) { continue; }
+                        if (fit_info.Npar >= fit_info.myen.size() * fit_info.N) { continue; }
 
                         fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
                         count = 0;
                         for (int n = 0;n < fit_info.N;n++) {
-                            for (int e :fit_info.myen) {
+                            for (int e : fit_info.myen) {
                                 for (int j = 0;j < Njack;j++) {
                                     fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2); // a^2
                                     fit_info.x[1][count][j] = jackall.en[e].jack[58][j];  // Delta_FV_GS
@@ -4417,24 +4423,25 @@ int main(int argc, char** argv) {
                         }
                         fit_info.corr_id = { id0, id1 };
                         fit_info.function = rhs_amu_ratio;
-                        // fit_info.linear_fit = true;
-
-                        fit_info.covariancey = true;
-                        fit_info.compute_cov_fit(argv, jackall, lhs_amu_ratio, fit_info);
-                        int ie = 0, ie1 = 0;
-                        for (int n = 0;n < fit_info.N;n++) {
-                            for (int e = 0;e < fit_info.myen.size();e++) {
-                                ie1 = 0;
-                                for (int n1 = 0;n1 < fit_info.N;n1++) {
-                                    for (int e1 = 0;e1 < fit_info.myen.size();e1++) {
-                                        if (e != e1)   fit_info.cov[ie][ie1] = 0;
-                                        ie1++;
-                                    }
-                                }
-                                ie++;
-                            }
-                        }
-                        fit_info.compute_cov1_fit();
+                        fit_info.linear_fit = true;
+                        fit_info.precision_sum=2;
+                        
+                        // fit_info.covariancey = true;
+                        // fit_info.compute_cov_fit(argv, jackall, lhs_amu_ratio, fit_info);
+                        // int ie = 0, ie1 = 0;
+                        // for (int n = 0;n < fit_info.N;n++) {
+                        //     for (int e = 0;e < fit_info.myen.size();e++) {
+                        //         ie1 = 0;
+                        //         for (int n1 = 0;n1 < fit_info.N;n1++) {
+                        //             for (int e1 = 0;e1 < fit_info.myen.size();e1++) {
+                        //                 if (e != e1)   fit_info.cov[ie][ie1] = 0;
+                        //                 ie1++;
+                        //             }
+                        //         }
+                        //         ie++;
+                        //     }
+                        // }
+                        // fit_info.compute_cov1_fit();
 
                         std::string logname;
                         if (l == 0) { logname = ""; }
@@ -4474,9 +4481,8 @@ int main(int argc, char** argv) {
                         std::vector<double> xcont = { 0, 0 /*Delta*/, 0, 0,/*l, a,m*/ fit_info.x[4][0][Njack - 1],
                              fit_info.x[5][0][Njack - 1] , fit_info.x[6][0][Njack - 1], fit_info.x[7][0][Njack - 1] };
 
-                        // TODO: in order to print the band you need to subtract the
 
-                        print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_l_common_a4, amu_SD_l_common_a4, 0, myen.size() - 1, 0.0005, xcont);
+                        print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_l_common_a4, amu_SD_l_common_a4, 0, fit_info.myen.size() - 1, 0.0005, xcont);
                         // syst_amu_W_l_diff.add_fit(amu_SD_l_common_a4);
 
                         free_fit_result(fit_info, amu_SD_l_common_a4);
@@ -4489,6 +4495,5 @@ int main(int argc, char** argv) {
         }
     }
     // compute_syst_eq28(syst_amu_W_l_diff, argv[3], "Systematics_amu_W_l_diff.txt");
-
 
 }
