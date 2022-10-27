@@ -1297,7 +1297,7 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
     }
     if (fit_info.linear_fit) {
         non_linear_fit_result output;
-        if (precision_sum > 1) {
+        if (precision_sum >= 1) {
             chi2_fun = compute_chi_non_linear_Nf_long;
             output.P = linear_fit_Nf<long double>(ensemble, x, y, fit_info);
             output.chi2 = chi2_fun(N, ensemble, x, y, output.P, Nvar, Npar, fun, fit_info);
