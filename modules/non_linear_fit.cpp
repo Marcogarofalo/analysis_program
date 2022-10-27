@@ -26,9 +26,10 @@
 double* fit_type::linear_function(int n, int  Nvar, double* x, int Npar) {
     double* P = (double*)calloc(Npar, sizeof(double));
     double* r = (double*)malloc(Npar * sizeof(double));
+    double c0 = this->function(n, Nvar, x, Npar, P); // if the function as a constant term c0 need to be subtracted
     for (int i = 0;i < Npar;i++) {
         P[i] = 1.;
-        r[i] = this->function(n, Nvar, x, Npar, P);
+        r[i] = this->function(n, Nvar, x, Npar, P) - c0;
         P[i] = 0.;
     }
     free(P);
@@ -1153,24 +1154,33 @@ double* linear_fit_Nf(int* Npoints, double** x, double** y, fit_type fit_info) {
     int Nvar = fit_info.Nvar;
     int Npar = fit_info.Npar;
 
-    T** alpha,  * beta, ** a, ** C, * sigma;
-    double *X;
-    int count;
+    T** alpha, * beta, ** a, ** C, * sigma;
+    double* X;
     double* r;
-
 
     beta = (T*)calloc(Npar, sizeof(T));
     alpha = (T**)malloc(sizeof(T*) * Npar);
     for (int j = 0;j < Npar;j++) {
         alpha[j] = (T*)calloc(Npar, sizeof(T));
     }
-    count = 0;
-    if (fit_info.covariancey == true) {
-        int en_tot = 0;
-        for (int n = 0;n < Nfunc;n++)
-            for (int e = 0;e < Npoints[n];e++)
-                en_tot += 1;
 
+    int en_tot = 0;
+    for (int n = 0;n < Nfunc;n++)
+        for (int e = 0;e < Npoints[n];e++)
+            en_tot += 1;
+
+    T* c0 = (T*)malloc(sizeof(T) * en_tot);
+    int count = 0;
+    double* zero = (double*)calloc(en_tot, sizeof(double));
+    for (int n = 0;n < Nfunc;n++) {
+        for (int e = 0;e < Npoints[n];e++) {
+            c0[count] = fit_info.function(n, Nvar, x[count], Npar, zero);
+            count++;
+        }
+    }
+
+    if (fit_info.covariancey == true) {
+        count = 0;
         double** df_value = (double**)malloc(sizeof(double*) * en_tot);
         for (int n = 0;n < Nfunc;n++) {
             for (int e = 0;e < Npoints[n];e++) {
@@ -1182,7 +1192,7 @@ double* linear_fit_Nf(int* Npoints, double** x, double** y, fit_type fit_info) {
         for (int j = 0;j < Npar;j++) {
             for (int i = 0;i < en_tot;i++)
                 for (int ii = 0;ii < en_tot;ii++)
-                    beta[j] += (df_value[i][j]) * fit_info.cov1[i][ii] * y[ii][0];
+                    beta[j] += (df_value[i][j]) * fit_info.cov1[i][ii] * (y[ii][0] - c0[ii]);
 
             for (int k = 0;k < Npar;k++) {
                 for (int i = 0;i < en_tot;i++)
@@ -1194,12 +1204,13 @@ double* linear_fit_Nf(int* Npoints, double** x, double** y, fit_type fit_info) {
         free_2(en_tot, df_value);
     }
     else {
+        count = 0;
         for (int n = 0;n < Nfunc;n++) {
             for (int e = 0;e < Npoints[n];e++) {
                 int i = e + count;
                 X = fit_info.linear_function(n, Nvar, x[i], Npar);
                 for (int j = 0;j < Npar;j++) {
-                    beta[j] += y[i][0] * X[j] / (y[i][1] * y[i][1]);
+                    beta[j] += (y[i][0] - c0[i]) * X[j] / (y[i][1] * y[i][1]);
                     for (int k = 0;k < Npar;k++) {
                         alpha[j][k] += X[j] * X[k] / (y[i][1] * y[i][1]);
                     }
@@ -1212,19 +1223,19 @@ double* linear_fit_Nf(int* Npoints, double** x, double** y, fit_type fit_info) {
 
     if (Npar == 1) {
         r = (double*)malloc(sizeof(double));
-        r[0] =(double) beta[0] / alpha[0][0];
+        r[0] = (double)beta[0] / alpha[0][0];
     }
     else {
         T* rl = LU_decomposition_solver<T>(Npar, alpha, beta);
-        r = (double*)malloc(sizeof(double)*Npar);
+        r = (double*)malloc(sizeof(double) * Npar);
         for (int j = 0;j < Npar;j++)
-            r[j] =(double) rl[j];
+            r[j] = (double)rl[j];
         free(rl);
     }
     for (int j = 0;j < Npar;j++) {
         free(alpha[j]);
     }
-    free(alpha);free(beta);
+    free(alpha);free(beta);free(c0);free(zero);
 
     return r;
 }

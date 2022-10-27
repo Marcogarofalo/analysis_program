@@ -4424,7 +4424,7 @@ int main(int argc, char** argv) {
                         fit_info.corr_id = { id0, id1 };
                         fit_info.function = rhs_amu_ratio;
                         fit_info.linear_fit = true;
-                        fit_info.precision_sum=2;
+                        fit_info.precision_sum=0;
                         
                         // fit_info.covariancey = true;
                         // fit_info.compute_cov_fit(argv, jackall, lhs_amu_ratio, fit_info);
