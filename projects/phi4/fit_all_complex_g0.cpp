@@ -1137,7 +1137,7 @@ int main(int argc, char** argv) {
     // fit_info.mean_only = true;
     fit_info.covariancey = true;
     // fit_info.noderiv = true;
-    fit_info.compute_cov_fit(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info);
+    fit_info.compute_cov_fit(argv, jackall, lhs_E3_E1_E2_m_complex_new);
     int ie = 0, ie1 = 0;
     for (int n = 0;n < fit_info.N;n++) {
         for (int e = 0;e < fit_info.myen.size();e++) {
@@ -1247,7 +1247,7 @@ int main(int argc, char** argv) {
     fit_info.mean_only = true;
     fit_info.precision_sum = 2;
     fit_info.covariancey = true;
-    fit_info.compute_cov_fit(argv, jackall, lhs_E3_E1_E2_m_complex_new, fit_info);
+    fit_info.compute_cov_fit(argv, jackall, lhs_E3_E1_E2_m_complex_new);
     ie = 0; ie1 = 0;
     for (int n = 0;n < fit_info.N;n++) {
         for (int e = 0;e < fit_info.myen.size();e++) {

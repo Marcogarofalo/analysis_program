@@ -211,7 +211,7 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
     struct fit_type fit_info_m0, const char* label, const char* dir_name,
     struct fit_result fit_out, struct fit_result fit_out_m0, int var, int en, double h, std::vector<double> xval) {
 
-    std::vector<int> myen = fit_info.myen;
+    std::vector<std::vector<int>> myen = fit_info.Nxen;
     int Npar = fit_info.Npar;
     int Nvar = fit_info.Nvar;
     int Njack = gjack.en[0].Njack;
@@ -225,7 +225,7 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
     if (fit_info.band_range.size() != 2) {
         min = fit_info.x[var][0][Njack - 1];
         max = fit_info.x[var][0][Njack - 1];
-        for (int e = 1; e < myen.size() * N;e++) {
+        for (int e = 1; e < fit_info.entot; e++) {
             if (fit_info.x[var][e][Njack - 1] < min)
                 min = fit_info.x[var][e][Njack - 1];
             if (fit_info.x[var][e][Njack - 1] > max)
@@ -258,7 +258,7 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
                     tmpx[i] = xval[i];
                 }
                 for (int i = xval.size(); i < Nvar; i++) {
-                    tmpx[i] = fit_info.x[i][en + n * myen.size()][j];
+                    tmpx[i] = fit_info.x[i][en ][j];
                 }
                 tmpx[var] = pos;
                 tmpy[j] = fit_info.function(n, Nvar, tmpx, Npar, tif[j]);
@@ -316,7 +316,7 @@ int determinantOfMatrix(double** matrix, int N) {
 
 // **argv=[   ???, resampling, ???, output_dir ]
 void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
-    const char* label, struct fit_result fit_out, int* en, double*** x, double*** y, std::vector<int> myen) {
+    const char* label, struct fit_result fit_out, int* en, double*** x, double*** y) {
     int Npar = fit_info.Npar;
     int Nvar = fit_info.Nvar;
     int Njack = gjack.en[0].Njack;
@@ -412,14 +412,22 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
 struct fit_result fit_all_data(char** argv, data_all gjack,
     double lhs_fun(int, int, int, data_all, struct fit_type),
     struct fit_type fit_info, const char* label) {
-    int Npar = fit_info.Npar;
-    int Nvar = fit_info.Nvar;
-    int Njack = gjack.en[0].Njack;
-    int N = fit_info.N;
-    auto myen = fit_info.myen;
+    int& Npar = fit_info.Npar;
+    int& Nvar = fit_info.Nvar;
+    int& Njack = gjack.en[0].Njack;
+    int& N = fit_info.N;
+    auto& myen = fit_info.myen;
     ////// allocation
+    if (fit_info.Nxen.size() > 0) {
+        fit_info.init_N_etot_form_Nxen();
+        N = fit_info.N;
+    }
+    else {
+        fit_info.init_Nxen_from_N_myen();
+    }
+
     int* en = (int*)malloc(sizeof(int) * fit_info.N);// we need to init en and en_tot to allocate the other 
-    for (int e = 0;e < fit_info.N; e++) { en[e] = myen.size(); }
+    for (int n = 0;n < fit_info.N; n++) { en[n] = fit_info.Nxen[n].size(); }
     int en_tot = 0;      for (int n = 0;n < N;n++) { en_tot += en[n]; }// total data to fit
 
     double*** y = double_malloc_3(Njack, en_tot, 2);// 2 is mean/error
@@ -465,7 +473,7 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
         for (int e = 0;e < en[n];e++) {
             double* tmpj = (double*)malloc(sizeof(double) * Njack);
             for (int j = 0;j < Njack;j++) {
-                tmpj[j] = lhs_fun(n, myen[e], j, gjack, fit_info);
+                tmpj[j] = lhs_fun(n, fit_info.Nxen[n][e], j, gjack, fit_info);
             }
             double err = error_jackboot(argv[1], Njack, tmpj);
             for (int j = 0;j < Njack;j++) {
@@ -484,8 +492,10 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
 
     ///////////////// the fit 
     // scan the parameter of the fit with the last jack
-    if (fit_info.guess.size() == 0 || fit_info.repeat_start > 1) {
-        guess = guess_for_non_linear_fit_Nf(N, en, x[Njack - 1], y[Njack - 1], Nvar, Npar, fit_info.function, guess, fit_info);
+    if (!fit_info.linear_fit) {
+        if (fit_info.guess.size() == 0 || fit_info.repeat_start > 1) {
+            guess = guess_for_non_linear_fit_Nf(N, en, x[Njack - 1], y[Njack - 1], Nvar, Npar, fit_info.function, guess, fit_info);
+        }
     }
     if (fit_info.mean_only == false) {
         for (int j = Njack - 1;j >= 0;j--) {
@@ -607,7 +617,7 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
     // fit_out.name=label;
     mysprintf(fit_out.name, NAMESIZE, "%s", label);
     /////////////////////////////////////////////////////////////////////writing the result
-    print_fit_output(argv, gjack, fit_info, label, fit_out, en, x, y, myen);
+    print_fit_output(argv, gjack, fit_info, label, fit_out, en, x, y);
 
     ////// free
     free(en);

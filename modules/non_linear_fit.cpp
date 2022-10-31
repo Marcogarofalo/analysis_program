@@ -22,6 +22,30 @@
 #include "sorting.hpp"
 #include "resampling.hpp"
 
+void fit_type::init_N_etot_form_Nxen() {
+    if (N == 0) {
+        N = Nxen.size();
+    }
+    else if (N != Nxen.size()) {
+        printf("error in init_N_etot_form_Nxen:\n N=%d Nxen.size()=%ld", N, Nxen.size());
+        exit(1);
+    }
+    entot = 0;
+    for (int i = 0;i < N;i++)
+        entot += Nxen[i].size();
+
+}
+void fit_type::init_Nxen_from_N_myen() {
+    Nxen = std::vector<std::vector<int>>(N, std::vector<int>(myen.size()));
+    for (int n = 0;n < N;n++) {
+        for (int e = 0; e < myen.size(); e++) {
+            Nxen[n][e] = myen[e];
+        }
+    }
+    entot = N * myen.size();
+
+
+}
 
 double* fit_type::linear_function(int n, int  Nvar, double* x, int Npar) {
     double* P = (double*)calloc(Npar, sizeof(double));
@@ -36,20 +60,25 @@ double* fit_type::linear_function(int n, int  Nvar, double* x, int Npar) {
     return r;
 }
 
-void fit_type::compute_cov_fit(char** argv, data_all gjack, double lhs_fun(int, int, int, data_all, struct fit_type), struct fit_type fit_info) {
+void fit_type::compute_cov_fit(char** argv, data_all gjack, double lhs_fun(int, int, int, data_all, struct fit_type)) {
+    if (Nxen.size() > 0) {
+        init_N_etot_form_Nxen();
+    }
+    else {
+        init_Nxen_from_N_myen();
+    }
     ////// allocation
-    int* en = (int*)malloc(sizeof(int) * N);// we need to init en and en_tot to allocate the other 
-    for (int e = 0;e < N; e++) { en[e] = myen.size(); }
-    int en_tot = 0;      for (int n = 0;n < N;n++) { en_tot += en[n]; }// total data to fit
+    int en_tot = entot;
+
 
     double*** y = double_malloc_3(Njack, en_tot, 2);// 2 is mean/error
     ////////////////////////////////////////// y
     int count = 0;
     for (int n = 0;n < N;n++) {
-        for (int e = 0;e < en[n];e++) {
+        for (int e = 0;e < Nxen[n].size();e++) {
             double* tmpj = (double*)malloc(sizeof(double) * Njack);
             for (int j = 0;j < Njack;j++) {
-                tmpj[j] = lhs_fun(n, myen[e], j, gjack, fit_info);
+                tmpj[j] = lhs_fun(n, Nxen[n][e], j, gjack, *this);
             }
             double err = error_jackboot(argv[1], Njack, tmpj);
             for (int j = 0;j < Njack;j++) {
@@ -58,7 +87,7 @@ void fit_type::compute_cov_fit(char** argv, data_all gjack, double lhs_fun(int, 
             }
             free(tmpj);
         }
-        count += en[n];
+        count += Nxen[n].size();
     }
     //////  init end
     double** yy = double_malloc_2(en_tot, Njack);
@@ -79,15 +108,18 @@ void fit_type::compute_cov_fit(char** argv, data_all gjack, double lhs_fun(int, 
         printf("now the matrix is positive defined.  %d\n", yn);
     }
     cov1 = symmetric_matrix_inverse(en_tot, cov);
-    free(en);
     free_3(Njack, en_tot, y);
     covariancey = true;
 }
 
 void fit_type::compute_cov1_fit() {
-    int* en = (int*)malloc(sizeof(int) * N);// we need to init en and en_tot to allocate the other 
-    for (int e = 0;e < N; e++) { en[e] = myen.size(); }
-    int en_tot = 0;      for (int n = 0;n < N;n++) { en_tot += en[n]; }// total data to fit
+    if (Nxen.size() > 0) {
+        init_N_etot_form_Nxen();
+    }
+    else {
+        init_Nxen_from_N_myen();
+    }
+    int en_tot = entot;
 
     if (covariancey) {
         free_2(en_tot, cov1);
@@ -101,15 +133,14 @@ void fit_type::compute_cov1_fit() {
         }
         cov1 = symmetric_matrix_inverse(en_tot, cov);
     }
-    free(en);
 }
 
 void fit_type::malloc_x() {
     error(Nvar <= 0, 1, "malloc_x for fit", "fit_info.Nvar must be greather than zero: current Nvar=%g\n", Nvar);
-    error(myen.size() * N <= 0, 1, "malloc_x for fit",
-        "fit_info.myen.size() and N must be greather than zero: current myen.size()=%d  N=%d\n", myen.size(), N);
+    error(entot <= 0, 1, "malloc_x for fit",
+        "fit_info.Nxen is not initialized\n");
     error(Njack <= 0, 1, "malloc_x for fit", "fit_info.Njack must be greather than zero: current Nvar=%g\n", Njack);
-    x = double_malloc_3(Nvar, myen.size() * N, Njack);
+    x = double_malloc_3(Nvar, entot, Njack);
     allocated_x = true;
 }
 
@@ -136,7 +167,9 @@ void fit_type::restore_default() {
     allocated_x = false;
     // Nvar = 0;
     N = 0;
+    entot = 0;
     myen = std::vector<int>();
+    Nxen = std::vector<std::vector<int>>(0, std::vector<int>(0));
 
     mean_only = false;
     NM = false;

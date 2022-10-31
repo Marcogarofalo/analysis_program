@@ -5,9 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
 #include <string.h>
-#include <complex.h>
 #include <vector>
 #include "global.hpp"
 #include "fit_all.hpp"
@@ -64,7 +62,7 @@ struct  fit_type {
     bool linear_fit = false;
     double** ext_P;  //parameter to not fit, they will be add to the Nvar,  Nvar=variables+(prameter to not fit)
 
-    int N, Npar, Nvar, Njack;
+    int N=0, Npar=0, Nvar=0, Njack=0, entot=0;
     int n;// an index to be passed to (*function)( iN ,int,double*,int,double*)
 
     int n_ext_P = 0; //number of external parameter that will no be fitted
@@ -95,6 +93,7 @@ struct  fit_type {
     std::vector<double>  Prange = {};
     std::vector<double>  guess = {};
     std::vector<int> myen = {};
+    std::vector<std::vector<int>> Nxen = {};
     double*** x;
     bool allocated_x = false;
 
@@ -126,10 +125,12 @@ struct  fit_type {
     std::vector<double> band_range{};
     double** cov;
     double** cov1;
-    void compute_cov_fit(char** argv, data_all gjack, double lhs_fun(int, int, int, data_all, struct fit_type), struct fit_type fit_info);
+    void compute_cov_fit(char** argv, data_all gjack, double lhs_fun(int, int, int, data_all, struct fit_type));
     void compute_cov1_fit();
     void restore_default();
     void malloc_x();
+    void init_N_etot_form_Nxen();
+    void init_Nxen_from_N_myen();
 
 };
 

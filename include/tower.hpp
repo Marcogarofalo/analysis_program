@@ -2,11 +2,6 @@
 #define tower_H
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
 
 void free_tower(int size ,void **p);
 void free_2(int size ,double **p);

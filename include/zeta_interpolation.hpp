@@ -2,7 +2,6 @@
 #define zeta_interpolation_H
 
 #include <vector>
-#include "global.hpp"
 #include "header_phi4.hpp"
 
 

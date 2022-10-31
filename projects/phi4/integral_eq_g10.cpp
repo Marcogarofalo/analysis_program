@@ -270,7 +270,7 @@ int main(int argc, char** argv) {
         fit_info.h = {2, 0.001, 10, 1};
         fit_info.NM=true;
         fit_info.covariancey = true;
-        fit_info.compute_cov_fit(argv, jackall, lhs_M3, fit_info);
+        fit_info.compute_cov_fit(argv, jackall, lhs_M3);
         
         // fit_info.compute_cov1_fit();
 

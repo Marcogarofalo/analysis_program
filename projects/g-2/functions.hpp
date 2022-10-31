@@ -1250,16 +1250,125 @@ double rhs_amu_RF(int n, int Nvar, double* x, int Npar, double* P) {
 double rhs_amu_separate(int n, int Nvar, double* x, int Npar, double* P) {
     double GS = x[1];
     double a2 = x[0];
+    int il = x[4];
     int ia2 = x[5];
+    double iw = x[7];
     double r = 0;
-
-    if (n == 0)      r += P[0];
-    else if (n == 1) r += P[1];
+    double w02 = 0.17383 * 0.17383;
+    if (iw == 1) w02 *= 3;
+    r = P[0];
 
     if (ia2 == 1) {
-        if (n == 0)      r += a2 * P[2];
-        else if (n == 1) r += a2 * P[3];
+        switch (il) {
+        case 0:
+            r += a2 * P[1];
+            break;
+        case 1:
+            r += a2 * P[1] * (1. / pow(log(w02 / a2), 1));
+            break;
+        case 2:
+            r += a2 * P[1] * (1. / pow(log(w02 / a2), 2));
+            break;
+        case 3:
+            r += a2 * P[1] * (1. / pow(log(w02 / a2), 3));
+            break;
+        default:
+            break;
+        }
     }
+
+    return r;
+}
+
+
+
+double rhs_amu_diff_ratio(int n, int Nvar, double* x, int Npar, double* P) {
+    double GS = x[1];
+    double a2 = x[0];
+    int il = x[4];
+    int ia2 = x[5];
+    double iw = x[7];
+    double r = 0;
+    int iR = x[6];
+    double w02 = 0.17383 * 0.17383;
+    if (iw == 1) w02 *= 3;
+    double diff = 0, ratio = 0;
+
+
+    diff += a2 * P[0]*P[1] * (1. / pow(log(w02 / a2), il)) + a2 * a2 * P[2];
+    ratio += 1 + a2 * P[1] * (1. / pow(log(w02 / a2), il)) + a2 * a2 * P[3];
+    if (ia2 == 1) {
+        diff += a2 * a2 * P[2] * (-1 + 1. / pow(log(w02 / a2), il));
+        ratio += a2 * a2 * P[3] * (-1 + 1. / pow(log(w02 / a2), il));
+    }
+
+
+    if (n == 0) r = diff;
+    if (n == 1) r = ratio;
+
+    if (iR == 1) {
+        if (n == 0) r = -diff;
+    }
+
+    return r;
+}
+
+double rhs_amu_cut(int n, int Nvar, double* x, int Npar, double* P) {
+    double GS = x[1];
+    double a2 = x[0];
+    int il = x[4];
+    int ia2 = x[5];
+    double iw = x[7];
+    double r = 0;
+    double w02 = 0.17383 * 0.17383;
+    if (iw == 1) w02 *= 3;
+
+    r = P[0];
+    if (ia2 == 1) {
+        switch (il) {
+        case 0:
+            r += a2 * P[1 + n];
+            break;
+        case 1:
+            r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 1));
+            break;
+        case 2:
+            r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 2));
+            break;
+        case 3:
+            r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 3));
+            break;
+        default:
+            break;
+        }
+    }
+
+
+
+    return r;
+}
+
+
+double rhs_amu_pade(int n, int Nvar, double* x, int Npar, double* P) {
+    double GS = x[1];
+    double a2 = x[0];
+    int il = x[4];
+    int ia2 = x[5];
+    double iw = x[7];
+    int who_pade = x[6];
+    double r = 0;
+    double w02 = 0.17383 * 0.17383;
+    if (iw == 1) w02 *= 3;
+
+    if (who_pade == 0) {
+        if (n == 0) r = P[0] + P[1] * a2;
+        if (n == 1) r = P[0] * (1 + P[2] * a2) / (1 + P[3] * a2);
+    }
+    if (who_pade == 1) {
+        if (n == 0) r = P[0] * (1 + P[2] * a2) / (1 + P[3] * a2);
+        if (n == 1) r = P[0] + P[1] * a2;
+    }
+
 
     return r;
 }
@@ -1361,7 +1470,7 @@ double rhs_amu_diff(int n, int Nvar, double* x, int Npar, double* P) {
     double w02 = 0.17383 * 0.17383 / (iw);
 
     double r = a2 * P[0];
-    
+
     if (ia4 == 0) {
     }
     if (ia4 == 1) {
@@ -1369,7 +1478,7 @@ double rhs_amu_diff(int n, int Nvar, double* x, int Npar, double* P) {
         idc--;
     }
 
-   
+
 
 
     return r;
@@ -1390,8 +1499,8 @@ double rhs_amu_ratio(int n, int Nvar, double* x, int Npar, double* P) {
     int idc = Npar - 1;
     double w02 = 0.17383 * 0.17383 / (iw);
 
-    double r = 1.+ a2 * P[0];
-    
+    double r = 1. + a2 * P[0];
+
     if (ia4 == 0) {
     }
     if (ia4 == 1) {
@@ -1399,7 +1508,7 @@ double rhs_amu_ratio(int n, int Nvar, double* x, int Npar, double* P) {
         idc--;
     }
 
-   
+
 
 
     return r;
@@ -1648,7 +1757,7 @@ double lhs_amu_diff(int n, int e, int j, data_all gjack, struct fit_type fit_inf
     double GS = gjack.en[e].jack[58][j];
     int ieq = fit_info.corr_id[0];
     int iop = fit_info.corr_id[1];
-    r = gjack.en[e].jack[iop][j]  - gjack.en[e].jack[ieq][j];
+    r = gjack.en[e].jack[iop][j] - gjack.en[e].jack[ieq][j];
     // else if (n == 1)   r = gjack.en[e].jack[iop][j] + (10.0 / 9.0) * GS;
     return r;
 }
@@ -1658,7 +1767,7 @@ double lhs_amu_ratio(int n, int e, int j, data_all gjack, struct fit_type fit_in
     double GS = gjack.en[e].jack[58][j];
     int ieq = fit_info.corr_id[0];
     int iop = fit_info.corr_id[1];
-    r = gjack.en[e].jack[iop][j]  / gjack.en[e].jack[ieq][j];
+    r = gjack.en[e].jack[iop][j] / gjack.en[e].jack[ieq][j];
     // else if (n == 1)   r = gjack.en[e].jack[iop][j] + (10.0 / 9.0) * GS;
     return r;
 }
@@ -1666,13 +1775,28 @@ double lhs_amu_ratio(int n, int e, int j, data_all gjack, struct fit_type fit_in
 
 double lhs_amu(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double r;
-    if (fit_info.corr_id.size() != 2) { printf("error lhs_amu called without ids"); }
+    if (fit_info.corr_id.size() != 2) { printf("error lhs_amu called without ids\n"); exit(1); }
     if (n == 0)        r = gjack.en[e].jack[fit_info.corr_id[0]][j];
     else if (n == 1)   r = gjack.en[e].jack[fit_info.corr_id[1]][j];
     return r;
 }
 
 
+double lhs_amu_separate(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double r;
+    r = gjack.en[e].jack[fit_info.corr_id[0]][j];
+
+    return r;
+}
+
+
+double lhs_amu_diff_ratio(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double r;
+    if (fit_info.corr_id.size() != 2) { printf("error lhs_amu called without ids\n"); exit(1); }
+    if (n == 0)        r = gjack.en[e].jack[fit_info.corr_id[0]][j] - gjack.en[e].jack[fit_info.corr_id[1]][j];
+    else if (n == 1)   r = gjack.en[e].jack[fit_info.corr_id[0]][j] / gjack.en[e].jack[fit_info.corr_id[1]][j];
+    return r;
+}
 double lhs_mu_corrections(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double r;
     double MpiMeV_phys = fit_info.x[1][e][j];// in principle e--> e+n*fit_info.myen.size(), but htey should be the same

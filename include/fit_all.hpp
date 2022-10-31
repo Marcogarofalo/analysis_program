@@ -1,9 +1,11 @@
 #ifndef fit_all_H
 #define fit_all_H
 
-#include "global.hpp"
+// #include "global.hpp"
 // #include "non_linear_fit.hpp"
-#include <iostream>
+// #include <iostream>
+#include <string>
+#include <vector>
 
 class generic_header {
 public:

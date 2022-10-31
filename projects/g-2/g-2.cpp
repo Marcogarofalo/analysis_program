@@ -958,8 +958,8 @@ int main(int argc, char** argv) {
         check_confs_correlated(myconfs, correlators, 42, 53);
         check_confs_correlated(myconfs, correlators, 42, 51);
         check_confs_correlated(myconfs, correlators, 42, 54);
-        for (int i=0;i<6;i++)
-            check_confs_correlated(myconfs, correlators, 36+i, 43+i);
+        for (int i = 0;i < 6;i++)
+            check_confs_correlated(myconfs, correlators, 36 + i, 43 + i);
 
         read_twopt(correlators[42].c_str(), myconfs[42], 0, data_no_bin, 0, Nconf_bolla);
         read_twopt(correlators[53].c_str(), myconfs[53], T, data_no_bin, 1, Nconf_bolla);
@@ -1194,13 +1194,13 @@ int main(int argc, char** argv) {
         ZA = interpol_Z(Nstrange, Njack, Meta, Z, jack_aMetas_MeV_exp, outfile, "Z_A", resampling);
 
     }
-    if( strcmp("cD.54.96", argv[4]) == 0){
+    if (strcmp("cD.54.96", argv[4]) == 0) {
         double Za_WI_strange = 0.773944;
         double Za_WI_strange_err = 0.00014;
         free(ZA);
         double* ZA = myres->create_fake(Za_WI_strange, Za_WI_strange_err, 666);
     }
-    
+
     write_jack(ZV, Njack, jack_file);
     check_correlatro_counter(22);
     write_jack(ZA, Njack, jack_file);
@@ -1528,7 +1528,7 @@ int main(int argc, char** argv) {
 
     {   // continuum FVE GS 
         double* DV;
-        if (strcmp("cA.53.24", argv[4]) == 0 || strcmp("cA.40.24", argv[4]) == 0 || strcmp("cA.30.32", argv[4]) == 0 ) {
+        if (strcmp("cA.53.24", argv[4]) == 0 || strcmp("cA.40.24", argv[4]) == 0 || strcmp("cA.30.32", argv[4]) == 0) {
             printf("\n\n                we are not computing FVE \n\n");
             DV = (double*)calloc(Njack, sizeof(double));
             write_jack(DV, Njack, jack_file);
@@ -1925,6 +1925,8 @@ int main(int argc, char** argv) {
     int  id_P5P5_cor_mudmu;
     int  id_VKVKeq_mudm;
     int  id_VKVKop_mudm;
+    int  id_VKVKeq_SD_mudm;
+    int  id_VKVKop_SD_mudm;
     int  id_sea_VKVKeq;
     int  id_sea_VKVKop;
 
@@ -1970,10 +1972,7 @@ int main(int argc, char** argv) {
         id_sea_VKVKop = ncorr_new;
         add_correlators(option, ncorr_new, conf_jack, mu_sea_correction, fit_info);
 
-
         printf("Ncorrelator=%d\n", ncorr_new);
-
-
 
         ///////////////////////////////////
         double* M_PS1 = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, id_P5P5_mudmu, "M_{PS1}^{op}", M_eff_T, jack_file);
@@ -2092,35 +2091,44 @@ int main(int argc, char** argv) {
 
 
         for (int j = 0;j < Njack;j++) {
-            tmp_b[j] = conf_jack[j][var+1][0][0];
+            tmp_b[j] = conf_jack[j][var + 1][0][0];
         }
         printf("<B*V_eq(t=0)> = %.12g  %g\n", tmp_b[Njack - 1], myres->comp_error(tmp_b));
 
         for (int j = 0;j < Njack;j++) {
-            tmp_b[j] = conf_jack[j][var+2][0][0];
+            tmp_b[j] = conf_jack[j][var + 2][0][0];
         }
         printf("<B*V_op(t=0)> = %.12g  %g\n", tmp_b[Njack - 1], myres->comp_error(tmp_b));
 
         for (int j = 0;j < Njack;j++) {
-            tmp_b[j]=conf_jack[j][51][0][0];
+            tmp_b[j] = conf_jack[j][51][0][0];
         }
         printf("<V_eq(t=0)> = %.12g  %g\n", tmp_b[Njack - 1], myres->comp_error(tmp_b));
         for (int j = 0;j < Njack;j++) {
-            tmp_b[j]=conf_jack[j][54][0][0];
+            tmp_b[j] = conf_jack[j][54][0][0];
         }
         printf("<V_op(t=0)> = %.12g  %g\n", tmp_b[Njack - 1], myres->comp_error(tmp_b));
-        
+
         for (int j = 0;j < Njack;j++) {
-            tmp_b[j]=  conf_jack[j][var+2][0][0]   -conf_jack[j][42][0][0]* conf_jack[j][54][0][0];
+            tmp_b[j] = conf_jack[j][var + 2][0][0] - conf_jack[j][42][0][0] * conf_jack[j][54][0][0];
         }
         printf("<B*V_op(t=0)> -<B><V_op(t=0)> = %.12g  %g\n", tmp_b[Njack - 1], myres->comp_error(tmp_b));
-        
+
 
         // double* trash = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack, namefile_plateaux, outfile, 5, "trash", identity, jack_file);
         // check_correlatro_counter(122);
+        double *amu_SD_eq_l1 = compute_amu_sd(conf_jack, id_VKVKeq_mudm, Njack, ZV, a, 5.0 / 9.0, int_scheme, outfile, "amu_{SD}(eq,l1)", resampling);
+        write_jack(amu_SD_eq_l1, Njack, jack_file);
+        printf("amu_{SD}(eq,l1) = %g  %g\n", amu_SD_eq_l1[Njack - 1], myres->comp_error(amu_SD_eq_l1));
+        check_correlatro_counter(134);
+
+        double *amu_SD_op_l1 = compute_amu_sd(conf_jack, id_VKVKop_mudm, Njack, ZA, a, 5.0 / 9.0, int_scheme, outfile, "amu_{SD}(op,l1)", resampling);
+        printf("amu_{SD}(op,l1) = %g  %g\n", amu_SD_op_l1[Njack - 1], myres->comp_error(amu_SD_op_l1));
+        write_jack(amu_SD_op_l1, Njack, jack_file);
+        check_correlatro_counter(135);
 
     }
-    else{for(int i=122; i<=133 ;i++)  zero_corr(zeros, Njack, jack_file); }
+    else { for (int i = 122; i <= 135;i++)  zero_corr(zeros, Njack, jack_file); }
 
 
 
