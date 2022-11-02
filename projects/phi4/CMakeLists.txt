@@ -13,7 +13,7 @@ add_target_with_zeta(test test.cpp)
 add_target_with_zeta(phi4_new phi4_new.cpp)
 add_target_with_zeta(analysis_SDE analysis_SDE.cpp)
 
-IF(PHI4_PROJECT)
+IF(PHI4_PROJECT OR ALL_PROJECT)
 IF(WITH_PYTHON)
     # add_target_with_lib(fit_all_quantization_condition fit_all_quantization_condition.cpp)
     # add_target_with_lib(fit_all_g0.1 fit_all_g0.1.cpp)
