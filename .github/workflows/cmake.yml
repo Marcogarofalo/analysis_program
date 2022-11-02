@@ -57,7 +57,7 @@ jobs:
            bash create_project.sh  test_project
            mkdir build 
            cd build  
-           cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..  -DWITH_PYTHON=ON  -Dtest_project=ON
+           cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..  -DWITH_PYTHON=ON  -Dtest_project=ON -DGM2_PROJECT=ON
            
     - name: compiling
       working-directory: ${{github.workspace}}/build
