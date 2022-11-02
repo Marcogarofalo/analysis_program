@@ -4216,7 +4216,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    ////// separate fits
+    ////// cuts fits
     integrations = { "reinman" };
     for (auto integration : integrations) {
         int id0, id1;
@@ -4527,7 +4527,6 @@ int main(int argc, char** argv) {
     }
 
     ////////////////////////////// a4 fit
-    ////// separate fits
     integrations = { "reinman" };
     for (auto integration : integrations) {
         int id0, id1;
