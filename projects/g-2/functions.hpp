@@ -247,7 +247,7 @@ double* compute_amu_W(double**** in, int id, int Njack, double* Z, double* a, do
         fprintf(outfile, "%.15g   %.15g\n", corr_sub[t][Njack - 1], error_jackboot(resampling, Njack, corr_sub[t]));
     }
     fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 0, T / 2, 0.0, 0.0);
-    fprintf(outfile, "   %.15g   %15.g\n", amu[Njack - 1], error_jackboot(resampling, Njack, amu));
+    fprintf(outfile, "   %.15g   %.15g\n", amu[Njack - 1], error_jackboot(resampling, Njack, amu));
 
     free(ft);
     free_2(T / 2, fi);
@@ -1328,10 +1328,14 @@ double rhs_amu_diff_ratio(int n, int Nvar, double* x, int Npar, double* P) {
 
 
     if (ia2 == 0) {
+        diff += a2 * P[0] * (1. / pow(log(w02 / a2), il)) ;
+        ratio += a2 * P[1] * (1. / pow(log(w02 / a2), il));
+    }
+    if (ia2 == 1) {
         diff += a2 * P[0] * (1. / pow(log(w02 / a2), il)) + a2 * a2 * P[2];
         ratio += a2 * P[1] * (1. / pow(log(w02 / a2), il)) + a2 * a2 * P[3];
     }
-    if (ia2 == 1) {
+    if (ia2 == 2) {
         diff += +a2 * P[0] + a2 * P[2] * (1. / pow(log(w02 / a2), il));
         ratio += +a2 * P[1] + a2 * P[3] * (1. / pow(log(w02 / a2), il));
     }
@@ -1395,12 +1399,12 @@ double rhs_amu_pade(int n, int Nvar, double* x, int Npar, double* P) {
     if (iw == 1) w02 *= 3;
 
     if (who_pade == 0) {
-        if (n == 0) r = P[0] + P[1] * a2;
-        if (n == 1) r = P[0] * (1 + P[2] * a2) / (1 + P[3] * a2);
+        if (n == 0) r = P[0] + P[1] * a2 * (1. / pow(log(w02 / a2), il) );
+        if (n == 1) r = P[0] * (1 + P[2] * a2 * (1. / pow(log(w02 / a2), il))) / (1 + P[3] * a2);
     }
     if (who_pade == 1) {
-        if (n == 0) r = P[0] * (1 + P[2] * a2) / (1 + P[3] * a2);
-        if (n == 1) r = P[0] + P[1] * a2;
+        if (n == 0) r = P[0] * (1 + P[2] * a2 * (1. / pow(log(w02 / a2), il))) / (1 + P[3] * a2);
+        if (n == 1) r = P[0] + P[1] * a2 * (1. / pow(log(w02 / a2), il));
     }
 
 

@@ -4110,7 +4110,7 @@ int main(int argc, char** argv) {
         if (integration == "reinman") { id0 = Nobs - 2; id1 = Nobs - 1; }
 
         for (int l = 0;l < 4;l++) {
-            for (int a : { 1}) {
+            for (int a : {0, 1}) {
                 for (int w = 0;w < 2;w++) {
                     for (int OSTM = 0; OSTM < 2;OSTM++) {
                         fit_info.restore_default();
@@ -4215,6 +4215,7 @@ int main(int argc, char** argv) {
             }
         }
     }
+    fit_info.restore_default();
 
     ////// cuts fits
     integrations = { "reinman" };
@@ -4348,69 +4349,86 @@ int main(int argc, char** argv) {
 
     ////////////////////////////// Padè fit
     std::map<int, std::string> stringOSTM = { {0,"OS"}, {1,"TM"} };
+
     for (int OSTM = 0;OSTM < 2;OSTM++) {
-        fit_info.restore_default();
-        fit_info.Npar = 4;
-        int id0 = Nobs - 2, id1 = Nobs - 1;
-        fit_info.N = 2;
-        fit_info.Nvar = 8;
-        fit_info.Njack = Njack;
-        fit_info.myen = { B72_64, C06, D54 };
-        fit_info.init_Nxen_from_N_myen();
-        if (fit_info.Npar >= fit_info.myen.size() * fit_info.N) { exit(1); }
+        for (int l = 0;l < 4;l++) {
+            for (int w = 0;w < 2;w++) {
+                fit_info.restore_default();
+                fit_info.Npar = 4;
+                int id0 = Nobs - 2, id1 = Nobs - 1;
+                fit_info.N = 2;
+                fit_info.Nvar = 8;
+                fit_info.Njack = Njack;
+                fit_info.myen = { B72_64, C06, D54 };
+                fit_info.init_Nxen_from_N_myen();
+                if (fit_info.Npar >= fit_info.myen.size() * fit_info.N) { exit(1); }
 
-        fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
-        count = 0;
-        for (int n = 0;n < fit_info.Nxen.size();n++) {
-            for (int e : fit_info.Nxen[n]) {
-                for (int j = 0;j < Njack;j++) {
-                    fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2); // a^2
-                    fit_info.x[1][count][j] = jackall.en[e].jack[58][j];  // Delta_FV_GS
-                    fit_info.x[2][count][j] = jackall.en[e].jack[1][j];  //Mpi
-                    fit_info.x[3][count][j] = jack_Mpi_MeV_exp[j];
-                    fit_info.x[4][count][j] = 0 + 1e-6;
-                    fit_info.x[5][count][j] = 0 + 1e-6;
-                    fit_info.x[6][count][j] = OSTM + 1e-6;
-                    fit_info.x[7][count][j] = 0 + 1.0;
-                }
-                count++;
-            }
-        }
-        fit_info.corr_id = { id0, id1 };
-        fit_info.function = rhs_amu_pade;
-        fit_info.repeat_start = 1;
-        fit_info.linear_fit = false;
-        fit_info.verbosity = 0;
-
-        fit_info.covariancey = true;
-        fit_info.compute_cov_fit(argv, jackall, lhs_amu);
-        int ie = 0, ie1 = 0;
-        for (int n = 0;n < fit_info.N;n++) {
-            for (int e = 0;e < fit_info.Nxen[n].size();e++) {
-                ie1 = 0;
-                for (int n1 = 0;n1 < fit_info.N;n1++) {
-                    for (int e1 = 0;e1 < fit_info.Nxen[n1].size();e1++) {
-                        if (e != e1)   fit_info.cov[ie][ie1] = 0;
-                        ie1++;
+                fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+                count = 0;
+                for (int n = 0;n < fit_info.Nxen.size();n++) {
+                    for (int e : fit_info.Nxen[n]) {
+                        for (int j = 0;j < Njack;j++) {
+                            fit_info.x[0][count][j] = pow(jackall.en[e].jack[41][j], 2); // a^2
+                            fit_info.x[1][count][j] = jackall.en[e].jack[58][j];  // Delta_FV_GS
+                            fit_info.x[2][count][j] = jackall.en[e].jack[1][j];  //Mpi
+                            fit_info.x[3][count][j] = jack_Mpi_MeV_exp[j];
+                            fit_info.x[4][count][j] = l + 1e-6; //log
+                            fit_info.x[5][count][j] = 0 + 1e-6;
+                            fit_info.x[6][count][j] = OSTM + 1e-6;
+                            fit_info.x[7][count][j] = w + 1.0; //w0
+                        }
+                        count++;
                     }
                 }
-                ie++;
+                fit_info.corr_id = { id0, id1 };
+                fit_info.function = rhs_amu_pade;
+                fit_info.repeat_start = 1;
+                fit_info.linear_fit = false;
+                fit_info.verbosity = 0;
+
+                fit_info.covariancey = true;
+                fit_info.compute_cov_fit(argv, jackall, lhs_amu);
+                int ie = 0, ie1 = 0;
+                for (int n = 0;n < fit_info.N;n++) {
+                    for (int e = 0;e < fit_info.Nxen[n].size();e++) {
+                        ie1 = 0;
+                        for (int n1 = 0;n1 < fit_info.N;n1++) {
+                            for (int e1 = 0;e1 < fit_info.Nxen[n1].size();e1++) {
+                                if (e != e1)   fit_info.cov[ie][ie1] = 0;
+                                ie1++;
+                            }
+                        }
+                        ie++;
+                    }
+                }
+                fit_info.compute_cov1_fit();
+
+                std::string logname;
+                if (l == 0) { logname = ""; }
+                if (l == 1) { logname = "log1"; }
+                if (l == 2) { logname = "log2"; }
+                if (l == 3) { logname = "log3"; }
+
+                if (l == 0 && w > 0) { fit_info.restore_default(); continue; }
+                std::string wname;
+                if (w == 0) { wname = "w1"; }
+                if (w == 1) { wname = "w3"; }
+
+                mysprintf(namefit, NAMESIZE, "amu_W_lphys_pade_%s_%s_%s_cov", stringOSTM[OSTM].c_str(), logname.c_str(), wname.c_str());
+                fit_result amu_SD_l_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
+                fit_info.band_range = { 0,0.0081 };
+                std::vector<double> xcont = { 0, 0 /*Delta*/, 0, 0,/*l, a,m*/ fit_info.x[4][0][Njack - 1],
+                     fit_info.x[5][0][Njack - 1] , fit_info.x[6][0][Njack - 1], fit_info.x[7][0][Njack - 1] };
+
+
+                print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_l_common_a4, amu_SD_l_common_a4, 0, fit_info.myen.size() - 1, 0.0001, xcont);
+                syst_amu_W_lphys_Lref.add_fit(amu_SD_l_common_a4);
+
+                free_fit_result(fit_info, amu_SD_l_common_a4);
+                fit_info.restore_default();
+
             }
         }
-        fit_info.compute_cov1_fit();
-        mysprintf(namefit, NAMESIZE, "amu_W_lphys_pade_%s_cov", stringOSTM[OSTM].c_str());
-        fit_result amu_SD_l_common_a4 = fit_all_data(argv, jackall, lhs_amu, fit_info, namefit);
-        fit_info.band_range = { 0,0.0081 };
-        std::vector<double> xcont = { 0, 0 /*Delta*/, 0, 0,/*l, a,m*/ fit_info.x[4][0][Njack - 1],
-             fit_info.x[5][0][Njack - 1] , fit_info.x[6][0][Njack - 1], fit_info.x[7][0][Njack - 1] };
-
-
-        print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_l_common_a4, amu_SD_l_common_a4, 0, fit_info.myen.size() - 1, 0.0001, xcont);
-        syst_amu_W_lphys_Lref.add_fit(amu_SD_l_common_a4);
-
-        free_fit_result(fit_info, amu_SD_l_common_a4);
-        fit_info.restore_default();
-
     }
 
     ////////////////////////////// Ratio fit
@@ -4421,11 +4439,12 @@ int main(int argc, char** argv) {
         if (integration == "reinman") { id0 = Nobs - 2; id1 = Nobs - 1; }
 
         for (int l = 0;l < 4;l++) {
-            for (int a : { 0, 1}) {
+            for (int a : { 0, 1, 2}) {
                 for (int w = 0;w < 2;w++) {
                     for (int iR = 0; iR < 2;iR++) {
                         fit_info.restore_default();
-                        fit_info.Npar = 4;
+                        fit_info.Npar = 2;
+                        if (a >= 1) fit_info.Npar += 2;
                         if (integration == "reinman" && iR == 0) { id0 = Nobs - 2; id1 = Nobs - 1; }
                         if (integration == "reinman" && iR == 1) { id0 = Nobs - 1; id1 = Nobs - 2; }
 
@@ -4494,8 +4513,9 @@ int main(int argc, char** argv) {
 
                         std::string aname;
                         if (a == 0) { aname = ""; }
-                        if (a == 1) { aname = "+log"; }
-                        if (a==1 && l ==0 ) {fit_info.restore_default(); continue;}
+                        if (a == 1) { aname = "a4"; }
+                        if (a == 2) { aname = "+log"; }
+                        if (a == 2 && l == 0) { fit_info.restore_default(); continue; }
 
 
                         std::string regname;
