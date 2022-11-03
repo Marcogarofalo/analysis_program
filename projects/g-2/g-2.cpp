@@ -1194,12 +1194,12 @@ int main(int argc, char** argv) {
         ZA = interpol_Z(Nstrange, Njack, Meta, Z, jack_aMetas_MeV_exp, outfile, "Z_A", resampling);
 
     }
-    if (strcmp("cD.54.96", argv[4]) == 0) {
-        double Za_WI_strange = 0.773944;
-        double Za_WI_strange_err = 0.00014;
-        free(ZA);
-        double* ZA = myres->create_fake(Za_WI_strange, Za_WI_strange_err, 666);
-    }
+    // if (strcmp("cD.54.96", argv[4]) == 0) {
+    //     double Za_WI_strange = 0.773944;
+    //     double Za_WI_strange_err = 0.00014;
+    //     free(ZA);
+    //     ZA = myres->create_fake(Za_WI_strange, Za_WI_strange_err, 666);
+    // }
 
     write_jack(ZV, Njack, jack_file);
     check_correlatro_counter(22);
@@ -1932,6 +1932,8 @@ int main(int argc, char** argv) {
 
     if (argc == 19) {
         fit_type fit_info;
+        fit_info.N=1;
+        fit_info.Njack=Njack;
         printf("Ncorrelator=%d\n", ncorr_new);
         fit_info.corr_id = { 53,40,var/*55*/ };//P5P5_corr_bolla, P5P5dmu , bolla*P5P5dmu
         fit_info.guess = { mu,mul1 };
