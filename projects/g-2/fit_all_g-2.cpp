@@ -269,6 +269,10 @@ int main(int argc, char** argv) {
     data_all  sum_amu_W;
     sum_amu_W.resampling = argv[1];
 
+    int count = 0;
+    std::vector<std::string>   integrations = { "reinman", "simpson" };
+#ifdef DO_NOT_COMPILE
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     printf("\n/////////////////////////////////     amu_SD_l_common    //////////////////\n");
     //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -278,7 +282,7 @@ int main(int argc, char** argv) {
     fit_info.Njack = Njack;
     fit_info.myen = myen;
     fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
-    int count = 0;
+    count = 0;
     for (int n = 0;n < fit_info.N;n++) {
         for (int e = 0;e < fit_info.myen.size();e++) {
             for (int j = 0;j < Njack;j++) {
@@ -296,7 +300,7 @@ int main(int argc, char** argv) {
     fit_info.restore_default();
 
 
-    std::vector<std::string>   integrations = { "reinman", "simpson" };
+    integrations = { "reinman", "simpson" };
     for (auto integration : integrations) {
         int id0, id1;
         if (integration == "reinman") { id0 = 25; id1 = 26; }
@@ -3802,7 +3806,7 @@ int main(int argc, char** argv) {
     }
 
     compute_syst_eq28(syst_amu_W_c_RF, argv[3], "Systematics_amu_W_c_RF.txt");
-
+#endif // DEBUG
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////        we need to adjust the data for the mass correction that are missing
@@ -4384,7 +4388,21 @@ int main(int argc, char** argv) {
                 fit_info.function = rhs_amu_pade;
                 fit_info.repeat_start = 1;
                 fit_info.linear_fit = false;
-                fit_info.verbosity = 0;
+                if (l == 0 && stringOSTM[OSTM] == "TM") {
+                    fit_info.repeat_start = 0;
+                    fit_info.guess = { 2.03448e-08, 2.78364e-09, -2.01282e-05, -900 };
+                    // fit_info.guess = { 2.03448e-08, 2.78364e-09, 2.01282e-05, 10 };
+                    // fit_info.chi2_gap_jackboot=1e-2; // not implemented in this fit
+                    // fit_info.guess_per_jack=1;
+                    fit_info.h = { 2.05542e-10      ,3.70708e-11         , 1e-8     ,0.1 };
+                    fit_info.NM = true;
+                    // fit_info.noderiv=true;
+                    fit_info.acc = 1e-6;
+                    fit_info.verbosity = 0;
+                    // fit_info.manual=true;
+
+                }
+                // fit_info.verbosity = 0;
 
                 fit_info.covariancey = true;
                 fit_info.compute_cov_fit(argv, jackall, lhs_amu);
@@ -4424,9 +4442,17 @@ int main(int argc, char** argv) {
                 print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_l_common_a4, amu_SD_l_common_a4, 0, fit_info.myen.size() - 1, 0.0001, xcont);
                 syst_amu_W_lphys_Lref.add_fit(amu_SD_l_common_a4);
 
+                for (int j = 0;j < Njack;j++) {
+                    printf("jack %2d: chi2=%-15.2g", j, amu_SD_l_common_a4.chi2[j]);
+                    for (int p = 0;p < fit_info.Npar;p++) {
+                        printf("%-25.6g", amu_SD_l_common_a4.P[p][j]);
+                    }
+                    printf("\n");
+                }
                 free_fit_result(fit_info, amu_SD_l_common_a4);
                 fit_info.restore_default();
 
+                if (l == 0 && stringOSTM[OSTM] == "TM") { exit(1); }//stringOSTM[OSTM].c_str() == "OS" &&
             }
         }
     }
@@ -4439,7 +4465,7 @@ int main(int argc, char** argv) {
         if (integration == "reinman") { id0 = Nobs - 2; id1 = Nobs - 1; }
 
         for (int l = 0;l < 4;l++) {
-            for (int a : { 0, 1, 2}) {
+            for (int a : { 1, 2}) {
                 for (int w = 0;w < 2;w++) {
                     for (int iR = 0; iR < 2;iR++) {
                         fit_info.restore_default();
@@ -4651,6 +4677,9 @@ int main(int argc, char** argv) {
     }
 
     compute_syst_eq28(syst_amu_W_lphys_Lref, argv[3], "Systematics_amu_W_lphys_Lref.txt");
+
+#ifdef DO_NOT_COMPILE
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     printf("\n/////////////////////////////////   diff   amu_W_lphys_Lref   //////////////////\n");
     //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4902,7 +4931,7 @@ int main(int argc, char** argv) {
     }
     // compute_syst_eq28(syst_amu_W_l_diff, argv[3], "Systematics_amu_W_l_diff.txt");
 
-
+#endif // DEBUG
  /////////////////////////////////////////////////////////////////////////////////////////
     // amu_SD to physical point
     /////////////////////////////////////////////////////////////////////////////////////////

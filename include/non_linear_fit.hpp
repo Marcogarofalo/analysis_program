@@ -83,6 +83,7 @@ struct  fit_type {
     bool covariancey = false;
     bool second_deriv = false;
     bool error_chi2 = false;
+    bool manual = false;
 
     double alpha = 1;
     double gamma = 2;

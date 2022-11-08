@@ -1328,7 +1328,7 @@ double rhs_amu_diff_ratio(int n, int Nvar, double* x, int Npar, double* P) {
 
 
     if (ia2 == 0) {
-        diff += a2 * P[0] * (1. / pow(log(w02 / a2), il)) ;
+        diff += a2 * P[0] * (1. / pow(log(w02 / a2), il));
         ratio += a2 * P[1] * (1. / pow(log(w02 / a2), il));
     }
     if (ia2 == 1) {
@@ -1398,14 +1398,17 @@ double rhs_amu_pade(int n, int Nvar, double* x, int Npar, double* P) {
     double w02 = 0.17383 * 0.17383;
     if (iw == 1) w02 *= 3;
 
+    double logw = (1. / pow(log(w02 / a2), il));
+
     if (who_pade == 0) {
-        if (n == 0) r = P[0] + P[1] * a2 * (1. / pow(log(w02 / a2), il) );
-        if (n == 1) r = P[0] * (1 + P[2] * a2 * (1. / pow(log(w02 / a2), il))) / (1 + P[3] * a2);
+        if (n == 0) r = (P[0] + P[2] * a2 * logw) / (1 + P[3] * a2);
+        else if (n == 1) r = P[0] + P[1] * a2 * logw;
     }
-    if (who_pade == 1) {
-        if (n == 0) r = P[0] * (1 + P[2] * a2 * (1. / pow(log(w02 / a2), il))) / (1 + P[3] * a2);
-        if (n == 1) r = P[0] + P[1] * a2 * (1. / pow(log(w02 / a2), il));
+    else if (who_pade == 1) {
+        if (n == 0) r = P[0] + P[1] * a2 * logw;
+        else if (n == 1) r = (P[0] + P[2] * a2 * logw) / (1 + P[3] * a2);
     }
+
 
 
     return r;

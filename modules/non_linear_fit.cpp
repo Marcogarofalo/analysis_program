@@ -181,7 +181,7 @@ void fit_type::restore_default() {
     unstable = false; // if true avoid thing that may return error
     noderiv = false;
     error_chi2 = false;
-
+    manual = false;
     plateaux_scan = false;
     guess_per_jack = 0;
     chi2_gap_jackboot = 1;
@@ -1394,7 +1394,30 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
     }
     //     printf("chi2=%f   res=%.10f P0=%f   P1=%f\n",chi2,res,P[0],P[1]);
 
-    if (fit_info.NM) {//https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method
+    if (fit_info.manual) {
+        bool keep = true;
+        while (keep) {
+            printf("insert value of %d params:\n", Npar);
+            int is=0;
+            for (int i = 0;i < Npar;i++) {
+                is+=scanf("%lf", &P[i]);
+            }
+            if (is!=Npar) continue;
+            chi2 = chi2_fun(N, ensemble, x, y, P, Nvar, Npar, fun, fit_info);
+            printf("chi2=%.15g\n", chi2);
+            char yn[NAMESIZE];
+            printf("do you want to continue[y/n]:\n");
+            scanf("%s", yn);
+            if ( strcmp("y",yn)==0  ||strcmp("yes",yn)==0 || strcmp("Y",yn)==0 || strcmp("Y",yn)==0  ){
+                continue;
+            }
+            else 
+                keep=false;
+
+        }
+
+    }
+    else if (fit_info.NM) {//https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method
         double** points = double_malloc_2(Npar + 1, Npar);
         double** points1 = double_malloc_2(Npar + 1, Npar);
         double* chi2s = (double*)malloc((Npar + 1) * sizeof(double));
