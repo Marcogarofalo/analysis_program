@@ -44,9 +44,6 @@ constexpr double Mrho_MeV_err = 0.4;
 // constexpr double grhopipi = 6.06;
 // constexpr double grhopipi_err = 0.03;
 
-constexpr double Mpi_MeV = 135.0;
-constexpr double Mpi_MeV_err = 0.2;
-
 constexpr double grhopipi = 5.95;
 constexpr double grhopipi_err = 0.0001;
 

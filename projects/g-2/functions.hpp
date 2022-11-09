@@ -15,6 +15,8 @@ constexpr double hbarc = 197.326963;
 constexpr double muon_mass_MeV = 105.6583755;
 constexpr double alpha_em = 0.0072973525693;
 constexpr double muon_mass_fm = muon_mass_MeV * 197.326963;
+constexpr double Mpi_MeV = 135;
+constexpr double Mpi_MeV_err = 0.2;
 
 enum enum_ensembles {
     B72_64,
@@ -1290,6 +1292,7 @@ double rhs_amu_a4(int n, int Nvar, double* x, int Npar, double* P) {
     double a2 = x[0];
     int il = x[4];
     int ia2 = x[5];
+    int ial = x[6];
     double iw = x[7];
     double r = 0;
     int iR = x[6];
@@ -1300,10 +1303,10 @@ double rhs_amu_a4(int n, int Nvar, double* x, int Npar, double* P) {
 
     OS += P[0] + a2 * P[1] * (1. / pow(log(w02 / a2), il));
     TM += P[0] + a2 * P[2] * (1. / pow(log(w02 / a2), il));
-    if (ia2 == 0 && il == 0) OS += a2 * a2 * P[3];
-    if (ia2 == 1 && il == 0) TM += a2 * a2 * P[3];
-    if (ia2 == 0 && il > 0) OS += (1. / pow(log(w02 / a2), il)) * a2 * P[3];
-    if (ia2 == 1 && il > 0) TM += (1. / pow(log(w02 / a2), il)) * a2 * P[3];
+    if (ia2 == 0 && ial == 0) OS += a2 * a2 * P[3];
+    if (ia2 == 1 && ial == 0) TM += a2 * a2 * P[3];
+    if (ia2 == 0 && ial > 0) OS += (1. / pow(log(w02 / a2), ial)) * a2 * P[3];
+    if (ia2 == 1 && ial > 0) TM += (1. / pow(log(w02 / a2), ial)) * a2 * P[3];
 
 
     if (n == 0) r = OS;
@@ -1331,11 +1334,11 @@ double rhs_amu_diff_ratio(int n, int Nvar, double* x, int Npar, double* P) {
         diff += a2 * P[0] * (1. / pow(log(w02 / a2), il));
         ratio += a2 * P[1] * (1. / pow(log(w02 / a2), il));
     }
-    if (ia2 == 1) {
+    else if (ia2 == 1) {
         diff += a2 * P[0] * (1. / pow(log(w02 / a2), il)) + a2 * a2 * P[2];
         ratio += a2 * P[1] * (1. / pow(log(w02 / a2), il)) + a2 * a2 * P[3];
     }
-    if (ia2 == 2) {
+    else if (ia2 == 2) {
         diff += +a2 * P[0] + a2 * P[2] * (1. / pow(log(w02 / a2), il));
         ratio += +a2 * P[1] + a2 * P[3] * (1. / pow(log(w02 / a2), il));
     }
