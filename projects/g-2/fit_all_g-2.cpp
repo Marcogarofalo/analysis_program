@@ -22,6 +22,7 @@
 #include "fit_all.hpp"
 #include "resampling_new.hpp"
 #include "global.hpp"
+#include "do_analysis_charm.hpp"
 
 #include <string>
 #include <cstring> 
@@ -160,40 +161,6 @@ void sum_lsc(data_all in, const char* outpath, const char* filename) {
     }
     fclose(f);
 
-}
-
-void compute_syst_eq28(data_all in, const char* outpath, const char* filename) {
-    int N = in.Nfits;
-    int Njack = in.fits[0].Njack;
-    char name[NAMESIZE];
-    mysprintf(name, NAMESIZE, "%s/%s", outpath, filename);
-    FILE* f = open_file(name, "w+");
-    printf("writing: %s\n", name);
-    std::vector<double> aves(N);
-    std::vector<double> errors(N);
-    for (int i = 0; i < N; i++) {
-        aves[i] = in.fits[i].P[0][Njack - 1];
-        errors[i] = error_jackboot(in.resampling.c_str(), Njack, in.fits[i].P[0]);
-    }
-
-    double ave = 0, err = 0;
-    for (int i = 0; i < N; i++) {
-        ave += aves[i];
-        err += pow(errors[i], 2);
-    }
-    ave /= (double)N;
-
-    for (int i = 0; i < N; i++) {
-        err += pow(ave - aves[i], 2);
-    }
-    err = sqrt(err / (double)N);
-
-    for (int i = 0; i < N; i++) {
-        fprintf(f, "%s    %g     %g   %g   %g  %g  %d  %d\n", in.fits[i].name, aves[i], errors[i], ave, err, in.fits[i].chi2[Njack - 1], in.fits[i].dof, in.fits[i].Npar);
-    }
-    printf("systematics  %s: N=%d\n", filename, N);
-    printf("mean(eq28)= %g  %g \n", ave, err);
-    fclose(f);
 }
 
 
@@ -678,7 +645,8 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
                             //         printf("%-25.6g", amu_SD_l_common_a4.P[p][j]);
                             //     }
                             //     printf("\n");
-                            // }
+                            // } 
+                            // if ( strcmp(namefit,"amu_W_sphys_Mphi_DR_R1_log3_w1_+log_cov")==0 ) { exit(1); }
 
                             // if (l == 3 && w == 0 && a==2 && basename =="W_sphys_Mphi" && iR==1) { exit(1); }
                                                 // if(iM==3 && a ==4 ) exit(1);
@@ -4465,8 +4433,9 @@ int main(int argc, char** argv) {
         double a = jackall.en[C06].jack[41][j];
         double a_MeV = a / 197.326963;
         double dM = (jack_Mpi_MeV_exp[j] - jackall.en[C06].jack[1][j] / a_MeV);
-        jackall.en[C06].jack[130][j] = jackall.en[C06].jack[42][j] + dM * (dVmu.P[0][j] + a * a * dVmu.P[2][j]);
-        jackall.en[C06].jack[132][j] = jackall.en[C06].jack[43][j] + dM * (dVmu.P[1][j] + a * a * dVmu.P[3][j]);
+        // no need to do this anymore the C ensemble is corrected
+        // jackall.en[C06].jack[130][j] = jackall.en[C06].jack[42][j] + dM * (dVmu.P[0][j] + a * a * dVmu.P[2][j]);
+        // jackall.en[C06].jack[132][j] = jackall.en[C06].jack[43][j] + dM * (dVmu.P[1][j] + a * a * dVmu.P[3][j]);
     }
     free_fit_result(fit_info, dVmu);
     fit_info.restore_default();
@@ -5593,8 +5562,9 @@ int main(int argc, char** argv) {
         double a = jackall.en[C06].jack[41][j];
         double a_MeV = a / 197.326963;
         double dM = (jack_Mpi_MeV_exp[j] - jackall.en[C06].jack[1][j] / a_MeV);
-        jackall.en[C06].jack[134][j] = jackall.en[C06].jack[25][j] + dM * (dVmuSD.P[0][j] + a * a * dVmuSD.P[2][j]);
-        jackall.en[C06].jack[135][j] = jackall.en[C06].jack[26][j] + dM * (dVmuSD.P[1][j] + a * a * dVmuSD.P[3][j]);
+        // no need to do this anymore the C ensemble is corrected
+        // jackall.en[C06].jack[134][j] = jackall.en[C06].jack[25][j] + dM * (dVmuSD.P[0][j] + a * a * dVmuSD.P[2][j]);
+        // jackall.en[C06].jack[135][j] = jackall.en[C06].jack[26][j] + dM * (dVmuSD.P[1][j] + a * a * dVmuSD.P[3][j]);
     }
     free_fit_result(fit_info, dVmuSD);
 
@@ -5655,12 +5625,50 @@ int main(int argc, char** argv) {
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     do_analysis(argv, { Nobs - 2, Nobs - 1 }, { "lphys" }, "SD", jackall);
-    exit(22);
-    // do_analysis(argv, { 76,86, 77, 87 }, { "Meta", "MJpsi" }, "SD_cphys", jackall);
+
     do_analysis(argv, { 31, 34, 59, 60 }, { "Meta", "Mphi" }, "SD_sphys", jackall);
 
 
     do_analysis(argv, { 48, 51, 63, 64 }, { "Meta", "Mphi" }, "W_sphys", jackall);
-    // do_analysis(argv, { 96,106, 97, 107 }, { "Meta", "MJpsi" }, "W_cphys", jackall);
+
+    ////////////////////////// fit the A to a constant
+
+    fit_info.restore_default();
+    fit_info.corr_id = { 76, 86, 77, 87, 96, 106, 97, 107 };
+    fit_info.N = fit_info.corr_id.size();
+    fit_info.Nvar = 1;
+    fit_info.Npar = fit_info.corr_id.size();
+    fit_info.Njack = Njack;
+    fit_info.myen = { A30, A40, A53 };
+    fit_info.x = double_malloc_3(fit_info.Nvar, fit_info.myen.size() * fit_info.N, fit_info.Njack);
+    count = 0;
+    for (int n = 0;n < fit_info.N;n++) {
+        for (int e : fit_info.myen) {
+            for (int j = 0;j < Njack;j++) {
+                fit_info.x[0][count][j] = jackall.en[e].header.L * jackall.en[e].jack[1][j];// ;//jackall.en[e].jack[41][j] * jack_Mpi_MeV_exp[j] / hbarc;//* jackall.en[e].jack[1][j] 
+            }
+            count++;
+        }
+    }
+    fit_info.function = const_A;
+    fit_info.linear_fit = true;
+
+    mysprintf(namefit, NAMESIZE, "interpolate_A_charm");
+    fit_result Acharm = fit_all_data(argv, jackall, lhs_Acharm, fit_info, namefit);
+    fit_info.band_range = { 0, 8 };
+    print_fit_band(argv, jackall, fit_info, fit_info, namefit, "Acharm", Acharm, Acharm, 0, fit_info.myen.size() - 1, 0.1);
+    for (int j = 0; j < Njack;j++) {
+        double a = jackall.en[B72_64].jack[41][j];
+        double Mpi_MeV = jack_Mpi_MeV_exp[j];
+        double L = jackall.en[B72_64].header.L;
+        for (int i = 0; i < fit_info.N; i++)
+            jackall.en[A30].jack[fit_info.corr_id[i]][j] = Acharm.P[i][j];
+
+    }
+    free_fit_result(fit_info, Acharm);
+    fit_info.restore_default();
+
+    do_analysis_charm(argv, { 96,106, 97, 107 }, { "Meta", "MJpsi" }, "W_cphys", jackall);
+    do_analysis_charm(argv, { 76,86, 77, 87 }, { "Meta", "MJpsi" }, "SD_cphys", jackall);
 
 }

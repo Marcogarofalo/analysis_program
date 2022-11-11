@@ -1,3 +1,4 @@
+#pragma once
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_deriv.h>
 #include "tower.hpp"
@@ -1086,6 +1087,12 @@ double exp_MpiL(int n, int Nvar, double* x, int Npar, double* P) {
     if (n == 1) r = P[1] + P[3] * exp(-MpiL);
     return r;
 }
+double const_A(int n, int Nvar, double* x, int Npar, double* P) {
+    
+    return P[n];
+}
+
+
 
 double rhs_amu_RF(int n, int Nvar, double* x, int Npar, double* P) {
     double r;
@@ -1824,6 +1831,11 @@ double lhs_amu(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     else if (n == 1)   r = gjack.en[e].jack[fit_info.corr_id[1]][j];
     return r;
 }
+double lhs_Acharm(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double r;
+    
+    return gjack.en[e].jack[fit_info.corr_id[n]][j];
+}
 
 
 double lhs_amu_separate(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
@@ -2091,4 +2103,39 @@ double** mu_sea_correction(int j, double**** in, int t, struct fit_type fit_info
     r[0][0] = -dmu * (in[j][ibcorr][t][0] - in[j][ibolla][t][0] * in[j][id_corr_bolla][t][0]);
     r[0][1] = 0;
     return r;
+}
+
+
+void compute_syst_eq28(data_all in, const char* outpath, const char* filename) {
+    int N = in.Nfits;
+    int Njack = in.fits[0].Njack;
+    char name[NAMESIZE];
+    mysprintf(name, NAMESIZE, "%s/%s", outpath, filename);
+    FILE* f = open_file(name, "w+");
+    printf("writing: %s\n", name);
+    std::vector<double> aves(N);
+    std::vector<double> errors(N);
+    for (int i = 0; i < N; i++) {
+        aves[i] = in.fits[i].P[0][Njack - 1];
+        errors[i] = error_jackboot(in.resampling.c_str(), Njack, in.fits[i].P[0]);
+    }
+
+    double ave = 0, err = 0;
+    for (int i = 0; i < N; i++) {
+        ave += aves[i];
+        err += pow(errors[i], 2);
+    }
+    ave /= (double)N;
+
+    for (int i = 0; i < N; i++) {
+        err += pow(ave - aves[i], 2);
+    }
+    err = sqrt(err / (double)N);
+
+    for (int i = 0; i < N; i++) {
+        fprintf(f, "%s    %g     %g   %g   %g  %g  %d  %d\n", in.fits[i].name, aves[i], errors[i], ave, err, in.fits[i].chi2[Njack - 1], in.fits[i].dof, in.fits[i].Npar);
+    }
+    printf("systematics  %s: N=%d\n", filename, N);
+    printf("mean(eq28)= %g  %g \n", ave, err);
+    fclose(f);
 }
