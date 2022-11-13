@@ -625,24 +625,32 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
                             if (iR == 1) { regname = "R1"; }
 
                             mysprintf(namefit, NAMESIZE, "amu_%s_DR_%s_%s_%s_%s_cov", basename.c_str(), regname.c_str(), logname.c_str(), wname.c_str(), aname.c_str());
-                            fit_result amu_SD_l_common_a4 = fit_all_data(argv, jackall, lhs_amu_diff_ratio, fit_info, namefit);
+                            fit_result fit_DR = fit_all_data(argv, jackall, lhs_amu_diff_ratio, fit_info, namefit);
                             fit_info.band_range = { 0,0.0081 };
                             std::vector<double> xcont = { 0, 0 /*Delta*/, 0, 0,/*l, a,m*/ fit_info.x[4][0][Njack - 1],
                                  fit_info.x[5][0][Njack - 1] , fit_info.x[6][0][Njack - 1], fit_info.x[7][0][Njack - 1] };
 
-                            print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_l_common_a4, amu_SD_l_common_a4, 0, fit_info.myen.size() - 1, 0.0005, xcont);
+                            print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", fit_DR, fit_DR, 0, fit_info.myen.size() - 1, 0.0005, xcont);
+
+                            if (fabs(fit_DR.P[0][Njack - 1]) - myres->comp_error(fit_DR.P[0]) <= 0 ||
+                                fabs(fit_DR.P[1][Njack - 1]) - myres->comp_error(fit_DR.P[1]) <= 0  ) {
+                                    printf("fit DR produces poles excluding \n ");
+                                    fit_info.restore_default();
+                                    continue;
+
+                            }
 
                             for (int j = 00;j < Njack;j++) {
-                                amu_SD_l_common_a4.P[0][j] = amu_SD_l_common_a4.P[0][j] / amu_SD_l_common_a4.P[1][j];
+                                fit_DR.P[0][j] = fit_DR.P[0][j] / fit_DR.P[1][j];
                             }
-                            syst_amu_W_lphys_Lref.add_fit(amu_SD_l_common_a4);
+                            syst_amu_W_lphys_Lref.add_fit(fit_DR);
 
 
 
                             // for (int j = 0;j < Njack;j++) {
-                            //     printf("jack %2d: chi2=%-15.2g", j, amu_SD_l_common_a4.chi2[j]);
+                            //     printf("jack %2d: chi2=%-15.2g", j, fit_DR.chi2[j]);
                             //     for (int p = 0;p < fit_info.Npar;p++) {
-                            //         printf("%-25.6g", amu_SD_l_common_a4.P[p][j]);
+                            //         printf("%-25.6g", fit_DR.P[p][j]);
                             //     }
                             //     printf("\n");
                             // } 
@@ -650,7 +658,7 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
 
                             // if (l == 3 && w == 0 && a==2 && basename =="W_sphys_Mphi" && iR==1) { exit(1); }
                                                 // if(iM==3 && a ==4 ) exit(1);
-                            free_fit_result(fit_info, amu_SD_l_common_a4);
+                            free_fit_result(fit_info, fit_DR);
                             fit_info.restore_default();
                         }
 
@@ -4404,8 +4412,12 @@ int main(int argc, char** argv) {
     for (int j = 0; j < Njack;j++) {
         jackall.en[B72_96].jack[130][j] = jackall.en[B72_96].jack[42][j]
             + jackall.en[B72_64].jack[130][j] - jackall.en[B72_64].jack[42][j];
+
         jackall.en[B72_96].jack[132][j] = jackall.en[B72_96].jack[43][j]
             + jackall.en[B72_64].jack[132][j] - jackall.en[B72_64].jack[43][j];
+
+        jackall.en[B72_96].jack[123][j] = jackall.en[B72_96].jack[1][j]
+            + jackall.en[B72_64].jack[123][j] - jackall.en[B72_64].jack[1][j];
     }
     fit_info.restore_default();
     fit_info.N = 2;
@@ -4671,7 +4683,7 @@ int main(int argc, char** argv) {
     for (int n = 0;n < fit_info.N;n++) {
         for (int e : fit_info.myen) {
             for (int j = 0;j < Njack;j++) {
-                fit_info.x[0][count][j] = jackall.en[e].header.L * jackall.en[e].jack[1][j];// ;//jackall.en[e].jack[41][j] * jack_Mpi_MeV_exp[j] / hbarc;//* jackall.en[e].jack[1][j] 
+                fit_info.x[0][count][j] = jackall.en[e].header.L * jackall.en[e].jack[123][j];// ;//jackall.en[e].jack[41][j] * jack_Mpi_MeV_exp[j] / hbarc;//* jackall.en[e].jack[1][j] 
             }
             count++;
         }

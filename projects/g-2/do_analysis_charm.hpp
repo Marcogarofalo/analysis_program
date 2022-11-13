@@ -41,7 +41,7 @@ void   do_analysis_charm(char** argv, std::vector<int> ids, std::vector<std::str
     double* jack_Mpi_MeV_exp = fake_sampling(argv[1], Mpi_MeV, Mpi_MeV_err, Njack, 1003);
     char namefit[NAMESIZE];
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    printf("\n/////////////////////////////////     %s    //////////////////\n",basename.c_str());
+    printf("\n/////////////////////////////////     %s    //////////////////\n", basename.c_str());
     //////////////////////////////////////////////////////////////////////////////////////////////////
     data_all  syst_amu_W_lphys_Lref;
     syst_amu_W_lphys_Lref.resampling = argv[1];
@@ -491,24 +491,30 @@ void   do_analysis_charm(char** argv, std::vector<int> ids, std::vector<std::str
                             if (iR == 1) { regname = "R1"; }
 
                             mysprintf(namefit, NAMESIZE, "amu_%s_DR_%s_%s_%s_%s_cov", basename.c_str(), regname.c_str(), logname.c_str(), wname.c_str(), aname.c_str());
-                            fit_result amu_SD_l_common_a4 = fit_all_data(argv, jackall, lhs_amu_diff_ratio, fit_info, namefit);
+                            fit_result fit_DR = fit_all_data(argv, jackall, lhs_amu_diff_ratio, fit_info, namefit);
                             fit_info.band_range = { 0,0.0081 };
                             std::vector<double> xcont = { 0, 0 /*Delta*/, 0, 0,/*l, a,m*/ fit_info.x[4][0][Njack - 1],
                                  fit_info.x[5][0][Njack - 1] , fit_info.x[6][0][Njack - 1], fit_info.x[7][0][Njack - 1] };
 
-                            print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", amu_SD_l_common_a4, amu_SD_l_common_a4, 0, fit_info.myen.size() - 1, 0.0005, xcont);
+                            print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", fit_DR, fit_DR, 0, fit_info.myen.size() - 1, 0.0005, xcont);
+                            if (fabs(fit_DR.P[0][Njack - 1]) - myres->comp_error(fit_DR.P[0]) <= 0 ||
+                                fabs(fit_DR.P[1][Njack - 1]) - myres->comp_error(fit_DR.P[1]) <= 0 ) {
+                                printf("fit DR produces poles excluding \n ");
+                                fit_info.restore_default();
+                                continue;
 
-                            for (int j = 00;j < Njack;j++) {
-                                amu_SD_l_common_a4.P[0][j] = amu_SD_l_common_a4.P[0][j] / amu_SD_l_common_a4.P[1][j];
                             }
-                            syst_amu_W_lphys_Lref.add_fit(amu_SD_l_common_a4);
+                            for (int j = 00;j < Njack;j++) {
+                                fit_DR.P[0][j] = fit_DR.P[0][j] / fit_DR.P[1][j];
+                            }
+                            syst_amu_W_lphys_Lref.add_fit(fit_DR);
 
 
 
                             // for (int j = 0;j < Njack;j++) {
-                            //     printf("jack %2d: chi2=%-15.2g", j, amu_SD_l_common_a4.chi2[j]);
+                            //     printf("jack %2d: chi2=%-15.2g", j, fit_DR.chi2[j]);
                             //     for (int p = 0;p < fit_info.Npar;p++) {
-                            //         printf("%-25.6g", amu_SD_l_common_a4.P[p][j]);
+                            //         printf("%-25.6g", fit_DR.P[p][j]);
                             //     }
                             //     printf("\n");
                             // } 
@@ -516,7 +522,7 @@ void   do_analysis_charm(char** argv, std::vector<int> ids, std::vector<std::str
 
                             // if (l == 3 && w == 0 && a==2 && basename =="W_sphys_Mphi" && iR==1) { exit(1); }
                                                 // if(iM==3 && a ==4 ) exit(1);
-                            free_fit_result(fit_info, amu_SD_l_common_a4);
+                            free_fit_result(fit_info, fit_DR);
                             fit_info.restore_default();
                         }
 
