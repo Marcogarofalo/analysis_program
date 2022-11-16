@@ -253,9 +253,8 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
 
                             std::string logname;
                             if (l == 0) { logname = ""; }
-                            if (l == 1) { logname = "log1"; }
-                            if (l == 2) { logname = "log2"; }
-                            if (l == 3) { logname = "log3"; }
+                            if (l > 0) { logname = "log" + std::to_string(l); }
+
 
                             if (l == 0 && w > 0) continue;
                             std::string wname;
@@ -303,7 +302,7 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
             int id0, id1;
             if (integration == "reinman") { id0 = ids[0 + iM * 2]; id1 = ids[1 + iM * 2]; }
 
-            for (int l = 0;l < 4;l++) {
+            for (int l : {0, 1, 2, 3, 4, 8, 12}) {
                 for (int a : { 1}) {
                     for (int w = 0;w < 2;w++) {
                         for (int icut = 0; icut < 4;icut++) {
@@ -382,9 +381,7 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
 
                             std::string logname;
                             if (l == 0) { logname = ""; }
-                            if (l == 1) { logname = "log1"; }
-                            if (l == 2) { logname = "log2"; }
-                            if (l == 3) { logname = "log3"; }
+                            if (l > 0) { logname = "log" + std::to_string(l); }
 
                             if (l == 0 && w > 0) { fit_info.restore_default();continue; }
                             std::string wname;
@@ -602,9 +599,9 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
 
                             std::string logname;
                             if (l == 0) { logname = ""; }
-                            if (l == 1) { logname = "log1"; }
-                            if (l == 2) { logname = "log2"; }
-                            if (l == 3) { logname = "log3"; }
+                            if (l > 0) { logname = "log" + std::to_string(l); }
+                            // if (l == 2) { logname = "log2"; }
+                            // if (l == 3) { logname = "log3"; }
 
                             if (l == 0 && w > 0) continue;
                             std::string wname;
@@ -633,10 +630,10 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
                             print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", fit_DR, fit_DR, 0, fit_info.myen.size() - 1, 0.0005, xcont);
 
                             if (fabs(fit_DR.P[0][Njack - 1]) - myres->comp_error(fit_DR.P[0]) <= 0 ||
-                                fabs(fit_DR.P[1][Njack - 1]) - myres->comp_error(fit_DR.P[1]) <= 0  ) {
-                                    printf("fit DR produces poles excluding \n ");
-                                    fit_info.restore_default();
-                                    continue;
+                                fabs(fit_DR.P[1][Njack - 1]) - myres->comp_error(fit_DR.P[1]) <= 0) {
+                                printf("fit DR produces poles excluding \n ");
+                                fit_info.restore_default();
+                                continue;
 
                             }
 
@@ -645,7 +642,9 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
                             }
                             syst_amu_W_lphys_Lref.add_fit(fit_DR);
 
-
+                            // if(l==4 && a==2){
+                            //     exit(1);
+                            // }
 
                             // for (int j = 0;j < Njack;j++) {
                             //     printf("jack %2d: chi2=%-15.2g", j, fit_DR.chi2[j]);
@@ -674,9 +673,9 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
             int id0, id1;
             if (integration == "reinman") { id0 = ids[0 + iM * 2]; id1 = ids[1 + iM * 2]; }
 
-            for (int l = 0;l < 4;l++) {
+            for (int l : {0, 1, 2, 3, 4, 8, 12}) {
                 for (int al = 0;al < 4;al++) {
-                    for (int a : { 0, 1}) {
+                    for (int a : { 0,1}) {
                         for (int w = 0;w < 2;w++) {
 
                             if (al > 0 && l > 0) { fit_info.restore_default(); continue; }
@@ -736,9 +735,8 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
 
                             std::string logname;
                             if (l == 0) { logname = ""; }
-                            if (l == 1) { logname = "log1"; }
-                            if (l == 2) { logname = "log2"; }
-                            if (l == 3) { logname = "log3"; }
+                            if (l > 0) { logname = "log" + std::to_string(l); }
+
 
                             if (l == 0 && w > 0 && al == 0) continue;
 
@@ -748,9 +746,7 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
 
                             std::string logPname;
                             if (al == 0) { logPname = ""; }
-                            if (al == 1) { logPname = "log1"; }
-                            if (al == 2) { logPname = "log2"; }
-                            if (al == 3) { logPname = "log3"; }
+                            if (al > 0) { logPname = "log" + std::to_string(al); }
 
                             std::string aname;
                             if (a == 0 && al == 0) { aname = "a4OS"; }

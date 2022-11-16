@@ -145,7 +145,9 @@ double integrate_reinman(int lower, int upper, double* f) {
 
 //     return amu;
 // }
-double* compute_amu_sd(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling) {
+
+
+double* compute_amu_sd(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling, int isub = -1) {
     constexpr double d = 0.15;
     constexpr double t1_d = 0.4 / d;
     int T = file_head.l0;
@@ -166,7 +168,11 @@ double* compute_amu_sd(double**** in, int id, int Njack, double* Z, double* a, d
             double z = muon_mass_MeV * (t / 197.326963);
             double K = z * z * kernel_K(z);
             double theta = gm2_step_function(t / 0.15, t1_d);
-            double VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] - (1.0 / (2.0 * M_PI * M_PI * pow(t_a, 5)));
+            double VV_sub;
+            if (isub == -1)
+                VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] - (1.0 / (2.0 * M_PI * M_PI * pow(t_a, 5)));// perturbative
+            else
+                VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] + in[j][isub][t_a][0];// free-theory
             ft[t_a] = K * VV_sub * (1 - theta);
 
             fi[t_a][j] = ft[t_a];
@@ -1088,7 +1094,7 @@ double exp_MpiL(int n, int Nvar, double* x, int Npar, double* P) {
     return r;
 }
 double const_A(int n, int Nvar, double* x, int Npar, double* P) {
-    
+
     return P[n];
 }
 
@@ -1265,7 +1271,7 @@ double rhs_amu_separate(int n, int Nvar, double* x, int Npar, double* P) {
     double a2 = x[0];
     int il = x[4];
     int ia2 = x[5];
-    double iw = x[7];
+    int iw = x[7];
     double r = 0;
     double w02 = 0.17383 * 0.17383;
     if (iw == 1) w02 *= 3;
@@ -1300,20 +1306,42 @@ double rhs_amu_a4(int n, int Nvar, double* x, int Npar, double* P) {
     int il = x[4];
     int ia2 = x[5];
     int ial = x[6];
-    double iw = x[7];
+    int iw = x[7];
     double r = 0;
     int iR = x[6];
     double w02 = 0.17383 * 0.17383;
     if (iw == 1) w02 *= 3;
     double OS = 0, TM = 0;
 
+    int in = il / 4;
+    int im = il % 4;
 
-    OS += P[0] + a2 * P[1] * (1. / pow(log(w02 / a2), il));
-    TM += P[0] + a2 * P[2] * (1. / pow(log(w02 / a2), il));
+    int an = ial / 4;
+    int am = ial % 4;
+
+
+    OS += P[0] + a2 * P[1] * (1. / pow(log(w02 / a2), in));
+    TM += P[0] + a2 * P[2] * (1. / pow(log(w02 / a2), im));
+    // if (an == 0) OS += a2 * a2 * P[3];
+    // if (am == 0) TM += a2 * a2 * P[3];
+    // if (ia2 == 0 an > 0) OS += (1. / pow(log(w02 / a2), an)) * a2 * P[3];
+    // if (am > 0) TM += (1. / pow(log(w02 / a2), am)) * a2 * P[3];
+
     if (ia2 == 0 && ial == 0) OS += a2 * a2 * P[3];
     if (ia2 == 1 && ial == 0) TM += a2 * a2 * P[3];
     if (ia2 == 0 && ial > 0) OS += (1. / pow(log(w02 / a2), ial)) * a2 * P[3];
     if (ia2 == 1 && ial > 0) TM += (1. / pow(log(w02 / a2), ial)) * a2 * P[3];
+    if (ia2 == 2) {
+        if (ial == 0) {
+            OS += a2 * a2 * P[3];
+            TM += a2 * a2 * P[4];
+        }
+        else {
+            OS += (1. / pow(log(w02 / a2), an)) * a2 * P[3];
+            TM += (1. / pow(log(w02 / a2), am)) * a2 * P[4];
+        }
+
+    }
 
 
     if (n == 0) r = OS;
@@ -1324,18 +1352,113 @@ double rhs_amu_a4(int n, int Nvar, double* x, int Npar, double* P) {
     return r;
 }
 
-double rhs_amu_diff_ratio(int n, int Nvar, double* x, int Npar, double* P) {
+double rhs_amu_a4_charm(int n, int Nvar, double* x, int Npar, double* P) {
     double GS = x[1];
     double a2 = x[0];
     int il = x[4];
     int ia2 = x[5];
-    double iw = x[7];
+    int ial = x[6];
+    int iw = x[7];
+    double r = 0;
+    int iR = x[6];
+    double w02 = 0.17383 * 0.17383;
+    if (iw == 1) w02 *= 3;
+    double OS = 0, TM = 0;
+
+    int in = il / 4;
+    int im = il % 4;
+
+    int an = ial / 4;
+    int am = ial % 4;
+
+
+    OS += P[0] + a2 * P[1] * (1. / pow(log(w02 / a2), in));
+    TM += P[0] + a2 * P[2] * (1. / pow(log(w02 / a2), im));
+    // if (an == 0) OS += a2 * a2 * P[3];
+    // if (am == 0) TM += a2 * a2 * P[3];
+    // if (ia2 == 0 an > 0) OS += (1. / pow(log(w02 / a2), an)) * a2 * P[3];
+    // if (am > 0) TM += (1. / pow(log(w02 / a2), am)) * a2 * P[3];
+
+    if (ia2 == 0 && ial == 0) OS += a2 * a2 * P[3];
+    if (ia2 == 1 && ial == 0) TM += a2 * a2 * P[3];
+    if (ia2 == 0 && ial > 0) OS += (1. / pow(log(w02 / a2), an)) * a2 * P[3];
+    if (ia2 == 1 && ial > 0) TM += (1. / pow(log(w02 / a2), am)) * a2 * P[3];
+    if (ia2 == 2) {
+        if (ial == 0) {
+            OS += a2 * a2 * P[3];
+            TM += a2 * a2 * P[4];
+        }
+        else {
+            OS += (1. / pow(log(w02 / a2), an)) * a2 * P[3];
+            TM += (1. / pow(log(w02 / a2), am)) * a2 * P[4];
+        }
+
+    }
+
+
+    if (n == 0) r = OS;
+    if (n == 1) r = TM;
+
+
+
+    return r;
+}
+
+
+
+double rhs_amu_diff_ratio_charm(int n, int Nvar, double* x, int Npar, double* P) {
+    double GS = x[1];
+    double a2 = x[0];
+    int il = x[4];
+    int ia2 = x[5];
+    int iw = x[7];
     double r = 0;
     int iR = x[6];
     double w02 = 0.17383 * 0.17383;
     if (iw == 1) w02 *= 3;
     double diff = 0, ratio = 1;
 
+    int in = il / 4;
+    int im = il % 4;
+
+    if (ia2 == 0) {
+        diff += a2 * P[0] * (1. / pow(log(w02 / a2), in));
+        ratio += a2 * P[1] * (1. / pow(log(w02 / a2), im));
+    }
+    else if (ia2 == 1) {
+        diff += a2 * P[0] * (1. / pow(log(w02 / a2), in)) + a2 * a2 * P[2];
+        ratio += a2 * P[1] * (1. / pow(log(w02 / a2), im)) + a2 * a2 * P[3];
+    }
+    else if (ia2 == 2) {
+        diff += +a2 * P[0] + a2 * P[2] * (1. / pow(log(w02 / a2), in));
+        ratio += +a2 * P[1] + a2 * P[3] * (1. / pow(log(w02 / a2), im));
+    }
+
+
+    if (n == 0) r = diff;
+    if (n == 1) r = ratio;
+
+    if (iR == 1) {
+        if (n == 0) r = -diff;
+    }
+
+    return r;
+}
+
+double rhs_amu_diff_ratio(int n, int Nvar, double* x, int Npar, double* P) {
+    double GS = x[1];
+    double a2 = x[0];
+    int il = x[4];
+    int ia2 = x[5];
+    int iw = x[7];
+    double r = 0;
+    int iR = x[6];
+    double w02 = 0.17383 * 0.17383;
+    if (iw == 1) w02 *= 3;
+    double diff = 0, ratio = 1;
+
+    // int in = il / 4;
+    // int im = il % 4;
 
     if (ia2 == 0) {
         diff += a2 * P[0] * (1. / pow(log(w02 / a2), il));
@@ -1366,7 +1489,7 @@ double rhs_amu_cut(int n, int Nvar, double* x, int Npar, double* P) {
     double a2 = x[0];
     int il = x[4];
     int ia2 = x[5];
-    double iw = x[7];
+    int iw = x[7];
     double r = 0;
     double w02 = 0.17383 * 0.17383;
     if (iw == 1) w02 *= 3;
@@ -1378,13 +1501,64 @@ double rhs_amu_cut(int n, int Nvar, double* x, int Npar, double* P) {
             r += a2 * P[1 + n];
             break;
         case 1:
-            r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 1));
+            if (n == 0) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 0));
+            if (n == 1) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 1));
             break;
         case 2:
-            r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 2));
+            if (n == 0) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 0));
+            if (n == 1) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 2));
             break;
         case 3:
-            r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 3));
+            if (n == 0) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 0));
+            if (n == 1) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 3));
+            break;
+        case 4:
+            if (n == 0) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 1));
+            if (n == 1) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 0));
+            break;
+        case 5:
+            if (n == 0) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 1));
+            if (n == 1) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 1));
+            break;
+        case 6:
+            if (n == 0) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 1));
+            if (n == 1) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 2));
+            break;
+        case 7:
+            if (n == 0) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 1));
+            if (n == 1) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 3));
+            break;
+        case 8:
+            if (n == 0) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 2));
+            if (n == 1) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 0));
+            break;
+        case 9:
+            if (n == 0) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 2));
+            if (n == 1) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 1));
+            break;
+        case 10:
+            if (n == 0) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 2));
+            if (n == 1) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 2));
+            break;
+        case 11:
+            if (n == 0) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 2));
+            if (n == 1) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 3));
+            break;
+        case 12:
+            if (n == 0) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 3));
+            if (n == 1) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 0));
+            break;
+        case 13:
+            if (n == 0) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 3));
+            if (n == 1) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 1));
+            break;
+        case 14:
+            if (n == 0) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 3));
+            if (n == 1) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 2));
+            break;
+        case 15:
+            if (n == 0) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 3));
+            if (n == 1) r += a2 * P[1 + n] * (1. / pow(log(w02 / a2), 3));
             break;
         default:
             break;
@@ -1402,7 +1576,7 @@ double rhs_amu_pade(int n, int Nvar, double* x, int Npar, double* P) {
     double a2 = x[0];
     int il = x[4];
     int ia2 = x[5];
-    double iw = x[7];
+    int iw = x[7];
     int who_pade = x[6];
     double r = 0;
     double w02 = 0.17383 * 0.17383;
@@ -1833,7 +2007,7 @@ double lhs_amu(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
 }
 double lhs_Acharm(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double r;
-    
+
     return gjack.en[e].jack[fit_info.corr_id[n]][j];
 }
 
