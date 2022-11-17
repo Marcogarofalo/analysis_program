@@ -190,7 +190,7 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
             if (integration == "reinman") { id0 = ids[0 + iM * 2]; id1 = ids[1 + iM * 2]; }
 
             for (int l = 0;l < 4;l++) {
-                for (int a : {0, 1}) {
+                for (int a : { 1}) {
                     for (int w = 0;w < 2;w++) {
                         for (int OSTM = 0; OSTM < 2;OSTM++) {
                             fit_info.restore_default();
@@ -302,7 +302,8 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
             int id0, id1;
             if (integration == "reinman") { id0 = ids[0 + iM * 2]; id1 = ids[1 + iM * 2]; }
 
-            for (int l : {0, 1, 2, 3, 4, 8, 12}) {
+            for (int l : {0, 1,2,3,4, 5, 8, 10, 12, 15}) {
+            // for (int l=0; l<16 ;l++) {
                 for (int a : { 1}) {
                     for (int w = 0;w < 2;w++) {
                         for (int icut = 0; icut < 4;icut++) {
@@ -536,13 +537,20 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
             int id0, id1;
             if (integration == "reinman") { id0 = ids[0 + iM * 2]; id1 = ids[1 + iM * 2]; }
 
-            for (int l = 0;l < 4;l++) {
-                for (int a : { 1, 2}) {
+            for (int a : { 1, 2}) {
+                std::vector<int> vecl;
+                if (a == 0) vecl = std::vector<int>({ 0, 5, 10, 15 });
+                if (a == 1) vecl = std::vector<int>({ 0, 5, 10, 15 });
+                // if (a == 2) vecl = std::vector<int>({  1, 2, 3, 4,  8, 12 });
+                if (a == 2) vecl = std::vector<int>({  1, 2, 3, 4, 5,  8, 10, 12, 15 });
+                for (int l : vecl) {
                     for (int w = 0;w < 2;w++) {
                         for (int iR = 0; iR < 2;iR++) {
                             fit_info.restore_default();
                             fit_info.Npar = 2;
                             if (a >= 1) fit_info.Npar += 2;
+                            if (l == 1 || l == 2 || l == 3 || l == 4 || l == 8 || l == 12 ) fit_info.Npar--;
+
                             if (integration == "reinman" && iR == 0) { id0 = ids[0 + iM * 2]; id1 = ids[1 + iM * 2]; }
                             if (integration == "reinman" && iR == 1) { id0 = ids[1 + iM * 2]; id1 = ids[0 + iM * 2]; }
 
@@ -572,7 +580,7 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
                                 }
                             }
                             fit_info.corr_id = { id0 , id1 };
-                            fit_info.function = rhs_amu_diff_ratio;
+                            fit_info.function = rhs_amu_diff_ratio_charm;
                             fit_info.linear_fit = true;
                             fit_info.covariancey = true;
                             // fit_info.repeat_start=10;
@@ -630,7 +638,10 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
                             print_fit_band(argv, jackall, fit_info, fit_info, namefit, "afm", fit_DR, fit_DR, 0, fit_info.myen.size() - 1, 0.0005, xcont);
 
                             if (fabs(fit_DR.P[0][Njack - 1]) - myres->comp_error(fit_DR.P[0]) <= 0 ||
-                                fabs(fit_DR.P[1][Njack - 1]) - myres->comp_error(fit_DR.P[1]) <= 0) {
+                                fabs(fit_DR.P[1][Njack - 1]) - myres->comp_error(fit_DR.P[1]) <= 0 ||
+                                std::isnan(fit_DR.P[0][Njack - 1]) ||
+                                std::isnan(fit_DR.P[1][Njack - 1])
+                                ) {
                                 printf("fit DR produces poles excluding \n ");
                                 fit_info.restore_default();
                                 continue;
@@ -673,9 +684,15 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
             int id0, id1;
             if (integration == "reinman") { id0 = ids[0 + iM * 2]; id1 = ids[1 + iM * 2]; }
 
-            for (int l : {0, 1, 2, 3, 4, 8, 12}) {
-                for (int al = 0;al < 4;al++) {
-                    for (int a : { 0,1}) {
+
+            for (int a : { 0, 1}) {
+                std::vector<int> vec;
+                for (int l : {0, 1,2,3,4, 5, 8, 10,12, 15}) {
+                    if (a == 0) vec = std::vector<int>({ 0,  4, 8, 12 });
+                    if (a == 1) vec = std::vector<int>({ 0,  1, 2, 3 });
+                    if (a == 2) vec = std::vector<int>({ 0,  5, 6, 7, 9, 10, 11,  13, 14, 15 });
+                    for (int al : vec) {
+
                         for (int w = 0;w < 2;w++) {
 
                             if (al > 0 && l > 0) { fit_info.restore_default(); continue; }
@@ -710,7 +727,7 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
                             }
                             fit_info.corr_id = { id0 , id1 };
                             fit_info.function = rhs_amu_a4;
-                            fit_info.linear_fit = false;
+                            fit_info.linear_fit = true;
                             fit_info.covariancey = true;
                             // fit_info.acc= 1e-6;
                             // fit_info.chi2_gap_jackboot=0.1;
@@ -770,7 +787,7 @@ void   do_analysis(char** argv, std::vector<int> ids, std::vector<std::string> M
                             free_fit_result(fit_info, amu_SD_l_common_a4);
                             fit_info.restore_default();
 
-
+                            // if (strcmp("amu_W_lphys_Lref_poly_log10_w3_a4TM_cov", namefit) == 0) { exit(1); }
 
                         }
                     }

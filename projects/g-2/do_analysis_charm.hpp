@@ -169,8 +169,8 @@ void   do_analysis_charm(char** argv, std::vector<int> ids, std::vector<std::str
             int id0, id1;
             if (integration == "reinman") { id0 = ids[0 + iM * 2]; id1 = ids[1 + iM * 2]; }
 
-            for (int l = 0;l < 16;l++) {
-                for (int a : { 1}) {
+            for (int l : {0, 1,2,3,4, 5, 8, 10, 12, 15}) {
+                for (int a : { 1,2}) {
                     for (int w = 0;w < 2;w++) {
                         for (int icut = 0; icut < 4;icut++) {
                             fit_info.restore_default();
@@ -407,7 +407,7 @@ void   do_analysis_charm(char** argv, std::vector<int> ids, std::vector<std::str
                 std::vector<int> vecl;
                 if (a == 0) vecl = std::vector<int>({ 0, 5, 10, 15 });
                 if (a == 1) vecl = std::vector<int>({ 0, 5, 10, 15 });
-                if (a == 2) vecl = std::vector<int>({ 0, 1, 2, 3, 4, 8, 12 });
+                if (a == 2) vecl = std::vector<int>({  1, 2, 3, 4, 5,  8, 10, 12, 15 });
                 for (int l : vecl) {
 
                     for (int w = 0;w < 2;w++) {
@@ -415,6 +415,7 @@ void   do_analysis_charm(char** argv, std::vector<int> ids, std::vector<std::str
                             fit_info.restore_default();
                             fit_info.Npar = 2;
                             if (a >= 1) fit_info.Npar += 2;
+                            if (l == 1 || l == 2 || l == 3 || l == 4 || l == 8 || l == 12 ) fit_info.Npar--;
                             if (integration == "reinman" && iR == 0) { id0 = ids[0 + iM * 2]; id1 = ids[1 + iM * 2]; }
                             if (integration == "reinman" && iR == 1) { id0 = ids[1 + iM * 2]; id1 = ids[0 + iM * 2]; }
 
@@ -543,12 +544,12 @@ void   do_analysis_charm(char** argv, std::vector<int> ids, std::vector<std::str
             int id0, id1;
             if (integration == "reinman") { id0 = ids[0 + iM * 2]; id1 = ids[1 + iM * 2]; }
 
-            for (int l : {0, 1, 2, 3, 4, 8, 12}) {
+            for (int l : {0, 1,2,3,4, 5, 8, 10,12, 15}) {
                 for (int a : { 0, 1, 2}) {
                     std::vector<int> vec;
                     if (a == 0) vec = std::vector<int>({ 0,  4, 8, 12 });
                     if (a == 1) vec = std::vector<int>({ 0,  1, 2, 3 });
-                    if (a == 2) vec = std::vector<int>({ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 });
+                    if (a == 2) vec = std::vector<int>({ 0, 5, 6, 7,  9, 10, 11, 13, 14, 15 });
                     for (int al : vec) {
                         for (int w = 0;w < 2;w++) {
 
