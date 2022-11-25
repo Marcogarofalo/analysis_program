@@ -162,6 +162,15 @@ public:
         to_bin = std::vector<int>(iconfs.size());
         next_to_bin = std::vector<int>(iconfs.size());
     }
+    configuration_class() {
+        
+        std::cout << "lines=" << 0 << std::endl;
+        
+        std::cout << "confs=" << 0 << std::endl;
+
+        to_bin = std::vector<int>(iconfs.size());
+        next_to_bin = std::vector<int>(iconfs.size());
+    }
 
 };
 
@@ -298,6 +307,7 @@ void read_twopt(const char namefile[NAMESIZE], configuration_class& confs, int T
 
     confs.rep = std::vector<replica_class>(1);
     confs.rep[0].id = 0;
+    printf("reading: %s\n", namefile);
     if (newfile.is_open()) { // checking whether the file is open
         std::string tp;
         for (int i = 0;i < confs.iconfs.size();i++) {
@@ -890,8 +900,14 @@ int main(int argc, char** argv) {
     for (auto name : correlators) {
         printf("reading  confs from file: %s\n", name.c_str());
         if (count == 42) {
-            configuration_class tmp(name.c_str(), 0);
-            myconfs.emplace_back(tmp);
+            if (strcmp(argv[4], "cB.72.96") == 0) {
+                configuration_class tmp;
+                myconfs.emplace_back(tmp);
+            }
+            else{
+                configuration_class tmp(name.c_str(), 0);
+                myconfs.emplace_back(tmp);
+            }
         }
         else if (count == 55 || count == 56) {
             configuration_class tmp(name.c_str(), header.T - 1 - 3 + 1);
@@ -900,7 +916,11 @@ int main(int argc, char** argv) {
         else
             myconfs.emplace_back(name.c_str());
         // myconfs[cout]=read_nconfs(name.c_str());
-        myconfs[count].check_binnign();
+        if (strcmp(argv[4], "cB.72.96") != 0)
+            myconfs[count].check_binnign();
+        else {
+            myconfs[count].confs_after_binning=myconfs[count].iconfs.size();
+        }
         cout << "number of different configurations:" << myconfs[count].confs_after_binning << endl;
         count++;
         // printf("checking confs from file: %s\n", name.c_str());
@@ -947,11 +967,20 @@ int main(int argc, char** argv) {
 
     for (int i = 0; i < var; i++) {
         // read correlators[i] and store in data[conf][i][t][re/im]
-        if (i == 42) read_twopt(correlators[i].c_str(), myconfs[i], 0, data, i, bin);
-        else read_twopt(correlators[i].c_str(), myconfs[i], T, data, i, bin);
+        if (strcmp(argv[4], "cB.72.96") != 0) {
+            if (i == 42) { printf("at time zero\n");    read_twopt(correlators[i].c_str(), myconfs[i], 0, data, i, bin); }
+            else read_twopt(correlators[i].c_str(), myconfs[i], T, data, i, bin);
+        }
+        else {
+            printf("here %d\n", i);
+            if (i == 42)     printf("skip\n");
+            else if (i >= 49 && i <= 54)     printf("skip\n");
+            else read_twopt(correlators[i].c_str(), myconfs[i], T, data, i, bin);
+        }
+
 
     }
-    if (argc > 18) {
+    if (argc > 18 && strcmp(argv[4], "cB.72.96") != 0) {
         int Nconf_bolla = myconfs[42].iconfs.size();
         double**** data_no_bin = calloc_corr(Nconf_bolla, 4 + 3, file_head.l0);
         // error(Nconf_bolla!= myconfs[53].iconfs.size(),1,"main","conf of P5P5 correlated bolla are not the same of bolla");
@@ -979,7 +1008,7 @@ int main(int argc, char** argv) {
             }
         }
 
-        
+
         bin_data(data, 42, data_no_bin, 0, T, Nconf_bolla, bin); // bolla 
         bin_data(data, var + 0, data_no_bin, 4, T, Nconf_bolla, bin); // bolla * P5P5_op // 55
         bin_data(data, var + 1, data_no_bin, 5, T, Nconf_bolla, bin); // bolla * P5P5_op // 56
@@ -994,7 +1023,7 @@ int main(int argc, char** argv) {
     correlators.emplace_back("bP5P5");
     correlators.emplace_back("bVKVKeq");
     correlators.emplace_back("bVKVKop");
-    
+
     // var+3 l op
     // var+4 l eq
 
