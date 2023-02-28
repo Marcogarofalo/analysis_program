@@ -882,7 +882,7 @@ double to_invert_k_from_phase_shift(int n, int Nvar, double* x, int Npar, double
 }
 
 double to_invert_k_from_phase_shift_g(int n, int Nvar, double* x, int Npar, double* P) {
-    double a0m0 = P[0], r0m0 = P[1];//, P2=P[2];
+    double a0m0 = P[0], r0m0;//, P2=P[2];
     double L = x[0];
     double mass = x[1];
     double k = x[2];
@@ -907,7 +907,10 @@ double to_invert_k_from_phase_shift_g(int n, int Nvar, double* x, int Npar, doub
     double r = real(zc * 2. * pi_greco / (pow(pi_greco, 3. / 2.) * L * gamma * mass));
     double k_m = k / mass;
     double kcotdelta_m = 1.0 / a0m0;  //   (k cot(d) )/ mass
+    if (Npar >= 2)  r0m0 = P[1];
+
     if (Npar >= 2) {
+
         kcotdelta_m += r0m0 * k_m * k_m / 2.;
     }
     if (Npar >= 3) {
