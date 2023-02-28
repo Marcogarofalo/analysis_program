@@ -45,11 +45,26 @@ jobs:
     - name: python.h
       run: sudo apt-get install python3-dev  # for python3.x installs
       
-    
+    - name: configure
+      # Use a bash shell so we can use the same syntax for environment variable
+      # access regardless of the host operating system
+      shell: bash
+      working-directory: ${{github.workspace}}
+      run: |
+           mkdir build
+           cd build
+           cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..\
+           -DWITH_PYTHON=ON \
+           -DGM2_PROJECT=ON \
+           -DCMAKE_INSTALL_PREFIX=$(pwd)/install_dir 
            
     - name: compiling
       working-directory: ${{github.workspace}}/build
       run: make
+
+    - name: installing
+      working-directory: ${{github.workspace}}/build
+      run: make install
        
     - name: test phi4
       working-directory: ${{github.workspace}}/build
