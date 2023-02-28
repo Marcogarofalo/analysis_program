@@ -1,54 +1,39 @@
 
-
-macro(add_target_with_zeta TARGETNAME)
-    # Make the executable
-    add_target_with_lib(${TARGETNAME} ${ARGN})
-    # target_link_libraries(${TARGETNAME} PUBLIC init_zeta_function)
-    # target_link_libraries(${TARGETNAME} PUBLIC dzeta_function)
-    # target_link_libraries(${TARGETNAME} PUBLIC zeta_interpolation)
-endmacro()
-
 # add_target_with_lib(phi4 phi4.cpp)
-add_target_with_zeta(test test.cpp)
-add_target_with_zeta(phi4_new phi4_new.cpp)
-add_target_with_zeta(analysis_SDE analysis_SDE.cpp)
+add_target_with_lib(test test.cpp)
+add_target_with_lib(phi4_new phi4_new.cpp)
+add_target_with_lib(analysis_SDE analysis_SDE.cpp)
 
 IF(PHI4_PROJECT OR ALL_PROJECT)
 IF(WITH_PYTHON)
-    # add_target_with_lib(fit_all_quantization_condition fit_all_quantization_condition.cpp)
-    # add_target_with_lib(fit_all_g0.1 fit_all_g0.1.cpp)
-    add_target_with_zeta(fit_all_g0.25 fit_all_g0.25.cpp)
-    add_target_with_zeta(fit_all_g1.5 fit_all_g1.5.cpp)
-    add_target_with_zeta(fit_all_g0.25_t1 fit_all_g0.25_t1.cpp)
-    add_target_with_zeta(fit_all_ising_g0.005 fit_all_ising_g0.005.cpp)
+    add_target_with_lib(fit_all_g0.25 fit_all_g0.25.cpp)
+    add_target_with_lib(fit_all_g1.5 fit_all_g1.5.cpp)
+    add_target_with_lib(fit_all_g0.25_t1 fit_all_g0.25_t1.cpp)
+    add_target_with_lib(fit_all_ising_g0.005 fit_all_ising_g0.005.cpp)
 
-    # add_target_with_lib(fit_all_g fit_all_g.cpp)
-    # add_target_with_lib(fit_all_phi4 fit_all_phi4.cpp)
+    
     add_library(
         extra_func_phi4 STATIC
         extra_func_phi4.hpp
         extra_func_phi4.cpp
     )
-    # target_link_libraries(extra_func_phi4 PUBLIC )
     target_link_libraries(extra_func_phi4  PUBLIC analysis_program)
     target_include_directories(extra_func_phi4 PUBLIC ${CMAKE_SOURCE_DIR}/include)
-
-    # target_link_libraries(extra_func_phi4 PUBLIC QC3_interface)
     target_include_directories(extra_func_phi4 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
-    add_target_with_zeta(fit_all_complex_g0 fit_all_complex_g0.cpp)
+    add_target_with_lib(fit_all_complex_g0 fit_all_complex_g0.cpp)
     target_link_libraries(fit_all_complex_g0 PUBLIC extra_func_phi4)
 
-    add_target_with_zeta(fit_all_complex_g5 fit_all_complex_g5.cpp)
+    add_target_with_lib(fit_all_complex_g5 fit_all_complex_g5.cpp)
     target_link_libraries(fit_all_complex_g5 PUBLIC extra_func_phi4)
 
-    add_target_with_zeta(fit_all_complex_g5_largeL fit_all_complex_g5_largeL.cpp)
+    add_target_with_lib(fit_all_complex_g5_largeL fit_all_complex_g5_largeL.cpp)
     target_link_libraries(fit_all_complex_g5_largeL PUBLIC extra_func_phi4)
 
-    add_target_with_zeta(fit_all_complex_g10 fit_all_complex_g10.cpp)
+    add_target_with_lib(fit_all_complex_g10 fit_all_complex_g10.cpp)
     target_link_libraries(fit_all_complex_g10 PUBLIC extra_func_phi4)
 
-    add_target_with_zeta(fit_all_complex_g20 fit_all_complex_g20.cpp)
+    add_target_with_lib(fit_all_complex_g20 fit_all_complex_g20.cpp)
     target_link_libraries(fit_all_complex_g20 PUBLIC extra_func_phi4)
 ENDIF()
 
@@ -57,15 +42,13 @@ add_library(
     common_integral_eq.hpp
     common_integral_eq.cpp
 )
-#target_link_libraries(common_integral_eq PUBLIC mutils)
-#target_link_libraries(common_integral_eq PUBLIC integral_eq_QC3)
-# target_include_directories(common_integral_eq PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(common_integral_eq  PUBLIC analysis_program)
 target_include_directories(common_integral_eq PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 macro(add_target_with_int_eq_lib TARGETNAME)
     # Make the executable
-    add_target_with_zeta(${TARGETNAME} ${ARGN})
+    add_target_with_lib(${TARGETNAME} ${ARGN})
+    # links
     target_link_libraries(${TARGETNAME} PUBLIC common_integral_eq)
 endmacro()
 

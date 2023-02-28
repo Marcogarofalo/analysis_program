@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 #add_subdirectory(../modules  ../modules)
 
-#set(CMAKE_CXX_COMPILER /usr/bin/g++)
-#set(CMAKE_C_COMPILER /usr/bin/gcc)
-#set(CMAKE_CXX_FLAGS "-fopenmp   -pedantic  -g -O3   -lm -lgmp  ")
+
 MESSAGE("CMAKE_CXX_FLAGS:   ${CMAKE_CXX_FLAGS} ")
 #set(CMAKE_C_FLAGS "-fopenmp   -pedantic  -g -O3  -lm -lgmp  ")
 
@@ -65,14 +63,13 @@ ENDIF()
 find_package(Eigen3 REQUIRED)
 add_subdirectory(include  include)
 #############################################
-##################################
+# install package
+#############################################
 include(CMakePackageConfigHelpers)
 include(CMakeDependentOption)
 include(CheckCXXCompilerFlag)
 include(GNUInstallDirs)
 
-#set(CMAKE_INSTALL_LIBDIR "lib")
-#set(CMAKE_INSTALL_INCLUDEDIR "include/analysis_program")
 
 target_include_directories(analysis_program 
 PUBLIC
@@ -134,6 +131,7 @@ unset(CONFIG_EXPORT_DIR)
 macro(add_target_with_lib TARGETNAME)
   # Make the executable
   add_executable(${TARGETNAME} ${ARGN})
+  # links
   target_link_libraries(${TARGETNAME}  PUBLIC analysis_program)
 endmacro()
 
