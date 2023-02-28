@@ -1,0 +1,22 @@
+# - Config file for the analysis_program package
+# It defines the following variables
+#  ANALYSIS_PROGRAM_INCLUDE_DIR       - include directory
+#  ANALYSIS_PROGRAM_LIBRARY_DIR       - directory containing libraries
+#  ANALYSIS_PROGRAM_SHARED_LIBS_BUILT - whether we have built shared libraries or not
+#  ANALYSIS_PROGRAM_LIBRARIES         - libraries to link against
+
+@PACKAGE_INIT@
+
+set_and_check(ANALYSIS_PROGRAM_INCLUDE_DIR "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
+set_and_check(ANALYSIS_PROGRAM_LIBRARY_DIR "@PACKAGE_CMAKE_INSTALL_LIBDIR@")
+
+# Are we building shared libraries?
+set(ANALYSIS_PROGRAM_SHARED_LIBS_BUILT "@PACKAGE_YAML_BUILD_SHARED_LIBS@")
+
+# Our library dependencies (contains definitions for IMPORTED targets)
+include(@PACKAGE_CONFIG_EXPORT_DIR@/analysis_program-targets.cmake)
+
+# These are IMPORTED targets created by analysis_program-targets.cmake
+set(ANALYSIS_PROGRAM_LIBRARIES "@EXPORT_TARGETS@")
+
+check_required_components(@EXPORT_TARGETS@)

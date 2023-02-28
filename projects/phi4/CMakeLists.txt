@@ -3,9 +3,9 @@
 macro(add_target_with_zeta TARGETNAME)
     # Make the executable
     add_target_with_lib(${TARGETNAME} ${ARGN})
-    target_link_libraries(${TARGETNAME} PUBLIC init_zeta_function)
-    target_link_libraries(${TARGETNAME} PUBLIC dzeta_function)
-    target_link_libraries(${TARGETNAME} PUBLIC zeta_interpolation)
+    # target_link_libraries(${TARGETNAME} PUBLIC init_zeta_function)
+    # target_link_libraries(${TARGETNAME} PUBLIC dzeta_function)
+    # target_link_libraries(${TARGETNAME} PUBLIC zeta_interpolation)
 endmacro()
 
 # add_target_with_lib(phi4 phi4.cpp)
@@ -29,7 +29,9 @@ IF(WITH_PYTHON)
         extra_func_phi4.hpp
         extra_func_phi4.cpp
     )
-    target_link_libraries(extra_func_phi4 PUBLIC fit_all)
+    # target_link_libraries(extra_func_phi4 PUBLIC )
+    target_link_libraries(extra_func_phi4  PUBLIC analysis_program)
+    target_include_directories(extra_func_phi4 PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
     # target_link_libraries(extra_func_phi4 PUBLIC QC3_interface)
     target_include_directories(extra_func_phi4 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -55,9 +57,11 @@ add_library(
     common_integral_eq.hpp
     common_integral_eq.cpp
 )
-target_link_libraries(common_integral_eq PUBLIC mutils)
-target_link_libraries(common_integral_eq PUBLIC integral_eq_QC3)
-target_include_directories(common_integral_eq PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+#target_link_libraries(common_integral_eq PUBLIC mutils)
+#target_link_libraries(common_integral_eq PUBLIC integral_eq_QC3)
+# target_include_directories(common_integral_eq PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(common_integral_eq  PUBLIC analysis_program)
+target_include_directories(common_integral_eq PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 macro(add_target_with_int_eq_lib TARGETNAME)
     # Make the executable

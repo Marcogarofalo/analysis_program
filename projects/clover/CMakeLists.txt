@@ -3,10 +3,10 @@
 macro(add_target_with_lib_clover TARGETNAME)
     # Make the executable
     add_target_with_lib(${TARGETNAME} ${ARGN})
-    target_link_libraries(${TARGETNAME} PUBLIC bessel)
-    target_link_libraries(${TARGETNAME} PUBLIC pion)
-    target_link_libraries(${TARGETNAME} PUBLIC KandD)
-    target_link_libraries(${TARGETNAME} PUBLIC fve)
+    # target_link_libraries(${TARGETNAME} PUBLIC bessel)
+    # target_link_libraries(${TARGETNAME} PUBLIC pion)
+    # target_link_libraries(${TARGETNAME} PUBLIC KandD)
+    # target_link_libraries(${TARGETNAME} PUBLIC fve)
 endmacro()
 
 

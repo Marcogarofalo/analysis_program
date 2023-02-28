@@ -12,9 +12,9 @@ target_include_directories(header_file_virph PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}
 macro(add_target_virtualphoton TARGETNAME)
     # Make the executable
     add_target_with_lib(${TARGETNAME} ${ARGN})
-    target_link_libraries(${TARGETNAME} PUBLIC global_reph)
-    target_link_libraries(${TARGETNAME} PUBLIC continuum_reph)
-    target_link_libraries(${TARGETNAME} PUBLIC header_file_virph)
+    # target_link_libraries(${TARGETNAME} PUBLIC global_reph)
+    # target_link_libraries(${TARGETNAME} PUBLIC continuum_reph)
+    # target_link_libraries(${TARGETNAME} PUBLIC header_file_virph)
 endmacro()
 
 

@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.13)
 MESSAGE("CMAKE_CXX_FLAGS:   ${CMAKE_CXX_FLAGS} ")
 #set(CMAKE_C_FLAGS "-fopenmp   -pedantic  -g -O3  -lm -lgmp  ")
 
-project(analysis_program CXX C)
+project(analysis_program  VERSION 0.1.0 LANGUAGES CXX C)
 #-pg -no-pie , for gproof, then run , gproof exe  gmout.
 #-g # then compile , then open gdb, write the commands : file $namefile; run  $options ; bt
 # valgrind --leak-check=yes --track-origins=yes  ./program   #compile with -g to have line number
@@ -64,45 +64,77 @@ ENDIF()
 
 find_package(Eigen3 REQUIRED)
 add_subdirectory(include  include)
+#############################################
+##################################
+include(CMakePackageConfigHelpers)
+include(CMakeDependentOption)
+include(CheckCXXCompilerFlag)
+include(GNUInstallDirs)
+
+#set(CMAKE_INSTALL_LIBDIR "lib")
+#set(CMAKE_INSTALL_INCLUDEDIR "include/analysis_program")
+
+target_include_directories(analysis_program 
+PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+PRIVATE
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+) 
+
+
+set(CONFIG_EXPORT_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/analysis_program")
+set(EXPORT_TARGETS analysis_program)
+
+configure_package_config_file(
+  "${PROJECT_SOURCE_DIR}/analysis_program-config.cmake.in"
+  "${PROJECT_BINARY_DIR}/analysis_program-config.cmake"
+  INSTALL_DESTINATION "${CONFIG_EXPORT_DIR}"
+  PATH_VARS CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR CONFIG_EXPORT_DIR)
+unset(EXPORT_TARGETS)
+
+write_basic_package_version_file(
+  "${PROJECT_BINARY_DIR}/analysis_program-config-version.cmake"
+  COMPATIBILITY AnyNewerVersion)
+
+configure_file("${PROJECT_SOURCE_DIR}/analysis_program.pc.in" "${PROJECT_BINARY_DIR}/analysis_program.pc" @ONLY)
+
+MESSAGE("PROJECT_SOURCE_DIR ${PROJECT_SOURCE_DIR}")
+MESSAGE("CMAKE_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR}")
+MESSAGE("CONFIG_EXPORT_DIR ${CONFIG_EXPORT_DIR}")
+MESSAGE("CMAKE_INSTALL_LIBDIR  ${CMAKE_INSTALL_LIBDIR}")
+MESSAGE("EXPORT_TARGETS  ${EXPORT_TARGETS}")
+
+install(TARGETS analysis_program
+  EXPORT analysis_program-targets
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
+                  ${PROJECT_SOURCE_DIR}/external/rzeta/src/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILES_MATCHING 
+              PATTERN "*.hpp"
+              PATTERN "*.h")
+install(EXPORT analysis_program-targets
+  DESTINATION "${CONFIG_EXPORT_DIR}")
+install(FILES
+    "${PROJECT_BINARY_DIR}/analysis_program-config.cmake"
+    "${PROJECT_BINARY_DIR}/analysis_program-config-version.cmake"
+  DESTINATION "${CONFIG_EXPORT_DIR}")
+install(FILES "${PROJECT_BINARY_DIR}/analysis_program.pc"
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+unset(CONFIG_EXPORT_DIR)
+
+
+#############################################
 
 # this has been taken straight from the build system of Balint's Dslash (github.com/bjoo/KokkosDslash)
 macro(add_target_with_lib TARGETNAME)
   # Make the executable
   add_executable(${TARGETNAME} ${ARGN})
-  target_link_libraries(${TARGETNAME} PUBLIC global)
-  target_link_libraries(${TARGETNAME} PUBLIC rand)
-  target_link_libraries(${TARGETNAME} PUBLIC linear_fit)
-  target_link_libraries(${TARGETNAME} PUBLIC resampling)
-  target_link_libraries(${TARGETNAME} PUBLIC resampling_new)
-  target_link_libraries(${TARGETNAME} PUBLIC mutils)
- # target_link_libraries (${TARGETNAME} PUBLIC Eigen3::Eigen)
-  target_link_libraries (${TARGETNAME} PUBLIC indices)
-  target_link_libraries (${TARGETNAME} PUBLIC m_eff)
-  # target_link_libraries(${TARGETNAME} PUBLIC fftw3)
-  target_link_libraries(${TARGETNAME} PUBLIC read)
-  target_link_libraries(${TARGETNAME} PUBLIC gnuplot)
-  target_link_libraries(${TARGETNAME} PUBLIC various_fits)
-  target_link_libraries(${TARGETNAME} PUBLIC eigensystem)
-  #target_link_libraries(${TARGETNAME} PUBLIC global_barion_QED)  
-  target_link_libraries(${TARGETNAME} PUBLIC non_linear_fit)
-  target_link_libraries(${TARGETNAME} PUBLIC minimizer)
-  target_link_libraries(${TARGETNAME} PUBLIC m_eff1)
-  target_link_libraries(${TARGETNAME} PUBLIC virtualphoton_routines)
-  target_link_libraries(${TARGETNAME} PUBLIC gamma_analysis)
-  target_link_libraries(${TARGETNAME} PUBLIC correlators_analysis)
-  target_link_libraries(${TARGETNAME} PUBLIC tower)
-  target_link_libraries(${TARGETNAME} PUBLIC fit_all)
-  #target_include_directories(${TARGETNAME} PUBLIC "${CMAKE_SOURCE_DIR}/include")
-  # target_include_directories(${TARGETNAME} PUBLIC "${CMAKE_BINARY_DIR}/include")
-  IF(WITH_PYTHON)
-        #target_include_directories(${TARGETNAME} PUBLIC pyhelper)
-        #target_include_directories(${TARGETNAME} PUBLIC python3.9)
-        target_link_libraries(${TARGETNAME} PUBLIC ${PYTHON_LIBRARIES})
-        target_link_libraries(${TARGETNAME} PUBLIC QC3_interface)
-        target_link_libraries(${TARGETNAME} PUBLIC ${Python3_LIBRARIES})
-        
-  ENDIF()
-#target_link_libraries(${TARGETNAME} PUBLIC Kokkos::kokkos)
+  target_link_libraries(${TARGETNAME}  PUBLIC analysis_program)
 endmacro()
 
 if(realphoton_PROJECT OR ALL_PROJECT)
@@ -134,3 +166,6 @@ ENDIF()
 
 add_subdirectory(tests  tests)
 
+IF(renormalization_D_PROJECT OR ALL_PROJECT)
+    add_subdirectory(projects/renormalization_D  renormalization_D)
+ENDIF()

@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
+libdir=@CMAKE_INSTALL_FULL_LIBDIR@
+
+Name: analysis_program
+Description: analysis_program in C++
+Version: @ANALYSIS_PROGRAM_VERSION@
+Requires:
+Libs: -L${libdir} -lanalysis_program
+Cflags: -I${includedir} 
