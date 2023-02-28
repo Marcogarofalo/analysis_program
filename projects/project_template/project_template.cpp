@@ -2,16 +2,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
+// #include <time.h>
+// #include <complex.h>
 #include <iostream>
-
 #include <string>
 #include <cstring> 
-#include <string>
 #include <fstream>
-#include <memory>
+
 
 #include "global.hpp"
 #include "resampling_new.hpp"
