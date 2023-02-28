@@ -25,11 +25,9 @@ here=$(pwd)
 cat > ../$name/build/do_cmake.sh << EOF
 cmake -DCMAKE_PREFIX_PATH=${here}/build/install_dir \\
       -DCMAKE_CXX_FLAGS="-g -O2"  \\
+      $2 \\
       ..
 
 EOF
 
-# cd ../$name/build
-# bash do_cmake.sh
-# make
-# cd $here
+cp .gitignore ../$name/

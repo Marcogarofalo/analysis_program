@@ -97,7 +97,7 @@ jobs:
            bash create_project.sh  test_project
            cd ../test_project
            cd build  
-           bash do_cmake.sh
+           bash do_cmake.sh -DCMAKE_BUILD_TYPE=$BUILD_TYPE
            make
               
          

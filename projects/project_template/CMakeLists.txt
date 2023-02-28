@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 3.13)
 
 project(project_template CXX C)
+
+
+IF(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+  set(CMAKE_CXX_FLAGS  " ${CMAKE_CXX_FLAGS} ${CXXFLAGS} -fsanitize=address -fsanitize=undefined -fno-sanitize-recover=all")
+  set(CMAKE_CXX_FLAGS  " ${CMAKE_CXX_FLAGS} ${CXXFLAGS} -fsanitize=float-cast-overflow -fno-sanitize=null -fno-sanitize=alignment")
+  set(CMAKE_CXX_FLAGS  " ${CMAKE_CXX_FLAGS} ${CXXFLAGS} -static-libasan -g   ")#-fsanitize=float-divide-by-zero
+  set(LDFLAGS "${LDFLAGS}  -fsanitize=address")
+  set(CMAKE_LDFLAGS_FLAGS  " ${CMAKE_LDFLAGS_FLAGS} ${LDFLAGS} ")
+ENDIF()
+
 #############################################
 # load analysis_program
 #############################################
