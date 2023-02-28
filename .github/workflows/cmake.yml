@@ -53,7 +53,7 @@ jobs:
       run: |
            mkdir build
            cd build
-           cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..\
+           cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE .. \
            -DWITH_PYTHON=ON \
            -DGM2_PROJECT=ON \
            -DCMAKE_INSTALL_PREFIX=$(pwd)/install_dir 
