@@ -94,10 +94,10 @@ jobs:
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: |
-           bash create_project.sh  test_project
+           bash create_project.sh  test_project -DCMAKE_BUILD_TYPE=$BUILD_TYPE
            cd ../test_project
            cd build  
-           bash do_cmake.sh -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+           bash do_cmake.sh 
            make
               
          
