@@ -85,7 +85,7 @@ jobs:
            cd tests
            ./test_non_linear_fit
 
-    - name: Create a new project
+    - name: test creation of a new project
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
       shell: bash
@@ -96,7 +96,6 @@ jobs:
       run: |
            bash create_project.sh  test_project
            cd ../test_project
-           mkdir build 
            cd build  
            bash do_cmake.sh
            make
