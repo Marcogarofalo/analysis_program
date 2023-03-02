@@ -33,6 +33,7 @@ set(analysis_header
     global_reph.hpp
     continuum_reph.hpp
     integral_eq_QC3.hpp
+    read_nissa.hpp
 )
 
 set(analysis_scr
@@ -84,6 +85,7 @@ set(analysis_scr
     ../modules/reph/FAV_interpolation_msc.cpp
     ../modules/reph/FAV_treshold.cpp
     ../modules/three_particle_QC/integral_eq_QC3.cpp
+    ../modules/read_nissa.cpp
 )
 
 if(WITH_PYTHON)

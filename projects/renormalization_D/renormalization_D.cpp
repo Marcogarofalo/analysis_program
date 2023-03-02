@@ -23,6 +23,7 @@
 
 #include "correlators_analysis.hpp"
 #include "functions_renormalization_D.hpp"
+#include "read_nissa.hpp"
 struct  kinematic kinematic_2pt;
 
 generic_header read_head(FILE* stream) {
@@ -67,11 +68,11 @@ void init_global_head(generic_header head) {
     file_head.l2 = head.L;
     file_head.l3 = head.L;
     file_head.nk = 2;
-    file_head.musea = head.mus[1];
+    file_head.musea = head.mus[0];
     file_head.k = (double*)malloc(sizeof(double) * file_head.nk * 2);
     file_head.k[0] = 0;file_head.k[1] = 0;
-    file_head.k[2] = head.mus[1];
-    file_head.k[3] = head.mus[1];
+    file_head.k[2] = head.mus[0];
+    file_head.k[3] = head.mus[0];
 
     file_head.nmoms = 1;
     file_head.mom = (double**)malloc(sizeof(double*) * file_head.nmoms);
@@ -96,45 +97,6 @@ void read_twopt(FILE* stream, double*** to_write, generic_header head) {
 
 }
 
-void read_single_nissa(double** out, std::string contraction, std::string gamma, std::string namefile) {
-    std::fstream newfile;
-    bool found_contraction = false;
-    bool found_gamma = false;
-
-    newfile.open(namefile, std::ios::in); // open a file to perform read operation using file object
-    if (newfile.is_open()) { // checking whether the file is open
-        std::string tp;
-        while (getline(newfile, tp)) { // read data from file object and put it into string.
-            // line++;
-            std::vector<std::string> x = split(tp, ' ');
-            if (x[0].compare("#")) {
-                if (x[1].compare("Contraction")) {
-                    found_contraction = true;
-                }
-                if (x[1].compare(gamma)) {
-                    found_gamma = true;
-                }
-            }
-
-        }
-    }
-    exit(1);
-}
-
-void read_from_nissa(double** out, std::string path, std::vector<int> confs, std::string& contraction, std::string& gamma, std::string namefile) {
-    std::fstream newfile;
-    newfile.open(namefile, std::ios::in); // open a file to perform read operation using file object
-    if (newfile.is_open()) { // checking whether the file is open
-        std::string tp;
-        while (getline(newfile, tp)) { // read data from file object and put it into string.
-            // line++;
-            std::vector<std::string> x = split(tp, ' ');
-
-        }
-    }
-
-}
-
 int main(int argc, char** argv) {
     error(argc != 7, 1, "nissa_mpcac ",
         "usage:./nissa_mpcac -p path file -bin $bin  jack/boot \n separate path and file please");
@@ -147,15 +109,20 @@ int main(int argc, char** argv) {
     char namefile_plateaux[NAMESIZE];
     mysprintf(namefile_plateaux, NAMESIZE, "plateaux.txt");
 
-    FILE* infile = open_file(namefile, "r");
+    // FILE* infile = open_file(namefile, "r");
 
-    double**** data = calloc_corr(1, 1, 96);
-    read_single_nissa(data[0][0], "S_M0_R0_0 ^ \\dag and S_M0_R0_0", "P5P5", "mes_contr_M_R0_0_M_R0_0");
+    double**** data = calloc_corr(2, 2, 80 * 2);
+    // read_single_nissa(data[0][0], "S_M0_R0_0 ^ dag and S_M0_R0_0", "P5P5", "mes_contr_M_R0_0_M_R0_0");
     //////////////////////////////////// read and setup header
-    generic_header head = read_head(infile);
+    generic_header head;//= read_head(infile);
+    head.mus.emplace_back(0.1);
     init_global_head(head);
 
     //////////////////////////////////// setup jackboot and binning
+    head.Njack = 1;
+    head.ncorr = 1;
+    head.kappa = 0.4;
+    head.T = 80 * 2;
     int confs = head.Njack;
     int bin = atoi(argv[5]);
     int Neff = confs / bin;
@@ -189,9 +156,37 @@ int main(int argc, char** argv) {
     printf("confs=%d\n", confs);
     printf("ncorr=%d\n", head.ncorr);
     printf("kappa=%g\n", head.kappa);
-    for (int iconf = 0; iconf < confs;iconf++) {
-        // read_twopt(infile, data[iconf], head);
 
+
+
+    for (int iconf = 0; iconf < 2;iconf++) {
+        mysprintf(namefile, NAMESIZE, "%s/data/out_ordered1/%04d/mes_contr_2pts_ll", option[3], iconf + 1);
+        std::string mes_file_conf(namefile);
+        std::cout << mes_file_conf << "\n";
+        int a = timestamp();
+        read_single_nissa(data[iconf][0], "S0_th0_m15_r1_ll ^ \\dag and S0_th0_m15_r1_ll", "S0V0", mes_file_conf);
+        printf("time to read the last %fs\n", timestamp() - a);
+        a = timestamp();
+        // read_single_nissa(data[iconf][0], "S0_th0_m0_r0_ll ^ \\dag and S0_th0_m0_r0_ll", "P5S0", mes_file_conf);
+        printf("time to read the first %fs\n", timestamp() - a);
+        printf("we read the file\n");
+    }
+
+
+    double**** data_all = (double****)malloc(sizeof(double***) * 2);
+    head.ncorr = 33184;
+    head.T = 160;
+    for (int iconf = 0; iconf < 2;iconf++) {
+        mysprintf(namefile, NAMESIZE, "%s/data/out_ordered1/%04d/mes_contr_2pts_ll", option[3], iconf + 1);
+        std::string mes_file_conf(namefile);
+        std::cout << mes_file_conf << "\n";
+        int a = timestamp();
+        data_all[iconf] = return_all_nissa(mes_file_conf, head.ncorr, head.T);
+        printf("time to read all %fs\n", timestamp() - a);
+    }
+    printf("comparing\n");
+    for (int i = 0;i < 80 * 2;i++) {
+        printf("%-20g  %-20g %-20g\n", data[0][0][i][0], data_all[0][head.ncorr -1][i][0], data[0][0][i][0] - data_all[0][head.ncorr - 1][i][0]);
     }
 
     double**** data_bin = binning(confs, head.ncorr, head.T, data, bin);
