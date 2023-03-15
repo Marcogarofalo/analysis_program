@@ -24,6 +24,106 @@
 #include "resampling.hpp"
 #include "resampling_new.hpp"
 
+void generic_header::print_header() {
+    printf("Njack %i\n", Njack);
+    printf("T %i\n", T);
+    printf("L %i\n", L);
+    printf("beta %i\n", beta);
+    printf("kappa %d\n", kappa);
+    printf("mus ");
+    for (double mu : mus) printf("%g ", mu);
+    printf("\nr ");
+    for (double r : rs) printf("%g ", r);
+    printf("\ntheta ");
+    for (double theta : thetas) printf("%g ", theta);
+    printf("\ngammas ");
+    for (std::string gamma : gammas) printf("%s ", gamma.c_str());
+    printf("\n");
+}
+template<class T>
+void write_vector(FILE* file, std::vector<T> v) {
+    int n = v.size();
+    fwrite(&n, sizeof(int), 1, file);
+    for (auto mu : v)fwrite(&mu, sizeof(T), 1, file);
+}
+
+template<> void write_vector<std::string>(FILE* file, std::vector<std::string> v) {
+    int n = v.size();
+    fwrite(&n, sizeof(int), 1, file);
+    for (auto mu : v) {
+        char a[NAME_SIZE];
+        mysprintf(a, NAMESIZE, "%s", mu.c_str());
+        fwrite(a, sizeof(6 + 1), 1, file);
+    }
+}
+
+void generic_header::write_header(FILE* file) {
+    fwrite(&Njack, sizeof(int), 1, file);
+    fwrite(&T, sizeof(int), 1, file);
+    fwrite(&L, sizeof(int), 1, file);
+    fwrite(&size, sizeof(int), 1, file);
+    fwrite(&ncorr, sizeof(int), 1, file);
+    fwrite(&beta, sizeof(double), 1, file);
+    fwrite(&kappa, sizeof(double), 1, file);
+
+    write_vector(file, mus);
+    write_vector(file, rs);
+    write_vector(file, thetas);
+    write_vector(file, gammas);
+    write_vector(file, smearing);
+
+    write_vector(file, bananas);
+    write_vector(file, oranges);
+
+    fwrite(&size, sizeof(int), 1, file);
+}
+
+template<class T>
+void read_vector(FILE* file, std::vector<T>& v) {
+    int n;
+    int i = fread(&n, sizeof(int), 1, file);
+    v.resize(n);
+    for (int j = 0;j < n;j++) i += fread(&v[j], sizeof(T), 1, file);
+}
+template<>
+void read_vector<std::string>(FILE* file, std::vector<std::string>& v) {
+    int n;
+    int i = fread(&n, sizeof(int), 1, file);
+    v.resize(n);
+    for (int j = 0;j < n;j++) {
+        char a[NAME_SIZE];
+        i += fread(a, sizeof(6 + 1), 1, file);
+        v[j] = a;
+    }
+}
+
+
+
+
+void generic_header::read_header(FILE* file) {
+    int i = 0;
+    i += fread(&Njack, sizeof(int), 1, file);
+    i += fread(&T, sizeof(int), 1, file);
+    i += fread(&L, sizeof(int), 1, file);
+    i += fread(&size, sizeof(int), 1, file);
+    i += fread(&ncorr, sizeof(int), 1, file);
+    i += fread(&beta, sizeof(double), 1, file);
+    i += fread(&kappa, sizeof(double), 1, file);
+
+    read_vector(file,mus);
+    read_vector(file,rs);
+    read_vector(file,thetas);
+    read_vector(file,gammas);
+
+    read_vector(file,bananas);
+    read_vector(file,oranges);
+
+    
+    error(size!=ncorr*2*T,1,"generic_header::read_header", "size of the data chunk is not equal to ncorr*2*T\n");
+
+    
+}
+
 
 // void data_single::cut_confs(int N) {
 //     if (N >= Njack - 1) { printf("error: trying to cut the configuration up to N= %d > Njack = %d", N, Njack); exit(1); }
@@ -258,7 +358,7 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
                     tmpx[i] = xval[i];
                 }
                 for (int i = xval.size(); i < Nvar; i++) {
-                    tmpx[i] = fit_info.x[i][en ][j];
+                    tmpx[i] = fit_info.x[i][en][j];
                 }
                 tmpx[var] = pos;
                 tmpy[j] = fit_info.function(n, Nvar, tmpx, Npar, tif[j]);

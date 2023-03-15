@@ -13,12 +13,24 @@ public:
     int Njack;
     int T;
     int L;
-    std::vector<double> mus{};
-    std::vector<double> thetas{};
+    int size;// how many doublers there are in data block
+    int ncorr;
+
     double beta;
     double kappa;
-    int size;
-    int ncorr;
+    
+    std::vector<double> mus{};
+    std::vector<double> rs{};
+    std::vector<double> thetas{};
+    std::vector<std::string> gammas{};
+    std::vector<std::string> smearing{};
+    std::vector<int> bananas{};
+    std::vector<double> oranges{};
+
+
+    void print_header();
+    void write_header(FILE *file);
+    void read_header(FILE *file);
     // generic_header() : T(0), L(0), mus{}, thetas{} {
     //     // std::cout << "header constr 0" << std::endl;
     // }

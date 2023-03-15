@@ -102,8 +102,8 @@ double**** binning_toNb(int N, int var, int t, double**** data, int Nb) {
                 l = 0;
                 for (i = 0;i < bin;i++) {
                     for (l = 0;l < Nb;l++) {
-                        out[l][j][k][0] += data[i+l*bin][j][k][0];
-                        out[l][j][k][1] += data[i+l*bin][j][k][1];
+                        out[l][j][k][0] += data[i + l * bin][j][k][0];
+                        out[l][j][k][1] += data[i + l * bin][j][k][1];
                     }
                 }
                 for (l = 0;l < Nb;l++) {
@@ -119,6 +119,51 @@ double**** binning_toNb(int N, int var, int t, double**** data, int Nb) {
     return out;
 }
 
+void bin_intoN(double**** to_write, int id, double**** data, int nvar, int T, int Nconfs_bolla, int Nb) {
+
+
+    double clustSize = ((double)Nconfs_bolla) / ((double)Nb);
+    // double clustSize = ((double)confs.confs_after_binning) / ((double)Nb);
+
+    for (size_t iClust = 0;iClust < Nb;iClust++) {
+        for (int t = 0;t < T / 2 + 1;t++) {
+            to_write[iClust][id][t][0] = 0;
+        }
+        /// Initial time of the bin
+        const double binBegin = iClust * clustSize;
+        /// Final time of the bin
+        const double binEnd = binBegin + clustSize;
+        double binPos = binBegin;
+        do {
+            /// Index of the configuration related to the time
+            const size_t iConf = floor(binPos + 1e-10);
+
+            ///Rectangle left point
+            const double beg = binPos;
+
+            /// Rectangle right point
+            const double end = std::min(binEnd, iConf + 1.0);
+
+            /// Rectangle horizontal size
+            const double weight = end - beg;
+
+            // Perform the operation passing the info
+            for (int t = 0;t < T / 2 + 1;t++) {
+                for (int ivar = 0; ivar < nvar; ivar++) {
+                    to_write[iClust][ivar][t][0] += weight * data[iConf][ivar][t][0];
+                    to_write[iClust][ivar][t][1] += weight * data[iConf][ivar][t][1];
+                }
+            }
+            // printf("Cluster=%ld  iConf=%ld  weight=%g  size=%g  end=%g  beg=%g\n",iClust,iConf,weight,clustSize, end,beg);
+            // Updates the position
+            binPos = end;
+        } while (binEnd - binPos > 1e-10);
+        for (int t = 0;t < T / 2 + 1;t++) {
+            to_write[iClust][id][t][0] /= ((double)clustSize);
+        }
+
+    }
+}
 
 //data[#conf.][#variable][#time_cordinate][#re or im]
 double**** read_datafile(int N, int var, int t, int bin) {
@@ -301,32 +346,32 @@ void second_derivative_corr(int N, int var, int t, double**** data) {
 
 }
 
-void cbtc_corr(int N, int var, int t ,double ****data){
-    int i,j,k;
-    double ****out;
-    
-    out=calloc_corr( N,  var+1,  t );
-    
-    j=var;
-    for (i=0;i<N;i++){
-        for(k=0;k<t;k++){
-            if (k==t-1){
-                out[i][j][k][0]=(data[i][j][0][0]+2.*data[i][j][k][0]+data[i][j][k-1][0])/4.;
-                out[i][j][k][1]=(data[i][j][0][1]+2.*data[i][j][k][1]+data[i][j][k-1][1])/4.;
+void cbtc_corr(int N, int var, int t, double**** data) {
+    int i, j, k;
+    double**** out;
+
+    out = calloc_corr(N, var + 1, t);
+
+    j = var;
+    for (i = 0;i < N;i++) {
+        for (k = 0;k < t;k++) {
+            if (k == t - 1) {
+                out[i][j][k][0] = (data[i][j][0][0] + 2. * data[i][j][k][0] + data[i][j][k - 1][0]) / 4.;
+                out[i][j][k][1] = (data[i][j][0][1] + 2. * data[i][j][k][1] + data[i][j][k - 1][1]) / 4.;
             }
-            else if (k==0){
-                out[i][j][k][0]=(data[i][j][k+1][0]+2*data[i][j][k][0]+data[i][j][t-1][0])/4.;
-                out[i][j][k][1]=(data[i][j][k+1][1]+2*data[i][j][k][1]+data[i][j][t-1][1])/4.;
+            else if (k == 0) {
+                out[i][j][k][0] = (data[i][j][k + 1][0] + 2 * data[i][j][k][0] + data[i][j][t - 1][0]) / 4.;
+                out[i][j][k][1] = (data[i][j][k + 1][1] + 2 * data[i][j][k][1] + data[i][j][t - 1][1]) / 4.;
             }
             else {
-                out[i][j][k][0]=(data[i][j][k+1][0]+2.*data[i][j][k][0]+data[i][j][k-1][0])/4.;
-                out[i][j][k][1]=(data[i][j][k+1][1]+2.*data[i][j][k][1]+data[i][j][k-1][1])/4.;
+                out[i][j][k][0] = (data[i][j][k + 1][0] + 2. * data[i][j][k][0] + data[i][j][k - 1][0]) / 4.;
+                out[i][j][k][1] = (data[i][j][k + 1][1] + 2. * data[i][j][k][1] + data[i][j][k - 1][1]) / 4.;
             }
         }
     }
-    
-    copy_corr( N,  var,  t,out,data );
-    free_corr( N,  var+1,  t,out );   
-   
+
+    copy_corr(N, var, t, out, data);
+    free_corr(N, var + 1, t, out);
+
 }
 
