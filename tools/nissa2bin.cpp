@@ -176,20 +176,30 @@ int main(int argc, char** argv) {
     double**** data_n = calloc_corr(filesname.size(), nissa_out.Ncorr, head.T);
     for (int ic = 0; ic < head.Njack; ic++) {
         fwrite(&ic, sizeof(int), 1, outfile);
-        int id_lhs=0;
+        int id_lhs = 0;
         for (int iif = 0; iif < filesname.size();iif++) {
             mysprintf(conf4int, NAMESIZE, "%04d", confs[ic]);
-            double a=timestamp();
-            read_all_nissa(data_n[iif], file0 + "/" + conf4int + "/" + filesname[iif], nissa_out.Ncorr, head.T);
-            printf("time to read %gs\n",timestamp()-a);a=timestamp();
+            double a = timestamp();
+            // read_all_nissa(data_n[iif], file0 + "/" + conf4int + "/" + filesname[iif], nissa_out.Ncorr, head.T);
+            // printf("time to read %gs\n", timestamp() - a);a = timestamp();
+            // for (int icorr = 0; icorr < head.ncorr / filesname.size(); icorr++) {
+            //     for (int t = 0;t < head.T;t++) {
+            //         data[ic][id_lhs][t][0] = data_n[iif][id_gamma[icorr]][t][0];
+            //         data[ic][id_lhs][t][1] = data_n[iif][id_gamma[icorr]][t][1];
+            //     }
+            //     id_lhs++;
+            // }
+            read_all_nissa_gamma(data_n[iif], file0 + "/" + conf4int + "/" + filesname[iif], nissa_out.Ncorr, head.T, id_gamma);
+            printf("time to read %gs\n", timestamp() - a);a = timestamp();
             for (int icorr = 0; icorr < head.ncorr / filesname.size(); icorr++) {
                 for (int t = 0;t < head.T;t++) {
-                    data[ic][id_lhs][t][0] = data_n[iif][id_gamma[icorr]][t][0];
-                    data[ic][id_lhs][t][1] = data_n[iif][id_gamma[icorr]][t][1];
+                    data[ic][id_lhs][t][0] = data_n[iif][icorr][t][0];
+                    data[ic][id_lhs][t][1] = data_n[iif][icorr][t][1];
                 }
                 id_lhs++;
             }
-            printf("time to copy %gs\n",timestamp()-a);a=timestamp();
+
+            printf("time to copy %gs\n", timestamp() - a);a = timestamp();
 
         }
     }

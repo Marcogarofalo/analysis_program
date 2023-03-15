@@ -173,6 +173,63 @@ void read_all_nissa(double*** out, std::string namefile, int Ncorr, int T, bool 
     return;
 }
 
+void read_all_nissa_gamma(double*** out, std::string namefile, int Ncorr, int T, std::vector<int> id_gamma, bool check) {
+    std::fstream newfile;
+    newfile.open(namefile, std::ios::in); // open a file to perform read operation using file object
+    int Tc = 0;
+    int Ncorrc = 0;
+    if (newfile.is_open()) { // checking whether the file is open
+        std::string tp;
+        if (check) {
+            while (getline(newfile, tp)) { // read data from file object and put it into string.  
+                if (!tp.empty()) {
+                    if (tp.compare(0, 1, "+") == 0 || tp.compare(0, 1, "-") == 0) {
+                        Tc = 0;
+                        while (!tp.empty()) {
+                            Tc++;
+                            getline(newfile, tp);
+                        }
+                        Ncorrc++;
+                    }
+                }
+            }
+            error(Ncorr != Ncorrc, 1, "read_all_nissa", " given Ncorr=%d does not match the read one=%d\n file:%s", Ncorr, Ncorrc, namefile.c_str());
+            error(T != Tc, 1, "read_all_nissa", "error in %s: given T=%d does not match the read one=%d\n file:%s", T, Tc, namefile.c_str());
+        }
+
+        printf("file %s: Ncorr=%d  T=%d\n", namefile.c_str(), Ncorr, T);
+        newfile.clear();
+        newfile.seekg(0);
+        int corr = 0;
+        int id=0;
+        while (getline(newfile, tp)) { // read data from file object and put it into string.
+            if (!tp.empty()) {
+                if (tp.compare(0, 1, "+") == 0 || tp.compare(0, 1, "-") == 0) {
+                    if (corr==id_gamma[id]){
+                        id++;
+                        int t = 0;
+                        out[id][t][0] = std::stod(tp.substr(0, 22));
+                        out[id][t][1] = std::stod(tp.substr(24));
+                        while (!tp.empty()) {
+                            // std::cout << "in gamma " << gamma << ": t=" << t << "  " << tp << "\n";
+                            out[id][t][0] = std::stod(tp.substr(0, 22));
+                            out[id][t][1] = std::stod(tp.substr(24));
+                            t++;
+                            getline(newfile, tp);
+                        }
+                    }
+                    corr++;
+                }
+            }
+        }
+    }
+    else {
+        printf("error in %s:\n unable to open %s\n", __func__, namefile.c_str());
+        exit(1);
+    }
+    
+    return;
+}
 
 struct_nissa_out_info::struct_nissa_out_info(std::string namefile) {
     std::fstream newfile;
