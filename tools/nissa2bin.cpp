@@ -143,6 +143,8 @@ int main(int argc, char** argv) {
     head.rs = read_vector<double>(argv[4], "rs");
     head.thetas = read_vector<double>(argv[4], "thetas");
     head.gammas = read_vector<std::string>(argv[4], "gammas");
+    std::string bintype = read_param<std::string>(argv[4], "bintype");
+    int bin = read_param<int>(argv[4], "bin");
 
     std::vector<std::string> filesname = read_vector<std::string>(argv[4], "files");
 
@@ -166,20 +168,18 @@ int main(int argc, char** argv) {
     printf("Ncorr nisaa= %d Ncorr to store=%d\n", nissa_out.Ncorr, head.ncorr);
     // for(auto i :id_gamma){printf("%d\t",i);}printf("\n");
     ///////////////////////////////
-    // opening output and write header
-    FILE* outfile = open_file(argv[2], "w+");
-    head.write_header(outfile);
+
 
     ////////////////////////////////////
     // reading the files
     double**** data = calloc_corr(head.Njack, head.ncorr, head.T);
-    double**** data_n = calloc_corr(filesname.size(), nissa_out.Ncorr, head.T);
+#pragma omp parallel for
     for (int ic = 0; ic < head.Njack; ic++) {
-        fwrite(&ic, sizeof(int), 1, outfile);
+        double**** data_n = calloc_corr(filesname.size(), nissa_out.Ncorr, head.T);
         int id_lhs = 0;
         for (int iif = 0; iif < filesname.size();iif++) {
             mysprintf(conf4int, NAMESIZE, "%04d", confs[ic]);
-            double a = timestamp();
+            // double a = timestamp();
             // read_all_nissa(data_n[iif], file0 + "/" + conf4int + "/" + filesname[iif], nissa_out.Ncorr, head.T);
             // printf("time to read %gs\n", timestamp() - a);a = timestamp();
             // for (int icorr = 0; icorr < head.ncorr / filesname.size(); icorr++) {
@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
             //     id_lhs++;
             // }
             read_all_nissa_gamma(data_n[iif], file0 + "/" + conf4int + "/" + filesname[iif], nissa_out.Ncorr, head.T, id_gamma);
-            printf("time to read %gs\n", timestamp() - a);a = timestamp();
+            // printf("time to read %gs\n", timestamp() - a);a = timestamp();
             for (int icorr = 0; icorr < head.ncorr / filesname.size(); icorr++) {
                 for (int t = 0;t < head.T;t++) {
                     data[ic][id_lhs][t][0] = data_n[iif][icorr][t][0];
@@ -199,11 +199,46 @@ int main(int argc, char** argv) {
                 id_lhs++;
             }
 
-            printf("time to copy %gs\n", timestamp() - a);a = timestamp();
+            // printf("time to copy %gs\n", timestamp() - a);a = timestamp();
 
         }
+        free_corr(filesname.size(), head.ncorr, head.T, data_n);
     }
-    free_corr(filesname.size(), head.ncorr, head.T, data_n);
+
+    ///////////////////////////////////
+    //// binning
+    ///////////////////////////////////
+    double**** data_bin;
+    if (bintype.compare("block") == 0) {
+        data_bin = binning(head.Njack, head.ncorr, head.T, data, bin);
+        free_corr(head.Njack, head.ncorr, head.T, data);
+        head.Njack = head.Njack / bin;
+
+    }
+    else if (bintype.compare("into") == 0) {
+        double**** data_bin = calloc_corr(bin, head.ncorr, head.T);
+        data_bin = bin_intoN(data, head.ncorr, head.T, head.Njack, bin);
+        free_corr(head.Njack, head.ncorr, head.T, data);
+        head.Njack = bin;
+
+    }
+    ///////////////////////// 
+    // writing 
+    ////////////////////////
+    // opening output and write header
+    FILE* outfile = open_file(argv[2], "w+");
+    head.write_header(outfile);
+    // writing the double chunk
+    for (int ic = 0; ic < head.Njack; ic++) {
+        fwrite(&ic, sizeof(int), 1, outfile);
+        for (int iv = 0; iv < head.ncorr; iv++) {
+            for (int t = 0; t < head.T; t++) {
+                fwrite(data_bin[ic][iv][t], sizeof(double), 2, outfile);
+            }
+        }
+    }
+    fclose(outfile);
+
 
     // return_all_nissa(std::string namefile, int Ncorr, int T, bool check = true);
 }
