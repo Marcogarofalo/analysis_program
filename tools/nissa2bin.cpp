@@ -208,7 +208,7 @@ int main(int argc, char** argv) {
 
     }
     else if (bintype.compare("into") == 0) {
-        double**** data_bin = calloc_corr(bin, head.ncorr, head.T);
+        data_bin = calloc_corr(bin, head.ncorr, head.T);
         data_bin = bin_intoN(data, head.ncorr, head.T, head.Njack, bin);
         free_corr(head.Njack, head.ncorr, head.T, data);
         head.Njack = bin;
@@ -230,10 +230,36 @@ int main(int argc, char** argv) {
         }
     }
     fclose(outfile);
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    // check
+    /////////////////////////////////////////////////////////////////////////////////////////////
     outfile = open_file(argv[2], "r");
     printf("T=%d\n",head.T);
     head.read_header(outfile);
     head.print_header();
 
-    // return_all_nissa(std::string namefile, int Ncorr, int T, bool check = true);
+    double ****data_check;
+    if (bintype.compare("block") == 0) {
+        data_check = binning(head.Njack, head.ncorr, head.T, data, bin);
+    }
+    else if (bintype.compare("into") == 0) {
+        data_check = calloc_corr(bin, head.ncorr, head.T);
+    }
+    for (int ic = 0; ic < head.Njack; ic++) {
+        int icc;
+        fread(&icc, sizeof(int), 1, outfile);
+        error(icc!=ic,1,"main","conf number do not match  expected=%d read=%d\n",ic, icc);
+        for (int iv = 0; iv < head.ncorr; iv++) {
+            for (int t = 0; t < head.T; t++) {
+                fread(data_check[ic][iv][t], sizeof(double), 2, outfile);
+                error(fabs(data_check[ic][iv][t][0]-data_bin[ic][iv][t][0])>1e-7,1,"main",
+                "correlator real part do not match  expected=%.10g read=%.10g  t=%d corr=%d\n",data_bin[ic][iv][t][0],data_check[ic][iv][t][0],t,iv);
+                error(fabs(data_check[ic][iv][t][1]-data_bin[ic][iv][t][1])>1e-7,1,"main",
+                "correlator real part do not match  expected=%.10g read=%.10g  t=%d corr=%d\n",data_bin[ic][iv][t][1],data_check[ic][iv][t][1],t,iv);
+            }
+        }
+    }
+    
+    fclose(outfile);
+
 }

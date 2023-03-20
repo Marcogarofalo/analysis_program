@@ -130,7 +130,7 @@ void generic_header::read_header(FILE* file) {
     int confs = tmp / (sizeof(int) + (size) * sizeof(double));
     error(confs != Njack, 1, "generic_header::read_header",
         "size of the data chunk is not equal to ncorr*2*T\n");
-    fseek(file, tmp, SEEK_SET);
+    fseek(file, struct_size, SEEK_SET);
     
 }
 
