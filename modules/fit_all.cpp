@@ -28,8 +28,8 @@ void generic_header::print_header() {
     printf("Njack %i\n", Njack);
     printf("T %i\n", T);
     printf("L %i\n", L);
-    printf("beta %i\n", beta);
-    printf("kappa %d\n", kappa);
+    printf("beta %f\n", beta);
+    printf("kappa %f\n", kappa);
     printf("mus ");
     for (double mu : mus) printf("%g ", mu);
     printf("\nr ");
@@ -61,7 +61,7 @@ void generic_header::write_header(FILE* file) {
     fwrite(&Njack, sizeof(int), 1, file);
     fwrite(&T, sizeof(int), 1, file);
     fwrite(&L, sizeof(int), 1, file);
-    fwrite(&size, sizeof(int), 1, file);
+    // fwrite(&size, sizeof(int), 1, file);
     fwrite(&ncorr, sizeof(int), 1, file);
     fwrite(&beta, sizeof(double), 1, file);
     fwrite(&kappa, sizeof(double), 1, file);
@@ -105,23 +105,32 @@ void generic_header::read_header(FILE* file) {
     i += fread(&Njack, sizeof(int), 1, file);
     i += fread(&T, sizeof(int), 1, file);
     i += fread(&L, sizeof(int), 1, file);
-    i += fread(&size, sizeof(int), 1, file);
+    // i += fread(&size, sizeof(int), 1, file);
     i += fread(&ncorr, sizeof(int), 1, file);
     i += fread(&beta, sizeof(double), 1, file);
     i += fread(&kappa, sizeof(double), 1, file);
 
-    read_vector(file,mus);
-    read_vector(file,rs);
-    read_vector(file,thetas);
-    read_vector(file,gammas);
+    read_vector(file, mus);
+    read_vector(file, rs);
+    read_vector(file, thetas);
+    read_vector(file, gammas);
 
-    read_vector(file,bananas);
-    read_vector(file,oranges);
+    read_vector(file, bananas);
+    read_vector(file, oranges);
 
-    
-    error(size!=ncorr*2*T,1,"generic_header::read_header", "size of the data chunk is not equal to ncorr*2*T\n");
+    i += fread(&size, sizeof(int), 1, file);
+    error(size != ncorr * 2 * T, 1, "generic_header::read_header",
+     "size of the data chunk=%d is not equal to ncorr*2*T=%d\n",size, ncorr * 2 * T);
+    struct_size = ftell(file);
 
-    
+    fseek(file, 0, SEEK_END);
+    int tmp = ftell(file);
+    tmp -= struct_size;
+    int confs = tmp / (sizeof(int) + (size) * sizeof(double));
+    error(confs != Njack, 1, "generic_header::read_header",
+        "size of the data chunk is not equal to ncorr*2*T\n");
+
+
 }
 
 
