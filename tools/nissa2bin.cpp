@@ -143,6 +143,7 @@ int main(int argc, char** argv) {
     head.rs = read_vector<double>(argv[4], "rs");
     head.thetas = read_vector<double>(argv[4], "thetas");
     head.gammas = read_vector<std::string>(argv[4], "gammas");
+    head.smearing = read_vector<std::string>(argv[4], "smearing");
     std::string bintype = read_param<std::string>(argv[4], "bintype");
     int bin = read_param<int>(argv[4], "bin");
 
@@ -179,16 +180,7 @@ int main(int argc, char** argv) {
         int id_lhs = 0;
         for (int iif = 0; iif < filesname.size();iif++) {
             mysprintf(conf4int, NAMESIZE, "%04d", confs[ic]);
-            // double a = timestamp();
-            // read_all_nissa(data_n[iif], file0 + "/" + conf4int + "/" + filesname[iif], nissa_out.Ncorr, head.T);
-            // printf("time to read %gs\n", timestamp() - a);a = timestamp();
-            // for (int icorr = 0; icorr < head.ncorr / filesname.size(); icorr++) {
-            //     for (int t = 0;t < head.T;t++) {
-            //         data[ic][id_lhs][t][0] = data_n[iif][id_gamma[icorr]][t][0];
-            //         data[ic][id_lhs][t][1] = data_n[iif][id_gamma[icorr]][t][1];
-            //     }
-            //     id_lhs++;
-            // }
+            
             read_all_nissa_gamma(data_n[iif], file0 + "/" + conf4int + "/" + filesname[iif], nissa_out.Ncorr, head.T, id_gamma);
             // printf("time to read %gs\n", timestamp() - a);a = timestamp();
             for (int icorr = 0; icorr < head.ncorr / filesname.size(); icorr++) {
@@ -238,7 +230,10 @@ int main(int argc, char** argv) {
         }
     }
     fclose(outfile);
-
+    outfile = open_file(argv[2], "r");
+    printf("T=%d\n",head.T);
+    head.read_header(outfile);
+    head.print_header();
 
     // return_all_nissa(std::string namefile, int Ncorr, int T, bool check = true);
 }

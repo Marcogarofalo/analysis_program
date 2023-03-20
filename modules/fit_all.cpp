@@ -114,6 +114,7 @@ void generic_header::read_header(FILE* file) {
     read_vector(file, rs);
     read_vector(file, thetas);
     read_vector(file, gammas);
+    read_vector(file, smearing);
 
     read_vector(file, bananas);
     read_vector(file, oranges);
