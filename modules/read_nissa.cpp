@@ -32,8 +32,9 @@ void read_single_nissa(double** out, std::string contraction, std::string gamma,
                                         int t = 0;
                                         while (!tp.empty()) {
                                             // std::cout << "in gamma " << gamma << ": t=" << t << "  " << tp << "\n";
-                                            out[t][0] = std::stod(tp.substr(0, 22));
-                                            out[t][1] = std::stod(tp.substr(24));
+                                            std::vector<std::string> x = split(tp, '\t');
+                                            out[t][0] = std::stod(x[0]);
+                                            out[t][1] = std::stod(x[1]);
                                             t++;
                                             getline(newfile, tp);
                                         }
@@ -102,8 +103,10 @@ double*** return_all_nissa(std::string namefile, int Ncorr, int T, bool check) {
                     out[corr][t][1] = std::stod(tp.substr(24));
                     while (!tp.empty()) {
                         // std::cout << "in gamma " << gamma << ": t=" << t << "  " << tp << "\n";
-                        out[corr][t][0] = std::stod(tp.substr(0, 22));
-                        out[corr][t][1] = std::stod(tp.substr(24));
+                        std::vector<std::string> x = split(tp, '\t');
+                        out[corr][t][0] = std::stod(x[0]);
+                        out[corr][t][1] = std::stod(x[1]);
+
                         t++;
                         getline(newfile, tp);
                     }
@@ -155,8 +158,9 @@ void read_all_nissa(double*** out, std::string namefile, int Ncorr, int T, bool 
                     out[corr][t][1] = std::stod(tp.substr(24));
                     while (!tp.empty()) {
                         // std::cout << "in gamma " << gamma << ": t=" << t << "  " << tp << "\n";
-                        out[corr][t][0] = std::stod(tp.substr(0, 22));
-                        out[corr][t][1] = std::stod(tp.substr(24));
+                        std::vector<std::string> x = split(tp, '\t');
+                        out[corr][t][0] = std::stod(x[0]);
+                        out[corr][t][1] = std::stod(x[1]);
                         t++;
                         getline(newfile, tp);
                     }
@@ -169,7 +173,7 @@ void read_all_nissa(double*** out, std::string namefile, int Ncorr, int T, bool 
         printf("error in %s:\n unable to open %s\n", __func__, namefile.c_str());
         exit(1);
     }
-    
+
     return;
 }
 
@@ -201,20 +205,23 @@ void read_all_nissa_gamma(double*** out, std::string namefile, int Ncorr, int T,
         newfile.clear();
         newfile.seekg(0);
         int corr = 0;
-        int id=0;
+        int id = 0;
         while (getline(newfile, tp)) { // read data from file object and put it into string.
             if (!tp.empty()) {
                 if (tp.compare(0, 1, "+") == 0 || tp.compare(0, 1, "-") == 0) {
-                    if (corr==id_gamma[id]){
-                        id++;
+                    if (corr == id_gamma[id]) {
                         int t = 0;
-                        out[id][t][0] = std::stod(tp.substr(0, 22));
-                        out[id][t][1] = std::stod(tp.substr(24));
                         while (!tp.empty()) {
-                            // std::cout << "in gamma " << gamma << ": t=" << t << "  " << tp << "\n";
-                            out[id][t][0] = std::stod(tp.substr(0, 22));
-                            out[id][t][1] = std::stod(tp.substr(24));
+                            std::vector<std::string> x = split(tp, '\t');
+                            out[id][t][0] = std::stod(x[0]);
+                            out[id][t][1] = std::stod(x[1]);
                             t++;
+                            getline(newfile, tp);
+                        }
+                        id++;
+                    }
+                    else {
+                        while (!tp.empty()) {
                             getline(newfile, tp);
                         }
                     }
@@ -227,7 +234,7 @@ void read_all_nissa_gamma(double*** out, std::string namefile, int Ncorr, int T,
         printf("error in %s:\n unable to open %s\n", __func__, namefile.c_str());
         exit(1);
     }
-    
+
     return;
 }
 
@@ -336,5 +343,6 @@ std::vector<int> struct_nissa_out_info::inidices_of_gamma(std::vector<std::strin
             out[mg + i * mygammas.size()] = ii[mg] + i * Ngamma;
         }
     }
+    error(out.size()!=Ncontr * mygammas.size(), 1, "inidices_of_gamma", "not enought contraction found");
     return out;
 }

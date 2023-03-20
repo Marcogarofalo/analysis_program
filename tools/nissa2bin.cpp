@@ -167,7 +167,7 @@ int main(int argc, char** argv) {
     head.size = head.ncorr * 2 * nissa_out.T;
     std::vector<int> id_gamma = nissa_out.inidices_of_gamma(head.gammas);
     printf("Ncorr nisaa= %d Ncorr to store=%d\n", nissa_out.Ncorr, head.ncorr);
-    // for(auto i :id_gamma){printf("%d\t",i);}printf("\n");
+    // for(int i :id_gamma){printf("%d\t",i);}printf("\n");
     ///////////////////////////////
 
 
@@ -180,9 +180,10 @@ int main(int argc, char** argv) {
         int id_lhs = 0;
         for (int iif = 0; iif < filesname.size();iif++) {
             mysprintf(conf4int, NAMESIZE, "%04d", confs[ic]);
-            
+            // int a=timestamp();
             read_all_nissa_gamma(data_n[iif], file0 + "/" + conf4int + "/" + filesname[iif], nissa_out.Ncorr, head.T, id_gamma);
             // printf("time to read %gs\n", timestamp() - a);a = timestamp();
+            // printf("%g  %g\n",data_n[iif][0][0][0], data_n[iif][0][0][1]);
             for (int icorr = 0; icorr < head.ncorr / filesname.size(); icorr++) {
                 for (int t = 0;t < head.T;t++) {
                     data[ic][id_lhs][t][0] = data_n[iif][icorr][t][0];
@@ -223,9 +224,11 @@ int main(int argc, char** argv) {
     // writing the double chunk
     for (int ic = 0; ic < head.Njack; ic++) {
         fwrite(&ic, sizeof(int), 1, outfile);
+        // printf("conf %d\n",ic);
         for (int iv = 0; iv < head.ncorr; iv++) {
             for (int t = 0; t < head.T; t++) {
                 fwrite(data_bin[ic][iv][t], sizeof(double), 2, outfile);
+                // printf("%g  %g\n",data_bin[ic][iv][t][0],data_bin[ic][iv][t][1]);
             }
         }
     }
@@ -240,7 +243,7 @@ int main(int argc, char** argv) {
 
     double ****data_check;
     if (bintype.compare("block") == 0) {
-        data_check = binning(head.Njack, head.ncorr, head.T, data, bin);
+        data_check = calloc_corr(head.Njack, head.ncorr, head.T);
     }
     else if (bintype.compare("into") == 0) {
         data_check = calloc_corr(bin, head.ncorr, head.T);
@@ -259,6 +262,7 @@ int main(int argc, char** argv) {
             }
         }
     }
+    free_corr(head.Njack, head.ncorr, head.T, data_check);
     
     fclose(outfile);
 
