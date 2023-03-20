@@ -306,7 +306,7 @@ int line_read_plateaux(char** option, const char* corr, int& tmin, int& tmax, in
             std::string name = option[6];
             std::string correlator = corr;
             if (x.empty() == 0) {
-                if (x[0].compare(name) == 0 && x[1].compare(correlator) == 0) {
+                if (x[0].compare(name) == 0 && x[1].compare(correlator) == 0 && x.size()>=5) {
                     tmin = stoi(x[2]);
                     tmax = stoi(x[3]);
                     sep = stoi(x[4]);
