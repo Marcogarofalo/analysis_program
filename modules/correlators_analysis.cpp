@@ -1,16 +1,4 @@
 #define correlators_analysis_C
-
-#include "correlators_analysis.hpp"
-#include "global.hpp"
-#include "gnuplot.hpp"
-#include "linear_fit.hpp"
-#include "m_eff.hpp"
-#include "mutils.hpp"
-#include "non_linear_fit.hpp"
-#include "read.hpp"
-#include "resampling.hpp"
-#include "resampling_new.hpp"
-#include "tower.hpp"
 #include <complex.h>
 #include <math.h>
 #include <stdio.h>
@@ -27,6 +15,19 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include "correlators_analysis.hpp"
+#include "global.hpp"
+#include "gnuplot.hpp"
+#include "linear_fit.hpp"
+#include "m_eff.hpp"
+#include "mutils.hpp"
+#include "non_linear_fit.hpp"
+#include "read.hpp"
+#include "resampling.hpp"
+#include "resampling_new.hpp"
+#include "tower.hpp"
+#include "eigensystem.hpp"
 
 void check_correlatro_counter(int i) {
     if (corr_counter != i) {
@@ -802,6 +803,143 @@ struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinemat
      }*/
     fit_out.Npar = fit_info.Npar;
     return fit_out;
+}
+
+
+
+double** r_equal_value_or_vector(double** lambdat, double** vec, fit_type fit_info, int t, int t0) {
+    int n = fit_info.n;
+    int N = fit_info.N * fit_info.HENKEL_size; // if eigenvector N= component+ id_eigenvector * components
+    double** r = double_malloc_2(N, 2);
+
+    if (fit_info.value_or_vector == 0) {
+        for (int n = 0; n < N; n++) {
+            if ((t - t0) >= 0) {
+                r[n][0] = lambdat[n][0];
+                r[n][1] = lambdat[n][1];
+            }
+            else {
+                r[n][0] = lambdat[N - 1 - n][0];
+                r[n][1] = lambdat[N - 1 - n][1];
+            }
+        }
+    }
+    else if (fit_info.value_or_vector == 1) {
+        for (int n = 0; n < N; n++) {
+            if ((t - t0) >= 0) {
+                r[n][0] = vec[n][0];
+                r[n][1] = vec[n][1];
+            }
+            else {
+                int comps = sqrt(N);
+                error(comps * comps != N, 1, "r_equal_value_or_vector:", "N not a square!");
+                int id = n / comps;
+                int comp = n % comps;
+                id = comp + (comps - 1 - id) * comps;
+                r[n][0] = vec[id][0];
+                r[n][1] = vec[id][1];
+            }
+        }
+    }
+    else {
+        printf("you need to specify if you want the:\n\
+                - eigenvalues (fit_info.value_or_vector=0) \n\
+                - eigenvectors (fit_info.value_or_vector=1)");
+        exit(1);
+    }
+    return r;
+}
+
+double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
+    double ct, ctp;
+    int N = fit_info.N;
+    if (fit_info.value_or_vector == 1) {
+        N = sqrt(fit_info.N);
+        error(fit_info.N != (N * N), 1, "GEVP_matrix",
+            "when you want the eigenvector N must be the square of the size of the matrix: fit_info.N=%d ", fit_info.N);
+    }
+    int ncorr = fit_info.corr_id.size();
+
+    error(fit_info.HENKEL_size != 1, 1, __func__, "HENKEL_size need to be 1");
+    int T = file_head.l0;
+    if (t > T / 2 - 1) {
+        double** r = double_calloc_2(fit_info.N * fit_info.HENKEL_size, 2);
+        return r;
+    }
+    double** M = double_calloc_2(N * N, 2); // [NxN] [reim ]
+    double** Mt0 = double_calloc_2(N * N, 2);
+
+    double** lambdat = double_malloc_2(N, 2); // [N] [reim]
+    double** vec = double_malloc_2(N * N, 2);
+    int t0 = fit_info.t0_GEVP % T;
+    if (fit_info.GEVP_swap_t_t0) {
+        t0 = t;
+        t = fit_info.t0_GEVP % T;
+    }
+    else if (fit_info.GEVP_tpt0)
+        t0 = (fit_info.t0_GEVP + t) % T;
+
+    if (ncorr == (N * N + N) / 2) {
+        int count = 0;
+        for (int i = 0; i < N; i++) {
+            for (int k = i; k < N; k++) {
+                int corr_ik = fit_info.corr_id[count];
+                int ik = i + k * N;
+                int ki = k + i * N;
+                M[ik][0] = in[j][corr_ik][t][0];
+                Mt0[ik][0] = in[j][corr_ik][t0][0];
+                M[ki][0] = M[ik][0];
+                Mt0[ki][0] = Mt0[ik][0];
+                count++;
+            }
+        }
+    }
+    else if (ncorr == N * N) {
+        for (int i = 0; i < N; i++) {// col
+            for (int k = 0; k < N; k++) {// raw
+                int ik = i + k * N;
+                int corr_ik = fit_info.corr_id[ik];
+                M[ik][0] = in[j][corr_ik][t][0];
+                Mt0[ik][0] = in[j][corr_ik][t0][0];
+            }
+        }
+        for (int i = 0; i < N; i++) {
+            for (int k = i + 1; k < N; k++) {
+                int ik = i + k * N;
+                int ki = k + i * N;
+                M[ik][0] = (M[ik][0] + M[ki][0]) / 2.0;
+                Mt0[ik][0] = (Mt0[ik][0] + Mt0[ki][0]) / 2.0;
+                M[ki][0]=M[ik][0];
+                Mt0[ki][0]=Mt0[ik][0];
+            }
+        }
+    }
+    else {
+        printf("GEVP_matrix\n");
+        printf("you need to provide (N^2+N)/2 to populate the top triangular matrix NxN:\n  N=%d    ncorr=%d\n", N, ncorr);
+        exit(1);
+    }
+
+    int verbosity = fit_info.verbosity;
+    if (t > fit_info.GEVP_ignore_warning_after_t || j != 0)
+        verbosity = -1;
+   
+    int err = generalysed_Eigenproblem(M, Mt0, N, &lambdat, &vec, verbosity);
+    if (err > 0) {
+        printf("above error at time t=%d\n", t);
+    }
+
+    int n = fit_info.n;
+    double** r;
+    r = r_equal_value_or_vector(lambdat, vec, fit_info, t, t0);
+
+    free_2(N * N, M);
+    free_2(N * N, Mt0);
+    free_2(N, lambdat);
+    //     free_2(N,lambdatp1);
+    free_2(N * N, vec);
+
+    return r;
 }
 
 void add_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack, double** fun_of_corr(int, double****, int, struct fit_type), struct fit_type fit_info) {

@@ -49,6 +49,13 @@ struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic
  * option[6] = basename to look for in the plateaux.txt file
  * description = name to give to the fit, the one get by r
 ****************************************************************************/
+
+///////////////////////////////////////////////
+/// func for add_correlators
+//////////////////////////////////////////////
+double** r_equal_value_or_vector(double** lambdat, double** vec, fit_type fit_info, int t, int t0);
+double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info);
+/// 
 struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinematic_2pt, char* name, double**** conf_jack, const char* plateaux_masses, FILE* outfile, double fun_of_corr(int, double****, int, struct fit_type), const char* description, struct fit_type fit_info, FILE* file_jack);
 
 
