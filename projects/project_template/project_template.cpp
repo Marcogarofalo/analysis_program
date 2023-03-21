@@ -1,32 +1,31 @@
 #define CONTROL
-#include <stdlib.h>
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 // #include <time.h>
 // #include <complex.h>
+#include <cstring>
+#include <fstream>
 #include <iostream>
 #include <string>
-#include <cstring> 
-#include <fstream>
-
 
 #include "global.hpp"
-#include "resampling_new.hpp"
 #include "read.hpp"
+#include "resampling_new.hpp"
 
 #include "linear_fit.hpp"
-#include "various_fits.hpp"
 #include "mutils.hpp"
+#include "various_fits.hpp"
 
 #include "correlators_analysis.hpp"
 #include "functions_project_template.hpp"
-struct  kinematic kinematic_2pt;
+struct kinematic kinematic_2pt;
 
 generic_header read_head(FILE* stream) {
     generic_header header;
     return header;
 }
-void  write_header_g2(FILE* jack_file, generic_header head) {
+void write_header_g2(FILE* jack_file, generic_header head) {
     int fi = 0;
     fi += fwrite(&head.T, sizeof(int), 1, jack_file);
     fi += fwrite(&head.L, sizeof(int), 1, jack_file);
@@ -35,7 +34,6 @@ void  write_header_g2(FILE* jack_file, generic_header head) {
     for (double mu : head.mus) {
         fi += fwrite(&mu, sizeof(double), 1, jack_file);
     }
-
 }
 
 char** argv_to_options(char** argv) {
@@ -50,11 +48,11 @@ char** argv_to_options(char** argv) {
     option[6] = (char*)malloc(sizeof(char) * NAMESIZE);
 
     mysprintf(option[1], NAMESIZE, "read_plateaux"); // blind/see/read_plateaux
-    mysprintf(option[2], NAMESIZE, "-p"); // -p
-    mysprintf(option[3], NAMESIZE, argv[2]); // path
-    mysprintf(option[4], NAMESIZE, argv[6]); //resampling
-    mysprintf(option[5], NAMESIZE, "no"); // pdf
-    mysprintf(option[6], NAMESIZE, argv[3]); // infile
+    mysprintf(option[2], NAMESIZE, "-p");            // -p
+    mysprintf(option[3], NAMESIZE, argv[2]);         // path
+    mysprintf(option[4], NAMESIZE, argv[6]);         // resampling
+    mysprintf(option[5], NAMESIZE, "no");            // pdf
+    mysprintf(option[6], NAMESIZE, argv[3]);         // infile
     return option;
 }
 
@@ -66,13 +64,14 @@ void init_global_head(generic_header head) {
     file_head.nk = 2;
     file_head.musea = head.mus[1];
     file_head.k = (double*)malloc(sizeof(double) * file_head.nk * 2);
-    file_head.k[0] = 0;file_head.k[1] = 0;
+    file_head.k[0] = 0;
+    file_head.k[1] = 0;
     file_head.k[2] = head.mus[1];
     file_head.k[3] = head.mus[1];
 
     file_head.nmoms = 1;
     file_head.mom = (double**)malloc(sizeof(double*) * file_head.nmoms);
-    for (int i = 0;i < file_head.nmoms;i++) {
+    for (int i = 0; i < file_head.nmoms; i++) {
         file_head.mom[i] = (double*)malloc(sizeof(double) * 4);
         file_head.mom[i][0] = 0;
         file_head.mom[i][1] = 0;
@@ -86,16 +85,18 @@ void read_twopt(FILE* stream, double*** to_write, generic_header head) {
     // int fi = 0;
     // for (int k = 0; k < head.ncorr; k++) {
     //     for (int t = 0; t < head.T;t++) {
-    //         fi += fscanf(stream, "%lf  %lf", &to_write[k][t][0], &to_write[k][t][1]);
-    //         // printf(" corr=%d t=%d %.12g   %.12g\n", k, t, to_write[k][t][0], to_write[k][t][1]);
+    //         fi += fscanf(stream, "%lf  %lf", &to_write[k][t][0],
+    //         &to_write[k][t][1]);
+    //         // printf(" corr=%d t=%d %.12g   %.12g\n", k, t, to_write[k][t][0],
+    //         to_write[k][t][1]);
     //     }
     // }
-
 }
 
 int main(int argc, char** argv) {
     error(argc != 7, 1, "nissa_mpcac ",
-        "usage:./nissa_mpcac -p path file -bin $bin  jack/boot \n separate path and file please");
+        "usage:./nissa_mpcac -p path file -bin $bin  jack/boot \n separate "
+        "path and file please");
 
     char** option = argv_to_options(argv);
 
@@ -109,6 +110,7 @@ int main(int argc, char** argv) {
 
     //////////////////////////////////// read and setup header
     generic_header head = read_head(infile);
+    head.print_header();
     init_global_head(head);
 
     //////////////////////////////////// setup jackboot and binning
@@ -134,18 +136,18 @@ int main(int argc, char** argv) {
     printf("writing output in :\n %s \n", namefile);
     FILE* outfile = open_file(namefile, "w+");
 
-    mysprintf(namefile, NAMESIZE, "%s/jackknife/%s_%s", option[3], option[4], option[6]);
+    mysprintf(namefile, NAMESIZE, "%s/jackknife/%s_%s", option[3], option[4],
+        option[6]);
     FILE* jack_file = open_file(namefile, "w+");
     write_header_g2(jack_file, head);
 
     //////////////////////////////////// confs
     double**** data = calloc_corr(confs, head.ncorr, head.T);
 
-
     printf("confs=%d\n", confs);
     printf("ncorr=%d\n", head.ncorr);
     printf("kappa=%g\n", head.kappa);
-    for (int iconf = 0; iconf < confs;iconf++) {
+    for (int iconf = 0; iconf < confs; iconf++) {
         read_twopt(infile, data[iconf], head);
     }
 
@@ -155,20 +157,24 @@ int main(int argc, char** argv) {
     free_corr(confs, head.ncorr, head.T, data);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //print all the effective masses correlators
-    //set the option to not read for a plateaux
-    mysprintf(namefile, NAMESIZE, "%s/out/%s_meff_correlators", option[3], option[6]);
+    // print all the effective masses correlators
+    // set the option to not read for a plateaux
+    mysprintf(namefile, NAMESIZE, "%s/out/%s_meff_correlators", option[3],
+        option[6]);
     FILE* outfile_meff_corr = open_file(namefile, "w+");
-    mysprintf(namefile, NAMESIZE, "%s/out/%s_raw_correlators", option[3], option[6]);
+    mysprintf(namefile, NAMESIZE, "%s/out/%s_raw_correlators", option[3],
+        option[6]);
     FILE* outfile_raw_corr = open_file(namefile, "w+");
-    mysprintf(namefile, NAMESIZE, "%s/out/%s_shifted_correlators", option[3], option[6]);
+    mysprintf(namefile, NAMESIZE, "%s/out/%s_shifted_correlators", option[3],
+        option[6]);
     FILE* outfile_shifted_corr = open_file(namefile, "w+");
-    mysprintf(namefile, NAMESIZE, "%s/out/%s_log_meff_shifted", option[3], option[6]);
+    mysprintf(namefile, NAMESIZE, "%s/out/%s_log_meff_shifted", option[3],
+        option[6]);
     FILE* outfile_log_meff_shifted = open_file(namefile, "w+");
     mysprintf(namefile, NAMESIZE, "%s/out/%s_gamma", option[3], option[6]);
     FILE* out_gamma = open_file(namefile, "w+");
 
-    char  save_option[NAMESIZE];
+    char save_option[NAMESIZE];
     sprintf(save_option, "%s", option[1]);
     sprintf(option[1], "blind");
     FILE* dev_null = open_file("/dev/null", "w");
@@ -178,41 +184,61 @@ int main(int argc, char** argv) {
     fit_info_silent.guess_per_jack = 0;
 
     for (int icorr = 0; icorr < head.ncorr; icorr++) {
-        //log effective mass
-        double* tmp_meff_corr = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack
-            , namefile_plateaux, outfile_meff_corr, icorr, "log", M_eff_log, dev_null, fit_info_silent);
+        // log effective mass
+        double* tmp_meff_corr = plateau_correlator_function(
+            option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack,
+            namefile_plateaux, outfile_meff_corr, icorr, "log", M_eff_log, dev_null,
+            fit_info_silent);
         free(tmp_meff_corr);
-        //raw correlator
+        // raw correlator
         file_head.l0 = head.T * 2;
-        tmp_meff_corr = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack,
-            namefile_plateaux, outfile_raw_corr, icorr, "cor", identity, dev_null, fit_info_silent);
+        tmp_meff_corr = plateau_correlator_function(
+            option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack,
+            namefile_plateaux, outfile_raw_corr, icorr, "cor", identity, dev_null,
+            fit_info_silent);
         free(tmp_meff_corr);
-        tmp_meff_corr = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack,
-            namefile_plateaux, outfile_raw_corr, icorr, "cor", identity_im, dev_null, fit_info_silent);
+        tmp_meff_corr = plateau_correlator_function(
+            option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack,
+            namefile_plateaux, outfile_raw_corr, icorr, "cor", identity_im,
+            dev_null, fit_info_silent);
         free(tmp_meff_corr);
         file_head.l0 = head.T;
         // shifted correlator
-        tmp_meff_corr = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack,
-            namefile_plateaux, outfile_shifted_corr, icorr, "shift_cor", shift_corr, dev_null,
-            fit_info_silent);
+        tmp_meff_corr = plateau_correlator_function(
+            option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack,
+            namefile_plateaux, outfile_shifted_corr, icorr, "shift_cor", shift_corr,
+            dev_null, fit_info_silent);
         free(tmp_meff_corr);
         // log_meff shifted correlator
-        tmp_meff_corr = plateau_correlator_function(option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack
-            , namefile_plateaux, outfile_log_meff_shifted, icorr, "log_shift", M_eff_log_shift, dev_null,
-            fit_info_silent);
+        tmp_meff_corr = plateau_correlator_function(
+            option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack,
+            namefile_plateaux, outfile_log_meff_shifted, icorr, "log_shift",
+            M_eff_log_shift, dev_null, fit_info_silent);
         free(tmp_meff_corr);
     }
     fit_info_silent.restore_default();
-    sprintf(option[1], "%s", save_option);// restore option
+    sprintf(option[1], "%s", save_option); // restore option
     corr_counter = -1;
 
-    ///////////////////// symmetrize 
+    ////////////////////////////////////////////////////////////
+    // symmetrize
+    ////////////////////////////////////////////////////////////
     // symmetrise_jackboot(Njack, 0, head.T, conf_jack);
     // symmetrise_jackboot(Njack, 1, head.T, conf_jack, -1);
 
+    ////////////////////////////////////////////////////////////
+    // start fitting
+    //////////////////////////////
+    corr_counter = -1;
+    double* M_PS = plateau_correlator_function(
+        option, kinematic_2pt, (char*)"P5P5", conf_jack, Njack,
+        namefile_plateaux, outfile, 0, "M_{PS}", M_eff_T, jack_file);
+    free(M_PS);
+    check_correlatro_counter(0);
+
     // eg of fit to correlator
     struct fit_type fit_info;
-    struct fit_result  fit_out;
+    struct fit_result fit_out;
 
     fit_info.Nvar = 1;
     fit_info.Npar = 1;
@@ -224,9 +250,14 @@ int main(int argc, char** argv) {
     fit_info.function = constant_fit;
     fit_info.linear_fit = true;
     fit_info.T = head.T;
+    fit_info.corr_id = {};
 
-    //c++ 0 || r 1
-    struct fit_result fit_me_P5P5 = fit_fun_to_fun_of_corr(option, kinematic_2pt, (char*)"P5P5", conf_jack, namefile_plateaux, outfile, lhs_function_project_template_eg, "give_name", fit_info, jack_file);
+    // c++ 0 || r 1
+    struct fit_result fit_me_P5P5 = fit_fun_to_fun_of_corr(
+        option, kinematic_2pt, (char*)"P5P5", conf_jack, namefile_plateaux,
+        outfile, lhs_function_project_template_eg, "give_name", fit_info,
+        jack_file);
+    check_correlatro_counter(1);
     // free_fit_result(fit_info, fit_out);
     fit_info.restore_default();
 }

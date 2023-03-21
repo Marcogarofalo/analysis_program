@@ -3,7 +3,9 @@
 #include "resampling.hpp"
 #include "global.hpp"
 #include "non_linear_fit.hpp"
-
+///////////////////////////////////////////////
+/// functions for plateau_correlator_function
+//////////////////////////////////////////////
 double laplacian_M_eff_T(int t, int T, double** in);
 double der2corr_M_eff_T(int t, int T, double** in);
 double M_eff_T(int t, int T, double** in);
@@ -19,7 +21,12 @@ double log_corr(int t, int T, double** in);
 
 double M_eff_t0_sinh_T(int t, int t0, int T, double** in);
 double M_eff_sinh_T_ct_ctp(int t, int T, double ct, double ctp);
+///////////////////////////////////////////////
+/// lhs fit_fun_to_fun_of_corr
+//////////////////////////////////////////////
+double lhs_function_f_PS(int j, double ****in, int t, struct fit_type fit_info);
 
+//////////////////
 
 void check_correlatro_counter(int i);
 
