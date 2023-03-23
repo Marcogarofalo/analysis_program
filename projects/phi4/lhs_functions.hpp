@@ -742,7 +742,7 @@ double** GEVPn_matrix(int j, double**** in, int t, struct fit_type fit_info) {
 
     int n = fit_info.n;
     double** r;
-    r = r_equal_value_or_vector(lambdat, vec, fit_info, t, t0);
+    r = r_equal_value_or_vector(lambdat, vec, fit_info, t, t0, M);
 
     free_2(N * N, M);
     free_2(N * N, Mt0);
@@ -813,7 +813,7 @@ double** GEVP_matrix_scaling(int j, double**** in, int t, struct fit_type fit_in
 
     int n = fit_info.n;
     double** r;
-    r = r_equal_value_or_vector(lambdat, vec, fit_info, t, t0);
+    r = r_equal_value_or_vector(lambdat, vec, fit_info, t, t0, M);
 
     free_2(N * N, M);
     free_2(N * N, Mt0);
@@ -903,7 +903,7 @@ double** GEVP_matrix_p1(int j, double**** in, int t, struct fit_type fit_info) {
     //     }
     int n = fit_info.n;
     double** r;
-    r = r_equal_value_or_vector(lambdat, vec, fit_info, t, t0);
+    r = r_equal_value_or_vector(lambdat, vec, fit_info, t, t0, M);
 
     free_2(N * N, M);
     free_2(N * N, Mt0);
@@ -988,7 +988,7 @@ double** GEVP_matrix_4_p1(int j, double**** in, int t, struct fit_type fit_info)
     // else
     //     r=lambdat[N-1-n][0];
     double** r;
-    r = r_equal_value_or_vector(lambdat, vec, fit_info, t, t0);
+    r = r_equal_value_or_vector(lambdat, vec, fit_info, t, t0, M);
 
     free_2(N * N, M);
     free_2(N * N, Mt0);
@@ -1055,7 +1055,7 @@ double** GEVP_matrix_p11(int j, double**** in, int t, struct fit_type fit_info) 
     // else
     //     r=lambdat[N-1-n][0];
     double** r;
-    r = r_equal_value_or_vector(lambdat, vec, fit_info, t, t0);
+    r = r_equal_value_or_vector(lambdat, vec, fit_info, t, t0, M);
 
     free_2(N * N, M);
     free_2(N * N, Mt0);
@@ -1187,7 +1187,7 @@ double** HANKEL_GEVP_matrix(int j, double**** in, int t, struct fit_type fit_inf
 
     int n = fit_info.n;
     double** r;
-    r = r_equal_value_or_vector(lambdat, vec, fit_info, myt, myt0);
+    r = r_equal_value_or_vector(lambdat, vec, fit_info, myt, myt0, M);
 
     double** r1 = double_malloc_2(Ng, 2);
     // pass only fit_info.N values or vectors

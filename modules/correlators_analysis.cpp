@@ -284,15 +284,28 @@ double M_eff_log_shift(int t, int T, double** in) {
 }
 
 
-double lhs_function_f_PS(int j, double**** in, int t, struct fit_type fit_info){
-    int id=fit_info.corr_id[0];
-    double corr=in[j][id][t][0];
-    double M=fit_info.ext_P[0][j];
-    double mu1=fit_info.ext_P[1][j];
-    double mu2=fit_info.ext_P[2][j];
+double lhs_function_f_PS(int j, double**** in, int t, struct fit_type fit_info) {
+    int id = fit_info.corr_id[0];
+    double corr = in[j][id][t][0];
+    double M = fit_info.ext_P[0][j];
+    double mu1 = fit_info.ext_P[1][j];
+    double mu2 = fit_info.ext_P[2][j];
 
-    double me=sqrt(corr*2*M/(exp(-t*M)+exp(-(fit_info.T-t)*M)));
-    return (mu1+mu2)*me/(M*sinh(M));
+    double me = sqrt(corr * 2 * M / (exp(-t * M) + exp(-(fit_info.T - t) * M)));
+    return (mu1 + mu2) * me / (M * sinh(M));
+}
+
+
+double lhs_function_f_PS_GEVP(int j, double**** in, int t, struct fit_type fit_info) {
+    int id = fit_info.corr_id[0];
+    double amp = 0;
+    double M = fit_info.ext_P[0][j];
+    double mu1 = fit_info.ext_P[1][j];
+    double mu2 = fit_info.ext_P[2][j];
+
+    
+    double me = in[j][fit_info.corr_id[0]][t][0] * sqrt(2 * M) / sqrt((exp(-t * M) + exp(-(fit_info.T - t) * M)));
+    return (mu1 + mu2) * me / (M * sinh(M));
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -319,7 +332,7 @@ int line_read_plateaux(char** option, const char* corr, int& tmin, int& tmax, in
             std::string name = option[6];
             std::string correlator = corr;
             if (x.empty() == 0) {
-                if (x[0].compare(name) == 0 && x[1].compare(correlator) == 0 && x.size()>=5) {
+                if (x[0].compare(name) == 0 && x[1].compare(correlator) == 0 && x.size() >= 5) {
                     tmin = stoi(x[2]);
                     tmax = stoi(x[3]);
                     sep = stoi(x[4]);
@@ -807,7 +820,7 @@ struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinemat
 
 
 
-double** r_equal_value_or_vector(double** lambdat, double** vec, fit_type fit_info, int t, int t0) {
+double** r_equal_value_or_vector(double** lambdat, double** vec, fit_type fit_info, int t, int t0, double** M) {
     int n = fit_info.n;
     int N = fit_info.N * fit_info.HENKEL_size; // if eigenvector N= component+ id_eigenvector * components
     double** r = double_malloc_2(N, 2);
@@ -841,6 +854,47 @@ double** r_equal_value_or_vector(double** lambdat, double** vec, fit_type fit_in
             }
         }
     }
+    else if (fit_info.value_or_vector == 2) {
+        int sqN = sqrt(N);
+        double** amp = calloc_2<double>(N, 2);
+        double* norm = (double*)calloc(sqN, sizeof(double));
+        for (int n1 = 0; n1 < sqN; n1++) {
+            for (int n2 = 0; n2 < sqN; n2++) {
+                for (int ni = 0; ni < sqN; ni++) {
+                    amp[n1 + n2 * sqN][0] += M[n1 + ni * sqN][0] * vec[ni + n2 * sqN][0];
+                }
+            }
+        }
+
+        for (int n1 = 0; n1 < sqN; n1++) {
+            for (int ni = 0; ni < sqN; ni++) {
+                norm[n1] += vec[ni + n1 * sqN][0] * amp[ni + n1 * sqN][0] ;
+            }
+        }
+        for (int n1 = 0; n1 < sqN; n1++) {
+            for (int n2 = 0; n2 < sqN; n2++) {
+                amp[n1+n2*sqN][0] =  amp[n1 + n2 * sqN][0]/sqrt((norm[n2])) ;
+            }
+        }
+        for (int n = 0; n < N; n++) {
+            if ((t - t0) >= 0) {
+                r[n][0] = amp[n][0];
+                r[n][1] = amp[n][1];
+            }
+            else {
+                int comps = sqrt(N);
+                error(comps * comps != N, 1, "r_equal_value_or_vector:", "N not a square!");
+                int id = n / comps;
+                int comp = n % comps;
+                id = comp + (comps - 1 - id) * comps;
+                r[n][0] = amp[id][0];
+                r[n][1] = amp[id][1];
+            }
+        }
+        free_2(N, amp);
+        free(norm);
+    }
+
     else {
         printf("you need to specify if you want the:\n\
                 - eigenvalues (fit_info.value_or_vector=0) \n\
@@ -853,7 +907,7 @@ double** r_equal_value_or_vector(double** lambdat, double** vec, fit_type fit_in
 double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
     double ct, ctp;
     int N = fit_info.N;
-    if (fit_info.value_or_vector == 1) {
+    if (fit_info.value_or_vector >= 1) {
         N = sqrt(fit_info.N);
         error(fit_info.N != (N * N), 1, "GEVP_matrix",
             "when you want the eigenvector N must be the square of the size of the matrix: fit_info.N=%d ", fit_info.N);
@@ -909,8 +963,8 @@ double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
                 int ki = k + i * N;
                 M[ik][0] = (M[ik][0] + M[ki][0]) / 2.0;
                 Mt0[ik][0] = (Mt0[ik][0] + Mt0[ki][0]) / 2.0;
-                M[ki][0]=M[ik][0];
-                Mt0[ki][0]=Mt0[ik][0];
+                M[ki][0] = M[ik][0];
+                Mt0[ki][0] = Mt0[ik][0];
             }
         }
     }
@@ -923,7 +977,7 @@ double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
     int verbosity = fit_info.verbosity;
     if (t > fit_info.GEVP_ignore_warning_after_t || j != 0)
         verbosity = -1;
-   
+
     int err = generalysed_Eigenproblem(M, Mt0, N, &lambdat, &vec, verbosity);
     if (err > 0) {
         printf("above error at time t=%d\n", t);
@@ -931,7 +985,7 @@ double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
 
     int n = fit_info.n;
     double** r;
-    r = r_equal_value_or_vector(lambdat, vec, fit_info, t, t0);
+    r = r_equal_value_or_vector(lambdat, vec, fit_info, t, t0, M);
 
     free_2(N * N, M);
     free_2(N * N, Mt0);
