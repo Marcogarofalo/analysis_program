@@ -141,6 +141,7 @@ T   **malloc_2(int size1,int size2){
 template long double  **malloc_2<long double>(int ,int );
 template double  **malloc_2<double>(int ,int );
 template int  **malloc_2<int>(int ,int );
+template char  **malloc_2<char>(int ,int );
 
 template<typename T>
 T  **calloc_2(int size1,int size2){
