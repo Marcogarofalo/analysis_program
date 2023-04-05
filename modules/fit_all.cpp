@@ -91,7 +91,7 @@ void read_vector<std::string>(FILE* file, std::vector<std::string>& v) {
     int i = fread(&n, sizeof(int), 1, file);
     v.resize(n);
     for (int j = 0;j < n;j++) {
-        char a[NAME_SIZE];
+        char a[8];
         i += fread(a, sizeof(6 + 1), 1, file);
         v[j] = a;
     }
@@ -121,7 +121,7 @@ void generic_header::read_header(FILE* file) {
 
     i += fread(&size, sizeof(int), 1, file);
     error(size != ncorr * 2 * T, 1, "generic_header::read_header",
-     "size of the data chunk=%d is not equal to ncorr*2*T=%d\n",size, ncorr * 2 * T);
+        "size of the data chunk=%d is not equal to ncorr*2*T=%d\n", size, ncorr * 2 * T);
     struct_size = ftell(file);
 
     fseek(file, 0, SEEK_END);
@@ -131,7 +131,7 @@ void generic_header::read_header(FILE* file) {
     error(confs != Njack, 1, "generic_header::read_header",
         "size of the data chunk is not equal to ncorr*2*T\n");
     fseek(file, struct_size, SEEK_SET);
-    
+
 }
 
 
@@ -457,7 +457,7 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
     fprintf(f, "\\begin{gather}\n");
     fprintf(f, "\\chi^2/d.o.f.=%g \\\\ \n", fit_out.chi2[Njack - 1]);//error_jackboot(argv[1], Njack, fit_out.chi2)
     for (int i = 0;i < Npar;i++) {
-        fprintf(f, "P[%d]=%g\\pm (%.2g) \\\\ \n", i, fit_out.P[i][Njack - 1], error_jackboot(argv[1], Njack, fit_out.P[i]));
+        fprintf(f, "P[%d]=%g\\pm (%.2g) \\\\ \n", i, fit_out.P[i][Njack - 1], myres->comp_error(fit_out.P[i]));
     }
     fprintf(f, "\\end{gather}\n");
     double** cov;
