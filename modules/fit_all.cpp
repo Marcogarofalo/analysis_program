@@ -91,7 +91,7 @@ void read_vector<std::string>(FILE* file, std::vector<std::string>& v) {
     int i = fread(&n, sizeof(int), 1, file);
     v.resize(n);
     for (int j = 0;j < n;j++) {
-        char a[8];
+        char a[7];
         i += fread(a, sizeof(6 + 1), 1, file);
         v[j] = a;
     }
