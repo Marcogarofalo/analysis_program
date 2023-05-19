@@ -51,9 +51,11 @@ template<> void write_vector<std::string>(FILE* file, std::vector<std::string> v
     int n = v.size();
     fwrite(&n, sizeof(int), 1, file);
     for (auto mu : v) {
-        char a[NAME_SIZE];
-        mysprintf(a, NAMESIZE, "%s", mu.c_str());
-        fwrite(a, sizeof(6 + 1), 1, file);
+        for (char& c : mu) {
+            fwrite(&c, 1, 1, file);
+        }
+        char c='\0';
+        fwrite(&c, 1, 1, file);
     }
 }
 
@@ -90,10 +92,17 @@ void read_vector<std::string>(FILE* file, std::vector<std::string>& v) {
     int n;
     int i = fread(&n, sizeof(int), 1, file);
     v.resize(n);
+    char a[7];
     for (int j = 0;j < n;j++) {
-        char a[7];
-        i += fread(a, sizeof(6 + 1), 1, file);
-        v[j] = a;
+        v[j]="";
+        // i += fread(a, sizeof(6 + 1), 1, file);
+        // v[j] = a;
+        // printf("reading %s\n", a);
+        char c[1];
+        do {
+            i += fread(c, 1, 1, file);
+            v[j] = v[j] + c[0];
+        } while (c[0] != '\0');
     }
 }
 

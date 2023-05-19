@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
 
     FILE* infile = open_file(argv[4], "r");
     generic_header head;
-    std::vector<int> confs = read_vector<int>(argv[4], "confs");
+    std::vector<std::string> confs = read_vector<std::string>(argv[4], "confs");
     head.Njack = confs.size();
     head.T = read_param<int>(argv[4], "T");
     head.L = read_param<int>(argv[4], "L");
@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
     std::string file0(argv[1]);
     char conf4int[NAMESIZE];
 
-    mysprintf(conf4int, NAMESIZE, "%04d", confs[0]);
+    mysprintf(conf4int, NAMESIZE, "%s", confs[0].c_str());
     struct_nissa_out_info nissa_out(file0 + "/" + conf4int + "/" + filesname[0]);
     nissa_out.print();
     error(nissa_out.T != head.T, 1, "main", "T value in the input file=%d while in the nissa file we found %d\n", head.T, nissa_out.T);
@@ -166,7 +166,7 @@ int main(int argc, char** argv) {
     head.ncorr = ((nissa_out.Ncorr * head.gammas.size()) / nissa_out.Ngamma) * filesname.size();
     head.size = head.ncorr * 2 * nissa_out.T;
     std::vector<int> id_gamma = nissa_out.inidices_of_gamma(head.gammas);
-    printf("Ncorr nisaa= %d Ncorr to store=%d\n", nissa_out.Ncorr, head.ncorr);
+    printf("Ncorr nissa= %d Ncorr to store=%d\n", nissa_out.Ncorr, head.ncorr);
     // for(int i :id_gamma){printf("%d\t",i);}printf("\n");
     ///////////////////////////////
 
@@ -179,7 +179,7 @@ int main(int argc, char** argv) {
         double**** data_n = calloc_corr(filesname.size(), nissa_out.Ncorr, head.T);
         int id_lhs = 0;
         for (int iif = 0; iif < filesname.size();iif++) {
-            mysprintf(conf4int, NAMESIZE, "%04d", confs[ic]);
+            mysprintf(conf4int, NAMESIZE, "%s", confs[ic].c_str());
             // int a=timestamp();
             read_all_nissa_gamma(data_n[iif], file0 + "/" + conf4int + "/" + filesname[iif], nissa_out.Ncorr, head.T, id_gamma);
             // printf("time to read %gs\n", timestamp() - a);a = timestamp();
