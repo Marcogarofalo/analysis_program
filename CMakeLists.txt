@@ -35,16 +35,25 @@ IF(NOT DEFINED EIGEN3_INCLUDE_DIR)
   find_package(Eigen3 REQUIRED)
   MESSAGE("Eigen: " ${EIGEN3_INCLUDE_DIR})
 ENDIF()
-INCLUDE_DIRECTORIES ( "${EIGEN3_INCLUDE_DIR}" )
+# INCLUDE_DIRECTORIES ( "${EIGEN3_INCLUDE_DIR}" )
 
 
 #using the globally installed version of Eigen: sudo apt-get libeigen3-dev
 # Eigen
 IF(NOT DEFINED GSL_INCLUDE_DIR)
-  find_package(GSL REQUIRED) 
-  MESSAGE("GSL: " ${GSL})
+  find_package(GSL)
+  IF(NOT GSL_FOUND) 
+    MESSAGE("\nGSL NOT FOUND TRY with PkgConfig otherwise set manually:")
+    MESSAGE("        -DCMAKE_EXE_LINKER_FLAGS=\"-L $GSL_LIB \" " )
+    MESSAGE("        -DCMAKE_C_FLAGS=\"$GSL_INCLUDE \"\n " )
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules( GSL  gsl )
+  ENDIF()
 ENDIF()
-#INCLUDE_DIRECTORIES ( "${GSL_INCLUDE_DIR}" )
+# if (PkgConfig_FOUND)
+#     pkg_check_modules(GSL gsl)
+# endif ()
+
 
 IF(WITH_PYTHON)
     SET(python_dir "/usr/include/python3.9/")  #sudo apt-get install python3.9-dbg
