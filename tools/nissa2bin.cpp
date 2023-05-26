@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
     ////////////////////////////////////
     // reading the files
     double**** data = calloc_corr(head.Njack, head.ncorr, head.T);
-#pragma omp parallel for
+// #pragma omp parallel for
     for (int ic = 0; ic < head.Njack; ic++) {
         // we need to allocate the memory here to have a data_n for each task
         double*** data_n = malloc_3<double>(maxNcorr, head.T, 2);
