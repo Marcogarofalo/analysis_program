@@ -995,7 +995,7 @@ double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
 
     return r;
 }
-
+// fun_of_corr must return a double ** [N(correlators)][2(re/im)]
 void add_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack, double** fun_of_corr(int, double****, int, struct fit_type), struct fit_type fit_info) {
 
     int correlators_out = ncorr_conf_jack + fit_info.N;
@@ -1012,15 +1012,7 @@ void add_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack,
         }
     }
 
-    // for(int n=0; n<fit_info.N; n++){
-    //     fit_info.n=n; // this goes in to fun_of_corr
-    //     for(int j=0; j<Njack; j++){
-    //         for(int t=0; t<file_head.l0; t++){
-    //             corr_out[j][ncorr_conf_jack+ n][t][0]=fun_of_corr(j,conf_jack,t,fit_info);
-    //             corr_out[j][ncorr_conf_jack+ n][t][1]=0;
-    //         }
-    //     }
-    // }
+   
 
     for (int j = 0; j < Njack; j++) {
         for (int t = 0; t < file_head.l0; t++) {
