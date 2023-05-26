@@ -156,19 +156,32 @@ int main(int argc, char** argv) {
     std::string file0(argv[1]);
     char conf4int[NAMESIZE];
 
-    mysprintf(conf4int, NAMESIZE, "%s", confs[0].c_str());
-    struct_nissa_out_info nissa_out(file0 + "/" + conf4int + "/" + filesname[0]);
-    nissa_out.print();
-    error(nissa_out.T != head.T, 1, "main", "T value in the input file=%d while in the nissa file we found %d\n", head.T, nissa_out.T);
 
+    mysprintf(conf4int, NAMESIZE, "%s", confs[0].c_str());
+
+    head.ncorr = 0;
+    std::vector<struct_nissa_out_info> nissa_out;
+    for (int i = 0; i < filesname.size();i++) {
+        std::string name(file0 + "/" + conf4int + "/" + filesname[i]);
+        std::cout << "parsing " << name << "\n";
+        nissa_out.emplace_back(struct_nissa_out_info(name));
+        nissa_out[i].print();
+        // remove unwanted gamma from the counting
+        head.ncorr += ((nissa_out[i].Ncorr * head.gammas.size()) / nissa_out[i].Ngamma);
+    }
+    printf("total number of correlators: %d\n", head.ncorr);
     ///////////////////////////////////////
-    // compute how many correlators we will store
-    head.ncorr = ((nissa_out.Ncorr * head.gammas.size()) / nissa_out.Ngamma) * filesname.size();
-    head.size = head.ncorr * 2 * nissa_out.T;
-    std::vector<int> id_gamma = nissa_out.inidices_of_gamma(head.gammas);
-    printf("Ncorr nissa= %d Ncorr to store=%d\n", nissa_out.Ncorr, head.ncorr);
-    // for(int i :id_gamma){printf("%d\t",i);}printf("\n");
+    head.size = head.ncorr * 2 * head.T;
+
     ///////////////////////////////
+
+    // max number for local buffer to store the data
+    int maxNcorr = 0;
+    for (int i = 0; i < filesname.size();i++) {
+        if (nissa_out[i].Ncorr > maxNcorr)
+            maxNcorr = nissa_out[i].Ncorr;
+    }
+    printf("max local ncorr=%d\n", maxNcorr);
 
 
     ////////////////////////////////////
@@ -176,26 +189,26 @@ int main(int argc, char** argv) {
     double**** data = calloc_corr(head.Njack, head.ncorr, head.T);
 #pragma omp parallel for
     for (int ic = 0; ic < head.Njack; ic++) {
-        double**** data_n = calloc_corr(filesname.size(), nissa_out.Ncorr, head.T);
+        // we need to allocate the memory here to have a data_n for each task
+        double*** data_n = malloc_3<double>(maxNcorr, head.T, 2);
         int id_lhs = 0;
         for (int iif = 0; iif < filesname.size();iif++) {
             mysprintf(conf4int, NAMESIZE, "%s", confs[ic].c_str());
             // int a=timestamp();
-            read_all_nissa_gamma(data_n[iif], file0 + "/" + conf4int + "/" + filesname[iif], nissa_out.Ncorr, head.T, id_gamma);
+            std::string name(file0 + "/" + conf4int + "/" + filesname[iif]);
+            std::vector<int> id_gamma(nissa_out[iif].inidices_of_gamma(head.gammas));
+            read_all_nissa_gamma(data_n, name, nissa_out[iif].Ncorr, head.T, id_gamma);
             // printf("time to read %gs\n", timestamp() - a);a = timestamp();
-            // printf("%g  %g\n",data_n[iif][0][0][0], data_n[iif][0][0][1]);
-            for (int icorr = 0; icorr < head.ncorr / filesname.size(); icorr++) {
+            for (int icorr = 0; icorr < ((nissa_out[iif].Ncorr * head.gammas.size()) / nissa_out[iif].Ngamma); icorr++) {
                 for (int t = 0;t < head.T;t++) {
-                    data[ic][id_lhs][t][0] = data_n[iif][icorr][t][0];
-                    data[ic][id_lhs][t][1] = data_n[iif][icorr][t][1];
+                    data[ic][id_lhs][t][0] = data_n[icorr][t][0];
+                    data[ic][id_lhs][t][1] = data_n[icorr][t][1];
                 }
                 id_lhs++;
             }
-
             // printf("time to copy %gs\n", timestamp() - a);a = timestamp();
-
         }
-        free_corr(filesname.size(), head.ncorr, head.T, data_n);
+        free_3(maxNcorr, head.T, data_n);
     }
 
     ///////////////////////////////////
@@ -237,11 +250,11 @@ int main(int argc, char** argv) {
     // check
     /////////////////////////////////////////////////////////////////////////////////////////////
     outfile = open_file(argv[2], "r");
-    printf("T=%d\n",head.T);
+    printf("T=%d\n", head.T);
     head.read_header(outfile);
     head.print_header();
 
-    double ****data_check;
+    double**** data_check;
     if (bintype.compare("block") == 0) {
         data_check = calloc_corr(head.Njack, head.ncorr, head.T);
     }
@@ -251,19 +264,19 @@ int main(int argc, char** argv) {
     for (int ic = 0; ic < head.Njack; ic++) {
         int icc;
         fread(&icc, sizeof(int), 1, outfile);
-        error(icc!=ic,1,"main","conf number do not match  expected=%d read=%d\n",ic, icc);
+        error(icc != ic, 1, "main", "conf number do not match  expected=%d read=%d\n", ic, icc);
         for (int iv = 0; iv < head.ncorr; iv++) {
             for (int t = 0; t < head.T; t++) {
                 fread(data_check[ic][iv][t], sizeof(double), 2, outfile);
-                error(fabs(data_check[ic][iv][t][0]-data_bin[ic][iv][t][0])>1e-7,1,"main",
-                "correlator real part do not match  expected=%.10g read=%.10g  t=%d corr=%d\n",data_bin[ic][iv][t][0],data_check[ic][iv][t][0],t,iv);
-                error(fabs(data_check[ic][iv][t][1]-data_bin[ic][iv][t][1])>1e-7,1,"main",
-                "correlator real part do not match  expected=%.10g read=%.10g  t=%d corr=%d\n",data_bin[ic][iv][t][1],data_check[ic][iv][t][1],t,iv);
+                error(fabs(data_check[ic][iv][t][0] - data_bin[ic][iv][t][0]) > 1e-7, 1, "main",
+                    "correlator real part do not match  expected=%.10g read=%.10g  t=%d corr=%d\n", data_bin[ic][iv][t][0], data_check[ic][iv][t][0], t, iv);
+                error(fabs(data_check[ic][iv][t][1] - data_bin[ic][iv][t][1]) > 1e-7, 1, "main",
+                    "correlator real part do not match  expected=%.10g read=%.10g  t=%d corr=%d\n", data_bin[ic][iv][t][1], data_check[ic][iv][t][1], t, iv);
             }
         }
     }
     free_corr(head.Njack, head.ncorr, head.T, data_check);
-    
+
     fclose(outfile);
 
 }
