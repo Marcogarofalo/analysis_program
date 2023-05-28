@@ -176,5 +176,8 @@ void split(const std::string &s, char delim, Out result);
 std::vector<std::string> split(const std::string &s, char delim) ;
 
 
+template<typename T>
+T convert(std::string& in) ;
+
 double timestamp();
 #endif

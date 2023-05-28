@@ -8,7 +8,62 @@
 #include <complex.h>
 #include "mutils.hpp"
 #include "read.hpp"
+#include "global.hpp"
 
+// option[3] path
+// option[6] file
+template<class T>
+void line_read_param(char** option, const char* corr, T& value, T& error, int& seed, const char* namefile_plateaux) {
+
+    int line = 0;    
+    char namefile[NAMESIZE];
+    mysprintf(namefile, NAMESIZE, "%s/%s", option[3], namefile_plateaux);
+    std::fstream newfile;
+
+    newfile.open(namefile, std::ios::in); // open a file to perform read operation using file object
+    int match = 0;
+    if (newfile.is_open()) { // checking whether the file is open
+        std::string tp;
+        while (getline(newfile, tp)) { // read data from file object and put it into string.
+            line++;
+            std::vector<std::string> x = split(tp, ' ');
+
+            std::string name = option[6];
+            std::string correlator = corr;
+            if (x.empty() == 0) {
+                if (x[0].compare(name) == 0 && x[1].compare(correlator) == 0) {
+                    value = convert<T>(x[2]);
+                    error = convert<T>(x[3]);
+                    seed = stoi(x[4]);
+                    std::cout<<"correlator" << correlator<< "name"<< name << "value"<< value<< "error"<< error<< "seed" << seed <<"\n";
+                    match++;
+                    // break;
+                }
+            }
+        }
+        newfile.close(); // close the file object.
+    }
+    else {
+      printf("correlators_analysis.cpp line_read_plateaux\n");
+      printf("\t unable to open %s", namefile);
+      exit(1);
+    }
+    // error(match==0,1,"correlators_analysis.cpp line_read_plateaux",
+    //       "no match for plateau %s   %s \n in the file %s ",option[6], corr,namefile);
+    if (match == 0) {
+        printf("no plateau found for %s in plateau file %s\n", corr, namefile);
+        printf("looking for a line:\n %s  %s\n", option[6], corr);
+        exit(1);
+    }
+    if (match > 1) {
+        printf("multiple lines line:\n %s  %s\n", option[6], corr);
+        exit(1);
+    }
+   
+}
+template void line_read_param<int>(char** , const char* , int& , int& , int& , const char* );
+template void line_read_param<double>(char** , const char* , double& , double& , int& , const char* );
+template void line_read_param<std::string>(char** , const char* , std::string& , std::string& , int& , const char* );
 
 double**** calloc_corr(int N, int var, int t) {
     double**** out;
@@ -171,7 +226,7 @@ double**** read_datafile(int N, int var, int t, int bin) {
     char** datafile;
     FILE** f;
     double**** data, **** out;
-    int i, j, k;
+    int i, j, k,fi=0;
 
     data = (double****)malloc(sizeof(double***) * N);
     for (i = 0;i < N;i++) {
@@ -194,7 +249,7 @@ double**** read_datafile(int N, int var, int t, int bin) {
 
         for (i = 0;i < N;i++) {
             for (k = 0;k < t;k++) {
-                fscanf(f[j], "%lf   %lf \n", &data[i][j][k][0], &data[i][j][k][1]);
+                fi+=fscanf(f[j], "%lf   %lf \n", &data[i][j][k][0], &data[i][j][k][1]);
             }
         }
         fclose(f[j]);

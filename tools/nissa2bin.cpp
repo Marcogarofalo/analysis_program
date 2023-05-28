@@ -20,25 +20,6 @@ generic_header set_header() {
     return head;
 }
 
-template<typename T>
-T convert(std::string& in) {
-    T t;
-    return t;
-}
-
-template<>
-int convert<int>(std::string& in) {
-    return std::stoi(in);
-}
-
-template<>
-double convert<double>(std::string& in) {
-    return std::stod(in);
-}
-template<>
-std::string convert<std::string>(std::string& in) {
-    return in;
-}
 
 template<typename T>
 T read_param(std::string namefile, std::string namepar) {

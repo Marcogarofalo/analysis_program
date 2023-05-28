@@ -23,4 +23,7 @@ void forward_derivative_corr(int N, int var, int t ,double ****data);
 void symmetric_derivative_corr(int N, int var, int t ,double ****data);
 void second_derivative_corr(int N, int var, int t ,double ****data);
 void cbtc_corr(int N, int var, int t ,double ****data);
+template<class T>
+void line_read_param(char** option, const char* corr, T& value, T& error, int& seed, const char* namefile_plateaux);
+
 #endif    
