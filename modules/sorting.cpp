@@ -13,7 +13,8 @@ void swap(int* a, int* b)
  *   array, and places all smaller (smaller than pivot)
  *  to left of pivot and all greater elements to right
  *  of pivot */
-int partition (int *order, double *arr, int low, int high)
+template<class T>
+int partition (int *order, T*arr, int low, int high)
 {
     double pivot = arr[order[high]];    // pivot
     int i = (low - 1);  // Index of smaller element
@@ -36,7 +37,8 @@ int partition (int *order, double *arr, int low, int high)
  * arr[] --> Array to be sorted,
  * low  --> Starting index,
  * high  --> Ending index */
-void quickSort(int *order, double *arr, int low, int high)
+template<class T>
+void quickSort(int *order, T *arr, int low, int high)
 {
     if (low < high)
     {
@@ -50,3 +52,6 @@ void quickSort(int *order, double *arr, int low, int high)
         quickSort(order, arr, pi + 1, high);
     }
 }
+
+template void quickSort<int>(int *, int *, int, int);
+template void quickSort<double>(int *, double *, int, int);

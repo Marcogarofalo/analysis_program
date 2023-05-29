@@ -2,6 +2,7 @@
 #include "read_nissa.hpp"
 #include "mutils.hpp"
 
+
 void read_single_nissa(double** out, std::string contraction, std::string gamma, std::string namefile) {
     std::fstream newfile;
     bool found_contraction = false;
@@ -177,7 +178,7 @@ void read_all_nissa(double*** out, std::string namefile, int Ncorr, int T, bool 
     return;
 }
 
-void read_all_nissa_gamma(double*** out, std::string namefile, int Ncorr, int T, std::vector<int> id_gamma, bool check) {
+void read_all_nissa_gamma(double*** out, std::string namefile, int Ncorr, int T, std::vector<int> id_gamma, std::vector<int> id_sort, bool check) {
     std::fstream newfile;
     newfile.open(namefile, std::ios::in); // open a file to perform read operation using file object
     int Tc = 0;
@@ -209,16 +210,17 @@ void read_all_nissa_gamma(double*** out, std::string namefile, int Ncorr, int T,
         while (getline(newfile, tp)) { // read data from file object and put it into string.
             if (!tp.empty()) {
                 if (tp.compare(0, 1, "+") == 0 || tp.compare(0, 1, "-") == 0) {
-                    if (corr == id_gamma[id]) {
+                    if (corr == id_gamma[id_sort[id]]) {// we read a sorted what
                         int t = 0;
                         while (!tp.empty()) {
                             std::vector<std::string> x = split(tp, '\t');
-                            out[id][t][0] = std::stod(x[0]);
-                            out[id][t][1] = std::stod(x[1]);
+                            out[id_sort[id]][t][0] = std::stod(x[0]);
+                            out[id_sort[id]][t][1] = std::stod(x[1]);
                             t++;
                             getline(newfile, tp);
                         }
                         id++;
+                        if (id == id_gamma.size()) return;
                     }
                     else {
                         while (!tp.empty()) {
@@ -328,6 +330,7 @@ void struct_nissa_out_info::print() {
 std::vector<int> struct_nissa_out_info::inidices_of_gamma(std::vector<std::string> mygammas) {
     std::vector<int> out(Ncontr * mygammas.size());
     std::vector<int> ii(mygammas.size());
+    // Here we assume that the same gamma contraction are repeated for every contraction
     for (int mg = 0; mg < mygammas.size();mg++) {
         int i = -1;
         for (i = 0; i < Ngamma; i++) {
@@ -343,6 +346,6 @@ std::vector<int> struct_nissa_out_info::inidices_of_gamma(std::vector<std::strin
             out[mg + i * mygammas.size()] = ii[mg] + i * Ngamma;
         }
     }
-    error(out.size()!=Ncontr * mygammas.size(), 1, "inidices_of_gamma", "not enought contraction found");
+    error(out.size() != Ncontr * mygammas.size(), 1, "inidices_of_gamma", "not enought contraction found");
     return out;
 }

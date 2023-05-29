@@ -119,14 +119,14 @@ double**** binning_toNb(int N, int var, int t, double**** data, int Nb) {
     return out;
 }
 
-double**** bin_intoN( double**** data, int nvar, int T, int Nconf_in, int Nb) {
+double**** bin_intoN(double**** data, int nvar, int T, int Nconf_in, int Nb) {
 
 
     double clustSize = ((double)Nconf_in) / ((double)Nb);
     // double clustSize = ((double)confs.confs_after_binning) / ((double)Nb);
     double**** to_write = calloc_corr(Nb, nvar, T);
     for (size_t iClust = 0;iClust < Nb;iClust++) {
-        
+
         /// Initial time of the bin
         const double binBegin = iClust * clustSize;
         /// Final time of the bin
@@ -146,7 +146,7 @@ double**** bin_intoN( double**** data, int nvar, int T, int Nconf_in, int Nb) {
             const double weight = end - beg;
 
             // Perform the operation passing the info
-            for (int t = 0;t < T / 2 + 1;t++) {
+            for (int t = 0;t < T;t++) {
                 for (int ivar = 0; ivar < nvar; ivar++) {
                     to_write[iClust][ivar][t][0] += weight * data[iConf][ivar][t][0];
                     to_write[iClust][ivar][t][1] += weight * data[iConf][ivar][t][1];
@@ -156,7 +156,7 @@ double**** bin_intoN( double**** data, int nvar, int T, int Nconf_in, int Nb) {
             // Updates the position
             binPos = end;
         } while (binEnd - binPos > 1e-10);
-        for (int t = 0;t < T / 2 + 1;t++) {
+        for (int t = 0;t < T;t++) {
             for (int ivar = 0; ivar < nvar; ivar++) {
                 to_write[iClust][ivar][t][0] /= ((double)clustSize);
                 to_write[iClust][ivar][t][1] /= ((double)clustSize);

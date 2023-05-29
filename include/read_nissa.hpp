@@ -9,7 +9,7 @@
 void read_single_nissa(double** out, std::string contraction, std::string gamma, std::string namefile);
 double*** return_all_nissa(std::string namefile, int Ncorr, int T, bool check = true);
 void read_all_nissa(double*** out, std::string namefile, int Ncorr, int T, bool check = true);
-void read_all_nissa_gamma(double*** out, std::string namefile, int Ncorr, int T, std::vector<int> id_gamma, bool check = true);
+void read_all_nissa_gamma(double*** out, std::string namefile, int Ncorr, int T, std::vector<int> id_gamma, std::vector<int> id_sort, bool check = true);
 
 class struct_nissa_out_info {
 public:

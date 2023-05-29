@@ -14,6 +14,7 @@
 #include "fit_all.hpp"
 #include "mutils.hpp"
 #include "read.hpp"
+#include "sorting.hpp"
 
 generic_header set_header() {
     generic_header head;
@@ -154,15 +155,11 @@ int main(int argc, char** argv) {
     head.print_header();
 
     std::string file0(argv[1]);
-    char conf4int[NAMESIZE];
-
-
-    mysprintf(conf4int, NAMESIZE, "%s", confs[0].c_str());
-
+    
     head.ncorr = 0;
     std::vector<struct_nissa_out_info> nissa_out;
     for (int i = 0; i < filesname.size();i++) {
-        std::string name(file0 + "/" + conf4int + "/" + filesname[i]);
+        std::string name(file0 + "/" + confs[0] + "/" + filesname[i]);
         std::cout << "parsing " << name << "\n";
         nissa_out.emplace_back(struct_nissa_out_info(name));
         nissa_out[i].print();
@@ -193,11 +190,13 @@ int main(int argc, char** argv) {
         double*** data_n = malloc_3<double>(maxNcorr, head.T, 2);
         int id_lhs = 0;
         for (int iif = 0; iif < filesname.size();iif++) {
-            mysprintf(conf4int, NAMESIZE, "%s", confs[ic].c_str());
             // int a=timestamp();
-            std::string name(file0 + "/" + conf4int + "/" + filesname[iif]);
+            std::string name(file0 + "/" + confs[ic] + "/" + filesname[iif]);
             std::vector<int> id_gamma(nissa_out[iif].inidices_of_gamma(head.gammas));
-            read_all_nissa_gamma(data_n, name, nissa_out[iif].Ncorr, head.T, id_gamma);
+            std::vector<int> id_gamma_sort(id_gamma.size());
+            for (int i_init = 0;i_init < id_gamma_sort.size(); i_init++) id_gamma_sort[i_init] = i_init;
+            quickSort(id_gamma_sort.data(), id_gamma.data(), 0, id_gamma.size() - 1);
+            read_all_nissa_gamma(data_n, name, nissa_out[iif].Ncorr, head.T, id_gamma, id_gamma_sort);
             // printf("time to read %gs\n", timestamp() - a);a = timestamp();
             for (int icorr = 0; icorr < ((nissa_out[iif].Ncorr * head.gammas.size()) / nissa_out[iif].Ngamma); icorr++) {
                 for (int t = 0;t < head.T;t++) {
@@ -228,6 +227,13 @@ int main(int argc, char** argv) {
         head.Njack = bin;
 
     }
+    for (size_t t = 0; t < head.T; t++) {
+        int mu = 3, nu = 3;
+        int id = 4 * head.gammas.size() + 4 * head.gammas.size() + (mu + 5) + nu * head.gammas.size();
+        printf("%.12g   %.12g\n", data_bin[head.Njack - 1][id][t][0], data_bin[head.Njack - 1][id][t][1]);
+    }
+
+
     ///////////////////////// 
     // writing 
     ////////////////////////
