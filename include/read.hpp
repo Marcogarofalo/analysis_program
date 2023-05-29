@@ -8,7 +8,7 @@
 #include <string.h>
 #include <complex.h>
 
-
+double ****malloc_corr(int N, int var, int t );
 double ****calloc_corr(int N, int var, int t );
 void copy_corr(int N, int var, int t, double ****in, double ****out);
 void free_corr(int N, int var, int t, double ****out);

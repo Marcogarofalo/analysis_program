@@ -15,7 +15,7 @@
 template<class T>
 void line_read_param(char** option, const char* corr, T& value, T& error, int& seed, const char* namefile_plateaux) {
 
-    int line = 0;    
+    int line = 0;
     char namefile[NAMESIZE];
     mysprintf(namefile, NAMESIZE, "%s/%s", option[3], namefile_plateaux);
     std::fstream newfile;
@@ -35,7 +35,8 @@ void line_read_param(char** option, const char* corr, T& value, T& error, int& s
                     value = convert<T>(x[2]);
                     error = convert<T>(x[3]);
                     seed = stoi(x[4]);
-                    std::cout<<"correlator" << correlator<< "name"<< name << "value"<< value<< "error"<< error<< "seed" << seed <<"\n";
+                    std::cout << "correlator " << correlator << " name " << name << " value " <<
+                        value << " error " << error << " seed " << seed << "\n";
                     match++;
                     // break;
                 }
@@ -44,9 +45,9 @@ void line_read_param(char** option, const char* corr, T& value, T& error, int& s
         newfile.close(); // close the file object.
     }
     else {
-      printf("correlators_analysis.cpp line_read_plateaux\n");
-      printf("\t unable to open %s", namefile);
-      exit(1);
+        printf("correlators_analysis.cpp line_read_plateaux\n");
+        printf("\t unable to open %s", namefile);
+        exit(1);
     }
     // error(match==0,1,"correlators_analysis.cpp line_read_plateaux",
     //       "no match for plateau %s   %s \n in the file %s ",option[6], corr,namefile);
@@ -59,12 +60,28 @@ void line_read_param(char** option, const char* corr, T& value, T& error, int& s
         printf("multiple lines line:\n %s  %s\n", option[6], corr);
         exit(1);
     }
-   
-}
-template void line_read_param<int>(char** , const char* , int& , int& , int& , const char* );
-template void line_read_param<double>(char** , const char* , double& , double& , int& , const char* );
-template void line_read_param<std::string>(char** , const char* , std::string& , std::string& , int& , const char* );
 
+}
+template void line_read_param<int>(char**, const char*, int&, int&, int&, const char*);
+template void line_read_param<double>(char**, const char*, double&, double&, int&, const char*);
+template void line_read_param<std::string>(char**, const char*, std::string&, std::string&, int&, const char*);
+
+double**** malloc_corr(int N, int var, int t) {
+    double**** out;
+    int i, j, k;
+
+    j = var;
+    out = (double****)malloc(sizeof(double***) * N);
+    for (i = 0;i < N;i++) {
+        out[i] = (double***)malloc(sizeof(double**) * var);
+        for (j = 0;j < var;j++) {
+            out[i][j] = (double**)malloc(sizeof(double*) * t);
+            for (k = 0;k < t;k++)
+                out[i][j][k] = (double*)malloc(2 * sizeof(double));
+        }
+    }
+    return out;
+}
 double**** calloc_corr(int N, int var, int t) {
     double**** out;
     int i, j, k;
@@ -174,14 +191,14 @@ double**** binning_toNb(int N, int var, int t, double**** data, int Nb) {
     return out;
 }
 
-double**** bin_intoN( double**** data, int nvar, int T, int Nconf_in, int Nb) {
+double**** bin_intoN(double**** data, int nvar, int T, int Nconf_in, int Nb) {
 
 
     double clustSize = ((double)Nconf_in) / ((double)Nb);
     // double clustSize = ((double)confs.confs_after_binning) / ((double)Nb);
     double**** to_write = calloc_corr(Nb, nvar, T);
     for (size_t iClust = 0;iClust < Nb;iClust++) {
-        
+
         /// Initial time of the bin
         const double binBegin = iClust * clustSize;
         /// Final time of the bin
@@ -226,7 +243,7 @@ double**** read_datafile(int N, int var, int t, int bin) {
     char** datafile;
     FILE** f;
     double**** data, **** out;
-    int i, j, k,fi=0;
+    int i, j, k, fi = 0;
 
     data = (double****)malloc(sizeof(double***) * N);
     for (i = 0;i < N;i++) {
@@ -249,7 +266,7 @@ double**** read_datafile(int N, int var, int t, int bin) {
 
         for (i = 0;i < N;i++) {
             for (k = 0;k < t;k++) {
-                fi+=fscanf(f[j], "%lf   %lf \n", &data[i][j][k][0], &data[i][j][k][1]);
+                fi += fscanf(f[j], "%lf   %lf \n", &data[i][j][k][0], &data[i][j][k][1]);
             }
         }
         fclose(f[j]);
