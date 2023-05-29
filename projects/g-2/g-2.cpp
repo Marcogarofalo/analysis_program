@@ -191,58 +191,6 @@ void get_kinematic(int ik2, int r2, int ik1, int r1, int imom2, int imom1) {
 
 }
 
-void line_read_param(char** option, const char* corr, double& tmin, double& tmax, int& sep, const char* namefile_plateaux) {
-
-    int line = 0;
-    // option[3] path
-    // option[6] file
-    char namefile[NAMESIZE];
-    mysprintf(namefile, NAMESIZE, "%s/%s", option[3], namefile_plateaux);
-    std::fstream newfile;
-
-    newfile.open(namefile, std::ios::in); // open a file to perform read operation using file object
-    int match = 0;
-    if (newfile.is_open()) { // checking whether the file is open
-        std::string tp;
-        while (getline(newfile, tp)) { // read data from file object and put it into string.
-            line++;
-            std::vector<std::string> x = split(tp, ' ');
-
-            std::string name = option[6];
-            std::string correlator = corr;
-            if (x.empty() == 0) {
-                if (x[0].compare(name) == 0 && x[1].compare(correlator) == 0) {
-                    tmin = stod(x[2]);
-                    tmax = stod(x[3]);
-                    sep = stoi(x[4]);
-                    printf("correlator %s  plateaux %g  %g %d\n", correlator.c_str(), tmin, tmax, sep);
-                    match++;
-                    // break;
-                }
-            }
-        }
-        newfile.close(); // close the file object.
-    }
-    else {
-        error(0 == 0, 1, "correlators_analysis.cpp line_read_plateaux",
-            "unable to open %s", namefile);
-    }
-    // error(match==0,1,"correlators_analysis.cpp line_read_plateaux",
-    //       "no match for plateau %s   %s \n in the file %s ",option[6], corr,namefile);
-    if (match == 0) {
-        printf("no plateau found for %s in plateau file %s\n", corr, namefile);
-        printf("looking for a line:\n %s  %s\n", option[6], corr);
-        exit(1);
-    }
-    if (match > 1) {
-        printf("multiple lines line:\n %s  %s\n", option[6], corr);
-        exit(1);
-    }
-    if (tmax > tmin) {
-        printf("\n\n bel errore del cazzo\n\n");
-    }
-}
-
 
 static void  write_file_head(FILE* stream) {
     int i, dsize;

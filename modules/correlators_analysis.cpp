@@ -1001,7 +1001,7 @@ void add_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack,
     int correlators_out = ncorr_conf_jack + fit_info.N;
     int Njack = fit_info.Njack;
 
-    double**** corr_out = calloc_corr(Njack, correlators_out, file_head.l0);
+    double**** corr_out = malloc_corr(Njack, correlators_out, file_head.l0);
     // copy the first part
     for (int j = 0; j < Njack; j++) {
         for (int v = 0; v < ncorr_conf_jack; v++) {
