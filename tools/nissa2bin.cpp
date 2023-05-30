@@ -208,12 +208,6 @@ int main(int argc, char** argv) {
         head.Njack = bin;
 
     }
-    for (size_t t = 0; t < head.T; t++) {
-        int mu = 3, nu = 3;
-        int id = 4 * head.gammas.size() + 4 * head.gammas.size() + (mu + 5) + nu * head.gammas.size();
-        printf("%.12g   %.12g\n", data_bin[head.Njack - 1][id][t][0], data_bin[head.Njack - 1][id][t][1]);
-    }
-
 
     ///////////////////////// 
     // writing 
