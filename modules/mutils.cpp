@@ -643,9 +643,10 @@ long myscanf(int n, char *format,...)
         
       p+=is;
    }
+   int si=0;
    if (ic!=n){//clean the line
        for (i=0;i<n-ic;i++)
-           scanf("%s",tmp);
+           si+=scanf("%s",tmp);
        ic=0;
    printf("the format required have to be %s try again\n",format);
    }

@@ -621,7 +621,7 @@ double** fit_Mpi_fw_polynomial(struct database_file_jack* jack_files, struct hea
 
 double** fit_Mpi_fw_polynomial_6(struct database_file_jack* jack_files, struct header* head, int Njack, int*** mass_index, struct data_jack* gJ) {
     double*** y, ** x, ** r, * chi2, * tmp, * rm, * chi2m, ** fit;
-    int i, j, e, im;
+    int i, j, e, im, si = 0;
     int Npar = 6;
     int Nvar = 2;//m_l, w0,KM
     int ik1 = 0, ik2 = 0;
@@ -754,7 +754,7 @@ double** fit_Mpi_fw_polynomial_6(struct database_file_jack* jack_files, struct h
      system(instruction);
      */
      //    sprintf(instruction,"rm %s.tex %s.log %s.aux  %s-inc.eps %s-inc-eps-converted-to.pdf",name,name,name,name,name);
-    system(instruction);
+    si += system(instruction);
 
     for (e = 0;e < en_tot;e++) {
         free(x[e]);   free(fit[e]);

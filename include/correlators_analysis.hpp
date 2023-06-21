@@ -34,12 +34,6 @@ double constant_fit(int n, int Nvar, double* x, int Npar, double* P);
 
 double shift_and_M_eff_acosh(int t, int T, double** in);
 
-
-double* plateau_correlator_function(char** option, struct kinematic kinematic_2pt, char* name, double**** conf_jack, int Njack, const char* plateaux_masses, FILE* outfile, int index, const char* description, double (*fun)(int, int, double**), FILE* file_jack, struct fit_type fit_info = default_fit_info);
-// jackknife plateau_correlator_function(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, int Njack ,const char  *plateaux_masses,FILE *outfile,  int index , const char *description , double (*fun)(int ,int  , double ** ),  FILE * file_jack);
-
-
-struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic_2pt, char* name, double**** conf_jack, const char* plateaux_masses, FILE* outfile, int index, int re_im, const char* description, struct fit_type fit_info, FILE* file_jack);
 /****************************************************************************
  *
  * option[1] = blind/read_plateaux/see
@@ -49,6 +43,12 @@ struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic
  * option[6] = basename to look for in the plateaux.txt file
  * description = name to give to the fit, the one get by r
 ****************************************************************************/
+double* plateau_correlator_function(char** option, struct kinematic kinematic_2pt, char* name, double**** conf_jack, int Njack, const char* plateaux_masses, FILE* outfile, int index, const char* description, double (*fun)(int, int, double**), FILE* file_jack, struct fit_type fit_info = default_fit_info);
+// jackknife plateau_correlator_function(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, int Njack ,const char  *plateaux_masses,FILE *outfile,  int index , const char *description , double (*fun)(int ,int  , double ** ),  FILE * file_jack);
+
+
+struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic_2pt, char* name, double**** conf_jack, const char* plateaux_masses, FILE* outfile, int index, int re_im, const char* description, struct fit_type fit_info, FILE* file_jack);
+
 
 ///////////////////////////////////////////////
 /// func for add_correlators
