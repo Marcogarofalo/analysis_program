@@ -144,6 +144,13 @@ void fit_type::malloc_x() {
     allocated_x = true;
 }
 
+void fit_type::malloc_ext_P() {
+    error(Njack <= 0, 1, "malloc_x for fit", "fit_info.Njack must be greather than zero: current Nvar=%g\n", Njack);
+    error(n_ext_P <= 0, 1, "malloc_x for fit", "fit_info.Njack must be greather than zero: current Nvar=%g\n", Njack);
+    ext_P = malloc_2<double>(n_ext_P, Njack);
+    allocated_ext_P = true;
+}
+
 void fit_type::restore_default() {
     custom = false; // 1 means default fit , 0 custom fit options
     lambda = 0.001;
@@ -198,12 +205,19 @@ void fit_type::restore_default() {
 
     HENKEL_size = 1;
     if (n_ext_P > 0) {
-        for (int i = 0;i < n_ext_P;i++) {
-            ext_P[i] = nullptr;
+        if (allocated_ext_P) {
+            for (int i = 0;i < n_ext_P;i++)
+                free(ext_P[i]);
+            allocated_ext_P = false;
+        }
+        else {
+            for (int i = 0;i < n_ext_P;i++)
+                ext_P[i] = nullptr;
         }
         free(ext_P);
         n_ext_P = 0;
     }
+
 
     band_range = std::vector<double>();
     //      f_plateaux_scan=NULL;
@@ -1398,21 +1412,21 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
         bool keep = true;
         while (keep) {
             printf("insert value of %d params:\n", Npar);
-            int is=0;
+            int is = 0;
             for (int i = 0;i < Npar;i++) {
-                is+=scanf("%lf", &P[i]);
+                is += scanf("%lf", &P[i]);
             }
-            if (is!=Npar) continue;
+            if (is != Npar) continue;
             chi2 = chi2_fun(N, ensemble, x, y, P, Nvar, Npar, fun, fit_info);
             printf("chi2=%.15g\n", chi2);
             char yn[NAMESIZE];
             printf("do you want to continue[y/n]:\n");
             scanf("%s", yn);
-            if ( strcmp("y",yn)==0  ||strcmp("yes",yn)==0 || strcmp("Y",yn)==0 || strcmp("Y",yn)==0  ){
+            if (strcmp("y", yn) == 0 || strcmp("yes", yn) == 0 || strcmp("Y", yn) == 0 || strcmp("Y", yn) == 0) {
                 continue;
             }
-            else 
-                keep=false;
+            else
+                keep = false;
 
         }
 

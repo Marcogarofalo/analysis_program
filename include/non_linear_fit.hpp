@@ -97,6 +97,7 @@ struct  fit_type {
     std::vector<std::vector<int>> Nxen = {};
     double*** x;
     bool allocated_x = false;
+    bool allocated_ext_P = false;
 
     // GEVP
     int t0_GEVP = 3;
@@ -130,6 +131,7 @@ struct  fit_type {
     void compute_cov1_fit();
     void restore_default();
     void malloc_x();
+    void malloc_ext_P();
     void init_N_etot_form_Nxen();
     void init_Nxen_from_N_myen();
 
