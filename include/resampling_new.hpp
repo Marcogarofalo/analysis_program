@@ -26,40 +26,43 @@ public:
   void free_jack(int var, int t, double**** in);
   void write_jack_bin(double* jack, char* outname);
 
-  virtual double**** create(int  N, int var, int t, double**** in)=0 ;
+  virtual double**** create(int  N, int var, int t, double**** in) = 0;
   // double* mean_and_error(  double* in);
-  virtual double comp_error(double* in)=0 ;
-  virtual double* create_fake(double mean, double error, int seed)=0 ;
+  virtual double comp_error(double* in) = 0;
+  virtual double* create_fake(double mean, double error, int seed) = 0;
   // double** comp_covariance(int Nobs,  double** in);
 
   // double** fake_sampling_covariance( double* mean,  double** cov, int seed);
   // double* malloc_copy( double* a);
   void free_res(int var, int t, double**** in);
   void write_res_bin(int N, double* jack, char* outname);
+  virtual double** comp_cov(int Nobs, double** in) = 0;
 
 };
 
 class resampling_jack : public resampling_f {
 public:
-    resampling_jack();
-    resampling_jack(int N);
-    double**** create(int  N, int var, int t, double**** in);
-    double comp_error(double* in);
-    double* create_fake(double mean, double error, int seed);
+  resampling_jack();
+  resampling_jack(int N);
+  double**** create(int  N, int var, int t, double**** in);
+  double comp_error(double* in);
+  double* create_fake(double mean, double error, int seed);
+  double** comp_cov(int Nobs, double** in);
 };
 
 
 class resampling_boot : public resampling_f {
-public:   
-    resampling_boot();
-    resampling_boot(int N);
-    resampling_boot(int N, int o_seed);
-    double**** create(int  N, int var, int t, double**** in);
-    double comp_error(double* in);
-    double* create_fake(double mean, double error, int seed);
-
+public:
+  resampling_boot();
+  resampling_boot(int N);
+  resampling_boot(int N, int o_seed);
+  double**** create(int  N, int var, int t, double**** in);
+  double comp_error(double* in);
+  double* create_fake(double mean, double error, int seed);
+  double** comp_cov(int Nobs, double** in);
 };
 
-
+double** covariance_jack(int Nobs, int Np1, double** in);
+double** covariance_boot(int Nobs, int Np1, double** in);
 
 #endif

@@ -163,6 +163,7 @@ double *mean_and_error_jack_biased(int Np1, double *in);
 double *mean_and_error_jack_biased1(int Np1, double *in);
 
 double *fake_jack(double mean,double error, int Njack,int seed);
+double** covariance_jack(int Nobs, int Np1, double** in);
 
 
 
@@ -171,7 +172,7 @@ double *fake_jack(double mean,double error, int Njack,int seed);
 double ****create_boot(int  N, int Nboot, int var, int t, double ****in);
 double *mean_and_error_boot(int Np1, double *in);
 double *fake_boot(double mean,double error, int Njack,int seed);
-
+double** covariance_boot(int Nobs, int Np1, double** in);
 
 /////////////////////
 double *mean_and_error( const char *option , int Np1, double *in);  

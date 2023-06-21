@@ -262,3 +262,80 @@ double resampling_boot::comp_error(double* in) {
 
     return r[1];
 }
+
+//////////////////// cov
+
+double** covariance_jack(int Nobs, int Np1, double** in) {
+    double** r, * ave;
+    int i, k, l, N;
+
+    N = Np1 - 1;
+    ave = (double*)calloc(Nobs, sizeof(double));
+    r = (double**)malloc(Nobs * sizeof(double*));
+
+    for (k = 0;k < Nobs;k++) {
+        for (i = 0;i < N;i++)
+            ave[k] += in[k][i];
+        ave[k] /= ((double)N);
+        r[k] = (double*)calloc(Nobs, sizeof(double));
+    }
+    for (k = 0;k < Nobs;k++) {
+        for (l = k;l < Nobs;l++) {
+            for (i = 0;i < N;i++) {
+                r[k][l] += (in[k][i] - ave[k]) * (in[l][i] - ave[l]);
+                //error(in[i]!=in[i],1,"mean_and_error_jack_biased","errore jack=%d is nan",i);
+            }
+            r[k][l] *= (N - 1.) / ((double)N);
+            //r[k][l]=sqrt(r[k][l]);
+        }
+        for (l = 0;l < k;l++) {
+            //r[l][k]/=sqrt(r[k][k]*r[l][l]);
+            r[k][l] = r[l][k];
+        }
+    }
+    free(ave);
+    return r;
+
+}
+
+double** covariance_boot(int Nobs, int Np1, double** in) {
+    double** r, * ave;
+    int i, k, l, N;
+
+    N = Np1 - 1;
+    ave = (double*)calloc(Nobs, sizeof(double));
+    r = (double**)malloc(Nobs * sizeof(double*));
+
+    for (k = 0;k < Nobs;k++) {
+        for (i = 0;i < N;i++)
+            ave[k] += in[k][i];
+        ave[k] /= ((double)N);
+        r[k] = (double*)calloc(Nobs, sizeof(double));
+    }
+    for (k = 0;k < Nobs;k++) {
+        for (l = k;l < Nobs;l++) {
+            for (i = 0;i < N;i++) {
+                r[k][l] += (in[k][i] - ave[k]) * (in[l][i] - ave[l]);
+                //error(in[i]!=in[i],1,"mean_and_error_jack_biased","errore jack=%d is nan",i);
+            }
+            r[k][l] /= ((double)N);
+            //r[k][l]=sqrt(r[k][l]);
+        }
+        for (l = 0;l < k;l++) {
+            //r[l][k]/=sqrt(r[k][k]*r[l][l]);
+            r[k][l] = r[l][k];
+        }
+        //r[k][k]=1;
+    }
+    free(ave);
+    return r;
+
+}
+
+double** resampling_jack::comp_cov(int Nobs, double** in){
+    return covariance_jack(Nobs, Njack, in);
+}
+
+double** resampling_boot::comp_cov(int Nobs, double** in){
+    return covariance_boot(Nobs, Njack, in);
+}
