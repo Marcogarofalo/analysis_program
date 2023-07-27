@@ -27,7 +27,16 @@ ENDIF()
 find_package(analysis_program)
 
 find_package(Eigen3 REQUIRED) # we need eigen
-
+MESSAGE("IF the analysis_program was compiled with OpenMP then you also need to load it")
+MESSAGE("uncomment the lines after this message")
+# FIND_PACKAGE( OpenMP)
+# if(OPENMP_FOUND)
+#   message("OPENMP FOUND")
+#   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+#   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+# endif()
+# include_directories(SYSTEM ${OpenMP_INCLUDE_PATH})
 #############################################
 # add a local library for this project
 #############################################
