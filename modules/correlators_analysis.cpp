@@ -514,7 +514,7 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
 
 struct fit_result fit_fun_to_corr(char** option, struct kinematic kinematic_2pt, char* name, const char* description, double** mt, double** r, int Njack, const char* plateaux_masses, FILE* outfile, struct fit_type fit_info) {
     int yn;
-    int tmin = 1, tmax = 3, sep = 1;
+    int tmin = 1, tmax = 1, sep = 1;
     double* m, * fit;
     struct fit_result fit_out;
     char jack_name[NAMESIZE];
