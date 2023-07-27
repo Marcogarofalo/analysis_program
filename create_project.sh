@@ -31,7 +31,7 @@ cmake -DCMAKE_PREFIX_PATH=${here}/build/install_dir \\
 EOF
 
 cat > ../$name/build/make_both.sh << EOF
-cd ../../../analysis_program/build
+cd ${here}/build
 make && make install
 cd -
 make
