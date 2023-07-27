@@ -34,7 +34,6 @@ set(analysis_header
     continuum_reph.hpp
     integral_eq_QC3.hpp
     read_nissa.hpp
-    HLT.hpp
 )
 
 set(analysis_scr
@@ -87,7 +86,6 @@ set(analysis_scr
     ../modules/reph/FAV_treshold.cpp
     ../modules/three_particle_QC/integral_eq_QC3.cpp
     ../modules/read_nissa.cpp
-    ../modules/HLT.cpp
 )
 
 if(WITH_PYTHON)
@@ -101,6 +99,18 @@ if(WITH_PYTHON)
       )
 ENDIF()
 
+if(WITH_MPIR)
+  set(analysis_header 
+      ${analysis_header}
+      HLT.hpp
+      )
+  set(analysis_scr
+      ${analysis_scr}
+      ../modules/HLT.cpp
+      )
+ENDIF()
+
+
 add_library(analysis_program STATIC ${analysis_header} ${analysis_scr})
 target_link_libraries(analysis_program PUBLIC gsl gslcblas)
 target_link_libraries(analysis_program PRIVATE Eigen3::Eigen)
@@ -108,6 +118,10 @@ target_link_libraries(analysis_program PRIVATE Eigen3::Eigen)
 if(WITH_PYTHON)
   target_link_libraries(analysis_program PUBLIC ${Python3_LIBRARIES})
 ENDIF()
+if(WITH_MPIR)
+  target_link_libraries(analysis_program PUBLIC mpir)
+ENDIF()
+
 set_target_properties(analysis_program PROPERTIES LINKER_LANGUAGE CXX)
 
 
