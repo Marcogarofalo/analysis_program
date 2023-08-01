@@ -10,6 +10,7 @@
 class generic_header {
 public:
     int struct_size;
+    int Nconf;
     int Njack;
     int T;
     int L;

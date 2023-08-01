@@ -131,7 +131,8 @@ int main(int argc, char** argv) {
         error(1 == 1, 1, "main", "argv[7]= %s is not jack or boot", argv[7]);
     }
     // now Njack need to be the number of jacks
-    head.Njack=Njack;
+    head.Nconf = head.Njack;
+    head.Njack = Njack;
     //////////////////////////////////// setup output files
     mysprintf(namefile, NAMESIZE, "%s/out/%s_output", option[3], option[6]);
     printf("writing output in :\n %s \n", namefile);
@@ -140,7 +141,8 @@ int main(int argc, char** argv) {
     mysprintf(namefile, NAMESIZE, "%s/jackknife/%s_%s", option[3], option[4],
         option[6]);
     FILE* jack_file = open_file(namefile, "w+");
-    write_header_g2(jack_file, head);
+    // write_header_g2(jack_file, head);
+    head.write_header(jack_file);
 
     //////////////////////////////////// confs
     double**** data = calloc_corr(confs, head.ncorr, head.T);
