@@ -7,6 +7,7 @@
 #include <time.h>
 #include <string.h>
 #include <complex.h>
+#include <cmath>
 #include "mutils.hpp"
 
 #define MAXIT 10000
@@ -1784,7 +1785,7 @@ double* guess_for_non_linear_fit_Nf(int N, int* ensemble, double** x, double** y
     if (fit_info.unstable) for (i = 0;i < Npar;i++) P[i] = guess[i];
     else P = non_linear_fit_Nf(N, ensemble, x, y, Nvar, Npar, fun, guess, fit_info).P;
     chi2 = compute_chi_non_linear_Nf(N, ensemble, x, y, P, Nvar, Npar, fun) / (en_tot - Npar);
-    if (!isnan(chi2))    jmax = 3 + ((int)(chi2 * 2));
+    if (!isnan(chi2) && !isinf(chi2) )    jmax = 3 + ((int)(chi2 * 2));
     else jmax = 35;
 
     std::mt19937 mt_rand(123);
