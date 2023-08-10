@@ -10,15 +10,15 @@
 class generic_header {
 public:
     int struct_size;
-    int Nconf;
-    int Njack;
-    int T;
-    int L;
-    int size;// how many doublers there are in data block
-    int ncorr;
+    int Nconf=0;
+    int Njack=0;
+    int T=0;
+    int L=0;
+    int size=0;// how many doublers there are in data block
+    int ncorr=0;
 
-    double beta;
-    double kappa;
+    double beta=0;
+    double kappa=0;
     
     std::vector<double> mus{};
     std::vector<double> rs{};
