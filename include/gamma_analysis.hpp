@@ -3,7 +3,9 @@
 
 
 double  *analysis_gamma (  int var, int rep, int nconf,int flow, double *a , double *function(int var, int order,int flow ,double *ah));
-
+void gamma_correlator(char** option, struct kinematic kinematic_2pt,
+    char* name, double**** data, int Confs, const char* plateaux_masses, FILE* outfile,
+    int index, const char* description);
 
 #endif
  
