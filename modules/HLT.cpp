@@ -5,7 +5,7 @@
 #include <gsl/gsl_integration.h>
 
 #include <stdio.h>
-#include <mpir.h>
+// #include <mpir.h>
 
 
 HLT_type::HLT_type(int tmax, int L0, double E0_, int njack, HLT_b type_b, double alpha) {
@@ -89,7 +89,7 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
 
 
     }
-    mpf_t **W=(mpf_t**) malloc(sizeof(mpf_t*)* Tmax);
+    // mpf_t **W=(mpf_t**) malloc(sizeof(mpf_t*)* Tmax);
     double **p;
     return p;
 };
