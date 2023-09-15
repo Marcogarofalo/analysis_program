@@ -69,6 +69,12 @@ IF(WITH_PYTHON)
 ENDIF()
 
 
+
+IF(WITH_ARB)
+  set(CMAKE_CXX_FLAGS  " ${CMAKE_CXX_FLAGS} ${CXXFLAGS} -DWITH_ARB   ")
+ENDIF()
+
+
 find_package(Eigen3 REQUIRED)
 add_subdirectory(include  include)
 #############################################

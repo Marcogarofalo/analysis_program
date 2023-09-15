@@ -99,7 +99,7 @@ if(WITH_PYTHON)
       )
 ENDIF()
 
-if(WITH_MPFR)
+if(WITH_ARB)
   set(analysis_header 
       ${analysis_header}
       HLT.hpp
@@ -118,8 +118,9 @@ target_link_libraries(analysis_program PRIVATE Eigen3::Eigen)
 if(WITH_PYTHON)
   target_link_libraries(analysis_program PUBLIC ${Python3_LIBRARIES})
 ENDIF()
-if(WITH_MPFR)
+if(WITH_ARB)
   target_link_libraries(analysis_program PUBLIC mpfr)
+  target_link_libraries(analysis_program PUBLIC flint-arb flint)
 ENDIF()
 
 set_target_properties(analysis_program PROPERTIES LINKER_LANGUAGE CXX)

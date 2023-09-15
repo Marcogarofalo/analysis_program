@@ -8,7 +8,12 @@
 // #include <mpir.h>
 
 
-HLT_type::HLT_type(int tmax, int L0, double E0_, int njack, HLT_b type_b, double alpha) {
+#ifdef WITH_ARB
+#include "arb_calc.h"
+#endif // WITH_ARB
+
+
+HLT_type_d::HLT_type_d(int tmax, int L0, double E0_, int njack, HLT_b type_b, double alpha) {
     Tmax = tmax;
     T = L0;
     Njack = njack;
@@ -29,26 +34,31 @@ HLT_type::HLT_type(int tmax, int L0, double E0_, int njack, HLT_b type_b, double
     }
 }
 
-HLT_type::~HLT_type() {
+HLT_type_d::~HLT_type_d() {
     free(R);
     for (size_t i = 0; i < Tmax; i++) {
         free(A[i]);
     }
     free(A);
+    if (f_allocated) free(f);
 }
 
 
 
 double integrand_f(double x, void* params) {
-    wrapper_smearing* p = (wrapper_smearing*)params;
+    wrapper_smearing_d* p = (wrapper_smearing_d*)params;
     int t = p->t;
     int T = p->HLT->T;
     return p->function(x, p->params) * (exp(-(t + 1) * x) + exp(-(T - (t + 1)) * x));
 }
 
 
-void HLT_type::compute_f_EXP_b(wrapper_smearing  Delta, double epsrel) {
+void HLT_type_d::compute_f_EXP_b(wrapper_smearing_d& Delta, double epsrel) {
 
+    if (f_allocated == true) {
+        printf("HLT: recomputing f\n");
+        free(f);
+    }
     f = (double*)malloc(sizeof(double) * Tmax);
     int Maxiter = 1e+6;
     gsl_integration_workspace* w = gsl_integration_workspace_alloc(Maxiter);
@@ -66,11 +76,25 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing  Delta, double epsrel) {
         f[t] = result;
     }
     gsl_integration_workspace_free(w);
-
+    f_allocated = true;
 }
 
-double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
-    FILE* outfile,   const char* description, wrapper_smearing  Delta, FILE* file_jack) {
+//////////////////////////////////////////////////////////////////
+// HLT  smearing functions
+//////////////////////////////////////////////////////////////////
+double theta_s1_d(double x, double* p) {
+    return 1.0 / (1 + exp(-x / p[0]));
+};
+
+double gaussian_for_HLT_d(double x, double* p) {
+    return (exp(-(x - p[0]) * (x - p[0]) / (2 * p[1] * p[1]))) / (p[1] * sqrt(2 * M_PIl));
+};
+
+//////////////////////////////////////////////////////////////////
+
+
+double** HLT_type_d::HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
+    FILE* outfile, const char* description, wrapper_smearing_d  Delta, FILE* file_jack) {
 
     double** r = malloc_2<double>(Tmax, Njack);
     for (int t = 0;t < Tmax;t++)
@@ -82,14 +106,198 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
     if (type == HLT_EXP_b) {
         compute_f_EXP_b(Delta);
     }
+    else { printf("error HLT: type not supported\n");exit(1); }
 
     HLT_out res(Delta.lambdas);
-    
-    for (int il =0;il<Delta.lambdas.size(); il++){
+
+    for (int il = 0;il < Delta.lambdas.size(); il++) {
 
 
     }
     // mpf_t **W=(mpf_t**) malloc(sizeof(mpf_t*)* Tmax);
-    double **p;
+    double** p;
     return p;
 };
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// using ARB
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef WITH_ARB
+
+
+HLT_type::HLT_type(int tmax, int L0, double E0_, int njack, HLT_b type_b, int prec_, double alpha) {
+    Tmax = tmax;
+    T = L0;
+    Njack = njack;
+    prec = prec_;
+    arb_t  a1;
+    arb_init(E0);arb_init(aT);arb_init(a1);
+    arb_set_d(E0, E0_);
+    R = (arb_t*)malloc(sizeof(arb_t) * Tmax);
+    A = (arb_t**)malloc(sizeof(arb_t*) * Tmax);
+    for (size_t t = 0; t < Tmax; t++) {
+        A[t] = (arb_t*)malloc(sizeof(arb_t) * Tmax);
+    }
+    type = type_b;
+    arb_set_ui(aT, T);
+    arb_one(a1);
+    if (type == HLT_EXP_b) {
+        for (size_t t = 0; t < Tmax; t++) {
+            arb_t at;
+            arb_init(at);
+            arb_set_ui(at, t);
+            arb_t tmp, tmp1;
+            arb_init(tmp);
+            arb_init(tmp1);
+            // R[t]= 1.0 / (t + 1.0) + 1.0 / (T - t - 1.0);
+            arb_add(tmp, at, a1, prec);
+            arb_div(tmp, a1, tmp, prec);
+
+            arb_sub(tmp1, aT, at, prec);
+            arb_sub(tmp1, tmp1, a1, prec);
+            arb_div(tmp1, a1, tmp1, prec);
+
+            arb_init(R[t]);
+            arb_add(R[t], tmp, tmp1, prec);
+            for (size_t r = 0; r < Tmax; r++) {
+                //     A[t][r] = exp(-(r + t + 2 - alpha) * E0) / (r + t + 2 - alpha);
+                //     A[t][r] += exp(-(T - r + t - alpha) * E0) / (T - r + t - alpha);
+                //     A[t][r] += exp(-(T + r - t - alpha) * E0) / (T + r - t - alpha);
+                //     A[t][r] += exp(-(2 * T - r - t - 2 - alpha) * E0) / (2 * T - r - t - 2 - alpha);
+                arb_init(A[t][r]);
+            }
+        }
+    }
+}
+
+HLT_type::~HLT_type() {
+    for (size_t i = 0; i < Tmax; i++) {
+        arb_clear(R[i]);
+        if (f_allocated)arb_clear(f[i]);
+        for (size_t r = 0; r < Tmax; r++)         arb_clear(A[i][r]);
+        free(A[i]);
+    }
+    free(R);
+    free(A);
+    if (f_allocated) free(f);
+}
+
+
+int gaussian_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
+    if (order > 1)
+        flint_abort();  /* Would be needed for Taylor method. */
+
+    // acb_sin(res, z, prec);
+    arb_t* p = (arb_t*)param;
+    arb_t sqrt2pi;
+    arb_init(sqrt2pi);
+    arb_set_d(sqrt2pi, sqrt(2 * M_PIl));
+
+
+    acb_sub_arb(res, z, p[0], prec);
+    acb_mul(res, res, res, prec);
+    acb_div_ui(res, res, 2, prec);
+    acb_div_arb(res, res, p[1], prec);
+    acb_div_arb(res, res, p[1], prec);
+    acb_neg(res, res);
+    acb_exp(res, res, prec);
+    acb_div_arb(res, res, p[1], prec);
+    acb_div_arb(res, res, sqrt2pi, prec);
+
+    // return (exp(-(x - p[0]) * (x - p[0]) / (2 * p[1] * p[1]))) / (p[1] * sqrt(2 * M_PIl));
+    return 0;
+}
+
+
+
+
+int no_smearing_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
+    if (order > 1)
+        flint_abort();  /* Would be needed for Taylor method. */
+    acb_set_ui(res, 1);
+    return 0;
+}
+
+
+int integrand_f(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
+    if (order > 1)
+        flint_abort();  /* Would be needed for Taylor method. */
+
+    wrapper_smearing* p = (wrapper_smearing*)param;
+
+    p->function(res, z, p->params, order, prec);
+
+    acb_t b; acb_init(b);
+    acb_set_ui(b, p->t + 1);
+    acb_mul(b, b, z, prec);
+    acb_neg(b, b);
+    acb_exp(b, b, prec);
+
+    acb_t bT; acb_init(bT);
+    acb_set_ui(bT, p->HLT->T - p->t - 1);
+    acb_mul(bT, bT, z, prec);
+    acb_neg(bT, bT);
+    acb_exp(bT, bT, prec);
+
+    acb_add(b, b, bT, prec);
+    acb_mul(res, res, b, prec);
+
+    acb_clear(b);
+    acb_clear(bT);
+    return 0;
+    // return p->function(x, p->params) * (exp(-(t + 1) * x) + exp(-(T - (t + 1)) * x));
+}
+
+void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta, double epsrel) {
+
+    if (f_allocated == true) {
+        printf("HLT: recomputing f\n");
+        free(f);
+    }
+    f = (arb_t*)malloc(sizeof(arb_t) * Tmax);
+    int Maxiter = 1e+6;
+    acb_calc_integrate_opt_t options;
+    acb_calc_integrate_opt_init(options);
+    
+    options->deg_limit = 100;
+    options->eval_limit = 100000;
+    options->depth_limit = 10000;
+    options->verbose = 1;
+    // options->use_heap = 1;
+
+    mag_t tol;
+    mag_init(tol);
+    mag_set_ui_2exp_si(tol, 1, -prec);
+    slong  goal = prec;
+    // Delta.HLT = this;
+    acb_t a, b, s;
+    acb_init(a);
+    acb_init(b);
+    acb_init(s);
+
+    for (int t = 0;t < Tmax;t++) {
+        // F.function = &integrand_f;
+        // Delta.t = t;
+        // F.params = &Delta;
+
+        // // gsl_integration_qags(&F, 0, 1, 0, epsrel, Maxiter, w, &result, &error);
+        // // int_E0^\infty  b* Delta
+        // gsl_integration_qagiu(&F, E0, 0, epsrel, Maxiter, w, &result, &error);
+        // f[t] = result;
+        Delta.t = t;
+
+        void* param = (void*)&Delta;
+        wrapper_smearing* p = (wrapper_smearing*)param;
+
+        acb_set_arb(a, E0);
+        acb_set_d(b, 10000);
+        acb_calc_integrate(s, integrand_f, param, a, b, goal, tol, options, prec);
+        arb_init(f[t]);
+        acb_get_real(f[t], s);
+    }
+    f_allocated = true;
+}
+
+
+#endif // WITH_ARB
