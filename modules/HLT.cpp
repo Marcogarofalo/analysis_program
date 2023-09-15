@@ -131,41 +131,72 @@ HLT_type::HLT_type(int tmax, int L0, double E0_, int njack, HLT_b type_b, int pr
     T = L0;
     Njack = njack;
     prec = prec_;
-    arb_t  a1;
-    arb_init(E0);arb_init(aT);arb_init(a1);
+    arb_init(E0);
     arb_set_d(E0, E0_);
+
     R = (arb_t*)malloc(sizeof(arb_t) * Tmax);
     A = (arb_t**)malloc(sizeof(arb_t*) * Tmax);
     for (size_t t = 0; t < Tmax; t++) {
         A[t] = (arb_t*)malloc(sizeof(arb_t) * Tmax);
     }
     type = type_b;
-    arb_set_ui(aT, T);
-    arb_one(a1);
+
+    arb_t at, aT, arb_alpha;
+    arb_init(at);
+    arb_init(aT);
+    arb_init(arb_alpha);
+    arb_set_d(arb_alpha, alpha);
+
     if (type == HLT_EXP_b) {
         for (size_t t = 0; t < Tmax; t++) {
-            arb_t at;
-            arb_init(at);
-            arb_set_ui(at, t);
-            arb_t tmp, tmp1;
-            arb_init(tmp);
-            arb_init(tmp1);
+
+            arb_set_ui(at, t + 1);
+            arb_inv(at, at, prec);
+
+            arb_set_ui(aT, T - t - 1);
+            arb_inv(aT, aT, prec);
+
             // R[t]= 1.0 / (t + 1.0) + 1.0 / (T - t - 1.0);
-            arb_add(tmp, at, a1, prec);
-            arb_div(tmp, a1, tmp, prec);
-
-            arb_sub(tmp1, aT, at, prec);
-            arb_sub(tmp1, tmp1, a1, prec);
-            arb_div(tmp1, a1, tmp1, prec);
-
             arb_init(R[t]);
-            arb_add(R[t], tmp, tmp1, prec);
+            arb_add(R[t], at, aT, prec);
             for (size_t r = 0; r < Tmax; r++) {
-                //     A[t][r] = exp(-(r + t + 2 - alpha) * E0) / (r + t + 2 - alpha);
-                //     A[t][r] += exp(-(T - r + t - alpha) * E0) / (T - r + t - alpha);
-                //     A[t][r] += exp(-(T + r - t - alpha) * E0) / (T + r - t - alpha);
-                //     A[t][r] += exp(-(2 * T - r - t - 2 - alpha) * E0) / (2 * T - r - t - 2 - alpha);
                 arb_init(A[t][r]);
+                // A[t][r] = exp(-(r + t + 2 - alpha) * E0) / (r + t + 2 - alpha);
+                arb_set_ui(at, r + t + 2);
+                arb_sub(at, at, arb_alpha, prec);
+
+                arb_mul(aT, at, E0, prec);
+                arb_neg(aT, aT);
+                arb_exp(aT, aT, prec);
+                arb_div(A[t][r], aT, at, prec);
+                //     A[t][r] += exp(-(T - r + t - alpha) * E0) / (T - r + t - alpha);
+                arb_set_ui(at, T - r + t);
+                arb_sub(at, at, arb_alpha, prec);
+
+                arb_mul(aT, at, E0, prec);
+                arb_neg(aT, aT);
+                arb_exp(aT, aT, prec);
+                arb_div(aT, aT, at, prec);
+                arb_add(A[t][r], A[t][r], aT, prec);
+                //     A[t][r] += exp(-(T + r - t - alpha) * E0) / (T + r - t - alpha);
+                arb_set_ui(at, T + r - t);
+                arb_sub(at, at, arb_alpha, prec);
+
+                arb_mul(aT, at, E0, prec);
+                arb_neg(aT, aT);
+                arb_exp(aT, aT, prec);
+                arb_div(aT, aT, at, prec);
+                arb_add(A[t][r], A[t][r], aT, prec);
+                //     A[t][r] += exp(-(2 * T - r - t - 2 - alpha) * E0) / (2 * T - r - t - 2 - alpha);
+                arb_set_ui(at, 2 * T - r - t - 2);
+                arb_sub(at, at, arb_alpha, prec);
+
+                arb_mul(aT, at, E0, prec);
+                arb_neg(aT, aT);
+                arb_exp(aT, aT, prec);
+                arb_div(aT, aT, at, prec);
+                arb_add(A[t][r], A[t][r], aT, prec);
+
             }
         }
     }
@@ -209,6 +240,20 @@ int gaussian_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong
     return 0;
 }
 
+int theta_sq_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
+    if (order > 1)
+        flint_abort();  /* Would be needed for Taylor method. */
+
+    //  return 1.0 / (1 + exp(-x / p[0]));
+    arb_t* p = (arb_t*)param;
+    acb_div_arb(res, z, p[0], prec);
+    acb_neg(res, res);
+    acb_exp(res, res, prec);
+    acb_add_ui(res, res, 1, prec);
+    acb_inv(res,res,prec);
+
+    return 0;
+}
 
 
 
@@ -259,7 +304,7 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta, double epsrel) {
     int Maxiter = 1e+6;
     acb_calc_integrate_opt_t options;
     acb_calc_integrate_opt_init(options);
-    
+
     options->deg_limit = 100;
     options->eval_limit = 100000;
     options->depth_limit = 10000;

@@ -109,7 +109,6 @@ class  HLT_type {
 public:
     int Tmax;
     int T;
-    arb_t aT;
     int Njack;
     int id;
     int prec;
