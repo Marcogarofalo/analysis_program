@@ -6,7 +6,6 @@
 #include "non_linear_fit.hpp"
 
 #include "arb.h"
-#include "acb_modular.h"
 #include "acb_calc.h"
 
 enum HLT_b {

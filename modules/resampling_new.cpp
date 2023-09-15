@@ -12,7 +12,9 @@
 #include "global.hpp"
 #include "tower.hpp"
 
-
+#ifdef WITH_ARB
+#include "arb.h"
+#endif // WITH_ARB
 // resampling::resampling(const char* name, int N) {
 //     Njack == N;
 //     if (strcmp(name, "jack") == 0 || strcmp(name, "boot") == 0) {
