@@ -332,10 +332,72 @@ double** covariance_boot(int Nobs, int Np1, double** in) {
 
 }
 
-double** resampling_jack::comp_cov(int Nobs, double** in){
+double** resampling_jack::comp_cov(int Nobs, double** in) {
     return covariance_jack(Nobs, Njack, in);
 }
 
-double** resampling_boot::comp_cov(int Nobs, double** in){
+double** resampling_boot::comp_cov(int Nobs, double** in) {
     return covariance_boot(Nobs, Njack, in);
+}
+
+
+void resampling_jack::comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong prec) {
+#ifdef WITH_ARB
+
+    int N = Njack - 1;
+    arb_mat_t ave;
+    arb_mat_init(ave, Nobs, 1); // set it to zero
+    arb_mat_clear(r);
+    error(arb_mat_nrows(r) != Nobs, 1, "resampling_jack::comp_cov_arb", "wrong rows number:%d expected: %d", arb_mat_nrows(r), Nobs);
+    error(arb_mat_ncols(r) != Nobs, 1, "resampling_jack::comp_cov_arb", "wrong cols number:%d expected: %d", arb_mat_ncols(r), Nobs);
+    arb_mat_init(r, Nobs, Nobs);
+    // ave = (double*)calloc(Nobs, sizeof(double));
+    // r = (double**)malloc(Nobs * sizeof(double*));
+    arb_t tmpk;
+    arb_init(tmpk);
+    for (int k = 0;k < Nobs;k++) {
+        for (int i = 0;i < N;i++) {
+            arb_set_d(tmpk, in[k][i]);
+            arb_add(arb_mat_entry(ave, k, 0), arb_mat_entry(ave, k, 0), tmpk, prec);
+            // ave[k] += in[k][i];
+        }
+        arb_div_ui(arb_mat_entry(ave, k, 0), arb_mat_entry(ave, k, 0), N, prec);
+        // ave[k] /= ((double)N);
+        // r[k] = (double*)calloc(Nobs, sizeof(double));
+    }
+    arb_t tmpl;
+    arb_init(tmpl);
+    for (int k = 0;k < Nobs;k++) {
+        for (int l = k;l < Nobs;l++) {
+            for (int i = 0;i < N;i++) {
+                arb_set_d(tmpk, in[k][i]);
+                arb_set_d(tmpl, in[l][i]);
+                arb_sub(tmpk, tmpk, arb_mat_entry(ave, k, 0), prec);
+                arb_sub(tmpl, tmpl, arb_mat_entry(ave, l, 0), prec);
+                arb_add(arb_mat_entry(r, k, l), tmpk, tmpl, prec);
+                // r[k][l] += (in[k][i] - ave[k]) * (in[l][i] - ave[l]);
+
+            }
+            arb_mul_ui(arb_mat_entry(r, k, l), arb_mat_entry(r, k, l), N - 1, prec);
+            arb_div_ui(arb_mat_entry(r, k, l), arb_mat_entry(r, k, l), N, prec);
+            // r[k][l] *= (N - 1.) / ((double)N);
+        }
+        for (int l = 0;l < k;l++) {
+            //r[l][k]/=sqrt(r[k][k]*r[l][l]);
+            arb_set(arb_mat_entry(r, k, l), arb_mat_entry(r, l, k));
+            // r[k][l] = r[l][k];
+        }
+    }
+    arb_clear(tmpk);
+    arb_clear(tmpl);
+#else
+    printf("error: resampling_jack::comp_cov_arb need to be compiled with Arb\n");
+    exit(1);
+#endif // WITH_ARB
+
+}
+
+void resampling_boot::comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong prec) {
+    printf("error: resampling_boot::comp_cov_arb not implemented\n");
+    exit(1);
 }

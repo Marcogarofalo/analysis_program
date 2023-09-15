@@ -5,11 +5,9 @@
 #include "resampling_new.hpp"
 #include "non_linear_fit.hpp"
 
-#ifdef WITH_ARB
 #include "arb.h"
 #include "acb_modular.h"
 #include "acb_calc.h"
-#endif // WITH_ARB
 
 enum HLT_b {
     HLT_EXP_b = 0
@@ -79,7 +77,13 @@ double gaussian_for_HLT_d(double x, double* p);
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // using ARB
 ////////////////////////////////////////////////////////////////////////////////////////////////
-#ifdef WITH_ARB
+
+
+class  fit_type_HLT : public fit_type {
+public:
+    std::vector<double> lambdas = {};
+
+};
 
 class  HLT_type;
 
@@ -90,7 +94,6 @@ public:
     int t;
     int Np;
     HLT_type* HLT;
-    std::vector<double> lambdas = {};
     wrapper_smearing(int  (*f)(acb_ptr , const acb_t , void* , slong , slong ), std::vector<double> p, HLT_type* HLT_) {
         function = f;
         Np = p.size();
@@ -109,23 +112,22 @@ class  HLT_type {
 public:
     int Tmax;
     int T;
-    int Njack;
-    int id;
     int prec;
     HLT_b type;
     arb_t E0;
     std::vector<double> Es = {};
     std::vector<double> lambdas = {};
-    arb_t** A;
-    arb_t* R;
-    arb_t* f;
+    arb_mat_t A;
+    arb_mat_t W;
+    arb_mat_t R;
+    arb_mat_t f;
     bool f_allocated=false;
-    HLT_type(int tmax, int L0, double E0, int njack, HLT_b type_b, int prec_, double alpha = 0);
+    HLT_type(int tmax, int L0, double E0,  HLT_b type_b, int prec_, double alpha = 0);
     ~HLT_type();
 
 
     double** HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
-        FILE* outfile, const char* description, wrapper_smearing  Delta, FILE* file_jack);
+        FILE* outfile, const char* description, wrapper_smearing  Delta, FILE* file_jack, fit_type_HLT fit_info);
 
 
 
@@ -133,8 +135,8 @@ public:
 
 };
 int gaussian_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
+int theta_s1_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 int no_smearing_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
-#endif // !ARB
 
 
 

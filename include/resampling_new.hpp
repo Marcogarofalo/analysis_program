@@ -10,6 +10,10 @@
 #include <iostream>
 #include "global.hpp"
 
+#ifdef WITH_ARB
+#include "arb.h"
+#include "acb_calc.h"
+#endif // WITH_ARB
 
 
 
@@ -37,6 +41,10 @@ public:
   void free_res(int var, int t, double**** in);
   void write_res_bin(int N, double* jack, char* outname);
   virtual double** comp_cov(int Nobs, double** in) = 0;
+#ifdef WITH_ARB
+  virtual void comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong prec) = 0;
+#endif // WITH_ARB
+
 
 };
 
@@ -48,6 +56,8 @@ public:
   double comp_error(double* in);
   double* create_fake(double mean, double error, int seed);
   double** comp_cov(int Nobs, double** in);
+  void comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong prec);
+
 };
 
 
@@ -60,6 +70,8 @@ public:
   double comp_error(double* in);
   double* create_fake(double mean, double error, int seed);
   double** comp_cov(int Nobs, double** in);
+  void comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong prec);
+
 };
 
 double** covariance_jack(int Nobs, int Np1, double** in);

@@ -7,10 +7,7 @@
 #include <stdio.h>
 // #include <mpir.h>
 
-
-#ifdef WITH_ARB
 #include "arb_calc.h"
-#endif // WITH_ARB
 
 
 HLT_type_d::HLT_type_d(int tmax, int L0, double E0_, int njack, HLT_b type_b, double alpha) {
@@ -123,22 +120,18 @@ double** HLT_type_d::HLT_of_corr(char** option, double**** conf_jack, const char
 // using ARB
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef WITH_ARB
 
 
-HLT_type::HLT_type(int tmax, int L0, double E0_, int njack, HLT_b type_b, int prec_, double alpha) {
+HLT_type::HLT_type(int tmax, int L0, double E0_, HLT_b type_b, int prec_, double alpha) {
     Tmax = tmax;
     T = L0;
-    Njack = njack;
     prec = prec_;
     arb_init(E0);
     arb_set_d(E0, E0_);
 
-    R = (arb_t*)malloc(sizeof(arb_t) * Tmax);
-    A = (arb_t**)malloc(sizeof(arb_t*) * Tmax);
-    for (size_t t = 0; t < Tmax; t++) {
-        A[t] = (arb_t*)malloc(sizeof(arb_t) * Tmax);
-    }
+    arb_mat_init(R, Tmax, 1);
+    arb_mat_init(A, Tmax, Tmax);
+
     type = type_b;
 
     arb_t at, aT, arb_alpha;
@@ -157,10 +150,9 @@ HLT_type::HLT_type(int tmax, int L0, double E0_, int njack, HLT_b type_b, int pr
             arb_inv(aT, aT, prec);
 
             // R[t]= 1.0 / (t + 1.0) + 1.0 / (T - t - 1.0);
-            arb_init(R[t]);
-            arb_add(R[t], at, aT, prec);
+            arb_add(arb_mat_entry(R, t, 0), at, aT, prec);
             for (size_t r = 0; r < Tmax; r++) {
-                arb_init(A[t][r]);
+
                 // A[t][r] = exp(-(r + t + 2 - alpha) * E0) / (r + t + 2 - alpha);
                 arb_set_ui(at, r + t + 2);
                 arb_sub(at, at, arb_alpha, prec);
@@ -168,7 +160,7 @@ HLT_type::HLT_type(int tmax, int L0, double E0_, int njack, HLT_b type_b, int pr
                 arb_mul(aT, at, E0, prec);
                 arb_neg(aT, aT);
                 arb_exp(aT, aT, prec);
-                arb_div(A[t][r], aT, at, prec);
+                arb_div(arb_mat_entry(A, t, r), aT, at, prec);
                 //     A[t][r] += exp(-(T - r + t - alpha) * E0) / (T - r + t - alpha);
                 arb_set_ui(at, T - r + t);
                 arb_sub(at, at, arb_alpha, prec);
@@ -177,7 +169,7 @@ HLT_type::HLT_type(int tmax, int L0, double E0_, int njack, HLT_b type_b, int pr
                 arb_neg(aT, aT);
                 arb_exp(aT, aT, prec);
                 arb_div(aT, aT, at, prec);
-                arb_add(A[t][r], A[t][r], aT, prec);
+                arb_add(arb_mat_entry(A, t, r), arb_mat_entry(A, t, r), aT, prec);
                 //     A[t][r] += exp(-(T + r - t - alpha) * E0) / (T + r - t - alpha);
                 arb_set_ui(at, T + r - t);
                 arb_sub(at, at, arb_alpha, prec);
@@ -186,7 +178,7 @@ HLT_type::HLT_type(int tmax, int L0, double E0_, int njack, HLT_b type_b, int pr
                 arb_neg(aT, aT);
                 arb_exp(aT, aT, prec);
                 arb_div(aT, aT, at, prec);
-                arb_add(A[t][r], A[t][r], aT, prec);
+                arb_add(arb_mat_entry(A, t, r), arb_mat_entry(A, t, r), aT, prec);
                 //     A[t][r] += exp(-(2 * T - r - t - 2 - alpha) * E0) / (2 * T - r - t - 2 - alpha);
                 arb_set_ui(at, 2 * T - r - t - 2);
                 arb_sub(at, at, arb_alpha, prec);
@@ -195,7 +187,7 @@ HLT_type::HLT_type(int tmax, int L0, double E0_, int njack, HLT_b type_b, int pr
                 arb_neg(aT, aT);
                 arb_exp(aT, aT, prec);
                 arb_div(aT, aT, at, prec);
-                arb_add(A[t][r], A[t][r], aT, prec);
+                arb_add(arb_mat_entry(A, t, r), arb_mat_entry(A, t, r), aT, prec);
 
             }
         }
@@ -203,15 +195,17 @@ HLT_type::HLT_type(int tmax, int L0, double E0_, int njack, HLT_b type_b, int pr
 }
 
 HLT_type::~HLT_type() {
-    for (size_t i = 0; i < Tmax; i++) {
-        arb_clear(R[i]);
-        if (f_allocated)arb_clear(f[i]);
-        for (size_t r = 0; r < Tmax; r++)         arb_clear(A[i][r]);
-        free(A[i]);
-    }
-    free(R);
-    free(A);
-    if (f_allocated) free(f);
+    // for (size_t i = 0; i < Tmax; i++) {
+    //     arb_clear(R[i]);
+    //     if (f_allocated)arb_clear(f[i]);
+    //     for (size_t r = 0; r < Tmax; r++)         arb_clear(A[i][r]);
+    //     free(A[i]);
+    // }
+    // free(R);
+    // free(A);
+    arb_mat_clear(A);
+    arb_mat_clear(R);
+    if (f_allocated) arb_mat_clear(f);
 }
 
 
@@ -240,7 +234,7 @@ int gaussian_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong
     return 0;
 }
 
-int theta_sq_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
+int theta_s1_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
     if (order > 1)
         flint_abort();  /* Would be needed for Taylor method. */
 
@@ -250,7 +244,7 @@ int theta_sq_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong pre
     acb_neg(res, res);
     acb_exp(res, res, prec);
     acb_add_ui(res, res, 1, prec);
-    acb_inv(res,res,prec);
+    acb_inv(res, res, prec);
 
     return 0;
 }
@@ -298,9 +292,9 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta, double epsrel) {
 
     if (f_allocated == true) {
         printf("HLT: recomputing f\n");
-        free(f);
+        arb_mat_clear(f);
     }
-    f = (arb_t*)malloc(sizeof(arb_t) * Tmax);
+    arb_mat_init(f, Tmax, 1);
     int Maxiter = 1e+6;
     acb_calc_integrate_opt_t options;
     acb_calc_integrate_opt_init(options);
@@ -338,11 +332,49 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta, double epsrel) {
         acb_set_arb(a, E0);
         acb_set_d(b, 10000);
         acb_calc_integrate(s, integrand_f, param, a, b, goal, tol, options, prec);
-        arb_init(f[t]);
-        acb_get_real(f[t], s);
+        acb_get_real(arb_mat_entry(f, t, 0), s);
     }
     f_allocated = true;
 }
 
 
-#endif // WITH_ARB
+
+double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
+    FILE* outfile, const char* description, wrapper_smearing  Delta, FILE* file_jack, fit_type_HLT fit_info) {
+
+    int Njack = fit_info.Njack;
+    int id = fit_info.corr_id[0];
+    double** r = malloc_2<double>(Tmax, Njack);
+    for (int t = 0;t < Tmax;t++)
+        for (int j = 0;j < Njack;j++)
+            r[t][j] = conf_jack[j][id][t][0];
+
+
+    double** cov = myres->comp_cov(Tmax, r);
+
+    myres->comp_cov_arb(W, Tmax, r,prec);
+
+    for (int t = 0;t < Tmax;t++) {
+        for (int r = 0;r < Tmax;r++) {
+        // arb_set_d(arb_mat_entry(W,t,r), cov[t][r]);
+        printf("cov %d %d = %.12g\n",t,r,cov[t][r]);
+        arb_printn(arb_mat_entry(W,t,r), prec / 3.33, 0); flint_printf("\n");
+        }
+    }
+
+    if (f_allocated == false) {
+        printf("HLT: recomputing f\n");
+        compute_f_EXP_b(Delta);
+    }
+
+    HLT_out res(fit_info.lambdas);
+
+    for (int il = 0;il < fit_info.lambdas.size(); il++) {
+
+
+    }
+    // mpf_t **W=(mpf_t**) malloc(sizeof(mpf_t*)* Tmax);
+    double** p;
+    return p;
+};
+

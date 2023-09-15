@@ -50,4 +50,7 @@ target_include_directories(functions_project_template PUBLIC "${CMAKE_CURRENT_SO
 
 add_executable(project_template project_template.cpp)
 target_link_libraries(project_template PUBLIC functions_project_template)
+IF(WITH_ARB)
+  target_link_libraries(project_template PUBLIC flint-arb flint)
+ENDIF()
 target_link_libraries(project_template PUBLIC ${ANALYSIS_PROGRAM_LIBRARIES})
