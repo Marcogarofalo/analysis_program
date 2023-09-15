@@ -130,7 +130,7 @@ public:
 
 
 
-    void compute_f_EXP_b(wrapper_smearing  &Delta, double epsrel = 1e-7);
+    void compute_f_EXP_b(wrapper_smearing  &Delta);
 
 };
 int gaussian_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);

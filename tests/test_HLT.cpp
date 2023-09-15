@@ -60,7 +60,7 @@ int main() {
             std::vector<double>  gauss_p = { 0,1 };
             printf("gaussian mu=%.12g  sigma=%.12g\n", gauss_p[0], gauss_p[1]);
             wrapper_smearing Delta(gaussian_for_HLT, gauss_p, &HLT_space);
-            HLT_space.compute_f_EXP_b(Delta, 1e-10);
+            HLT_space.compute_f_EXP_b(Delta);
             for (int t = 0;t < HLT_space.Tmax;t++) {
                 double a = t + 1;
                 double b = (T - (t + 1));

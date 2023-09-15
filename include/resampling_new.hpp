@@ -56,7 +56,9 @@ public:
   double comp_error(double* in);
   double* create_fake(double mean, double error, int seed);
   double** comp_cov(int Nobs, double** in);
+#ifdef WITH_ARB
   void comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong prec);
+#endif // WITH_ARB
 
 };
 
@@ -70,7 +72,9 @@ public:
   double comp_error(double* in);
   double* create_fake(double mean, double error, int seed);
   double** comp_cov(int Nobs, double** in);
+#ifdef WITH_ARB
   void comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong prec);
+#endif // WITH_ARB
 
 };
 

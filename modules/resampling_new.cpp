@@ -343,8 +343,8 @@ double** resampling_boot::comp_cov(int Nobs, double** in) {
 }
 
 
-void resampling_jack::comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong prec) {
 #ifdef WITH_ARB
+void resampling_jack::comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong prec) {
 
     int N = Njack - 1;
     arb_mat_t ave;
@@ -392,10 +392,6 @@ void resampling_jack::comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong pre
     }
     arb_clear(tmpk);
     arb_clear(tmpl);
-#else
-    printf("error: resampling_jack::comp_cov_arb need to be compiled with Arb\n");
-    exit(1);
-#endif // WITH_ARB
 
 }
 
@@ -403,3 +399,4 @@ void resampling_boot::comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong pre
     printf("error: resampling_boot::comp_cov_arb not implemented\n");
     exit(1);
 }
+#endif // WITH_ARB

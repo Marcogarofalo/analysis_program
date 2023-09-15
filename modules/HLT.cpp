@@ -288,7 +288,7 @@ int integrand_f(acb_ptr res, const acb_t z, void* param, slong order, slong prec
     // return p->function(x, p->params) * (exp(-(t + 1) * x) + exp(-(T - (t + 1)) * x));
 }
 
-void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta, double epsrel) {
+void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
 
     if (f_allocated == true) {
         printf("HLT: recomputing f\n");
