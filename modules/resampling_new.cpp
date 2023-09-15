@@ -351,6 +351,7 @@ void resampling_jack::comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong pre
     arb_mat_init(ave, Nobs, 1); // set it to zero
     error(arb_mat_nrows(r) != Nobs, 1, "resampling_jack::comp_cov_arb", "wrong rows number:%d expected: %d", arb_mat_nrows(r), Nobs);
     error(arb_mat_ncols(r) != Nobs, 1, "resampling_jack::comp_cov_arb", "wrong cols number:%d expected: %d", arb_mat_ncols(r), Nobs);
+    arb_mat_zero(r);
     // ave = (double*)calloc(Nobs, sizeof(double));
     // r = (double**)malloc(Nobs * sizeof(double*));
     arb_t tmpk;
@@ -374,7 +375,7 @@ void resampling_jack::comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong pre
                 arb_set_d(tmpl, in[l][i]);
                 arb_sub(tmpk, tmpk, arb_mat_entry(ave, k, 0), prec);
                 arb_sub(tmpl, tmpl, arb_mat_entry(ave, l, 0), prec);
-                arb_add(arb_mat_entry(r, k, l), tmpk, tmpl, prec);
+                arb_addmul(arb_mat_entry(r, k, l), tmpk, tmpl, prec);
                 // r[k][l] += (in[k][i] - ave[k]) * (in[l][i] - ave[l]);
 
             }
@@ -383,7 +384,6 @@ void resampling_jack::comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong pre
             // r[k][l] *= (N - 1.) / ((double)N);
         }
         for (int l = 0;l < k;l++) {
-            //r[l][k]/=sqrt(r[k][k]*r[l][l]);
             arb_set(arb_mat_entry(r, k, l), arb_mat_entry(r, l, k));
             // r[k][l] = r[l][k];
         }

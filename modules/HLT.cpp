@@ -238,13 +238,14 @@ int gaussian_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong
     return 0;
 }
 
-int theta_s1_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
+int theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
     if (order > 1)
         flint_abort();  /* Would be needed for Taylor method. */
 
-    //  return 1.0 / (1 + exp(-x / p[0]));
+    //  return 1.0 / (1 + exp(-(x-p[0]) / p[1]));
     arb_t* p = (arb_t*)param;
-    acb_div_arb(res, z, p[0], prec);
+    acb_sub_arb(res, z, p[0], prec);
+    acb_div_arb(res, res, p[1], prec);
     acb_neg(res, res);
     acb_exp(res, res, prec);
     acb_add_ui(res, res, 1, prec);
@@ -267,7 +268,7 @@ int integrand_f(acb_ptr res, const acb_t z, void* param, slong order, slong prec
         flint_abort();  /* Would be needed for Taylor method. */
 
     wrapper_smearing* p = (wrapper_smearing*)param;
-    acb_set_ui(res,1);
+    acb_set_ui(res, 1);
     p->function(res, z, p->params, order, prec);
 
     acb_t b; acb_init(b);
@@ -319,9 +320,9 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
     acb_init(s);
 
     for (int t = 0;t < Tmax;t++) {
-    
+
         void* param = (void*)&Delta;
-        Delta.t =t;
+        Delta.t = t;
         // wrapper_smearing* p = (wrapper_smearing*)param;
 
         acb_set_arb(a, E0);
@@ -336,9 +337,58 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
 }
 
 
+void HLT_type::check_reconstruction(wrapper_smearing& Delta, arb_mat_t g, std::array<double, 3> range) {
+    acb_t res;
+    acb_init(res);
+    arb_t res_re;
+    arb_init(res_re);
+    arb_t res_HLT;
+    arb_init(res_HLT);
+    acb_t E;
+    acb_init(E);
+    arb_t E_re;
+    arb_init(E_re);
+    arb_t b; arb_init(b);
+    arb_t bT; arb_init(bT);
+    double dh = (range[1] - range[0]) / range[2];
+    printf("check HLT \n");
+    for (int i = 0;i < range[2] + 1;i++) {
+        arb_set_d(E_re, range[0] + i * dh);
+        acb_set_arb(E, E_re);
+        Delta.function(res, E, (void*)Delta.params, 0, prec);
+        acb_get_real(res_re, res);
+        printf("smearing function: ");
+        arb_printn(res_re, prec / 3.33, 0); flint_printf("\n");
+        arb_set_ui(res_HLT, 0);
+        for (int t = 0;t < Tmax;t++) {
+            arb_set_ui(b, t + 1);
+            arb_mul(b, b, E_re, prec);
+            arb_neg(b, b);
+            arb_exp(b, b, prec);
+
+            arb_set_ui(bT, Delta.HLT->T - t - 1);
+            arb_mul(bT, bT, E_re, prec);
+            arb_neg(bT, bT);
+            arb_exp(bT, bT, prec);
+
+            arb_add(b, b, bT, prec);
+            arb_addmul(res_HLT, arb_mat_entry(g, t, 0), b, prec);
+        }
+        printf("recostructed function: ");
+        arb_printn(res_HLT, prec / 3.33, 0); flint_printf("\n");
+    }
+    acb_clear(res);
+    arb_clear(res_re);
+    acb_clear(E);
+    arb_clear(E_re);
+    arb_clear(res_HLT);
+    arb_clear(b);
+    arb_clear(bT);
+
+}
 
 double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
-    FILE* outfile, const char* description, wrapper_smearing  &Delta, FILE* file_jack, fit_type_HLT fit_info) {
+    FILE* outfile, const char* description, wrapper_smearing& Delta, FILE* file_jack, fit_type_HLT fit_info) {
 
     int Njack = fit_info.Njack;
     int id = fit_info.corr_id[0];
@@ -347,18 +397,15 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
         for (int j = 0;j < Njack;j++)
             r[t][j] = conf_jack[j][id][t][0];
 
+    // double** cov = myres->comp_cov(Tmax, r);
+    myres->comp_cov_arb(W, Tmax, r, prec);
 
-    double** cov = myres->comp_cov(Tmax, r);
-
-    myres->comp_cov_arb(W, Tmax, r,prec);
-
-    for (int t = 0;t < Tmax;t++) {
-        for (int r = 0;r < Tmax;r++) {
-
-        // printf("cov %d %d = %.12g\n",t,r,cov[t][r]);
-        // arb_printn(arb_mat_entry(W,t,r), prec / 3.33, 0); flint_printf("\n");
-        }
-    }
+    // for (int t = 0;t < Tmax;t++) {
+    //     for (int r = 0;r < Tmax;r++) {
+    //         printf("cov %d %d = %.12g\n",t,r,cov[t][r]);
+    //         arb_printn(arb_mat_entry(W,t,r), prec / 3.33, 0); flint_printf("\n");
+    //     }
+    // }
 
     if (f_allocated == false) {
         printf("HLT: recomputing f\n");
@@ -367,10 +414,55 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
 
     HLT_out res(fit_info.lambdas);
 
-    for (int il = 0;il < fit_info.lambdas.size(); il++) {
-
-
+    arb_t lam;
+    arb_init(lam);
+    arb_mat_t Wf;
+    arb_mat_init(Wf, Tmax, 1);
+    arb_mat_t g;
+    arb_mat_init(g, Tmax, 1);
+    arb_mat_t RT;
+    arb_mat_init(RT, 1, Tmax);
+    arb_mat_t RTWR;
+    arb_mat_init(RTWR, 1, 1);
+    for (int t = 0;t < Tmax;t++) {
+        arb_set(arb_mat_entry(RT, 0, t), arb_mat_entry(R, t, 0));
     }
+    for (int il = 0;il < fit_info.lambdas.size(); il++) {
+        // cov/C0^2
+        arb_set_d(lam, r[0][Njack - 1]);
+        arb_mul(lam, lam, lam, prec);
+        arb_mat_scalar_div_arb(W, W, lam, prec);
+        // lam*cov/C0^2
+        arb_set_d(lam, fit_info.lambdas[il]);
+        arb_mat_scalar_mul_arb(W, W, lam, prec);
+        //W=(1-lam)A+ lam *Cov/c0^2
+        arb_sub_ui(lam, lam, 1, prec);
+        arb_neg(lam, lam);
+        arb_mat_scalar_addmul_arb(W, A, lam, prec);
+        // g=W^-1 f
+        arb_mat_inv(W, W, prec);
+        arb_mat_mul(Wf, W, f, prec);
+        arb_mat_scalar_mul_arb(Wf, Wf, lam, prec);// *(1-lambda) is not inside f
+        arb_mat_set(g, Wf);
+        // lam=1- R^T W^-1 f
+        arb_mat_mul(RTWR, RT, Wf, prec);
+        arb_sub_ui(lam, arb_mat_entry(RTWR, 0, 0), 1, prec);
+        arb_neg(lam, lam);
+        // RTWR= R^T W^-1 R
+        arb_mat_mul(Wf, W, R, prec);
+        arb_mat_mul(RTWR, RT, Wf, prec);
+        // g+=  W^-1 R (1- R^T W^-1 f ) /(R^T W^-1 R)
+        arb_div(lam, lam, arb_mat_entry(RTWR, 0, 0), prec);
+        arb_mat_scalar_mul_arb(Wf, Wf, lam, prec);
+        arb_mat_add(g, g, Wf, prec);
+        
+        check_reconstruction(Delta, g, { 0,1,4 });
+    }
+    arb_clear(lam);
+    arb_mat_clear(Wf);
+    arb_mat_clear(g);
+    arb_mat_clear(RT);
+    arb_mat_clear(RTWR);
     // mpf_t **W=(mpf_t**) malloc(sizeof(mpf_t*)* Tmax);
     double** p;
     return p;

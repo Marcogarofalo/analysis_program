@@ -1,5 +1,7 @@
 #ifndef HLT_H
 #define HLT_H
+#include <array>
+
 #include "global.hpp"
 #include "resampling.hpp"
 #include "resampling_new.hpp"
@@ -132,10 +134,12 @@ public:
         FILE* outfile, const char* description, wrapper_smearing& Delta, FILE* file_jack, fit_type_HLT fit_info);
 
     void compute_f_EXP_b(wrapper_smearing& Delta);
+    void check_reconstruction(wrapper_smearing& Delta, arb_mat_t g, std::array<double, 3> range);
+
 
 };
 int gaussian_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
-int theta_s1_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
+int theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 int no_smearing_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 
 
