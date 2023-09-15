@@ -24,7 +24,6 @@ IF(NOT analysis_program_FOUND)
     MESSAGE("hint:  analysis_program_FOUND_DIR or CMAKE_PREFIX_PATH need to be global path or relative to the source dir")
     MESSAGE(FATAL_ERROR)
 ENDIF()
-find_package(analysis_program)
 
 find_package(Eigen3 REQUIRED) # we need eigen
 MESSAGE("IF the analysis_program was compiled with OpenMP then you also need to load it")
