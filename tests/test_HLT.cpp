@@ -69,7 +69,6 @@ int main() {
                 // error(diff > 1e-3, 1, "integration f not working", "t=%d diff=%.12g", t, diff);
             }
         }
-
     }
     {
 
@@ -90,7 +89,7 @@ int main() {
 
         arb_set_d(arb_mat_entry(R, 0, 0), 1);
         arb_set_d(arb_mat_entry(R, 1, 0), 2);
-        arb_mat_mul(R,A,R,prec);
+        arb_mat_mul(R, A, R, prec);
         arb_printn(arb_mat_entry(R, 0, 0), prec / 3.33, 0); flint_printf("\n");
 
     }

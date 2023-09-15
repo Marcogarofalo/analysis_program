@@ -349,10 +349,8 @@ void resampling_jack::comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong pre
     int N = Njack - 1;
     arb_mat_t ave;
     arb_mat_init(ave, Nobs, 1); // set it to zero
-    arb_mat_clear(r);
     error(arb_mat_nrows(r) != Nobs, 1, "resampling_jack::comp_cov_arb", "wrong rows number:%d expected: %d", arb_mat_nrows(r), Nobs);
     error(arb_mat_ncols(r) != Nobs, 1, "resampling_jack::comp_cov_arb", "wrong cols number:%d expected: %d", arb_mat_ncols(r), Nobs);
-    arb_mat_init(r, Nobs, Nobs);
     // ave = (double*)calloc(Nobs, sizeof(double));
     // r = (double**)malloc(Nobs * sizeof(double*));
     arb_t tmpk;
@@ -390,6 +388,7 @@ void resampling_jack::comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong pre
             // r[k][l] = r[l][k];
         }
     }
+    arb_mat_clear(ave);
     arb_clear(tmpk);
     arb_clear(tmpl);
 

@@ -192,6 +192,9 @@ HLT_type::HLT_type(int tmax, int L0, double E0_, HLT_b type_b, int prec_, double
             }
         }
     }
+    arb_mat_init(W, Tmax, Tmax);
+    arb_clear(at);
+    arb_clear(aT);
 }
 
 HLT_type::~HLT_type() {
@@ -205,6 +208,7 @@ HLT_type::~HLT_type() {
     // free(A);
     arb_mat_clear(A);
     arb_mat_clear(R);
+    arb_mat_clear(W);
     if (f_allocated) arb_mat_clear(f);
 }
 
@@ -254,7 +258,6 @@ int theta_s1_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong pre
 int no_smearing_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
     if (order > 1)
         flint_abort();  /* Would be needed for Taylor method. */
-    acb_set_ui(res, 1);
     return 0;
 }
 
@@ -264,7 +267,7 @@ int integrand_f(acb_ptr res, const acb_t z, void* param, slong order, slong prec
         flint_abort();  /* Would be needed for Taylor method. */
 
     wrapper_smearing* p = (wrapper_smearing*)param;
-
+    acb_set_ui(res,1);
     p->function(res, z, p->params, order, prec);
 
     acb_t b; acb_init(b);
@@ -316,31 +319,26 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
     acb_init(s);
 
     for (int t = 0;t < Tmax;t++) {
-        // F.function = &integrand_f;
-        // Delta.t = t;
-        // F.params = &Delta;
-
-        // // gsl_integration_qags(&F, 0, 1, 0, epsrel, Maxiter, w, &result, &error);
-        // // int_E0^\infty  b* Delta
-        // gsl_integration_qagiu(&F, E0, 0, epsrel, Maxiter, w, &result, &error);
-        // f[t] = result;
-        Delta.t = t;
-
+    
         void* param = (void*)&Delta;
-        wrapper_smearing* p = (wrapper_smearing*)param;
+        Delta.t =t;
+        // wrapper_smearing* p = (wrapper_smearing*)param;
 
         acb_set_arb(a, E0);
         acb_set_d(b, 10000);
         acb_calc_integrate(s, integrand_f, param, a, b, goal, tol, options, prec);
         acb_get_real(arb_mat_entry(f, t, 0), s);
     }
+    acb_clear(a);
+    acb_clear(b);
+    acb_clear(s);
     f_allocated = true;
 }
 
 
 
 double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
-    FILE* outfile, const char* description, wrapper_smearing  Delta, FILE* file_jack, fit_type_HLT fit_info) {
+    FILE* outfile, const char* description, wrapper_smearing  &Delta, FILE* file_jack, fit_type_HLT fit_info) {
 
     int Njack = fit_info.Njack;
     int id = fit_info.corr_id[0];
@@ -356,9 +354,9 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
 
     for (int t = 0;t < Tmax;t++) {
         for (int r = 0;r < Tmax;r++) {
-        // arb_set_d(arb_mat_entry(W,t,r), cov[t][r]);
-        printf("cov %d %d = %.12g\n",t,r,cov[t][r]);
-        arb_printn(arb_mat_entry(W,t,r), prec / 3.33, 0); flint_printf("\n");
+
+        // printf("cov %d %d = %.12g\n",t,r,cov[t][r]);
+        // arb_printn(arb_mat_entry(W,t,r), prec / 3.33, 0); flint_printf("\n");
         }
     }
 

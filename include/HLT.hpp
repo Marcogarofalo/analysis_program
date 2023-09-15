@@ -56,7 +56,7 @@ public:
     double** A;
     double* R;
     double* f;
-    bool f_allocated=false;
+    bool f_allocated = false;
     HLT_type_d(int tmax, int L0, double E0, int njack, HLT_b type_b, double alpha = 0);
     ~HLT_type_d();
 
@@ -66,7 +66,7 @@ public:
 
 
 
-    void compute_f_EXP_b(wrapper_smearing_d  &Delta, double epsrel = 1e-7);
+    void compute_f_EXP_b(wrapper_smearing_d& Delta, double epsrel = 1e-7);
 
 };
 
@@ -86,14 +86,15 @@ public:
 
 class  HLT_type;
 
+// pass it as a reference because we did not write the copy construtor
 class wrapper_smearing {
 public:
-    int  (*function)(acb_ptr , const acb_t , void* , slong , slong );
+    int  (*function)(acb_ptr, const acb_t, void*, slong, slong);
     arb_t* params;
     int t;
     int Np;
     HLT_type* HLT;
-    wrapper_smearing(int  (*f)(acb_ptr , const acb_t , void* , slong , slong ), std::vector<double> p, HLT_type* HLT_) {
+    wrapper_smearing(int  (*f)(acb_ptr, const acb_t, void*, slong, slong), std::vector<double> p, HLT_type* HLT_) {
         function = f;
         Np = p.size();
         params = (arb_t*)malloc(sizeof(arb_t) * Np);
@@ -104,6 +105,9 @@ public:
         HLT = HLT_;
     };
     ~wrapper_smearing() {
+        for (int i = 0;i < Np;i++) {
+            arb_clear(params[i]);
+        }
         free(params);
     }
 };
@@ -120,17 +124,14 @@ public:
     arb_mat_t W;
     arb_mat_t R;
     arb_mat_t f;
-    bool f_allocated=false;
-    HLT_type(int tmax, int L0, double E0,  HLT_b type_b, int prec_, double alpha = 0);
+    bool f_allocated = false;
+    HLT_type(int tmax, int L0, double E0, HLT_b type_b, int prec_, double alpha = 0);
     ~HLT_type();
 
-
     double** HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
-        FILE* outfile, const char* description, wrapper_smearing  Delta, FILE* file_jack, fit_type_HLT fit_info);
+        FILE* outfile, const char* description, wrapper_smearing& Delta, FILE* file_jack, fit_type_HLT fit_info);
 
-
-
-    void compute_f_EXP_b(wrapper_smearing  &Delta);
+    void compute_f_EXP_b(wrapper_smearing& Delta);
 
 };
 int gaussian_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
