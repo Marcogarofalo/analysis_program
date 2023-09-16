@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 // #include <mpir.h>
-
+#include "myarb.hpp"
 #include "arb_calc.h"
 
 
@@ -288,6 +288,11 @@ int integrand_f(acb_ptr res, const acb_t z, void* param, slong order, slong prec
 
     acb_clear(b);
     acb_clear(bT);
+
+    // we could use the c++ struct but it is slightly slower
+    // myacb E(z, prec);
+    // E = exp(-E * (p->t + 1)) + exp(-E * (p->HLT->T - p->t - 1));
+    // acb_mul(res, res, E.a, prec);
     return 0;
     // return p->function(x, p->params) * (exp(-(t + 1) * x) + exp(-(T - (t + 1)) * x));
 }
@@ -306,7 +311,7 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
     options->deg_limit = 100;
     options->eval_limit = 100000;
     options->depth_limit = 10000;
-    options->verbose = 1;
+    options->verbose = 0;
     // options->use_heap = 1;
 
     mag_t tol;

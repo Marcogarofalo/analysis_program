@@ -53,7 +53,8 @@ int main() {
             error(diff > 1e-3, 1, "integration f not working", "t=%d diff=%.12g", t, diff);
         }
 
-        {
+        double a = timestamp();
+        for (int i = 0;i < 1;i++) {
             double prec = 50 * 3.33;
             HLT_type HLT_space(tmax, T, E0, HLT_EXP_b, prec);
             printf("testing integration with arb\n");
@@ -64,11 +65,12 @@ int main() {
             for (int t = 0;t < HLT_space.Tmax;t++) {
                 double a = t + 1;
                 double b = (T - (t + 1));
-                printf("f[%d]=", t); arb_printn(arb_mat_entry(HLT_space.f,t,0), prec / 3.33, 0); flint_printf("\n");
+                printf("f[%d]=", t); arb_printn(arb_mat_entry(HLT_space.f, t, 0), prec / 3.33, 0); flint_printf("\n");
                 // printf("f[%d]=%.12g  analytic=%.12g  diff=%.12g\n", t, HLT_space.f[t], analytic, diff);
                 // error(diff > 1e-3, 1, "integration f not working", "t=%d diff=%.12g", t, diff);
             }
         }
+        printf("time: %g s\n", timestamp() - a);
     }
     {
 

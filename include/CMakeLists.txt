@@ -103,6 +103,7 @@ if(WITH_ARB)
   set(analysis_header 
       ${analysis_header}
       HLT.hpp
+      myarb.hpp
       )
   set(analysis_scr
       ${analysis_scr}
