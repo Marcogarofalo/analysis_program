@@ -11,7 +11,9 @@
 #include "acb_calc.h"
 
 enum HLT_b {
-    HLT_EXP_b = 0
+    HLT_EXP_b = 0,
+    HLT_EXP_bT = 1,
+    HLT_INVALID_b
 };
 
 class  HLT_type_d;
@@ -72,9 +74,8 @@ public:
 
 };
 
-double theta_s1_d(double x, double* p);
 double gaussian_for_HLT_d(double x, double* p);
-
+double theta_for_HLT_d(double x, double* p);
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // using ARB
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -83,8 +84,11 @@ double gaussian_for_HLT_d(double x, double* p);
 class  fit_type_HLT : public fit_type {
 public:
     std::vector<double> lambdas = {};
+    double maxE_check_reconstuct = 1.0f;
+    double stepsE_check_reconstuct = 10;
 
 };
+
 
 class  HLT_type;
 
@@ -92,34 +96,44 @@ class  HLT_type;
 class wrapper_smearing {
 public:
     int  (*function)(acb_ptr, const acb_t, void*, slong, slong);
-    arb_t* params;
+    arb_ptr params;
     int t;
     int Np;
+    arb_t Norm;
     HLT_type* HLT;
-    wrapper_smearing(int  (*f)(acb_ptr, const acb_t, void*, slong, slong), std::vector<double> p, HLT_type* HLT_) {
-        function = f;
-        Np = p.size();
-        params = (arb_t*)malloc(sizeof(arb_t) * Np);
-        for (int i = 0;i < Np;i++) {
-            arb_init(params[i]);
-            arb_set_d(params[i], p[i]);
-        }
-        HLT = HLT_;
-    };
+
+    void normilise_smearing();
+
+    wrapper_smearing(int  (*f)(acb_ptr, const acb_t, void*, slong, slong), std::vector<double> p, HLT_type* HLT_);
+
     ~wrapper_smearing() {
-        for (int i = 0;i < Np;i++) {
-            arb_clear(params[i]);
-        }
-        free(params);
+        // for (int i = 0;i < Np;i++) {
+        //     arb_clear(params[i]);
+        // }
+        arb_clear(Norm);
+        _arb_vec_clear(params, Np);
     }
 };
+
+struct HLT_type_input {
+    int tmax = -1;
+    int T = -1;
+    double E0 = -1;
+    HLT_b type_b = HLT_INVALID_b;
+    int prec = -1;
+    double alpha = 0;
+    bool normalize_kernel = false;
+    int integration_deg_limit = 100;
+    int integration_eval_limit = 100000;
+    int integration_depth_limit = 10000;
+    int integration_verbose = 0;
+};
+
+
 class  HLT_type {
 public:
-    int Tmax;
-    int T;
-    int prec;
-    HLT_b type;
-    arb_t E0;
+    HLT_type_input info;
+    arb_t E0_arb;
     std::vector<double> Es = {};
     std::vector<double> lambdas = {};
     arb_mat_t A;
@@ -127,8 +141,10 @@ public:
     arb_mat_t R;
     arb_mat_t f;
     bool f_allocated = false;
-    HLT_type(int tmax, int L0, double E0, HLT_b type_b, int prec_, double alpha = 0);
+    HLT_type(HLT_type_input info_);
     ~HLT_type();
+
+    void compute_b(acb_t b, int t, const acb_t E0);
 
     double** HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
         FILE* outfile, const char* description, wrapper_smearing& Delta, FILE* file_jack, fit_type_HLT fit_info);

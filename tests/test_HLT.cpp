@@ -38,7 +38,7 @@ int main() {
             printf("f[%d]=%.12g  analytic=%.12g  diff=%.12g\n", t, HLT_space.f[t], analytic, diff);
             error(diff > 1e-7, 1, "integration f not working", "t=%d diff=%.12g", t, diff);
         }
-        printf("testing integration with smearing\n");
+        printf("testing integration with smearing gaussian\n");
         std::vector<double>  gauss_p = { 0,1 };
         printf("gaussian mu=%.12g  sigma=%.12g\n", gauss_p[0], gauss_p[1]);
         wrapper_smearing_d Delta(gaussian_for_HLT_d, gauss_p, &HLT_space);
@@ -53,21 +53,40 @@ int main() {
             error(diff > 1e-3, 1, "integration f not working", "t=%d diff=%.12g", t, diff);
         }
 
+        printf("testing integration with smearing theta\n");
+        printf("theta mu=%.12g  sigma=%.12g\n", gauss_p[0], gauss_p[1]);
+        wrapper_smearing_d Delta_t(theta_for_HLT_d, gauss_p, &HLT_space);
+        HLT_space.compute_f_EXP_b(Delta_t, 1e-10);
+        for (int t = 0;t < HLT_space.Tmax;t++) {
+            double a = t + 1;
+            double b = (T - (t + 1));
+            // double analytic = -0.5 * exp(0.5 * a * a) * (-1. + erf(M_SQRT1_2f64 / 2. + M_SQRT1_2f64 * (a)))
+            //     - 0.5 * exp(0.5 * b * b) * (-1. + erf(M_SQRT1_2f64 / 2. + M_SQRT1_2 * b));
+            // double diff = fabs(HLT_space.f[t] - analytic);
+            printf("f[%d]=%.12g  \n", t, HLT_space.f[t]);
+            // error(diff > 1e-3, 1, "integration f not working", "t=%d diff=%.12g", t, diff);
+        }
+    } {
+        printf("###################### USING ARB ##################################\n");
+        printf("testing integration with smearing theta\n");
+        std::vector<double>  gauss_p = { 0,1 };
+        printf("params mu=%.12g  sigma=%.12g\n", gauss_p[0], gauss_p[1]);
+        double prec = 50 * 3.33;
+        HLT_type_input HLT_info;
+        HLT_info.tmax = tmax;
+        HLT_info.T = T;
+        HLT_info.E0 = E0;
+        HLT_info.type_b = HLT_EXP_bT;
+        HLT_info.prec = prec;
+        HLT_type HLT_space(HLT_info);
+        wrapper_smearing Delta(theta_s_HLT, gauss_p, &HLT_space);
         double a = timestamp();
         for (int i = 0;i < 1;i++) {
-            double prec = 50 * 3.33;
-            HLT_type HLT_space(tmax, T, E0, HLT_EXP_b, prec);
-            printf("testing integration with arb\n");
-            std::vector<double>  gauss_p = { 0,1 };
-            printf("gaussian mu=%.12g  sigma=%.12g\n", gauss_p[0], gauss_p[1]);
-            wrapper_smearing Delta(gaussian_for_HLT, gauss_p, &HLT_space);
             HLT_space.compute_f_EXP_b(Delta);
-            for (int t = 0;t < HLT_space.Tmax;t++) {
+            for (int t = 0;t < tmax;t++) {
                 double a = t + 1;
                 double b = (T - (t + 1));
                 printf("f[%d]=", t); arb_printn(arb_mat_entry(HLT_space.f, t, 0), prec / 3.33, 0); flint_printf("\n");
-                // printf("f[%d]=%.12g  analytic=%.12g  diff=%.12g\n", t, HLT_space.f[t], analytic, diff);
-                // error(diff > 1e-3, 1, "integration f not working", "t=%d diff=%.12g", t, diff);
             }
         }
         printf("time: %g s\n", timestamp() - a);
