@@ -560,7 +560,7 @@ void HLT_type::check_reconstruction(wrapper_smearing& Delta, arb_mat_t g, const 
     char name[NAMESIZE];
     mysprintf(name, NAMESIZE, "%s_lam%.4f", description, lambda);
     fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", name, 0, info.tmax, lambda, 0.0);
-    fprintf(outfile, "\n");
+    fprintf(outfile, "0  0 \n");
     acb_clear(res);
     arb_clear(res_re);
     acb_clear(E);
