@@ -86,7 +86,8 @@ public:
     std::vector<double> lambdas = {};
     double maxE_check_reconstuct = 1.0f;
     double stepsE_check_reconstuct = 10;
-
+    FILE* outfile_kernel = NULL;
+    FILE* outfile_AoverB = NULL;
 };
 
 
@@ -127,7 +128,7 @@ struct HLT_type_input {
     int integration_eval_limit = 100000;
     int integration_depth_limit = 10000;
     int integration_verbose = 0;
-    double integration_maxE=10000;
+    double integration_maxE = 10000;
 };
 
 
@@ -141,18 +142,23 @@ public:
     arb_mat_t W;
     arb_mat_t R;
     arb_mat_t f;
+    arb_mat_t g;
     bool f_allocated = false;
     HLT_type(HLT_type_input info_);
     ~HLT_type();
 
     void compute_b(acb_t b, int t, const acb_t E0);
+    void compute_b_re(arb_t b, int  t, const arb_t E0);
+
+    void compute_A(arb_t Ag, wrapper_smearing& Delta, arb_mat_t g);
 
     double** HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
-        FILE* outfile, const char* description, wrapper_smearing& Delta, FILE* file_jack, fit_type_HLT fit_info);
+        const char* description, wrapper_smearing& Delta, FILE* file_jack, fit_type_HLT fit_info);
 
     void compute_f_EXP_b(wrapper_smearing& Delta);
-    void check_reconstruction(wrapper_smearing& Delta, arb_mat_t g, std::array<double, 3> range);
 
+    void check_reconstruction(wrapper_smearing& Delta, arb_mat_t g,
+        const char* description, double lambda, fit_type_HLT fit_info, std::array<double, 3> range);
 
 };
 int gaussian_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);

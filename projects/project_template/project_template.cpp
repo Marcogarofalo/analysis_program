@@ -177,6 +177,14 @@ int main(int argc, char** argv) {
     mysprintf(namefile, NAMESIZE, "%s/out/%s_gamma", option[3], option[6]);
     FILE* out_gamma = open_file(namefile, "w+");
 
+    mysprintf(namefile, NAMESIZE, "%s/out/%s_HLT_kernel", option[3],
+        option[6]);
+    FILE* outfile_HLT_kernel = open_file(namefile, "w+");
+    mysprintf(namefile, NAMESIZE, "%s/out/%s_HLT_AoverB", option[3],
+        option[6]);
+    FILE* outfile_HLT_AoverB = open_file(namefile, "w+");
+
+
     char save_option[NAMESIZE];
     sprintf(save_option, "%s", option[1]);
     sprintf(option[1], "blind");

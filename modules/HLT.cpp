@@ -218,27 +218,52 @@ HLT_type::~HLT_type() {
     if (f_allocated) arb_mat_clear(f);
 }
 
+
 void HLT_type::compute_b(acb_t b, int  t, const acb_t E0) {
     int& prec = info.prec;
     if (info.type_b == HLT_EXP_b) {
-        acb_set_ui(b, t + 1);
+        acb_set_ui(b, t);
         acb_mul(b, b, E0, prec);
         acb_neg(b, b);
         acb_exp(b, b, prec);
     }
     if (info.type_b == HLT_EXP_bT) {
-        acb_set_ui(b, t + 1);
+        acb_set_ui(b, t);
         acb_mul(b, b, E0, prec);
         acb_neg(b, b);
         acb_exp(b, b, prec);
 
         acb_t bT; acb_init(bT);
-        acb_set_ui(bT, info.T - t - 1);
+        acb_set_ui(bT, info.T - t);
         acb_mul(bT, bT, E0, prec);
         acb_neg(bT, bT);
         acb_exp(bT, bT, prec);
         acb_add(b, b, bT, prec);
         acb_clear(bT);
+    }
+}
+
+void HLT_type::compute_b_re(arb_t b, int  t, const arb_t E0) {
+    int& prec = info.prec;
+    if (info.type_b == HLT_EXP_b) {
+        arb_set_ui(b, t);
+        arb_mul(b, b, E0, prec);
+        arb_neg(b, b);
+        arb_exp(b, b, prec);
+    }
+    if (info.type_b == HLT_EXP_bT) {
+        arb_set_ui(b, t);
+        arb_mul(b, b, E0, prec);
+        arb_neg(b, b);
+        arb_exp(b, b, prec);
+
+        arb_t bT; arb_init(bT);
+        arb_set_ui(bT, info.T - t);
+        arb_mul(bT, bT, E0, prec);
+        arb_neg(bT, bT);
+        arb_exp(bT, bT, prec);
+        arb_add(b, b, bT, prec);
+        arb_clear(bT);
     }
 
 }
@@ -305,7 +330,7 @@ int integrand_f(acb_ptr res, const acb_t z, void* param, slong order, slong prec
     if (p->HLT->info.normalize_kernel) acb_mul_arb(res, res, p->Norm, prec);
 
     acb_t b; acb_init(b);
-    p->HLT->compute_b(b, p->t, z);
+    p->HLT->compute_b(b, p->t + 1, z);
 
     acb_mul(res, res, b, prec);
 
@@ -415,7 +440,75 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
 }
 
 
-void HLT_type::check_reconstruction(wrapper_smearing& Delta, arb_mat_t g, std::array<double, 3> range) {
+
+int integrand_A(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
+    if (order > 1)
+        flint_abort();  /* Would be needed for Taylor method. */
+
+    wrapper_smearing* p = (wrapper_smearing*)param;
+    acb_set_ui(res, 1);
+    p->function(res, z, p->params, order, prec);
+
+    acb_t b;
+    acb_t res_HLT;
+    acb_init(res_HLT);
+    acb_set_ui(res_HLT, 0);
+    acb_t cg;
+    for (int t = 0;t < p->HLT->info.tmax;t++) {
+        p->HLT->compute_b(b, t + 1, z);
+        acb_set_arb(cg, arb_mat_entry(p->HLT->g, t, 0));
+        acb_addmul(res_HLT, cg, b, prec);
+    }
+    acb_sub(res, res_HLT, b, prec);
+    acb_conj(b, res);
+    acb_mul(res, b, res, prec);
+
+    // * e^(alpha E)
+    acb_set_d(b, p->HLT->info.alpha);
+    acb_mul(b, b, z, prec);
+    acb_exp(b, b, prec);
+    acb_mul(res, res, b, prec);
+
+    acb_clear(b);
+    acb_clear(cg);
+    acb_clear(res_HLT);
+    return 0;
+}
+
+
+void HLT_type::compute_A(arb_t Ag, wrapper_smearing& Delta, arb_mat_t g) {
+    int Maxiter = 1e+6;
+    acb_calc_integrate_opt_t options;
+    acb_calc_integrate_opt_init(options);
+
+    options->deg_limit = info.integration_deg_limit;
+    options->eval_limit = info.integration_eval_limit;
+    options->depth_limit = info.integration_depth_limit;
+    options->verbose = info.integration_verbose;
+
+    mag_t tol;
+    mag_init(tol);
+    mag_set_ui_2exp_si(tol, 1, -info.prec);
+    slong  goal = info.prec;
+    acb_t a, b, s;
+    acb_init(a);
+    acb_init(b);
+    acb_init(s);
+
+    acb_set_ui(a, 0);
+    acb_set_d(b, info.integration_maxE);
+
+    acb_calc_integrate(s, integrand_A, (void*)&Delta, a, b, goal, tol, options, info.prec);
+    acb_get_real(Ag, s);
+
+
+    acb_clear(a);
+    acb_clear(b);
+    acb_clear(s);
+}
+
+void HLT_type::check_reconstruction(wrapper_smearing& Delta, arb_mat_t g, const char* description,
+    double lambda, fit_type_HLT fit_info, std::array<double, 3> range) {
     acb_t res;
     acb_init(res);
     arb_t res_re;
@@ -429,12 +522,15 @@ void HLT_type::check_reconstruction(wrapper_smearing& Delta, arb_mat_t g, std::a
     arb_t b; arb_init(b);
     arb_t bT; arb_init(bT);
     double dh = (range[1] - range[0]) / range[2];
-    printf("check HLT  g: \n");
     int& prec = info.prec;
-    for (int t = 0;t < info.tmax;t++) {
-        printf("t= %d   g= ", t);
-        arb_printn(arb_mat_entry(g, t, 0), prec / 3.33, 0); flint_printf("\n");
-    }
+    // printf("check HLT  g: \n");
+    // for (int t = 0;t < info.tmax;t++) {
+    //     printf("t= %d   g= ", t);
+    //     arb_printn(arb_mat_entry(g, t, 0), prec / 3.33, 0); flint_printf("\n");
+    // }
+    FILE* outfile = fit_info.outfile_kernel;
+    fprintf(outfile, " \n\n");
+    fprintf(outfile, "# HLT of correlator id=%d\n", fit_info.corr_id[0]);
     for (int i = 0;i < range[2] + 1;i++) {
         arb_set_d(E_re, range[0] + i * dh);
         acb_set_arb(E, E_re);
@@ -447,31 +543,24 @@ void HLT_type::check_reconstruction(wrapper_smearing& Delta, arb_mat_t g, std::a
         // arb_printn(res_re, prec / 3.33, 0); flint_printf("\n");
         arb_set_ui(res_HLT, 0);
         for (int t = 0;t < info.tmax;t++) {
-            arb_set_ui(b, t + 1);
-            arb_mul(b, b, E_re, prec);
-            arb_neg(b, b);
-            arb_exp(b, b, prec);
-
-            arb_set_ui(bT, Delta.HLT->info.T - t - 1);
-            arb_mul(bT, bT, E_re, prec);
-            arb_neg(bT, bT);
-            arb_exp(bT, bT, prec);
-
-            arb_add(b, b, bT, prec);
+            compute_b_re(b, t + 1, E_re);
             arb_addmul(res_HLT, arb_mat_entry(g, t, 0), b, prec);
-
             // myarb mE(E_re, prec);
             // mE = exp(-mE * (t + 1)) + exp(-mE * (T - t - 1));
             // arb_addmul(res_HLT, arb_mat_entry(g, t, 0), mE.a, prec);
-
         }
-        // printf("recostructed function: ");
-        // arb_printn(res_HLT, prec / 3.33, 0); flint_printf("\n");
+
+
         double d1 = std::stod(arb_get_str(res_HLT, 15, 10));
         arb_sub(b, res_re, res_HLT, prec);
         double diff = std::stod(arb_get_str(b, 15, 10));
-        printf("%.12g  %.12g %.12g  %.12g\n", range[0] + i * dh, d, d1, diff);
+        fprintf(outfile, "%-20.12g  %-25.12g  0    %-25.12g  0  %-20.12g  %-25.12g  0   %-20.12g  %-25.12g  0  \n", range[0] + i * dh, d, d1,
+            range[0] + i * dh, d1, range[0] + i * dh, d1);
     }
+    char name[NAMESIZE];
+    mysprintf(name, NAMESIZE, "%s_lam%.4f", description, lambda);
+    fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", name, 0, info.tmax, lambda, 0.0);
+    fprintf(outfile, "\n");
     acb_clear(res);
     arb_clear(res_re);
     acb_clear(E);
@@ -483,8 +572,11 @@ void HLT_type::check_reconstruction(wrapper_smearing& Delta, arb_mat_t g, std::a
 }
 
 double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
-    FILE* outfile, const char* description, wrapper_smearing& Delta, FILE* file_jack, fit_type_HLT fit_info) {
+    const char* description, wrapper_smearing& Delta, FILE* file_jack, fit_type_HLT fit_info) {
 
+    error(fit_info.outfile_kernel == NULL, 1, "HLT_of_corr", "outfile kernel not set");
+    error(fit_info.outfile_AoverB == NULL, 1, "HLT_of_corr", "outfile AoverB not set");
+    error(fit_info.corr_id.size() != 1, 1, "HLT_of_corr", "corr_id must be of size 1, instead %d", fit_info.corr_id.size());
     int& Tmax = info.tmax;
     int& prec = info.prec;
     int Njack = fit_info.Njack;
@@ -510,7 +602,6 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
     arb_mat_init(Wl, Tmax, Tmax);
     arb_mat_t Wf;
     arb_mat_init(Wf, Tmax, 1);
-    arb_mat_t g;
     arb_mat_init(g, Tmax, 1);
     arb_mat_t RT;
     arb_mat_t RTWR;
@@ -551,7 +642,8 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
             arb_mat_scalar_mul_arb(Wf, Wf, lam, prec);
             arb_mat_add(g, g, Wf, prec);
         }
-        check_reconstruction(Delta, g, { info.E0, fit_info.maxE_check_reconstuct ,fit_info.stepsE_check_reconstuct });
+        check_reconstruction(Delta, g, description, fit_info.lambdas[il],
+            fit_info, { info.E0, fit_info.maxE_check_reconstuct ,fit_info.stepsE_check_reconstuct });
     }
     arb_clear(lam);
     arb_mat_clear(Wl);
