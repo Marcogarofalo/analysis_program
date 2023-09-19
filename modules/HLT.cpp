@@ -346,10 +346,11 @@ void wrapper_smearing::normilise_smearing() {
     acb_calc_integrate_opt_t options;
     acb_calc_integrate_opt_init(options);
 
-    options->deg_limit = 100;
-    options->eval_limit = 100000;
-    options->depth_limit = 10000;
-    options->verbose = 0;
+    options->deg_limit = HLT->info.integration_deg_limit;
+    options->eval_limit = HLT->info.integration_eval_limit;
+    options->depth_limit = HLT->info.integration_depth_limit;
+    options->verbose = HLT->info.integration_verbose;
+
     mag_t tol;
     mag_init(tol);
     mag_set_ui_2exp_si(tol, 1, -HLT->info.prec);
@@ -360,7 +361,7 @@ void wrapper_smearing::normilise_smearing() {
     acb_init(s);
 
     acb_set_ui(a, 0);
-    acb_set_d(b, 10000);
+    acb_set_d(b, HLT->info.integration_maxE);
     acb_calc_integrate(s, function, (void*)params, a, b, goal, tol, options, HLT->info.prec);
     acb_get_real(Norm, s);
     printf("Normalization for smearing function "); arb_printn(Norm, HLT->info.prec / 3.33, 0); flint_printf("\n");
@@ -382,10 +383,10 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
     acb_calc_integrate_opt_t options;
     acb_calc_integrate_opt_init(options);
 
-    options->deg_limit = 100;
-    options->eval_limit = 100000;
-    options->depth_limit = 10000;
-    options->verbose = 0;
+    options->deg_limit = info.integration_deg_limit;
+    options->eval_limit = info.integration_eval_limit;
+    options->depth_limit = info.integration_depth_limit;
+    options->verbose = info.integration_verbose;
     // options->use_heap = 1;
 
     mag_t tol;
@@ -403,7 +404,7 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
         void* param = (void*)&Delta;
         Delta.t = t;
         acb_set_arb(a, E0_arb);
-        acb_set_d(b, 10000);
+        acb_set_d(b, info.integration_maxE);
         acb_calc_integrate(s, integrand_f, param, a, b, goal, tol, options, info.prec);
         acb_get_real(arb_mat_entry(f, t, 0), s);
     }

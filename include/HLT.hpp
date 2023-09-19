@@ -127,6 +127,7 @@ struct HLT_type_input {
     int integration_eval_limit = 100000;
     int integration_depth_limit = 10000;
     int integration_verbose = 0;
+    double integration_maxE=10000;
 };
 
 
