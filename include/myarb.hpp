@@ -205,27 +205,22 @@ public:
 
 class myacb {
 public:
-    acb_t a;
     slong prec;
-    myacb(slong prec_) {
+    acb_t a;
+    myacb(slong prec_) : prec{ prec_ } {
         acb_init(a);
-        prec = prec_;
-
     };
-    myacb(const acb_t b, slong prec_) {
+    myacb(const acb_t b, slong prec_) : prec{ prec_ } {
         acb_init(a);
         acb_set(a, b);
-        prec = prec_;
     };
-    myacb(double d, slong prec_) {
+    myacb(double d, slong prec_) : prec{ prec_ } {
         acb_init(a);
         acb_set_d(a, d);
-        prec = prec_;
     };
-    myacb(int i, slong prec_) {
+    myacb(int i, slong prec_) : prec{ prec_ } {
         acb_init(a);
         acb_set_ui(a, i);
-        prec = prec_;
     };
 
     ~myacb() {
@@ -240,13 +235,22 @@ public:
         prec = obj.prec;
     }
     // move constructor
-    myacb(const myacb&& obj) {
-        acb_init(a);
-        acb_set(a, obj.a);
+    myacb(myacb&& obj) {
+        // acb_init(a);
+        // acb_set(a, obj.a);
+        acb_swap(a, obj.a);
         prec = obj.prec;
 
     }
-    myacb operator=(myacb const& obj) {
+    // move assignment
+    myacb& operator=(myacb&& obj) {
+        // acb_set(a, obj.a);
+        acb_swap(a, obj.a);
+        prec = obj.prec;
+        return *this;
+    }
+    // copy assignment
+    myacb operator=(const myacb & obj) {
         acb_set(a, obj.a);
         prec = obj.prec;
         return *this;
@@ -408,4 +412,10 @@ myacb exp(myacb b) {
     acb_exp(res.a, b.a, b.prec);
     return res;
 }
+myarb exp(myarb b) {
+    myarb res(b.prec);
+    arb_exp(res.a, b.a, b.prec);
+    return res;
+}
+
 #endif // !MYARB
