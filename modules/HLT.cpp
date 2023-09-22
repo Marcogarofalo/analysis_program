@@ -448,18 +448,21 @@ int integrand_A(acb_ptr res, const acb_t z, void* param, slong order, slong prec
     wrapper_smearing* p = (wrapper_smearing*)param;
     acb_set_ui(res, 1);
     p->function(res, z, p->params, order, prec);
+    if (p->HLT->info.normalize_kernel) acb_mul_arb(res, res, p->Norm, prec);
 
     acb_t b;
     acb_t res_HLT;
+    acb_init(b);
     acb_init(res_HLT);
     acb_set_ui(res_HLT, 0);
     acb_t cg;
+    acb_init(cg);
     for (int t = 0;t < p->HLT->info.tmax;t++) {
         p->HLT->compute_b(b, t + 1, z);
         acb_set_arb(cg, arb_mat_entry(p->HLT->g, t, 0));
         acb_addmul(res_HLT, cg, b, prec);
     }
-    acb_sub(res, res_HLT, b, prec);
+    acb_sub(res, res_HLT, res, prec);
     acb_conj(b, res);
     acb_mul(res, b, res, prec);
 
@@ -476,7 +479,7 @@ int integrand_A(acb_ptr res, const acb_t z, void* param, slong order, slong prec
 }
 
 
-void HLT_type::compute_A(arb_t Ag, wrapper_smearing& Delta, arb_mat_t g) {
+void HLT_type::compute_A(arb_t Ag, wrapper_smearing& Delta) {
     int Maxiter = 1e+6;
     acb_calc_integrate_opt_t options;
     acb_calc_integrate_opt_init(options);
@@ -495,7 +498,7 @@ void HLT_type::compute_A(arb_t Ag, wrapper_smearing& Delta, arb_mat_t g) {
     acb_init(b);
     acb_init(s);
 
-    acb_set_ui(a, 0);
+    acb_set_arb(a, E0_arb);
     acb_set_d(b, info.integration_maxE);
 
     acb_calc_integrate(s, integrand_A, (void*)&Delta, a, b, goal, tol, options, info.prec);
@@ -507,7 +510,7 @@ void HLT_type::compute_A(arb_t Ag, wrapper_smearing& Delta, arb_mat_t g) {
     acb_clear(s);
 }
 
-void HLT_type::check_reconstruction(wrapper_smearing& Delta, arb_mat_t g, const char* description,
+void HLT_type::check_reconstruction(wrapper_smearing& Delta, const char* description,
     double lambda, fit_type_HLT fit_info, std::array<double, 3> range) {
     acb_t res;
     acb_init(res);
@@ -538,9 +541,7 @@ void HLT_type::check_reconstruction(wrapper_smearing& Delta, arb_mat_t g, const 
         if (info.normalize_kernel) acb_mul_arb(res, res, Delta.Norm, prec);
 
         acb_get_real(res_re, res);
-        double d = std::stod(arb_get_str(res_re, 15, 10));
-        // printf("smearing function: ");
-        // arb_printn(res_re, prec / 3.33, 0); flint_printf("\n");
+        double d=arbtod(res_re);
         arb_set_ui(res_HLT, 0);
         for (int t = 0;t < info.tmax;t++) {
             compute_b_re(b, t + 1, E_re);
@@ -551,9 +552,9 @@ void HLT_type::check_reconstruction(wrapper_smearing& Delta, arb_mat_t g, const 
         }
 
 
-        double d1 = std::stod(arb_get_str(res_HLT, 15, 10));
+        double d1 = arbtod(res_HLT);
         arb_sub(b, res_re, res_HLT, prec);
-        double diff = std::stod(arb_get_str(b, 15, 10));
+        double diff = arbtod(b);
         fprintf(outfile, "%-20.12g  %-25.12g  0    %-25.12g  0  %-20.12g  %-25.12g  0   %-20.12g  %-25.12g  0  \n", range[0] + i * dh, d, d1,
             range[0] + i * dh, d1, range[0] + i * dh, d1);
     }
@@ -571,6 +572,35 @@ void HLT_type::check_reconstruction(wrapper_smearing& Delta, arb_mat_t g, const 
 
 }
 
+// void HLT_type::compute_B() {
+
+// }
+
+void HLT_type::compute_A_and_B(wrapper_smearing& Delta, int  il) {
+    //////////////////////////////////// A
+    arb_t A_arg;
+    arb_init(A_arg);
+    compute_A(A_arg, Delta);
+    Ag[il] = arbtod(A_arg);
+    //////////////////////////////////// B
+    int& Tmax = info.tmax;
+    int& prec = info.prec;
+    arb_mat_t Wg, gBg, gt;
+    arb_mat_init(Wg, Tmax, 1);
+    arb_mat_init(gBg, 1, 1);
+    arb_mat_init(gt, 1, Tmax);
+    arb_mat_transpose(gt, g);
+    arb_mat_mul(Wg, W, g, prec);
+    arb_mat_mul(gBg, gt, Wg, prec);
+    Bg[il] =arbtod(arb_mat_entry(gBg, 0, 0));
+    //////////////////////////////////// clear
+    arb_mat_clear(gt);
+    arb_mat_clear(Wg);
+    arb_mat_clear(gBg);
+    arb_clear(A_arg);
+}
+
+
 double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
     const char* description, wrapper_smearing& Delta, FILE* file_jack, fit_type_HLT fit_info) {
 
@@ -581,6 +611,9 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
     int& prec = info.prec;
     int Njack = fit_info.Njack;
     int id = fit_info.corr_id[0];
+    Ag.resize(fit_info.lambdas.size());
+    Bg.resize(fit_info.lambdas.size());
+    lambdas = fit_info.lambdas;
     double** r = malloc_2<double>(info.tmax, Njack);
     for (int t = 0;t < Tmax;t++)
         for (int j = 0;j < Njack;j++)
@@ -612,21 +645,22 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
             arb_set(arb_mat_entry(RT, 0, t), arb_mat_entry(R, t, 0));
         }
     }
+    // cov/C0^2
+    arb_set_d(lam, r[0][Njack - 1]);
+    arb_mul(lam, lam, lam, prec);
+    arb_mat_scalar_div_arb(W, W, lam, prec);
     for (int il = 0;il < fit_info.lambdas.size(); il++) {
-        // cov/C0^2
-        arb_set_d(lam, r[0][Njack - 1]);
-        arb_mul(lam, lam, lam, prec);
-        arb_mat_scalar_div_arb(Wl, W, lam, prec);
         // lam*cov/C0^2
         arb_set_d(lam, fit_info.lambdas[il]);
-        arb_mat_scalar_mul_arb(Wl, Wl, lam, prec);
+        arb_mat_scalar_mul_arb(Wl, W, lam, prec);
         //W=(1-lam)A+ lam *Cov/c0^2
         arb_sub_ui(lam, lam, 1, prec);
         arb_neg(lam, lam);
         arb_mat_scalar_addmul_arb(Wl, A, lam, prec);
         // g=W^-1 f
-        arb_mat_inv(Wl, Wl, prec);
-        arb_mat_mul(Wf, Wl, f, prec);
+        // arb_mat_inv(Wl, Wl, prec);
+        // arb_mat_mul(Wf, Wl, f, prec);
+        arb_mat_solve(Wf, Wl, f, prec);
         arb_mat_scalar_mul_arb(Wf, Wf, lam, prec);// *(1-lambda) is not inside f
         arb_mat_set(g, Wf);
         if (info.normalize_kernel) {
@@ -635,15 +669,23 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
             arb_sub_ui(lam, arb_mat_entry(RTWR, 0, 0), 1, prec);
             arb_neg(lam, lam);
             // RTWR= R^T W^-1 R
-            arb_mat_mul(Wf, Wl, R, prec);
+            // arb_mat_mul(Wf, Wl, R, prec);
+            arb_mat_solve(Wf, Wl, R, prec);
             arb_mat_mul(RTWR, RT, Wf, prec);
             // g+=  W^-1 R (1- R^T W^-1 f ) /(R^T W^-1 R)
             arb_div(lam, lam, arb_mat_entry(RTWR, 0, 0), prec);
             arb_mat_scalar_mul_arb(Wf, Wf, lam, prec);
             arb_mat_add(g, g, Wf, prec);
         }
-        check_reconstruction(Delta, g, description, fit_info.lambdas[il],
+        check_reconstruction(Delta, description, fit_info.lambdas[il],
             fit_info, { info.E0, fit_info.maxE_check_reconstuct ,fit_info.stepsE_check_reconstuct });
+
+        compute_A_and_B(Delta, il);
+    }
+    //////////////////////////////////// print
+    fprintf(fit_info.outfile_AoverB,"%-10s %-20s  %-20s  %-20s  %-20s\n","#lambda", "A","B",        "A/B"   ,    "W");
+    for (int il = 0; il < fit_info.lambdas.size(); il++) {
+        fprintf(fit_info.outfile_AoverB,"%-10.6f %-20.12g  %-20.12g  %-20.12g  %-20.12g \n", lambdas[il], Ag[il], Bg[il], Ag[il] / Bg[il], (1 - lambdas[il]) * Ag[il] + lambdas[il] * Bg[il]);
     }
     arb_clear(lam);
     arb_mat_clear(Wl);

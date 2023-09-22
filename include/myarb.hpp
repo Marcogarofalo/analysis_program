@@ -250,7 +250,7 @@ public:
         return *this;
     }
     // copy assignment
-    myacb operator=(const myacb & obj) {
+    myacb operator=(const myacb& obj) {
         acb_set(a, obj.a);
         prec = obj.prec;
         return *this;
@@ -416,6 +416,30 @@ myarb exp(myarb b) {
     myarb res(b.prec);
     arb_exp(res.a, b.a, b.prec);
     return res;
+}
+
+double arbtod(arb_t a) {
+    double d;
+    try {
+        d=std::stod(arb_get_str(a, 20, 3));
+    }
+    catch(std::out_of_range)
+    {
+        char *c=arb_get_str(a, 20, 3);
+        while(strcmp(c,"")!=0){
+            // printf("%s\n",c);
+            if(*c=='e'){c++; break; } 
+            else c++;
+        }
+        // printf("exp : %s\n",c);
+        int i=std::stoi(c);
+        if (i<0)
+            d=0;
+        else
+            d= 1.0f/0.0f;
+        
+    }
+    return d;
 }
 
 #endif // !MYARB

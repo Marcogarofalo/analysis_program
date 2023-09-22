@@ -138,6 +138,9 @@ public:
     arb_t E0_arb;
     std::vector<double> Es = {};
     std::vector<double> lambdas = {};
+    std::vector<double> Ag = {};
+    std::vector<double> Bg = {};
+    double C0;
     arb_mat_t A;
     arb_mat_t W;
     arb_mat_t R;
@@ -150,14 +153,16 @@ public:
     void compute_b(acb_t b, int t, const acb_t E0);
     void compute_b_re(arb_t b, int  t, const arb_t E0);
 
-    void compute_A(arb_t Ag, wrapper_smearing& Delta, arb_mat_t g);
+    void compute_A(arb_t Ag, wrapper_smearing& Delta);
 
     double** HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
         const char* description, wrapper_smearing& Delta, FILE* file_jack, fit_type_HLT fit_info);
 
     void compute_f_EXP_b(wrapper_smearing& Delta);
 
-    void check_reconstruction(wrapper_smearing& Delta, arb_mat_t g,
+    void compute_A_and_B(wrapper_smearing &Delta, int  il);
+
+    void check_reconstruction(wrapper_smearing& Delta, 
         const char* description, double lambda, fit_type_HLT fit_info, std::array<double, 3> range);
 
 };
