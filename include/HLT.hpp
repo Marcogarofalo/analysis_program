@@ -88,6 +88,7 @@ public:
     double stepsE_check_reconstuct = 10;
     FILE* outfile_kernel = NULL;
     FILE* outfile_AoverB = NULL;
+    FILE* outfile = NULL;
 };
 
 
@@ -133,12 +134,21 @@ struct HLT_type_input {
 
 
 class  HLT_type {
+private:
+    arb_t lam;
+    arb_mat_t Wl;
+    arb_mat_t Wf;
+    arb_mat_t RT;
+    arb_mat_t RTWR;
+
 public:
     HLT_type_input info;
     arb_t E0_arb;
     std::vector<double> Es = {};
     std::vector<double> lambdas = {};
     std::vector<double> Ag = {};
+    double A0;
+    arb_t A0_arb;
     std::vector<double> Bg = {};
     double C0;
     arb_mat_t A;
@@ -161,6 +171,8 @@ public:
     void compute_f_EXP_b(wrapper_smearing& Delta);
 
     void compute_A_and_B(wrapper_smearing &Delta, int  il);
+    void compute_tilderho(double* rho, double **r, fit_type_HLT& fit_info);
+    void compute_g( double lambda);
 
     void check_reconstruction(wrapper_smearing& Delta, 
         const char* description, double lambda, fit_type_HLT fit_info, std::array<double, 3> range);
@@ -168,6 +180,7 @@ public:
 };
 int gaussian_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 int theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
+int c_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 int no_smearing_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 
 

@@ -134,6 +134,11 @@ public:
         arb_mul(res.a, a, obj.a, prec);
         return res;
     }
+    myarb operator*(arb_t b) {
+        myarb res(prec);
+        arb_mul(res.a, a, b, prec);
+        return res;
+    }
     myarb operator*(int const& i) {
         myarb res(prec);
         arb_mul_ui(res.a, a, i, prec);

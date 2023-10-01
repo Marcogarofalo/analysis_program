@@ -206,16 +206,38 @@ HLT_type::HLT_type(HLT_type_input info_) {
         }
     }
 
+    if (info.normalize_kernel) {
+        arb_mat_init(RT, 1, info.tmax);
+        arb_mat_init(RTWR, 1, 1);
+        for (int t = 0;t < info.tmax;t++) {
+            arb_set(arb_mat_entry(RT, 0, t), arb_mat_entry(R, t, 0));
+        }
+    }
+
     arb_mat_init(W, info.tmax, info.tmax);
+    arb_init(lam);
+    arb_mat_init(Wl, info.tmax, info.tmax);
+    arb_mat_init(Wf, info.tmax, 1);
+
     arb_clear(at);
     arb_clear(aT);
 }
 
 HLT_type::~HLT_type() {
     arb_mat_clear(A);
-    if (info.normalize_kernel)  arb_mat_clear(R);
+    arb_clear(lam);
+    arb_mat_clear(Wl);
+    arb_mat_clear(Wf);
+
     arb_mat_clear(W);
+    
     if (f_allocated) arb_mat_clear(f);
+
+    if (info.normalize_kernel) {
+        arb_mat_clear(R);
+        arb_mat_clear(RT);
+        arb_mat_clear(RTWR);
+    }
 }
 
 
@@ -301,9 +323,9 @@ int theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec
     //  return 1.0 / (1 + exp(-(x-p[0]) / p[1]));
     arb_t* p = (arb_t*)param;
     acb_sub_arb(res, z, p[0], prec);
-    acb_neg(res, res);
+    // acb_neg(res, res);
     acb_div_arb(res, res, p[1], prec);
-    acb_neg(res, res);
+    // acb_neg(res, res);
     acb_exp(res, res, prec);
     acb_add_ui(res, res, 1, prec);
     acb_inv(res, res, prec);
@@ -311,6 +333,23 @@ int theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec
     return 0;
 }
 
+int c_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
+    if (order > 1)
+        flint_abort();  /* Would be needed for Taylor method. */
+
+    //  return 1.0 / (1 + exp(-(x-p[0]) / p[1]));
+    arb_t* p = (arb_t*)param;
+
+    arb_sub(acb_realref(res), acb_realref(z), p[0], prec);
+    arb_div(acb_realref(res), acb_realref(res), p[1], prec);
+    arb_exp(acb_realref(res), acb_realref(res), prec);
+    arb_add_ui(acb_realref(res), acb_realref(res), 1, prec);
+    // arb_inv(acb_realref(res), acb_realref(res), prec);
+    // arb_mul(acb_realref(res), acb_realref(res), p[2], prec);
+    arb_div(acb_realref(res), p[2], acb_realref(res), prec);
+
+    return 0;
+}
 
 
 int no_smearing_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
@@ -450,31 +489,27 @@ int integrand_A(acb_ptr res, const acb_t z, void* param, slong order, slong prec
     p->function(res, z, p->params, order, prec);
     if (p->HLT->info.normalize_kernel) acb_mul_arb(res, res, p->Norm, prec);
 
-    acb_t b;
-    acb_t res_HLT;
-    acb_init(b);
-    acb_init(res_HLT);
-    acb_set_ui(res_HLT, 0);
-    acb_t cg;
-    acb_init(cg);
+    arb_t b;
+    arb_t res_HLT;
+    arb_init(b);
+    arb_init(res_HLT);
+    arb_set_ui(res_HLT, 0);
+
     for (int t = 0;t < p->HLT->info.tmax;t++) {
-        p->HLT->compute_b(b, t + 1, z);
-        acb_set_arb(cg, arb_mat_entry(p->HLT->g, t, 0));
-        acb_addmul(res_HLT, cg, b, prec);
+        p->HLT->compute_b_re(b, t + 1, acb_realref(z));
+        arb_addmul(res_HLT, arb_mat_entry(p->HLT->g, t, 0), b, prec);
     }
-    acb_sub(res, res_HLT, res, prec);
-    acb_conj(b, res);
-    acb_mul(res, b, res, prec);
+    arb_sub(acb_realref(res), res_HLT, acb_realref(res), prec);
+    arb_mul(acb_realref(res), acb_realref(res), acb_realref(res), prec);
 
     // * e^(alpha E)
-    acb_set_d(b, p->HLT->info.alpha);
-    acb_mul(b, b, z, prec);
-    acb_exp(b, b, prec);
-    acb_mul(res, res, b, prec);
+    arb_set_d(b, p->HLT->info.alpha);
+    arb_mul(b, b, acb_realref(z), prec);
+    arb_exp(b, b, prec);
+    arb_mul(acb_realref(res), acb_realref(res), b, prec);
 
-    acb_clear(b);
-    acb_clear(cg);
-    acb_clear(res_HLT);
+    arb_clear(b);
+    arb_clear(res_HLT);
     return 0;
 }
 
@@ -541,7 +576,7 @@ void HLT_type::check_reconstruction(wrapper_smearing& Delta, const char* descrip
         if (info.normalize_kernel) acb_mul_arb(res, res, Delta.Norm, prec);
 
         acb_get_real(res_re, res);
-        double d=arbtod(res_re);
+        double d = arbtod(res_re);
         arb_set_ui(res_HLT, 0);
         for (int t = 0;t < info.tmax;t++) {
             compute_b_re(b, t + 1, E_re);
@@ -553,8 +588,7 @@ void HLT_type::check_reconstruction(wrapper_smearing& Delta, const char* descrip
 
 
         double d1 = arbtod(res_HLT);
-        arb_sub(b, res_re, res_HLT, prec);
-        double diff = arbtod(b);
+        // arb_sub(b, res_re, res_HLT, prec);
         fprintf(outfile, "%-20.12g  %-25.12g  0    %-25.12g  0  %-20.12g  %-25.12g  0   %-20.12g  %-25.12g  0  \n", range[0] + i * dh, d, d1,
             range[0] + i * dh, d1, range[0] + i * dh, d1);
     }
@@ -592,12 +626,71 @@ void HLT_type::compute_A_and_B(wrapper_smearing& Delta, int  il) {
     arb_mat_transpose(gt, g);
     arb_mat_mul(Wg, W, g, prec);
     arb_mat_mul(gBg, gt, Wg, prec);
-    Bg[il] =arbtod(arb_mat_entry(gBg, 0, 0));
+    Bg[il] = arbtod(arb_mat_entry(gBg, 0, 0));
     //////////////////////////////////// clear
     arb_mat_clear(gt);
     arb_mat_clear(Wg);
     arb_mat_clear(gBg);
     arb_clear(A_arg);
+}
+
+// r[t]=c(t+1)
+void  HLT_type::compute_tilderho(double* rho, double** r, fit_type_HLT& fit_info) {
+    const int Njack = fit_info.Njack;
+    // myarb a(info.prec), ar(info.prec);
+    arb_t a, ar;
+    arb_init(a);
+    arb_init(ar);
+    for (int j = 0;j < Njack;j++) {
+        arb_set_ui(a, 0);
+        for (int t = 0;t < info.tmax;t++) {
+            // r[t]= c(t+1)
+            arb_set_d(ar, r[t][j]);
+            arb_addmul(a, arb_mat_entry(g, t, 0), ar, info.prec);
+        }
+        // if (j == Njack - 1) { printf("a="); arb_printn(a, info.prec / 3.33, 0); flint_printf("\n"); }
+        rho[j] = arbtod(a);
+
+    }
+    arb_clear(ar);
+    arb_clear(a);
+
+
+}
+
+void HLT_type::compute_g( double lambda) {
+    int& Tmax = info.tmax;
+    int& prec = info.prec;
+    // lam*cov/C0^2
+    arb_set_d(lam, lambda);
+    arb_mat_scalar_mul_arb(Wl, W, lam, prec);
+    // //W=(1-lam)A+ lam *Cov/c0^2
+    // // arb_sub_ui(lam, lam, 1, prec);
+    // // arb_neg(lam, lam);
+    // W=A/A0+ lam *Cov/c0^2
+    arb_inv(lam, A0_arb, prec);
+    arb_mat_scalar_addmul_arb(Wl, A, lam, prec);
+    int isolve = arb_mat_solve(Wf, Wl, f, prec);
+    error(isolve == 0, 1, "HLT_of_corr was not able to invert the matrix W\n TIP: increase precision or lambda_min",
+        "prec=%d lambda=%d", prec, lambda);
+    arb_mat_scalar_mul_arb(Wf, Wf, lam, prec);// *(1-lambda) is not inside f
+    arb_mat_set(g, Wf);
+    if (info.normalize_kernel) {
+        // lam=1- R^T W^-1 f
+        arb_mat_mul(RTWR, RT, Wf, prec);
+        arb_sub_ui(lam, arb_mat_entry(RTWR, 0, 0), 1, prec);
+        arb_neg(lam, lam);
+        // RTWR= R^T W^-1 R
+        // arb_mat_mul(Wf, Wl, R, prec);
+        arb_mat_solve(Wf, Wl, R, prec);
+        arb_mat_mul(RTWR, RT, Wf, prec);
+        // g+=  W^-1 R (1- R^T W^-1 f ) /(R^T W^-1 R)
+        arb_div(lam, lam, arb_mat_entry(RTWR, 0, 0), prec);
+        arb_mat_scalar_mul_arb(Wf, Wf, lam, prec);
+        arb_mat_add(g, g, Wf, prec);
+    }
+
+
 }
 
 
@@ -614,10 +707,11 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
     Ag.resize(fit_info.lambdas.size());
     Bg.resize(fit_info.lambdas.size());
     lambdas = fit_info.lambdas;
-    double** r = malloc_2<double>(info.tmax, Njack);
+    double** r = malloc_2<double>(Tmax, Njack);
+    double** rho = malloc_2<double>(fit_info.lambdas.size(), Njack);
     for (int t = 0;t < Tmax;t++)
         for (int j = 0;j < Njack;j++)
-            r[t][j] = conf_jack[j][id][t][0];
+            r[t][j] = conf_jack[j][id][t + 1][0];
 
     // double** cov = myres->comp_cov(Tmax, r);
     myres->comp_cov_arb(W, Tmax, r, prec);
@@ -629,74 +723,52 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
 
     HLT_out res(fit_info.lambdas);
 
-    arb_t lam;
-    arb_init(lam);
-    arb_mat_t Wl;
-    arb_mat_init(Wl, Tmax, Tmax);
-    arb_mat_t Wf;
-    arb_mat_init(Wf, Tmax, 1);
     arb_mat_init(g, Tmax, 1);
-    arb_mat_t RT;
-    arb_mat_t RTWR;
-    if (info.normalize_kernel) {
-        arb_mat_init(RT, 1, Tmax);
-        arb_mat_init(RTWR, 1, 1);
-        for (int t = 0;t < Tmax;t++) {
-            arb_set(arb_mat_entry(RT, 0, t), arb_mat_entry(R, t, 0));
-        }
-    }
+    arb_init(A0_arb);
+    compute_A(A0_arb, Delta);
+    A0 = arbtod(A0_arb);
+
+    
     // cov/C0^2
-    arb_set_d(lam, r[0][Njack - 1]);
+    arb_set_d(lam, conf_jack[Njack - 1][id][0][0]);
     arb_mul(lam, lam, lam, prec);
     arb_mat_scalar_div_arb(W, W, lam, prec);
     for (int il = 0;il < fit_info.lambdas.size(); il++) {
-        // lam*cov/C0^2
-        arb_set_d(lam, fit_info.lambdas[il]);
-        arb_mat_scalar_mul_arb(Wl, W, lam, prec);
-        //W=(1-lam)A+ lam *Cov/c0^2
-        arb_sub_ui(lam, lam, 1, prec);
-        arb_neg(lam, lam);
-        arb_mat_scalar_addmul_arb(Wl, A, lam, prec);
-        // g=W^-1 f
-        // arb_mat_inv(Wl, Wl, prec);
-        // arb_mat_mul(Wf, Wl, f, prec);
-        arb_mat_solve(Wf, Wl, f, prec);
-        arb_mat_scalar_mul_arb(Wf, Wf, lam, prec);// *(1-lambda) is not inside f
-        arb_mat_set(g, Wf);
-        if (info.normalize_kernel) {
-            // lam=1- R^T W^-1 f
-            arb_mat_mul(RTWR, RT, Wf, prec);
-            arb_sub_ui(lam, arb_mat_entry(RTWR, 0, 0), 1, prec);
-            arb_neg(lam, lam);
-            // RTWR= R^T W^-1 R
-            // arb_mat_mul(Wf, Wl, R, prec);
-            arb_mat_solve(Wf, Wl, R, prec);
-            arb_mat_mul(RTWR, RT, Wf, prec);
-            // g+=  W^-1 R (1- R^T W^-1 f ) /(R^T W^-1 R)
-            arb_div(lam, lam, arb_mat_entry(RTWR, 0, 0), prec);
-            arb_mat_scalar_mul_arb(Wf, Wf, lam, prec);
-            arb_mat_add(g, g, Wf, prec);
-        }
+        
+        compute_g( fit_info.lambdas[il]);
+
         check_reconstruction(Delta, description, fit_info.lambdas[il],
             fit_info, { info.E0, fit_info.maxE_check_reconstuct ,fit_info.stepsE_check_reconstuct });
 
         compute_A_and_B(Delta, il);
+        compute_tilderho(rho[il], r, fit_info);
     }
     //////////////////////////////////// print
-    fprintf(fit_info.outfile_AoverB,"%-10s %-20s  %-20s  %-20s  %-20s\n","#lambda", "A","B",        "A/B"   ,    "W");
+    fprintf(fit_info.outfile_AoverB, "\n\n%-10s %-20s  %-20s  %-20s  %-20s\n", "#lambda", "A", "B", "A0", "W");
     for (int il = 0; il < fit_info.lambdas.size(); il++) {
-        fprintf(fit_info.outfile_AoverB,"%-10.6f %-20.12g  %-20.12g  %-20.12g  %-20.12g \n", lambdas[il], Ag[il], Bg[il], Ag[il] / Bg[il], (1 - lambdas[il]) * Ag[il] + lambdas[il] * Bg[il]);
+        // fprintf(fit_info.outfile_AoverB, "%-10.6f %-20.12g  %-20.12g  %-20.12g  %-20.12g \n", lambdas[il], Ag[il], Bg[il], A0, (1 - lambdas[il]) * Ag[il] + lambdas[il] * Bg[il]);
+        fprintf(fit_info.outfile_AoverB, "%-10.6f %-20.12g  %-20.12g  %-20.12g  %-20.12g \n", lambdas[il], Ag[il], Bg[il], A0, Ag[il] / A0 + lambdas[il] * Bg[il]);
     }
-    arb_clear(lam);
-    arb_mat_clear(Wl);
-    arb_mat_clear(Wf);
+    fprintf(fit_info.outfile_AoverB, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 0, info.tmax, 0.0, 0.0);
+    fprintf(fit_info.outfile_AoverB, "0  0 \n");
+
+    fprintf(fit_info.outfile, "\n\n%-10s %-20s  %-20s  %-20s  %-20s\n", "#lambda", "rho", "drho", "fit", "dfit");
+    double* diff = (double*)malloc(sizeof(double) * Njack);
+    for (int il = 0; il < fit_info.lambdas.size(); il++) {
+        for (int j = 0;j < Njack;j++) {
+            diff[j] = fabs(rho[0][j] - rho[il][j]) + rho[0][j];
+        }
+        fprintf(fit_info.outfile, "%-10.6f %-20.12g  %-20.12g   %-20.12g  %-20.12g\n", lambdas[il], rho[il][Njack - 1], myres->comp_error(rho[il]),
+            diff[Njack - 1], myres->comp_error(diff));
+    }
+    fprintf(fit_info.outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 0, info.tmax, 0.0, 0.0);
+    fprintf(fit_info.outfile, "0  0 \n");
+
     arb_mat_clear(g);
-    if (info.normalize_kernel) {
-        arb_mat_clear(RT);
-        arb_mat_clear(RTWR);
-    }
+    
     // mpf_t **W=(mpf_t**) malloc(sizeof(mpf_t*)* Tmax);
     double** p;
+    free_2(Tmax, r);
     return p;
 };
 
