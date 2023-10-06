@@ -84,11 +84,14 @@ double theta_for_HLT_d(double x, double* p);
 class  fit_type_HLT : public fit_type {
 public:
     std::vector<double> lambdas = {};
+    double lambda_start = 1;
     double maxE_check_reconstuct = 1.0f;
     double stepsE_check_reconstuct = 10;
     FILE* outfile_kernel = NULL;
     FILE* outfile_AoverB = NULL;
     FILE* outfile = NULL;
+    int nsame = 4;
+    int nlambda_max = 20;
 };
 
 
@@ -119,6 +122,7 @@ public:
 
 struct HLT_type_input {
     int tmax = -1;
+    int tmin = -1;
     int T = -1;
     double E0 = -1;
     HLT_b type_b = HLT_INVALID_b;
@@ -170,11 +174,11 @@ public:
 
     void compute_f_EXP_b(wrapper_smearing& Delta);
 
-    void compute_A_and_B(wrapper_smearing &Delta, int  il);
-    void compute_tilderho(double* rho, double **r, fit_type_HLT& fit_info);
-    void compute_g( double lambda);
+    void compute_A_and_B(wrapper_smearing& Delta, int  il);
+    void compute_tilderho(double* rho, double** r, fit_type_HLT& fit_info);
+    void compute_g(double lambda);
 
-    void check_reconstruction(wrapper_smearing& Delta, 
+    void check_reconstruction(wrapper_smearing& Delta,
         const char* description, double lambda, fit_type_HLT fit_info, std::array<double, 3> range);
 
 };

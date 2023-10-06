@@ -77,11 +77,11 @@ struct  header {
 
 
 struct  kinematic {
-  double k2, k1, mom2, mom1, mom02, mom01;
-  int ik1, ik2;
-  double Mom1[4], Mom2[4];
-  int r2, r1;
-  int line;
+  double k2=0, k1=0, mom2=0, mom1=0, mom02=0, mom01=0;
+  int ik1=0, ik2=0;
+  double Mom1[4]={0,0,0,0}, Mom2[4]={0,0,0,0};
+  int r2=0, r1=0;
+  int line=0;
   char   plateau_m_ll[NAMESIZE];
   char   plateau_m_sl[NAMESIZE];
   char   plateau_f[NAMESIZE];

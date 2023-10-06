@@ -424,25 +424,32 @@ myarb exp(myarb b) {
 }
 
 double arbtod(arb_t a) {
-    double d;
+    double d, r;
+    // arb_t ra;
+    // arb_init(ra);
     try {
-        d=std::stod(arb_get_str(a, 20, 3));
+        d = std::stod(arb_get_str(a, 20, ARB_STR_NO_RADIUS));
+        // arb_get_rad_arb(ra, a);
+        // r = std::stod(arb_get_str(ra, 20, ARB_STR_NO_RADIUS));
+        // if (r > fabs(d)) {
+        //     printf("arbtod:\n radius is bigger than the error \n");
+        //     arb_printn(a, 50/ 3.33, 0); flint_printf("\n");
+        // };
     }
-    catch(std::out_of_range)
-    {
-        char *c=arb_get_str(a, 20, 3);
-        while(strcmp(c,"")!=0){
+    catch (std::out_of_range) {
+        char* c = arb_get_str(a, 20, ARB_STR_NO_RADIUS);
+        printf("arbtod out of range  %s\n",c);
+        while (strcmp(c, "") != 0) {
             // printf("%s\n",c);
-            if(*c=='e'){c++; break; } 
+            if (*c == 'e') { c++; break; }
             else c++;
         }
-        // printf("exp : %s\n",c);
-        int i=std::stoi(c);
-        if (i<0)
-            d=0;
+        int i = std::stoi(c);
+        if (i < 0)
+            d = 0;
         else
-            d= 1.0f/0.0f;
-        
+            d = 1.0f / 0.0f;
+
     }
     return d;
 }

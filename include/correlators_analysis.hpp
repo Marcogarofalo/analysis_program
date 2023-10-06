@@ -33,6 +33,8 @@ void check_correlatro_counter(int i);
 double constant_fit(int n, int Nvar, double* x, int Npar, double* P);
 
 double shift_and_M_eff_acosh(int t, int T, double** in);
+struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** corr_ave, double** corr_J, int Njack, double** chi2, struct fit_type fit_info);
+struct fit_result fit_fun_to_corr(char** option, struct kinematic kinematic_2pt, char* name, const char* description, double** mt, double** r, int Njack, const char* plateaux_masses, FILE* outfile, struct fit_type fit_info);
 
 /****************************************************************************
  *
