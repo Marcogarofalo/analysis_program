@@ -135,11 +135,9 @@ double**** resampling_boot::create(int  N, int var, int t, double**** in) {
     int i, j, k, l, b, ib;
 
     srand(seed);
-    Njack = Njack + 1;
 
-
-    boot = (double****)malloc(sizeof(double***) * (Njack + 1));
-    for (i = 0;i <= Njack;i++) {
+    boot = (double****)malloc(sizeof(double***) * (Njack));
+    for (i = 0;i < Njack;i++) {
         boot[i] = (double***)malloc(sizeof(double**) * var);
         for (j = 0;j < var;j++) {
             boot[i][j] = (double**)malloc(sizeof(double*) * t);
@@ -149,7 +147,7 @@ double**** resampling_boot::create(int  N, int var, int t, double**** in) {
     }
 
 
-    for (ib = 0;ib < Njack;ib++) {
+    for (ib = 0;ib < (Njack-1);ib++) {
         for (i = 0;i < N;i++) {
             b = (int)rand() % N;  //have to stay here, because I want that all the var, t , l to have the same random number 
             for (j = 0;j < var;j++) {
@@ -166,13 +164,13 @@ double**** resampling_boot::create(int  N, int var, int t, double**** in) {
         for (j = 0;j < var;j++) {
             for (k = 0;k < t;k++) {
                 for (l = 0;l < 2;l++) {
-                    boot[Njack][j][k][l] += in[i][j][k][l];
+                    boot[Njack-1][j][k][l] += in[i][j][k][l];
                 }
             }
         }
     }
 
-    for (i = 0;i <= Njack;i++) {
+    for (i = 0;i < Njack;i++) {
         for (j = 0;j < var;j++) {
             for (k = 0;k < t;k++) {
                 for (l = 0;l < 2;l++) {
@@ -279,6 +277,7 @@ double** covariance_jack(int Nobs, int Np1, double** in) {
         for (i = 0;i < N;i++)
             ave[k] += in[k][i];
         ave[k] /= ((double)N);
+        // ave[k] = in[k][N];
         r[k] = (double*)calloc(Nobs, sizeof(double));
     }
     for (k = 0;k < Nobs;k++) {
@@ -395,7 +394,53 @@ void resampling_jack::comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong pre
 }
 
 void resampling_boot::comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong prec) {
-    printf("error: resampling_boot::comp_cov_arb not implemented\n");
-    exit(1);
+    // printf("error: resampling_boot::comp_cov_arb not implemented\n");
+    // exit(1);
+
+    int N = Njack - 1;
+    arb_mat_t ave;
+    arb_mat_init(ave, Nobs, 1); // set it to zero
+    error(arb_mat_nrows(r) != Nobs, 1, "resampling_boot::comp_cov_arb", "wrong rows number:%d expected: %d", arb_mat_nrows(r), Nobs);
+    error(arb_mat_ncols(r) != Nobs, 1, "resampling_boot::comp_cov_arb", "wrong cols number:%d expected: %d", arb_mat_ncols(r), Nobs);
+    arb_mat_zero(r);
+    // ave = (double*)calloc(Nobs, sizeof(double));
+    // r = (double**)malloc(Nobs * sizeof(double*));
+    arb_t tmpk;
+    arb_init(tmpk);
+    for (int k = 0;k < Nobs;k++) {
+        for (int i = 0;i < N;i++) {
+            arb_set_d(tmpk, in[k][i]);
+            arb_add(arb_mat_entry(ave, k, 0), arb_mat_entry(ave, k, 0), tmpk, prec);
+            // ave[k] += in[k][i];
+        }
+        arb_div_ui(arb_mat_entry(ave, k, 0), arb_mat_entry(ave, k, 0), N, prec);
+        // ave[k] /= ((double)N);
+        // r[k] = (double*)calloc(Nobs, sizeof(double));
+    }
+    arb_t tmpl;
+    arb_init(tmpl);
+    for (int k = 0;k < Nobs;k++) {
+        for (int l = k;l < Nobs;l++) {
+            for (int i = 0;i < N;i++) {
+                arb_set_d(tmpk, in[k][i]);
+                arb_set_d(tmpl, in[l][i]);
+                arb_sub(tmpk, tmpk, arb_mat_entry(ave, k, 0), prec);
+                arb_sub(tmpl, tmpl, arb_mat_entry(ave, l, 0), prec);
+                arb_addmul(arb_mat_entry(r, k, l), tmpk, tmpl, prec);
+                // r[k][l] += (in[k][i] - ave[k]) * (in[l][i] - ave[l]);
+
+            }
+            // arb_mul_ui(arb_mat_entry(r, k, l), arb_mat_entry(r, k, l), N - 1, prec);
+            arb_div_ui(arb_mat_entry(r, k, l), arb_mat_entry(r, k, l), N, prec);
+            // r[k][l] *= (N - 1.) / ((double)N);
+        }
+        for (int l = 0;l < k;l++) {
+            arb_set(arb_mat_entry(r, k, l), arb_mat_entry(r, l, k));
+            // r[k][l] = r[l][k];
+        }
+    }
+    arb_mat_clear(ave);
+    arb_clear(tmpk);
+    arb_clear(tmpl);
 }
 #endif // WITH_ARB

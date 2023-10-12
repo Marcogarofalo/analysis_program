@@ -16,7 +16,7 @@ enum HLT_b {
     HLT_INVALID_b
 };
 
-class  HLT_type_d;
+// class  HLT_type_d;
 
 class HLT_out {
 public:
@@ -25,57 +25,57 @@ public:
     HLT_out(std::vector<double> l) { lambdas = l; }
 };
 
-class wrapper_smearing_d {
-public:
-    double (*function)(double, double*);
-    double* params;
-    int t;
-    int Np;
-    HLT_type_d* HLT;
-    std::vector<double> lambdas = {};
-    wrapper_smearing_d(double (*f)(double, double*), std::vector<double> p, HLT_type_d* HLT_) {
-        function = f;
-        Np = p.size();
-        params = (double*)malloc(sizeof(double) * Np);
-        for (int i = 0;i < Np;i++) {
-            params[i] = p[i];
-        }
-        HLT = HLT_;
-    };
-    ~wrapper_smearing_d() {
-        free(params);
-    }
-};
+// class wrapper_smearing_d {
+// public:
+//     double (*function)(double, double*);
+//     double* params;
+//     int t;
+//     int Np;
+//     HLT_type_d* HLT;
+//     std::vector<double> lambdas = {};
+//     wrapper_smearing_d(double (*f)(double, double*), std::vector<double> p, HLT_type_d* HLT_) {
+//         function = f;
+//         Np = p.size();
+//         params = (double*)malloc(sizeof(double) * Np);
+//         for (int i = 0;i < Np;i++) {
+//             params[i] = p[i];
+//         }
+//         HLT = HLT_;
+//     };
+//     ~wrapper_smearing_d() {
+//         free(params);
+//     }
+// };
 
-class  HLT_type_d {
-public:
-    int Tmax;
-    int T;
-    int Njack;
-    int id;
-    HLT_b type;
-    double E0;
-    std::vector<double> Es = {};
-    std::vector<double> lambdas = {};
-    double** A;
-    double* R;
-    double* f;
-    bool f_allocated = false;
-    HLT_type_d(int tmax, int L0, double E0, int njack, HLT_b type_b, double alpha = 0);
-    ~HLT_type_d();
-
-
-    double** HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
-        FILE* outfile, const char* description, wrapper_smearing_d  Delta, FILE* file_jack);
+// class  HLT_type_d {
+// public:
+//     int Tmax;
+//     int T;
+//     int Njack;
+//     int id;
+//     HLT_b type;
+//     double E0;
+//     std::vector<double> Es = {};
+//     std::vector<double> lambdas = {};
+//     double** A;
+//     double* R;
+//     double* f;
+//     bool f_allocated = false;
+//     HLT_type_d(int tmax, int L0, double E0, int njack, HLT_b type_b, double alpha = 0);
+//     ~HLT_type_d();
 
 
+//     double** HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
+//         FILE* outfile, const char* description, wrapper_smearing_d  Delta, FILE* file_jack);
 
-    void compute_f_EXP_b(wrapper_smearing_d& Delta, double epsrel = 1e-7);
 
-};
 
-double gaussian_for_HLT_d(double x, double* p);
-double theta_for_HLT_d(double x, double* p);
+//     void compute_f_EXP_b(wrapper_smearing_d& Delta, double epsrel = 1e-7);
+
+// };
+
+// double gaussian_for_HLT_d(double x, double* p);
+// double theta_for_HLT_d(double x, double* p);
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // using ARB
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -92,6 +92,8 @@ public:
     FILE* outfile = NULL;
     int nsame = 4;
     int nlambda_max = 20;
+    double reduce_lambda=0.75; 
+    bool diag_cov=false;
 };
 
 
@@ -127,7 +129,7 @@ struct HLT_type_input {
     double E0 = -1;
     HLT_b type_b = HLT_INVALID_b;
     int prec = -1;
-    double alpha = 0;
+    double alpha = 0.0;
     bool normalize_kernel = false;
     int integration_deg_limit = 100;
     int integration_eval_limit = 100000;
@@ -185,6 +187,7 @@ public:
 int gaussian_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 int theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 int c_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
+int c1_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 int no_smearing_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 
 
