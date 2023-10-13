@@ -273,9 +273,9 @@ void HLT_type::compute_b(acb_t b, int  t, const acb_t E0) {
 void HLT_type::compute_b_re(arb_t b, int  t, const arb_t E0) {
     int& prec = info.prec;
     if (info.type_b == HLT_EXP_b) {
-        arb_set_ui(b, t);
+        arb_set_si(b, -t);
         arb_mul(b, b, E0, prec);
-        arb_neg(b, b);
+        // arb_neg(b, b);
         arb_exp(b, b, prec);
     }
     if (info.type_b == HLT_EXP_bT) {
@@ -339,8 +339,8 @@ int theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec
 }
 
 int c_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
-    if (order > 1)
-        flint_abort();  /* Would be needed for Taylor method. */
+    // if (order > 1)
+    //     flint_abort();  /* Would be needed for Taylor method. */
 
     //  return 1.0 / (1 + exp((x-p[0]) / p[1]));
     arb_t* p = (arb_t*)param;
@@ -432,6 +432,7 @@ wrapper_smearing::wrapper_smearing(int  (*f)(acb_ptr, const acb_t, void*, slong,
         normilise_smearing();
     else
         arb_set_ui(Norm, 1);
+    arb_init(b_tmp);
 };
 
 void wrapper_smearing::normilise_smearing() {
@@ -512,12 +513,65 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
 
 
 int integrand_A(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
+    // if (order > 1)
+    //     flint_abort();  /* Would be needed for Taylor method. */
+
+    wrapper_smearing* p = (wrapper_smearing*)param;
+    arb_set_ui(acb_imagref(res), 0);
+    p->function(res, z, p->params, order, prec);
+    if (p->HLT->info.normalize_kernel) acb_mul_arb(res, res, p->Norm, prec);
+    
+    for (int t = p->HLT->info.tmin;t < p->HLT->info.tmax;t++) {
+        p->HLT->compute_b_re(p->b_tmp, t, acb_realref(z));
+        arb_submul(acb_realref(res), arb_mat_entry(p->HLT->g, t - p->HLT->info.tmin, 0), p->b_tmp, prec);
+    }
+    arb_mul(acb_realref(res), acb_realref(res), acb_realref(res), prec);
+
+    // * e^(-alpha E)
+    arb_set_d(p->b_tmp, -p->HLT->info.alpha);
+    arb_mul(p->b_tmp, p->b_tmp, acb_realref(z), prec);
+    arb_exp(p->b_tmp, p->b_tmp, prec);
+    arb_mul(acb_realref(res), acb_realref(res), p->b_tmp, prec);
+
+    return 0;
+}
+
+
+int integrand_A_pinf(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
     if (order > 1)
         flint_abort();  /* Would be needed for Taylor method. */
 
+
     wrapper_smearing* p = (wrapper_smearing*)param;
+    arb_t w;
+    arb_init(w);
+    // w=E0+(1-z)/z // to map the integral_a^inf to integral_0^1
+    arb_sub_ui(w, acb_realref(z), 1, prec);
+    arb_neg(w, w);
+    arb_div(w, w, acb_realref(z), prec);
+    arb_add(w, w, p->HLT->E0_arb, prec);
+
+    // omega in [e0,+Inf]
+    // t= 2*e^{e0-omega}-1
+    // omega= e0-log((1+t)/2)
+    //  domega= dt/(1+t)
+    // arb_add_ui(w, acb_realref(z), 1, prec);
+    // arb_t w0, wr; arb_init(w0); arb_init(wr);
+    // arb_get_mid_arb(w0, w);
+    // arb_get_rad_arb(wr,w);
+    // arb_sub(w0,w0,wr,prec);
+    printf("iteration\n");
+    arb_printn(acb_realref(z), prec / 3.33, 0); flint_printf("\n");
+    if (acb_contains_zero(z)) { printf("found zero\n"); acb_set_ui(res, 0); return 0; }
+    arb_div_ui(w, w, 2, prec);
+    arb_log(w, w, prec);
+    arb_sub(w, w, p->HLT->E0_arb, prec);
+    arb_neg(w, w);
+
     acb_set_ui(res, 0);
-    p->function(res, z, p->params, order, prec);
+    acb_t wc; acb_init(wc);
+    acb_set_arb(wc, w);
+    p->function(res, wc, p->params, order, prec);
     if (p->HLT->info.normalize_kernel) acb_mul_arb(res, res, p->Norm, prec);
 
     arb_t b;
@@ -527,7 +581,7 @@ int integrand_A(acb_ptr res, const acb_t z, void* param, slong order, slong prec
     arb_set_ui(res_HLT, 0);
 
     for (int t = p->HLT->info.tmin;t < p->HLT->info.tmax;t++) {
-        p->HLT->compute_b_re(b, t, acb_realref(z));
+        p->HLT->compute_b_re(b, t, w);
         arb_addmul(res_HLT, arb_mat_entry(p->HLT->g, t - p->HLT->info.tmin, 0), b, prec);
     }
     arb_sub(acb_realref(res), res_HLT, acb_realref(res), prec);
@@ -535,11 +589,19 @@ int integrand_A(acb_ptr res, const acb_t z, void* param, slong order, slong prec
 
     // * e^(-alpha E)
     arb_set_d(b, -p->HLT->info.alpha);
-    arb_mul(b, b, acb_realref(z), prec);
+    arb_mul(b, b, w, prec);
     arb_exp(b, b, prec);
     arb_mul(acb_realref(res), acb_realref(res), b, prec);
 
+
+    arb_div(acb_realref(res), acb_realref(res), acb_realref(z), prec);
+    arb_div(acb_realref(res), acb_realref(res), acb_realref(z), prec);
+
+    // arb_add_ui(w, acb_realref(z), 1, prec);
+    // arb_div(acb_realref(res), acb_realref(res), w, prec);
+
     arb_clear(b);
+    arb_clear(w);
     arb_clear(res_HLT);
     return 0;
 }
@@ -817,14 +879,14 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
     lambdas[0] = fit_info.lambda_start;
     int  same = 0;
     double* diff = (double*)malloc(sizeof(double) * Njack);
-    fprintf(fit_info.outfile_AoverB, "\n\n%-20s %-20s  %-20s  %-20s  %-20s  %-20s\n", "#lambda", "A", "B/Bnorm", "A0", "W", "rho", "drho", "label");
+    fprintf(fit_info.outfile_AoverB, "\n\n%-20s %-20s  %-20s  %-20s   %-20s  %-20s   %-20s  %-20s\n", "#lambda", "A", "B/Bnorm", "A0", "W", "rho", "drho", "label");
     // first computation
     compute_g(lambdas[same]);
     check_reconstruction(Delta, description, lambdas[same],
         fit_info, { info.E0, fit_info.maxE_check_reconstuct ,fit_info.stepsE_check_reconstuct });
     compute_A_and_B(Delta, same);
     compute_tilderho(rho[same], r, fit_info);
-    fprintf(fit_info.outfile_AoverB, "%-20.12g %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %s\n",
+    fprintf(fit_info.outfile_AoverB, "%-20.12g %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g   %s\n",
         lambdas[same], Ag[same], Bg[same], A0, Ag[same] / A0 + lambdas[same] * Bg[same],
         rho[same][Njack - 1], myres->comp_error(rho[same]), description);
     // fprintf(fit_info.outfile, "%-20.12g %-20.12g  %-20.12g   %-20.12g  %-20.12g\n", lambdas[same], rho[same][Njack - 1],

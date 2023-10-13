@@ -107,6 +107,7 @@ public:
     int t;
     int Np;
     arb_t Norm;
+    arb_t b_tmp;
     HLT_type* HLT;
 
     void normilise_smearing();
@@ -119,6 +120,7 @@ public:
         // }
         arb_clear(Norm);
         _arb_vec_clear(params, Np);
+        arb_clear(b_tmp);
     }
 };
 
