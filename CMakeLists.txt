@@ -6,7 +6,7 @@ MESSAGE("CMAKE_CXX_FLAGS:   ${CMAKE_CXX_FLAGS} ")
 #set(CMAKE_C_FLAGS "-fopenmp   -pedantic  -g -O3  -lm -lgmp  ")
 
 project(analysis_program  VERSION 0.1.0 LANGUAGES CXX C)
-#-pg -no-pie , for gprof, then run , gprof exe  gmout.
+#-pg -no-pie , for gprof, then run , gprof exe  gmout.out > output.txt.
 #-g # then compile , then open gdb, write the commands : file $namefile; run  $options ; bt
 # valgrind --leak-check=yes --track-origins=yes  ./program   #compile with -g to have line number
 
