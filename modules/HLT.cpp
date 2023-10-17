@@ -640,7 +640,7 @@ void HLT_type::compute_A(arb_t Ag, wrapper_smearing& Delta) {
 }
 
 void HLT_type::check_reconstruction(wrapper_smearing& Delta, const char* description,
-    double lambda, fit_type_HLT fit_info, std::array<double, 3> range) {
+    int il, fit_type_HLT fit_info, std::array<double, 3> range) {
     acb_t res;
     acb_init(res);
     arb_t res_re;
@@ -687,9 +687,9 @@ void HLT_type::check_reconstruction(wrapper_smearing& Delta, const char* descrip
             range[0] + i * dh, d1, range[0] + i * dh, d1);
     }
     char name[NAMESIZE];
-    mysprintf(name, NAMESIZE, "%s_lam%.4f", description, lambda);
-    fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", name, 0, info.tmax, lambda, 0.0);
-    fprintf(outfile, "0  0 \n");
+    mysprintf(name, NAMESIZE, "%s_lam%.4f", description, lambdas[il]);
+    fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", name, info.tmax, info.tmax, lambdas[il], 0.0);
+    fprintf(outfile, "%.12g  %.12g \n",Ag[il]/A0,A0);
     acb_clear(res);
     arb_clear(res_re);
     acb_clear(E);
@@ -788,7 +788,7 @@ void HLT_type::compute_g(double lambda) {
 }
 
 
-double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
+fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
     const char* description, wrapper_smearing& Delta, FILE* file_jack, fit_type_HLT fit_info) {
 
     error(fit_info.outfile_kernel == NULL, 1, "HLT_of_corr", "outfile kernel not set");
@@ -866,31 +866,20 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
     // arb_mul(lam, lam, lam, prec);
     arb_set_d(lam, Bnorm);
     arb_mat_scalar_div_arb(W, W, lam, prec);
-    // for (int il = 0;il < fit_info.lambdas.size(); il++) {
 
-    //     compute_g( fit_info.lambdas[il]);
-
-    //     check_reconstruction(Delta, description, fit_info.lambdas[il],
-    //         fit_info, { info.E0, fit_info.maxE_check_reconstuct ,fit_info.stepsE_check_reconstuct });
-
-    //     compute_A_and_B(Delta, il);
-    //     compute_tilderho(rho[il], r, fit_info);
-    // }
     lambdas[0] = fit_info.lambda_start;
     int  same = 0;
     double* diff = (double*)malloc(sizeof(double) * Njack);
     fprintf(fit_info.outfile_AoverB, "\n\n%-20s %-20s  %-20s  %-20s   %-20s  %-20s   %-20s  %-20s\n", "#lambda", "A", "B/Bnorm", "A0", "W", "rho", "drho", "label");
     // first computation
     compute_g(lambdas[same]);
-    check_reconstruction(Delta, description, lambdas[same],
-        fit_info, { info.E0, fit_info.maxE_check_reconstuct ,fit_info.stepsE_check_reconstuct });
     compute_A_and_B(Delta, same);
+    check_reconstruction(Delta, description, same,
+        fit_info, { info.E0, fit_info.maxE_check_reconstuct ,fit_info.stepsE_check_reconstuct });
     compute_tilderho(rho[same], r, fit_info);
     fprintf(fit_info.outfile_AoverB, "%-20.12g %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g   %s\n",
         lambdas[same], Ag[same], Bg[same], A0, Ag[same] / A0 + lambdas[same] * Bg[same],
         rho[same][Njack - 1], myres->comp_error(rho[same]), description);
-    // fprintf(fit_info.outfile, "%-20.12g %-20.12g  %-20.12g   %-20.12g  %-20.12g\n", lambdas[same], rho[same][Njack - 1],
-    //     myres->comp_error(rho[same]), diff[Njack - 1], myres->comp_error(diff));
     printf("%-20.12g %-20.12g  %-20.12g   %-20.12g  %-20.12g    %d\n", lambdas[same], rho[same][Njack - 1],
         myres->comp_error(rho[same]), diff[Njack - 1], myres->comp_error(diff), same);
 
@@ -904,9 +893,9 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
     while (iter < fit_info.nlambda_max) {
         lambdas[iter] = lambdas[iter - 1] * fit_info.reduce_lambda;
         compute_g(lambdas[iter]);
-        check_reconstruction(Delta, description, lambdas[iter],
-            fit_info, { info.E0, fit_info.maxE_check_reconstuct ,fit_info.stepsE_check_reconstuct });
         compute_A_and_B(Delta, iter);
+        check_reconstruction(Delta, description, iter,
+            fit_info, { info.E0, fit_info.maxE_check_reconstuct ,fit_info.stepsE_check_reconstuct });
         compute_tilderho(rho[iter], r, fit_info);
 
         for (int j = 0;j < Njack;j++) {
@@ -915,8 +904,6 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
         fprintf(fit_info.outfile_AoverB, "%-20.12g %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %s\n",
             lambdas[iter], Ag[iter], Bg[iter], A0, Ag[iter] / A0 + lambdas[iter] * Bg[iter],
             rho[iter][Njack - 1], myres->comp_error(rho[iter]), description);
-        // fprintf(fit_info.outfile, "%-20.12g %-20.12g  %-20.12g   %-20.12g  %-20.12g\n", lambdas[iter], rho[iter][Njack - 1],
-        //     myres->comp_error(rho[iter]), diff[Njack - 1], myres->comp_error(diff));
         printf("%-20.12g %-20.12g  %-20.12g   %-20.12g  %-20.12g    %d %d\n", lambdas[iter], rho[iter][Njack - 1],
             myres->comp_error(rho[iter]), diff[Njack - 1], myres->comp_error(diff), iter, same);
 
@@ -957,12 +944,11 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
     }
     int store_l0 = file_head.l0;
     file_head.l0 = fit_info.nlambda_max * 2;
-    // fit=fit_plateaux(option, kinematic_2pt ,  name,description/*"M_{PS}^{ll}"*/,mt,r,  Njack,*plateaux_masses,outfile);
+
     char name[NAMESIZE] = "HLT";
     double* chi2;
     struct fit_result fit_out = try_fit(option, const_fit_info.tmin, const_fit_info.tmax, 1, mt, rho, Njack, &chi2, const_fit_info);
-    // fit_fun_to_corr(option, kinematic_2pt, name, description, mt, rho, Njack,
-    //     plateaux_masses, fit_info.outfile, const_fit_info);
+
     fprintf(fit_info.outfile, "\n\n%-10s %-20s  %-20s  %-20s  %-20s\n", "#lambda", "rho", "drho", "fit", "dfit");
     for (int i = 0;i < fit_info.nlambda_max;i++) {
         fprintf(fit_info.outfile, "%-20.12g %-20.12g  %-20.12g   %-20.12g  %-20.12g\n", lambdas[i], rho[i][Njack - 1],
@@ -985,9 +971,11 @@ double** HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char* 
     error(same_max < fit_info.nsame, 1, "HLT_of_corr", "we could not determine lambda\n try increasing fit_info.nlambda_max",
         "or decresing fit_info.nsame");
 
-    // mpf_t **W=(mpf_t**) malloc(sizeof(mpf_t*)* Tmax);
-    double** p;
+
+    fwrite(fit_out.P[0], sizeof(double), Njack, file_jack);
+    corr_counter++;
+    
     free_2(Tmax - Tmin, r);
-    return p;
+    return fit_out;
 };
 

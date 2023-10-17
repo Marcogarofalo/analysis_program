@@ -145,6 +145,7 @@ struct fit_result {
     double* chi2;
     double*** C;
     char name[NAMESIZE];
+    void clear();
 
 };
 EXTERN fit_type default_fit_info;

@@ -270,6 +270,19 @@ void free_fit_result(struct  fit_type  fit_info, struct fit_result  out) {
     free(out.P);free(out.C);free(out.chi2);
 
 }
+
+void fit_result::clear() {
+    for (int i = 0; i < Npar;i++) {
+        free(P[i]);
+        for (int n = 0;n < Npar;n++)
+            free(C[i][n]);
+        free(C[i]);
+    }
+    Npar=0;
+    Njack=0;
+    dof=0;
+    free(P);free(C);free(chi2);
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1785,7 +1798,7 @@ double* guess_for_non_linear_fit_Nf(int N, int* ensemble, double** x, double** y
     if (fit_info.unstable) for (i = 0;i < Npar;i++) P[i] = guess[i];
     else P = non_linear_fit_Nf(N, ensemble, x, y, Nvar, Npar, fun, guess, fit_info).P;
     chi2 = compute_chi_non_linear_Nf(N, ensemble, x, y, P, Nvar, Npar, fun) / (en_tot - Npar);
-    if (!isnan(chi2) && !isinf(chi2) )    jmax = 3 + ((int)(chi2 * 2));
+    if (!isnan(chi2) && !isinf(chi2))    jmax = 3 + ((int)(chi2 * 2));
     else jmax = 35;
 
     std::mt19937 mt_rand(123);

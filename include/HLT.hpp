@@ -173,7 +173,7 @@ public:
 
     void compute_A(arb_t Ag, wrapper_smearing& Delta);
 
-    double** HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
+    fit_result HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
         const char* description, wrapper_smearing& Delta, FILE* file_jack, fit_type_HLT fit_info);
 
     void compute_f_EXP_b(wrapper_smearing& Delta);
@@ -183,7 +183,7 @@ public:
     void compute_g(double lambda);
 
     void check_reconstruction(wrapper_smearing& Delta,
-        const char* description, double lambda, fit_type_HLT fit_info, std::array<double, 3> range);
+        const char* description, int il, fit_type_HLT fit_info, std::array<double, 3> range);
 
 };
 int gaussian_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
