@@ -1,6 +1,7 @@
 #ifndef HLT_H
 #define HLT_H
 #include <array>
+#include <functional>
 
 #include "global.hpp"
 #include "resampling.hpp"
@@ -9,6 +10,7 @@
 
 #include "arb.h"
 #include "acb_calc.h"
+
 
 enum HLT_b {
     HLT_EXP_b = 0,
@@ -92,8 +94,8 @@ public:
     FILE* outfile = NULL;
     int nsame = 4;
     int nlambda_max = 20;
-    double reduce_lambda=0.75; 
-    bool diag_cov=false;
+    double reduce_lambda = 0.75;
+    bool diag_cov = false;
 };
 
 
@@ -164,6 +166,7 @@ public:
     arb_mat_t R;
     arb_mat_t f;
     arb_mat_t g;
+    arb_t K2;
     bool f_allocated = false;
     HLT_type(HLT_type_input info_);
     ~HLT_type();
@@ -171,7 +174,10 @@ public:
     void compute_b(acb_t b, int t, const acb_t E0);
     void compute_b_re(arb_t b, int  t, const arb_t E0);
 
-    void compute_A(arb_t Ag, wrapper_smearing& Delta);
+    void compute_A_integral(arb_t Ag, wrapper_smearing& Delta);
+    void compute_A_fast(arb_t Ag, wrapper_smearing& Delta);
+    // void compute_A(arb_t Ag, wrapper_smearing& Delta);
+    std::function<void(arb_t, wrapper_smearing&)>  compute_A;
 
     fit_result HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
         const char* description, wrapper_smearing& Delta, FILE* file_jack, fit_type_HLT fit_info);

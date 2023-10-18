@@ -752,3 +752,12 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
     return fit_out;
 
 }
+
+
+
+double lhs_identity(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
+    double r;
+    r = gjack.en[e].jack[fit_info.corr_id[0]][j];
+
+    return r;
+}
