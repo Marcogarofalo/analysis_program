@@ -18,6 +18,12 @@ enum HLT_b {
     HLT_INVALID_b
 };
 
+enum HLT_A_strategy {
+    HLT_A_fast = 0,
+    HLT_A_INTEGRAL = 1,
+    HLT_A_INVALID
+};
+
 // class  HLT_type_d;
 
 class HLT_out {
@@ -132,6 +138,7 @@ struct HLT_type_input {
     int T = -1;
     double E0 = -1;
     HLT_b type_b = HLT_INVALID_b;
+    HLT_A_strategy A_strategy = HLT_A_fast;
     int prec = -1;
     double alpha = 0.0;
     bool normalize_kernel = false;

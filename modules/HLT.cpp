@@ -130,11 +130,18 @@ HLT_type::HLT_type(HLT_type_input info_) {
     error(info.prec < 0, 1, "HLT_type", "prec (precision) not set");
     error(info.E0 < 0, 1, "HLT_type", "E0 not set");
     error(info.type_b == HLT_INVALID_b, 1, "HLT_type", "type_b not set");
+    
     arb_init(E0_arb);
     arb_set_d(E0_arb, info.E0);
 
     // init function to compute A
-    compute_A = std::bind(&HLT_type::compute_A_fast, this, std::placeholders::_1, std::placeholders::_2);
+    if (info.A_strategy == HLT_A_fast)
+        compute_A = std::bind(&HLT_type::compute_A_fast, this, std::placeholders::_1, std::placeholders::_2);
+    else if (info.A_strategy == HLT_A_INTEGRAL)
+            compute_A = std::bind(&HLT_type::compute_A_integral, this, std::placeholders::_1, std::placeholders::_2);
+    else {
+        printf("HLT_type: A_strategy not set\n A_strategy=%d",info.A_strategy);    exit(1);
+    }
     //
 
 
