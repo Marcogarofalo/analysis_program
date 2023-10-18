@@ -269,5 +269,8 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
     struct fit_type fit_info_m0, const char* label, const char* dir_name,
     struct fit_result fit_out, struct fit_result fit_out_m0, int var, int en, double h,
     std::vector<double> xval = {});
+
+double lhs_identity(int n, int e, int j, data_all gjack, struct fit_type fit_info);
+
 #endif
 
