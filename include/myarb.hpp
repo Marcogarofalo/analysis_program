@@ -438,7 +438,7 @@ double arbtod(arb_t a) {
     }
     catch (std::out_of_range) {
         char* c = arb_get_str(a, 20, ARB_STR_NO_RADIUS);
-        printf("arbtod out of range  %s\n",c);
+        // printf("arbtod out of range  %s\n",c);
         while (strcmp(c, "") != 0) {
             // printf("%s\n",c);
             if (*c == 'e') { c++; break; }

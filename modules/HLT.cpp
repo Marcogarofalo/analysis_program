@@ -130,7 +130,7 @@ HLT_type::HLT_type(HLT_type_input info_) {
     error(info.prec < 0, 1, "HLT_type", "prec (precision) not set");
     error(info.E0 < 0, 1, "HLT_type", "E0 not set");
     error(info.type_b == HLT_INVALID_b, 1, "HLT_type", "type_b not set");
-    
+
     arb_init(E0_arb);
     arb_set_d(E0_arb, info.E0);
 
@@ -138,9 +138,17 @@ HLT_type::HLT_type(HLT_type_input info_) {
     if (info.A_strategy == HLT_A_fast)
         compute_A = std::bind(&HLT_type::compute_A_fast, this, std::placeholders::_1, std::placeholders::_2);
     else if (info.A_strategy == HLT_A_INTEGRAL)
-            compute_A = std::bind(&HLT_type::compute_A_integral, this, std::placeholders::_1, std::placeholders::_2);
+        compute_A = std::bind(&HLT_type::compute_A_integral, this, std::placeholders::_1, std::placeholders::_2);
     else {
-        printf("HLT_type: A_strategy not set\n A_strategy=%d",info.A_strategy);    exit(1);
+        printf("HLT_type: A_strategy not set\n A_strategy=%d", info.A_strategy);    exit(1);
+    }
+    // compute f strategy
+    if (info.type_b == HLT_EXP_b)
+        compute_b_re = std::bind(&HLT_type::compute_bt_re, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+    else if (info.type_b == HLT_EXP_bT)
+        compute_b_re = std::bind(&HLT_type::compute_btT_re, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+    else {
+        printf("HLT_type: type_b not set\n type_b=%d", info.type_b);    exit(1);
     }
     //
 
@@ -149,11 +157,11 @@ HLT_type::HLT_type(HLT_type_input info_) {
     arb_mat_init(A, info.tmax - info.tmin, info.tmax - info.tmin);
 
 
-    arb_t at, aT, arb_alpha;
+    arb_t at, aT;
     arb_init(at);
     arb_init(aT);
-    arb_init(arb_alpha);
-    arb_set_d(arb_alpha, info.alpha);
+    arb_init(alpha_arb);
+    arb_set_d(alpha_arb, info.alpha);
     double alpha = info.alpha;
 
     int prec = info.prec;
@@ -177,7 +185,7 @@ HLT_type::HLT_type(HLT_type_input info_) {
             if (info.type_b == HLT_EXP_b) {
                 // A[t][r] = exp(-(r + t + 2 + alpha) * E0) / (r + t + 2 + alpha);
                 arb_set_ui(at, r + t);
-                arb_add(at, at, arb_alpha, prec);
+                arb_add(at, at, alpha_arb, prec);
                 arb_mul(aT, at, E0_arb, prec);
                 arb_neg(aT, aT);
                 arb_exp(aT, aT, prec);
@@ -187,7 +195,7 @@ HLT_type::HLT_type(HLT_type_input info_) {
                 int& T = info.T;
                 // A[t][r] = exp(-(r + t + 2 + alpha) * E0) / (r + t + 2 + alpha);
                 arb_set_ui(at, r + t);
-                arb_add(at, at, arb_alpha, prec);
+                arb_add(at, at, alpha_arb, prec);
                 // arb_sub(at, at, arb_alpha, prec);
                 arb_mul(aT, at, E0_arb, prec);
                 arb_neg(aT, aT);
@@ -195,7 +203,7 @@ HLT_type::HLT_type(HLT_type_input info_) {
                 arb_div(arb_mat_entry(A, t - info.tmin, r - info.tmin), aT, at, prec);
                 //     A[t][r] += exp(-(T - r + t + alpha) * E0) / (T - r + t + alpha);
                 arb_set_ui(at, T - r + t);
-                arb_add(at, at, arb_alpha, prec);
+                arb_add(at, at, alpha_arb, prec);
                 // arb_sub(at, at, arb_alpha, prec);
                 arb_mul(aT, at, E0_arb, prec);
                 arb_neg(aT, aT);
@@ -204,7 +212,7 @@ HLT_type::HLT_type(HLT_type_input info_) {
                 arb_add(arb_mat_entry(A, t - info.tmin, r - info.tmin), arb_mat_entry(A, t - info.tmin, r - info.tmin), aT, prec);
                 //     A[t][r] += exp(-(T + r - t + alpha) * E0) / (T + r - t + alpha);
                 arb_set_ui(at, T + r - t);
-                arb_add(at, at, arb_alpha, prec);
+                arb_add(at, at, alpha_arb, prec);
                 // arb_sub(at, at, arb_alpha, prec);
                 arb_mul(aT, at, E0_arb, prec);
                 arb_neg(aT, aT);
@@ -213,7 +221,7 @@ HLT_type::HLT_type(HLT_type_input info_) {
                 arb_add(arb_mat_entry(A, t - info.tmin, r - info.tmin), arb_mat_entry(A, t - info.tmin, r - info.tmin), aT, prec);
                 //     A[t][r] += exp(-(2 * T - r - t - 2 + alpha) * E0) / (2 * T - r - t - 2 + alpha);
                 arb_set_ui(at, 2 * T - r - t);
-                arb_add(at, at, arb_alpha, prec);
+                arb_add(at, at, alpha_arb, prec);
                 // arb_sub(at, at, arb_alpha, prec);
                 arb_mul(aT, at, E0_arb, prec);
                 arb_neg(aT, aT);
@@ -285,28 +293,59 @@ void HLT_type::compute_b(acb_t b, int  t, const acb_t E0) {
     }
 }
 
-void HLT_type::compute_b_re(arb_t b, int  t, const arb_t E0) {
-    int& prec = info.prec;
-    if (info.type_b == HLT_EXP_b) {
-        arb_set_si(b, -t);
-        arb_mul(b, b, E0, prec);
-        // arb_neg(b, b);
-        arb_exp(b, b, prec);
-    }
-    if (info.type_b == HLT_EXP_bT) {
-        arb_set_ui(b, t);
-        arb_mul(b, b, E0, prec);
-        arb_neg(b, b);
-        arb_exp(b, b, prec);
+// void HLT_type::compute_b_re(arb_t b, int  t, const arb_t E0) {
+//     int& prec = info.prec;
+//     if (info.type_b == HLT_EXP_b) {
+//         arb_set_si(b, -t);
+//         arb_mul(b, b, E0, prec);
+//         // arb_neg(b, b);
+//         arb_exp(b, b, prec);
+//     }
+//     if (info.type_b == HLT_EXP_bT) {
+//         arb_set_ui(b, t);
+//         arb_mul(b, b, E0, prec);
+//         arb_neg(b, b);
+//         arb_exp(b, b, prec);
 
-        arb_t bT; arb_init(bT);
-        arb_set_ui(bT, info.T - t);
-        arb_mul(bT, bT, E0, prec);
-        arb_neg(bT, bT);
-        arb_exp(bT, bT, prec);
-        arb_add(b, b, bT, prec);
-        arb_clear(bT);
-    }
+//         arb_t bT; arb_init(bT);
+//         arb_set_ui(bT, info.T - t);
+//         arb_mul(bT, bT, E0, prec);
+//         arb_neg(bT, bT);
+//         arb_exp(bT, bT, prec);
+//         arb_add(b, b, bT, prec);
+//         arb_clear(bT);
+//     }
+
+// }
+
+
+void HLT_type::compute_bt_re(arb_t b, arb_t  t, const arb_t E0) {
+    int& prec = info.prec;
+    arb_neg(b, t);
+    arb_mul(b, b, E0, prec);
+    arb_exp(b, b, prec);
+}
+
+
+void HLT_type::compute_btT_re(arb_t b, arb_t  t, const arb_t E0) {
+    int& prec = info.prec;
+
+    arb_t bT; arb_init(bT);
+    arb_sub_ui(bT, t, info.T, prec);
+    arb_neg(bT, bT);
+    // arb_set_ui(bT, info.T - t);
+    arb_mul(bT, bT, E0, prec);
+    arb_neg(bT, bT);
+    arb_exp(bT, bT, prec);
+
+    arb_neg(b, t);
+    arb_mul(b, b, E0, prec);
+    arb_neg(b, b);
+    arb_exp(b, b, prec);
+
+    arb_add(b, b, bT, prec);
+
+    arb_clear(bT);
 
 }
 
@@ -395,6 +434,35 @@ int c1_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong p
     return 0;
 }
 
+int c2_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
+    if (order > 1)
+        flint_abort();  /* Would be needed for Taylor method. */
+
+    arb_t* p = (arb_t*)param;
+    arb_set_ui(acb_imagref(res), 0);
+
+    arb_t tmp;    arb_init(tmp);
+    // P[2]+P[3]*z
+    arb_set(tmp, p[3]);
+    arb_mul(tmp, acb_realref(z), tmp, prec);
+    arb_add(acb_realref(res), tmp, p[2], prec);
+    // P[4]*z^2
+    arb_set(tmp, p[4]);
+    arb_mul(tmp, acb_realref(z), tmp, prec);
+    arb_mul(tmp, acb_realref(z), tmp, prec);
+    arb_add(acb_realref(res), tmp, acb_realref(res), prec);
+
+    //  (1 + exp((x-p[0]) / p[1]));
+    arb_sub(tmp, acb_realref(z), p[0], prec);
+    arb_div(tmp, tmp, p[1], prec);
+    arb_exp(tmp, tmp, prec);
+    arb_add_ui(tmp, tmp, 1, prec);
+
+    arb_div(acb_realref(res), acb_realref(res), tmp, prec);
+
+    arb_clear(tmp);
+    return 0;
+}
 
 int no_smearing_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
     if (order > 1)
@@ -408,32 +476,126 @@ int integrand_f(acb_ptr res, const acb_t z, void* param, slong order, slong prec
         flint_abort();  /* Would be needed for Taylor method. */
 
     wrapper_smearing* p = (wrapper_smearing*)param;
-    // acb_set_ui(res, 1);
+
     arb_set_ui(acb_imagref(res), 0);
     p->function(res, z, p->params, order, prec);
     if (p->HLT->info.normalize_kernel) acb_mul_arb(res, res, p->Norm, prec);
 
-    // acb_t b; acb_init(b);
-    // p->HLT->compute_b(b, p->t, z);
-    p->HLT->compute_b_re(p->b_tmp, p->t, acb_realref(z));
+    arb_add_ui(p->b_tmp, p->HLT->alpha_arb, p->t, prec);
+    p->HLT->compute_b_re(p->b_tmp, p->b_tmp, acb_realref(z));
 
-    // acb_mul(res, res, b, prec);
+
     arb_mul(acb_realref(res), acb_realref(res), p->b_tmp, prec);
 
-    // * e^(-alpha E)
-    // acb_set_d(b, -p->HLT->info.alpha);
-    // acb_mul(b, b, z, prec);
-    // acb_exp(b, b, prec);
-    // acb_mul(res, res, b, prec);
-    // acb_clear(b);
+    // * e^(-(alpha+t) E)
+    // arb_add_ui(p->b_tmp, p->HLT->alpha_arb, p->t, prec);
+    // arb_mul(p->b_tmp, p->b_tmp, acb_realref(z), prec);
+    // arb_exp(p->b_tmp, p->b_tmp, prec);
+    // arb_mul(acb_realref(res), acb_realref(res), p->b_tmp, prec);
 
-    arb_set_d(p->b_tmp, -p->HLT->info.alpha);
-    arb_mul(p->b_tmp, p->b_tmp, acb_realref(z), prec);
-    arb_exp(p->b_tmp, p->b_tmp, prec);
-    arb_mul(acb_realref(res), acb_realref(res), p->b_tmp, prec);
-   
     return 0;
 }
+
+
+
+int integrand_f_pinf(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
+    // if (order > 1)
+    //     flint_abort();  /* Would be needed for Taylor method. */
+    // w=e^(E0-z)
+    // \int_E0^\infty dz =\int_0^1 dw/w
+    // z(w)=E0-log w
+
+    wrapper_smearing* p = (wrapper_smearing*)param;
+    arb_t* par = (arb_t*)p->params;
+
+    printf("function  t=%d in  ", p->t); arb_printn(acb_realref(z), prec / 3.33, 0); flint_printf("\n");
+    arb_set_ui(acb_imagref(res), 0);
+
+    // p->function(res, zw, p->params, order, prec);
+    // p->function_mapped_pinf(res, zw, p->params, order, prec);
+    // e^(E0-E*)/sigma
+    arb_sub(acb_realref(res), p->HLT->E0_arb, par[0], prec);
+    arb_div(acb_realref(res), acb_realref(res), par[1], prec);
+    arb_exp(acb_realref(res), acb_realref(res), prec);
+    printf("function  e^(E0-E*)/sigma =  "); arb_printn(acb_realref(res), prec / 3.33, 0); flint_printf("\n");
+    // w^(1/simga)
+    arb_inv(p->b_tmp, par[1], prec);
+    arb_pow(p->b_tmp, acb_realref(z), p->b_tmp, prec);
+    // arb_log(p->b_tmp, acb_realref(z), prec);
+    // arb_div(p->b_tmp,p->b_tmp,par[1], prec);
+    // arb_exp(p->b_tmp, p->b_tmp, prec);
+    printf("function  ( w^(1/simga) =  "); arb_printn(p->b_tmp, prec / 3.33, 0); flint_printf("\n");
+    // res =p[2]/( w^(1/simga)+e^(E0-E*)/sigma)
+    arb_add(acb_realref(res), acb_realref(res), p->b_tmp, prec);
+    printf("function  ( w^(1/simga)+e^(E0-E*)/sigma) =  "); arb_printn(acb_realref(res), prec / 3.33, 0); flint_printf("\n");
+    arb_div(acb_realref(res), par[2], acb_realref(res), prec);
+    printf("function  p[2]/( w^(1/simga)+e^(E0-E*)/sigma) =  "); arb_printn(acb_realref(res), prec / 3.33, 0); flint_printf("\n");
+
+    // w^(t-1+alpha-1/sigma)
+    arb_inv(p->b_tmp, par[1], prec);
+    arb_add_ui(p->b_tmp, p->b_tmp, p->t - 1, prec);
+    arb_add(p->b_tmp, p->b_tmp, p->HLT->alpha_arb, prec);
+    arb_pow(p->b_tmp, acb_realref(z), p->b_tmp, prec);
+    arb_mul(acb_realref(res), acb_realref(res), p->b_tmp, prec);
+
+    // * e^(-(alpha+t) E0)
+    arb_set_d(p->b_tmp, -p->HLT->info.alpha - p->t);
+    arb_mul(p->b_tmp, p->b_tmp, p->HLT->E0_arb, prec);
+    arb_exp(p->b_tmp, p->b_tmp, prec);
+    arb_mul(acb_realref(res), acb_realref(res), p->b_tmp, prec);
+    printf("function out "); arb_printn(acb_realref(res), prec / 3.33, 0); flint_printf("\n");
+
+    return 0;
+}
+
+
+// int integrand_f_pinf(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
+//     // if (order > 1)
+//     //     flint_abort();  /* Would be needed for Taylor method. */
+//     // w=e^(E0-z)
+//     // \int_E0^\infty dz =\int_0^1 dw/w
+//     // z(w)=E0-log w
+
+//     wrapper_smearing* p = (wrapper_smearing*)param;
+//     arb_t* par = (arb_t*)p->params;
+
+//     printf("function  t=%d in  ", p->t); arb_printn(acb_realref(z), prec / 3.33, 0); flint_printf("\n");
+//     arb_set_ui(acb_imagref(res), 0);
+
+//     // p->function(res, zw, p->params, order, prec);
+//     // p->function_mapped_pinf(res, zw, p->params, order, prec);
+//     // e^(E0-E*)/sigma
+//     arb_sub(acb_realref(res), p->HLT->E0_arb, par[0], prec);
+//     arb_div(acb_realref(res), acb_realref(res), par[1], prec);
+//     arb_exp(acb_realref(res), acb_realref(res), prec);
+
+//     //  z^{-(alpha+t-1+1/sigma)} e^{(E0-E*)/sigma}
+//     arb_inv(p->b_tmp, par[1], prec);
+//     arb_add_ui(p->b_tmp, p->b_tmp, p->t - 1, prec);
+//     arb_add(p->b_tmp, p->b_tmp, p->HLT->alpha_arb, prec);
+//     arb_neg(p->b_tmp, p->b_tmp);
+//     arb_pow(p->b_tmp, acb_realref(z), p->b_tmp, prec);
+//     arb_mul(acb_realref(res), acb_realref(res), p->b_tmp, prec);
+
+//     // z^{-(alpha+t-1)} +z^{-(alpha+t-1+1/sigma)} e^{(E0-E*)/sigma}
+//     arb_add_ui(p->b_tmp, p->HLT->alpha_arb, p->t - 1, prec);
+//     arb_neg(p->b_tmp, p->b_tmp);
+//     arb_pow(p->b_tmp, acb_realref(z), p->b_tmp, prec);
+//     arb_add(acb_realref(res), acb_realref(res), p->b_tmp, prec);
+
+
+//     arb_div(acb_realref(res), par[2], acb_realref(res), prec);
+
+//     arb_add_ui(p->b_tmp, p->HLT->alpha_arb, p->t, prec);
+//     arb_mul(p->b_tmp, p->b_tmp, p->HLT->E0_arb, prec);
+//     arb_neg(p->b_tmp, p->b_tmp);
+//     arb_exp(p->b_tmp, p->b_tmp, prec);
+//     arb_mul(acb_realref(res), acb_realref(res), p->b_tmp, prec);
+
+//     printf("function out "); arb_printn(acb_realref(res), prec / 3.33, 0); flint_printf("\n");
+
+//     return 0;
+// }
 
 
 int integrand_K2(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
@@ -540,17 +702,29 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
     acb_init(s);
     acb_set_arb(a, E0_arb);
     acb_set_d(b, info.integration_maxE);
+    // acb_set_ui(a, 0);
+    // acb_set_ui(b, 1);
     void* param = (void*)&Delta;
 
-    for (int t = info.tmin;t < info.tmax;t++) {
+    // std::vector<double>  v(info.tmax - info.tmin);
+    for (int t = info.tmax - 1;t >= info.tmin;t--) {
+        // double time = timestamp();
         Delta.t = t;
         int arb_calc_result = acb_calc_integrate(s, integrand_f, param, a, b, goal, tol, options, info.prec);
-        error(arb_calc_result == ARB_CALC_NO_CONVERGENCE, 1, "normilise_smearing", "compute_f_EXP_b returned ARB_CALC_NO_CONVERGENCE");
+        // int arb_calc_result = acb_calc_integrate(s, integrand_f_pinf, param, a, b, goal, tol, options, info.prec);
+        error(arb_calc_result == ARB_CALC_NO_CONVERGENCE, 1, "compute_f_EXP_b", "acb_calc_integrate f(t=%d)  returned ARB_CALC_NO_CONVERGENCE", t);
         acb_get_real(arb_mat_entry(f, t - info.tmin, 0), s);
+        // v[t - info.tmin] = arbtod(arb_mat_entry(f, t - info.tmin, 0));
+        // printf("f[%d]=%.12g", t, v[t - info.tmin]);
+        // if (t > info.tmin)
+        //     printf("    %.12g\n", v[t - info.tmin - 1] * exp(t * t - (t - 1) * (t - 1)));
+        // else
+        //     printf("\n");
+        // printf("time: %g s\n", timestamp() - time);
     }
 
     int arb_calc_result = acb_calc_integrate(s, integrand_K2, param, a, b, goal, tol, options, info.prec);
-    error(arb_calc_result == ARB_CALC_NO_CONVERGENCE, 1, "normilise_smearing", "compute_f_EXP_b K2 returned ARB_CALC_NO_CONVERGENCE");
+    error(arb_calc_result == ARB_CALC_NO_CONVERGENCE, 1, "compute_f_EXP_b", "acb_calc_integrate K2 returned ARB_CALC_NO_CONVERGENCE");
     acb_get_real(K2, s);
 
     acb_clear(a);
@@ -571,7 +745,8 @@ int integrand_A(acb_ptr res, const acb_t z, void* param, slong order, slong prec
     if (p->HLT->info.normalize_kernel) acb_mul_arb(res, res, p->Norm, prec);
 
     for (int t = p->HLT->info.tmin;t < p->HLT->info.tmax;t++) {
-        p->HLT->compute_b_re(p->b_tmp, t, acb_realref(z));
+        arb_set_ui(p->b_tmp, t);
+        p->HLT->compute_b_re(p->b_tmp, p->b_tmp, acb_realref(z));
         arb_submul(acb_realref(res), arb_mat_entry(p->HLT->g, t - p->HLT->info.tmin, 0), p->b_tmp, prec);
     }
     arb_mul(acb_realref(res), acb_realref(res), acb_realref(res), prec);
@@ -586,74 +761,6 @@ int integrand_A(acb_ptr res, const acb_t z, void* param, slong order, slong prec
 }
 
 
-int integrand_A_pinf(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
-    if (order > 1)
-        flint_abort();  /* Would be needed for Taylor method. */
-
-
-    wrapper_smearing* p = (wrapper_smearing*)param;
-    arb_t w;
-    arb_init(w);
-    // w=E0+(1-z)/z // to map the integral_a^inf to integral_0^1
-    arb_sub_ui(w, acb_realref(z), 1, prec);
-    arb_neg(w, w);
-    arb_div(w, w, acb_realref(z), prec);
-    arb_add(w, w, p->HLT->E0_arb, prec);
-
-    // omega in [e0,+Inf]
-    // t= 2*e^{e0-omega}-1
-    // omega= e0-log((1+t)/2)
-    //  domega= dt/(1+t)
-    // arb_add_ui(w, acb_realref(z), 1, prec);
-    // arb_t w0, wr; arb_init(w0); arb_init(wr);
-    // arb_get_mid_arb(w0, w);
-    // arb_get_rad_arb(wr,w);
-    // arb_sub(w0,w0,wr,prec);
-    printf("iteration\n");
-    arb_printn(acb_realref(z), prec / 3.33, 0); flint_printf("\n");
-    if (acb_contains_zero(z)) { printf("found zero\n"); acb_set_ui(res, 0); return 0; }
-    arb_div_ui(w, w, 2, prec);
-    arb_log(w, w, prec);
-    arb_sub(w, w, p->HLT->E0_arb, prec);
-    arb_neg(w, w);
-
-    acb_set_ui(res, 0);
-    acb_t wc; acb_init(wc);
-    acb_set_arb(wc, w);
-    p->function(res, wc, p->params, order, prec);
-    if (p->HLT->info.normalize_kernel) acb_mul_arb(res, res, p->Norm, prec);
-
-    arb_t b;
-    arb_t res_HLT;
-    arb_init(b);
-    arb_init(res_HLT);
-    arb_set_ui(res_HLT, 0);
-
-    for (int t = p->HLT->info.tmin;t < p->HLT->info.tmax;t++) {
-        p->HLT->compute_b_re(b, t, w);
-        arb_addmul(res_HLT, arb_mat_entry(p->HLT->g, t - p->HLT->info.tmin, 0), b, prec);
-    }
-    arb_sub(acb_realref(res), res_HLT, acb_realref(res), prec);
-    arb_mul(acb_realref(res), acb_realref(res), acb_realref(res), prec);
-
-    // * e^(-alpha E)
-    arb_set_d(b, -p->HLT->info.alpha);
-    arb_mul(b, b, w, prec);
-    arb_exp(b, b, prec);
-    arb_mul(acb_realref(res), acb_realref(res), b, prec);
-
-
-    arb_div(acb_realref(res), acb_realref(res), acb_realref(z), prec);
-    arb_div(acb_realref(res), acb_realref(res), acb_realref(z), prec);
-
-    // arb_add_ui(w, acb_realref(z), 1, prec);
-    // arb_div(acb_realref(res), acb_realref(res), w, prec);
-
-    arb_clear(b);
-    arb_clear(w);
-    arb_clear(res_HLT);
-    return 0;
-}
 
 void HLT_type::compute_A_integral(arb_t Ag, wrapper_smearing& Delta) {
     int Maxiter = 1e+6;
@@ -725,7 +832,6 @@ void HLT_type::check_reconstruction(wrapper_smearing& Delta, const char* descrip
     arb_t E_re;
     arb_init(E_re);
     arb_t b; arb_init(b);
-    arb_t bT; arb_init(bT);
     double dh = (range[1] - range[0]) / range[2];
     int& prec = info.prec;
     // printf("check HLT  g: \n");
@@ -746,11 +852,10 @@ void HLT_type::check_reconstruction(wrapper_smearing& Delta, const char* descrip
         double d = arbtod(res_re);
         arb_set_ui(res_HLT, 0);
         for (int t = info.tmin;t < info.tmax;t++) {
-            compute_b_re(b, t, E_re);
+            arb_set_ui(b, t);
+            compute_b_re(b, b, E_re);
             arb_addmul(res_HLT, arb_mat_entry(g, t - info.tmin, 0), b, prec);
-            // myarb mE(E_re, prec);
-            // mE = exp(-mE * (t + 1)) + exp(-mE * (T - t - 1));
-            // arb_addmul(res_HLT, arb_mat_entry(g, t, 0), mE.a, prec);
+
         }
 
 
@@ -769,7 +874,6 @@ void HLT_type::check_reconstruction(wrapper_smearing& Delta, const char* descrip
     arb_clear(E_re);
     arb_clear(res_HLT);
     arb_clear(b);
-    arb_clear(bT);
 
 }
 
@@ -986,8 +1090,18 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
         if (diff[Njack - 1] < myres->comp_error(rho[iter])) {// if we found that the result is compatible with the previuos
             same++;
         }
-        else if (same > 1) {// reset same
-            same = 1;
+        else if (same > 1) {//we need to try shifting the plateaux of 1 reset same
+            for (int ib = 1; ib < same;ib++) {
+                for (int j = 0;j < Njack;j++) {
+                    diff[j] = fabs(rho[iter - same + ib][j] - rho[iter][j]);
+                }
+                if (diff[Njack - 1] < myres->comp_error(rho[iter])) {
+                    // printf("shift the pateaux forward\n");
+                    break;
+                }
+                else { same--; }
+            }
+
         }
         if (same >= same_max) {
             same_max = same;
@@ -1047,9 +1161,9 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
     error(same_max < fit_info.nsame, 1, "HLT_of_corr", "we could not determine lambda\n try increasing fit_info.nlambda_max",
         "or decresing fit_info.nsame");
 
-
-    fwrite(fit_out.P[0], sizeof(double), Njack, file_jack);
-    corr_counter++;
+    // we do not write the result
+    // fwrite(fit_out.P[0], sizeof(double), Njack, file_jack);
+    // corr_counter++;
 
     free_2(Tmax - Tmin, r);
     return fit_out;

@@ -157,6 +157,7 @@ private:
     arb_mat_t Wf;
     arb_mat_t RT;
     arb_mat_t RTWR;
+    
 
 public:
     HLT_type_input info;
@@ -173,13 +174,18 @@ public:
     arb_mat_t R;
     arb_mat_t f;
     arb_mat_t g;
+    arb_t alpha_arb;
     arb_t K2;
     bool f_allocated = false;
     HLT_type(HLT_type_input info_);
     ~HLT_type();
 
     void compute_b(acb_t b, int t, const acb_t E0);
-    void compute_b_re(arb_t b, int  t, const arb_t E0);
+
+    void compute_bt_re(arb_t b, arb_t  t, const arb_t E0);
+    void compute_btT_re(arb_t b, arb_t  t, const arb_t E0);
+    // void compute_b_re(arb_t b, int  t, const arb_t E0);
+    std::function<void(arb_t, arb_t, const arb_t)> compute_b_re;
 
     void compute_A_integral(arb_t Ag, wrapper_smearing& Delta);
     void compute_A_fast(arb_t Ag, wrapper_smearing& Delta);
@@ -190,6 +196,7 @@ public:
         const char* description, wrapper_smearing& Delta, FILE* file_jack, fit_type_HLT fit_info);
 
     void compute_f_EXP_b(wrapper_smearing& Delta);
+
 
     void compute_A_and_B(wrapper_smearing& Delta, int  il);
     void compute_tilderho(double* rho, double** r, fit_type_HLT& fit_info);
@@ -203,6 +210,7 @@ int gaussian_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong
 int theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 int c_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 int c1_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
+int c2_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 int no_smearing_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 
 
