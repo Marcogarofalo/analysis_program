@@ -183,7 +183,7 @@ HLT_type::HLT_type(HLT_type_input info_) {
         }
         for (size_t r = info.tmin; r < info.tmax; r++) {
             if (info.type_b == HLT_EXP_b) {
-                // A[t][r] = exp(-(r + t + 2 + alpha) * E0) / (r + t + 2 + alpha);
+                // A[t][r] = exp(-(r + t  + alpha) * E0) / (r + t  + alpha);
                 arb_set_ui(at, r + t);
                 arb_add(at, at, alpha_arb, prec);
                 arb_mul(aT, at, E0_arb, prec);
