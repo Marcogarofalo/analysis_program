@@ -14,7 +14,7 @@
 #include "linear_fit.hpp"
 #include "various_fits.hpp"
 #include "mutils.hpp"
-#include "functions.hpp"
+#include "functions_amu.hpp"
 // #include "correlators_analysis.hpp"
 // #include "eigensystem.hpp"
 #include "non_linear_fit.hpp"

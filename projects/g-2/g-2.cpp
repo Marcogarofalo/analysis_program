@@ -17,7 +17,7 @@
 #include "linear_fit.hpp"
 #include "various_fits.hpp"
 #include "mutils.hpp"
-#include "functions.hpp"
+#include "functions_amu.hpp"
 #include "correlators_analysis.hpp"
 #include "non_linear_fit.hpp"
 #include "tower.hpp"
@@ -163,9 +163,9 @@ public:
         next_to_bin = std::vector<int>(iconfs.size());
     }
     configuration_class() {
-        
+
         std::cout << "lines=" << 0 << std::endl;
-        
+
         std::cout << "confs=" << 0 << std::endl;
 
         to_bin = std::vector<int>(iconfs.size());
@@ -852,7 +852,7 @@ int main(int argc, char** argv) {
                 configuration_class tmp;
                 myconfs.emplace_back(tmp);
             }
-            else{
+            else {
                 configuration_class tmp(name.c_str(), 0);
                 myconfs.emplace_back(tmp);
             }
@@ -867,7 +867,7 @@ int main(int argc, char** argv) {
         if (strcmp(argv[4], "cB.72.96") != 0)
             myconfs[count].check_binnign();
         else {
-            myconfs[count].confs_after_binning=myconfs[count].iconfs.size();
+            myconfs[count].confs_after_binning = myconfs[count].iconfs.size();
         }
         cout << "number of different configurations:" << myconfs[count].confs_after_binning << endl;
         count++;
@@ -2170,16 +2170,85 @@ int main(int argc, char** argv) {
     }
     else { for (int i = 122; i <= 135;i++)  zero_corr(zeros, Njack, jack_file); }
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // amu_full s
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // a_full_s_eq simpson38
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+    double** afull_vec = (double**)malloc(sizeof(double*) * Nstrange);
+    int_scheme = integrate_simpson38;
+    double* amu_fulleq_simp_s = compute_amu_full(conf_jack, 2 + 6, Njack, ZVs.P[0], a, q2s, int_scheme, outfile, "amu_{full}_simpson38(eq,s)", resampling, +1 * 2);
+    write_jack(amu_fulleq_simp_s, Njack, jack_file);
+    check_correlatro_counter(136);
+    printf("amu_full_simpson38(eq,s) = %g  %g\n", amu_fulleq_simp_s[Njack - 1], error_jackboot(resampling, Njack, amu_fulleq_simp_s));
 
 
+    int_scheme = integrate_simpson38;
+    double* amu_fulleq_simp_s1 = compute_amu_full(conf_jack, 2 + 12, Njack, ZVs1.P[0], a, q2s, int_scheme, outfile, "amu_{full}_simpson38(eq,s1)", resampling, var + 3 + 2 * 2);
+    write_jack(amu_fulleq_simp_s1, Njack, jack_file);
+    check_correlatro_counter(137);
+    printf("amu_full_simpson38(eq,s1) = %g  %g\n", amu_fulleq_simp_s1[Njack - 1], error_jackboot(resampling, Njack, amu_fulleq_simp_s1));
 
-    free(amu_sdeq_s);free(amu_sdeq_s1);
+    afull_vec[0] = amu_fulleq_simp_s;
+    afull_vec[1] = amu_fulleq_simp_s1;
+
+    double* amu_full_sphys = interpol_Z(Nstrange, Njack, Meta, afull_vec, jack_aMetas_MeV_exp, outfile, "amu_{full}_simpson38(eq,etaphys)", resampling);
+    write_jack(amu_full_sphys, Njack, jack_file);
+    free(amu_full_sphys);
+    check_correlatro_counter(138);
+
+    tmp = interpol_Z(Nstrange, Njack, Mphi, afull_vec, jack_aMphi_MeV_exp, outfile, "amu_{full,simp}(eq,phiphys)", resampling);
+    write_jack(tmp, Njack, jack_file);
+    check_correlatro_counter(139); free(tmp);
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // a_full_s_op simpson38
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    int_scheme = integrate_simpson38;
+    double* amu_fullop_simp_s = compute_amu_full(conf_jack, 5 + 6, Njack, ZAs.P[0], a, q2s, int_scheme, outfile, "amu_{full}_simpson38(op,s)", resampling, var + 4 + 1 * 2);
+    write_jack(amu_fullop_simp_s, Njack, jack_file);
+    check_correlatro_counter(140);
+    printf("amu_full_simpson38(op,s) = %g  %g\n", amu_fullop_simp_s[Njack - 1], error_jackboot(resampling, Njack, amu_fullop_simp_s));
+
+
+    int_scheme = integrate_simpson38;
+    double* amu_fullop_simp_s1 = compute_amu_full(conf_jack, 5 + 12, Njack, ZAs1.P[0], a, q2s, int_scheme, outfile, "amu_{full}_simpson38(op,s1)", resampling, var + 4 + 2 * 2);
+    write_jack(amu_fullop_simp_s1, Njack, jack_file);
+    check_correlatro_counter(141);
+    printf("amu_full_simpson38(op,s1) = %g  %g\n", amu_fullop_simp_s1[Njack - 1], error_jackboot(resampling, Njack, amu_fullop_simp_s1));
+
+
+    afull_vec[0] = amu_fullop_simp_s;
+    afull_vec[1] = amu_fullop_simp_s1;
+    amu_full_sphys = interpol_Z(Nstrange, Njack, Meta, afull_vec, jack_aMetas_MeV_exp, outfile, "amu_{full}_simpson38(op,etaphys)", resampling);
+    write_jack(amu_full_sphys, Njack, jack_file);
+    check_correlatro_counter(142);
+    free(amu_full_sphys);
+
+ 
+    tmp = interpol_Z(Nstrange, Njack, Mphi, afull_vec, jack_aMphi_MeV_exp, outfile, "amu_{full,simp}(op,phiphys)", resampling);
+    write_jack(tmp, Njack, jack_file);
+    check_correlatro_counter(143); free(tmp);
+
+
+    write_jack(a, Njack, jack_file);
+    check_correlatro_counter(142);
+
+    free(amu_fullop_simp_s);free(amu_fullop_simp_s1);
+    free(amu_fulleq_simp_s);free(amu_fulleq_simp_s1);
+
+    //////////////////////
 
     for (int i = 0;i < Nstrange;i++) {
         Meta[i] = nullptr;
     }
     free(Meta);
     free(asd_vec);
+    free(afull_vec);
     free(M_PS);free(M_PS_op);
     free_fit_result(fit_info, G_PS);free_fit_result(fit_info, G_PS_OS);
     free_fit_result(fit_info, ZVl);free_fit_result(fit_info, ZAl);

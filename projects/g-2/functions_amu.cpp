@@ -1,33 +1,5 @@
-#pragma once
-#include <gsl/gsl_integration.h>
-#include <gsl/gsl_deriv.h>
-#include "tower.hpp"
-#include "fit_all.hpp"
-extern "C" {
-#include "../external/rzeta/src/dzeta_function.h"
-#include "../external/rzeta/src/qzeta_function.h"
-}
-#include <algorithm>
-#include "non_linear_fit.hpp"
-static int once = 0;
+#include "functions_amu.hpp"
 
-using namespace std::complex_literals;
-constexpr double hbarc = 197.326963;
-constexpr double muon_mass_MeV = 105.6583755;
-constexpr double alpha_em = 0.0072973525693;
-constexpr double muon_mass_fm = muon_mass_MeV * 197.326963;
-constexpr double Mpi_MeV = 135;
-constexpr double Mpi_MeV_err = 0.2;
-
-enum enum_ensembles {
-    B72_64,
-    B72_96,
-    C06,
-    D54,
-    A53,
-    A40,
-    A30
-};
 
 double integrand_K(double x, void* params) {
     double z = *(double*)params;
@@ -37,7 +9,7 @@ double integrand_K(double x, void* params) {
     return f;
 }
 
-double kernel_K(double z, double epsrel = 1e-7) {
+double kernel_K(double z, double epsrel ) {
     int Maxiter = 1e+6;
     gsl_integration_workspace* w = gsl_integration_workspace_alloc(Maxiter);
     double result, error;
@@ -72,7 +44,7 @@ double integrand_K_W(double x, void* params) {
     return f;
 }
 
-double kernel_K_W(double z, double epsrel = 1e-4) {
+double kernel_K_W(double z, double epsrel ) {
     int Maxiter = 1e+8;
     gsl_integration_workspace* w = gsl_integration_workspace_alloc(Maxiter);
     double result, error;
@@ -147,7 +119,76 @@ double integrate_reinman(int lower, int upper, double* f) {
 // }
 
 
-double* compute_amu_sd(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling, int isub = -1) {
+double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling, int isub ) {
+    constexpr double d = 0.15;
+    constexpr double t1_d = 0.4 / d;
+    int T = file_head.l0;
+    double** fi = double_malloc_2(T / 2, Njack);
+    double* amu = (double*)malloc(sizeof(double) * Njack);
+    double* ft = (double*)malloc(sizeof(double) * T / 2);
+
+    double** Kt = double_malloc_2(T / 2, Njack);
+    // double** thetat = double_malloc_2(T / 2, Njack);
+    double** corr_sub = double_malloc_2(T / 2, Njack);
+
+
+    for (int j = 0;j < Njack;j++) {
+
+        ft[0] = 0;
+        for (int t_a = 1; t_a < T / 2; t_a++) {
+            double t = t_a * a[j]; // time in fm.
+            double z = muon_mass_MeV * (t / 197.326963);
+            double K = z * z * kernel_K(z);
+            // double theta = gm2_step_function(t / 0.15, t1_d);
+            double VV_sub;
+            if (isub == -1)
+                VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] - (1.0 / (2.0 * M_PI * M_PI * pow(t_a, 5)));// perturbative
+            else
+                VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] + in[j][isub][t_a][0];// free-theory
+            ft[t_a] = K * VV_sub;
+
+            fi[t_a][j] = ft[t_a];
+            Kt[t_a][j] = K;
+            // thetat[t_a][j] = (1 - theta);
+            corr_sub[t_a][j] = VV_sub;
+            // printf("t=%d  K=%g   VV=%g  1-theta=%g  amu=%g\n",t_a,K, VV[t_a],1-theta, amu);
+        }
+    // }
+    // int tmax=0;
+    // for ( ; tmax < T / 2; tmax++) {
+    //     double err=myres->comp_error(fi[tmax]);
+    //     if (fi[tmax][Njack-1]<err) break;
+    // }
+    // printf("tmax=%d\n", tmax);
+    // for (int j = 0;j < Njack;j++) {
+        amu[j] = int_scheme(0, T / 2 - 1, ft);
+
+        amu[j] *= 4 * alpha_em * alpha_em *
+            q2 / (muon_mass_MeV * muon_mass_MeV * (a[j] / 197.326963) * (a[j] / 197.326963));
+    }
+
+    fprintf(outfile, " \n\n");
+    fprintf(outfile, "#\n");
+    for (int t = 1; t < T / 2; t++) {
+        fprintf(outfile, "%d   %.15g   %.15g\t", t, fi[t][Njack - 1], error_jackboot(resampling, Njack, fi[t]));
+        fprintf(outfile, "%.15g   %.15g\t", Kt[t][Njack - 1], error_jackboot(resampling, Njack, Kt[t]));
+        fprintf(outfile, "%.15g   %.15g\t", 1.f, 0.f);
+        fprintf(outfile, "%.15g   %.15g\n", corr_sub[t][Njack - 1], error_jackboot(resampling, Njack, corr_sub[t]));
+    }
+    fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 0, T / 2, 0.0, 0.0);
+    fprintf(outfile, "   %.15g   %15.g\n", amu[Njack - 1], error_jackboot(resampling, Njack, amu));
+
+    free(ft);
+    free_2(T / 2, fi);
+    free_2(T / 2, Kt);
+    // free_2(T / 2, thetat);
+    free_2(T / 2, corr_sub);
+    return amu;
+}
+
+
+
+double* compute_amu_sd(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling, int isub) {
     constexpr double d = 0.15;
     constexpr double t1_d = 0.4 / d;
     int T = file_head.l0;
@@ -285,6 +326,10 @@ double ZAl_lhs(int j, double**** in, int t, struct fit_type fit_info) {
     return RA * M_PS_OS * sinh(M_PS_OS) * GPS / (M_PS * sinh(M_PS) * GPS_OS);
 
 }
+template double ZVl_lhs<4, 3>(int, double****, int, fit_type);
+template double ZVl_lhs<10, 9>(int, double****, int, fit_type);
+template double ZVl_lhs<16, 15>(int, double****, int, fit_type);
+
 template<int idn, int idd>
 double ZVl_lhs(int j, double**** in, int t, struct fit_type fit_info) {
     int T = file_head.l0;
@@ -294,6 +339,9 @@ double ZVl_lhs(int j, double**** in, int t, struct fit_type fit_info) {
     return (2 * fit_info.mu * num / (den));
 
 }
+template double ZAl_lhs<1, 0>(int, double****, int, fit_type);
+template double ZAl_lhs<7, 6>(int, double****, int, fit_type);
+template double ZAl_lhs<13, 12>(int, double****, int, fit_type);
 
 template<int id>
 double GPS_OS_lhs(int j, double**** in, int t, struct fit_type fit_info) {
@@ -305,6 +353,9 @@ double GPS_OS_lhs(int j, double**** in, int t, struct fit_type fit_info) {
 
     return GPS_OS;
 }
+template double GPS_OS_lhs<4>(int, double****, int, fit_type);
+template double GPS_OS_lhs<10>(int, double****, int, fit_type);
+template double GPS_OS_lhs<16>(int, double****, int, fit_type);
 
 template<int id>
 double GPS_lhs(int j, double**** in, int t, struct fit_type fit_info) {
@@ -316,7 +367,9 @@ double GPS_lhs(int j, double**** in, int t, struct fit_type fit_info) {
 
     return GPS_OS;
 }
-
+template double GPS_lhs<1>(int, double****, int, fit_type);
+template double GPS_lhs<7>(int, double****, int, fit_type);
+template double GPS_lhs<13>(int, double****, int, fit_type);
 
 template<int id>
 double lhs_ct(int j, double**** in, int t, struct fit_type fit_info) {
@@ -329,7 +382,10 @@ double lhs_ct(int j, double**** in, int t, struct fit_type fit_info) {
 
     return GPS_OS;
 }
-
+template double lhs_ct<2>(int, double****, int, fit_type);
+template double lhs_ct<5>(int, double****, int, fit_type);
+template double lhs_ct<8>(int, double****, int, fit_type);
+template double lhs_ct<14>(int, double****, int, fit_type);
 
 double* interpol_Z(int Nmus, int Njack, double** Meta, double** Z, double* aMetas_exp,
     FILE* outfile, const char* description, const char* resampling) {
@@ -485,31 +541,6 @@ double compute_deriv_phi(double q) {
     // result=(F.function(q+1e-8,F.params)-F.function(q,F.params))/1e-8;
     // printf("derivphi= %g  %g\n", result, abserr);
     return result;
-}
-inline double compute_FGS2(int Nvar, double* x) {
-    double omega = x[0];
-    double mass = x[1];
-    double L = x[2];
-    double Mrho = x[3];
-    double grhopipi = x[4];
-    double a = x[5];
-    double k = sqrt(omega * omega / 4. - mass * mass);
-    // double q = k * (L * (a / 197.326963) / (2. * pi_greco));
-
-    double ho = (grhopipi * grhopipi * k * k * k * 2) * log((omega + 2 * k) / (2 * mass)) / (6.0 * M_PI * M_PI * omega);
-    double kM = sqrt(Mrho * Mrho / 4. - mass * mass);
-    double hM = (grhopipi * grhopipi * kM * kM * kM * 2) * log((Mrho + 2 * kM) / (2 * mass)) / (6.0 * M_PI * M_PI * Mrho);
-    double h1M = (grhopipi * grhopipi * kM * kM) * (1 + (1 + 2 * mass * mass / (Mrho * Mrho)) * (Mrho / kM) * log((Mrho + 2 * kM) / (2 * mass))) / (6.0 * M_PI * M_PI * Mrho);
-    double gamma = (grhopipi * grhopipi * k * k * k) / (6.0 * M_PI * omega * omega);
-
-    double Apipi0 = hM - Mrho * h1M / 2. + pow(grhopipi * mass, 2) / (6 * M_PI * M_PI);
-    std::complex<double> Apipi = hM + (omega * omega - Mrho * Mrho) * h1M / (2 * Mrho) - ho + 1i * omega * gamma;
-    std::complex<double> FGS = (Mrho * Mrho - Apipi0) / (Mrho * Mrho - omega * omega - Apipi);
-    double FGS2 = real(FGS * conj(FGS));
-    if (once == -1) {
-        printf("omega=%.15g    Mpi=%.15g   Mrho=%.15g  g=%.15g\n", omega, mass, Mrho, grhopipi);
-    }
-    return FGS2;
 }
 
 double matrix_element_nuA2(int Nvar, double* x) {
@@ -1602,11 +1633,11 @@ double rhs_amu_cut_charm(int n, int Nvar, double* x, int Npar, double* P) {
 
         r += a2 * P[1 + n];
         if (n == 0) {
-            if(in==0) r += a2 * P[3 + n] * a2;
+            if (in == 0) r += a2 * P[3 + n] * a2;
             else   r += a2 * P[3 + n] * (1. / pow(log(w02 / a2), in));
         }
-        if (n == 1){ 
-            if(im==0) r += a2 * P[3 + n] * a2;
+        if (n == 1) {
+            if (im == 0) r += a2 * P[3 + n] * a2;
             else r += a2 * P[3 + n] * (1. / pow(log(w02 / a2), im));
         }
     }
