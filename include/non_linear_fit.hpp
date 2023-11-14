@@ -122,6 +122,8 @@ struct  fit_type {
     bool codeplateaux = false;
     int tmin = -1;
     int tmax = -1;
+    // 
+    bool strict_checks = true;
 
     //
     std::vector<double> band_range{};

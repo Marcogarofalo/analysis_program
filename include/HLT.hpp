@@ -15,6 +15,7 @@
 enum HLT_b {
     HLT_EXP_b = 0,
     HLT_EXP_bT = 1,
+    HLT_deriv_EXP_b = 2,
     HLT_INVALID_b
 };
 
@@ -157,7 +158,7 @@ private:
     arb_mat_t Wf;
     arb_mat_t RT;
     arb_mat_t RTWR;
-    
+
 
 public:
     HLT_type_input info;
@@ -182,10 +183,11 @@ public:
 
     void compute_b(acb_t b, int t, const acb_t E0);
 
-    void compute_bt_re(arb_t b, arb_t  t, const arb_t E0);
-    void compute_btT_re(arb_t b, arb_t  t, const arb_t E0);
+    void compute_deriv_bt_re(arb_t b, arb_t  apt, int t, const arb_t E0);
+    void compute_bt_re(arb_t b, arb_t  apt, int t, const arb_t E0);
+    void compute_btT_re(arb_t b, arb_t  apt, int t, const arb_t E0);
     // void compute_b_re(arb_t b, int  t, const arb_t E0);
-    std::function<void(arb_t, arb_t, const arb_t)> compute_b_re;
+    std::function<void(arb_t, arb_t, int, const arb_t)> compute_b_re;
 
     void compute_A_integral(arb_t Ag, wrapper_smearing& Delta);
     void compute_A_fast(arb_t Ag, wrapper_smearing& Delta);
