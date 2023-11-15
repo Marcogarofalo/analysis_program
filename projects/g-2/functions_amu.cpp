@@ -9,7 +9,7 @@ double integrand_K(double x, void* params) {
     return f;
 }
 
-double kernel_K(double z, double epsrel ) {
+double kernel_K(double z, double epsrel) {
     int Maxiter = 1e+6;
     gsl_integration_workspace* w = gsl_integration_workspace_alloc(Maxiter);
     double result, error;
@@ -44,7 +44,7 @@ double integrand_K_W(double x, void* params) {
     return f;
 }
 
-double kernel_K_W(double z, double epsrel ) {
+double kernel_K_W(double z, double epsrel) {
     int Maxiter = 1e+8;
     gsl_integration_workspace* w = gsl_integration_workspace_alloc(Maxiter);
     double result, error;
@@ -119,7 +119,7 @@ double integrate_reinman(int lower, int upper, double* f) {
 // }
 
 
-double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling, int isub ) {
+double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling, int isub) {
     constexpr double d = 0.15;
     constexpr double t1_d = 0.4 / d;
     int T = file_head.l0;
@@ -141,7 +141,9 @@ double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a,
             double K = z * z * kernel_K(z);
             // double theta = gm2_step_function(t / 0.15, t1_d);
             double VV_sub;
-            if (isub == -1)
+            if (isub == -2)
+                VV_sub = Z[j] * Z[j] * in[j][id][t_a][0];
+            else if (isub == -1)
                 VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] - (1.0 / (2.0 * M_PI * M_PI * pow(t_a, 5)));// perturbative
             else
                 VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] + in[j][isub][t_a][0];// free-theory
@@ -153,14 +155,14 @@ double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a,
             corr_sub[t_a][j] = VV_sub;
             // printf("t=%d  K=%g   VV=%g  1-theta=%g  amu=%g\n",t_a,K, VV[t_a],1-theta, amu);
         }
-    // }
-    // int tmax=0;
-    // for ( ; tmax < T / 2; tmax++) {
-    //     double err=myres->comp_error(fi[tmax]);
-    //     if (fi[tmax][Njack-1]<err) break;
-    // }
-    // printf("tmax=%d\n", tmax);
-    // for (int j = 0;j < Njack;j++) {
+        // }
+        // int tmax=0;
+        // for ( ; tmax < T / 2; tmax++) {
+        //     double err=myres->comp_error(fi[tmax]);
+        //     if (fi[tmax][Njack-1]<err) break;
+        // }
+        // printf("tmax=%d\n", tmax);
+        // for (int j = 0;j < Njack;j++) {
         amu[j] = int_scheme(0, T / 2 - 1, ft);
 
         amu[j] *= 4 * alpha_em * alpha_em *
