@@ -692,37 +692,37 @@ int main(int argc, char** argv) {
 
 
     std::vector<std::string>  correlators;
-    if (strcmp(argv[4], "cA.53.24") == 0 || strcmp(argv[4], "cA.40.24") == 0 || strcmp(argv[4], "cA.30.32") == 0) {
-        printf("OS and tm inverted for light\n");
+    // if (strcmp(argv[4], "cA.53.24") == 0 || strcmp(argv[4], "cA.40.24") == 0 || strcmp(argv[4], "cA.30.32") == 0) {
+    //     printf("OS and tm inverted for light\n");
+    //     // light
+    //     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);//3
+    //     correlators.emplace_back(namefile);
+    //     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);//4
+    //     correlators.emplace_back(namefile);
+    //     mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);//5
+    //     correlators.emplace_back(namefile);
+    //     mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);//0
+    //     correlators.emplace_back(namefile);
+    //     mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);//1
+    //     correlators.emplace_back(namefile);
+    //     mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);//2
+    //     correlators.emplace_back(namefile);
+    // }
+    // else {
         // light
-        mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);//3
-        correlators.emplace_back(namefile);
-        mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);//4
-        correlators.emplace_back(namefile);
-        mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);//5
-        correlators.emplace_back(namefile);
         mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);//0
         correlators.emplace_back(namefile);
         mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);//1
         correlators.emplace_back(namefile);
         mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);//2
         correlators.emplace_back(namefile);
-    }
-    else {
-        // light
-        mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);//0
-        correlators.emplace_back(namefile);
-        mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);//1
-        correlators.emplace_back(namefile);
-        mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);//2
-        correlators.emplace_back(namefile);
         mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5A0.txt", argv[3], argv[4], mu);//3
         correlators.emplace_back(namefile);
         mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5P5.txt", argv[3], argv[4], mu);//4
         correlators.emplace_back(namefile);
         mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_VKVK.txt", argv[3], argv[4], mu);//5
         correlators.emplace_back(namefile);
-    }
+    // }
     // stranges
     mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.3f_P5A0.txt", argv[3], argv[4], mus1);//6
     correlators.emplace_back(namefile);
@@ -751,44 +751,44 @@ int main(int argc, char** argv) {
     correlators.emplace_back(namefile);
 
     //charms  here I mess up the names in the opposite (TM) file there are the equal (OS) correlators
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5A0.txt", argv[3], argv[4], muc1);//18
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5A0.txt", argv[3], argv[4], muc1);//21
     correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5P5.txt", argv[3], argv[4], muc1);//19
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5P5.txt", argv[3], argv[4], muc1);//22
     correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_VKVK.txt", argv[3], argv[4], muc1);//20
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_VKVK.txt", argv[3], argv[4], muc1);//23
     correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5A0.txt", argv[3], argv[4], muc1);//21
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5A0.txt", argv[3], argv[4], muc1);//18
     correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5P5.txt", argv[3], argv[4], muc1);//22
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5P5.txt", argv[3], argv[4], muc1);//19
     correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_VKVK.txt", argv[3], argv[4], muc1);//23
-    correlators.emplace_back(namefile);
-
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5A0.txt", argv[3], argv[4], muc2);//24
-    correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5P5.txt", argv[3], argv[4], muc2);//25
-    correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_VKVK.txt", argv[3], argv[4], muc2);//26
-    correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5A0.txt", argv[3], argv[4], muc2);//27
-    correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5P5.txt", argv[3], argv[4], muc2);//28
-    correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_VKVK.txt", argv[3], argv[4], muc2);//29
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_VKVK.txt", argv[3], argv[4], muc1);//20
     correlators.emplace_back(namefile);
 
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5A0.txt", argv[3], argv[4], muc2);//27
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5P5.txt", argv[3], argv[4], muc2);//28
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_VKVK.txt", argv[3], argv[4], muc2);//29
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5A0.txt", argv[3], argv[4], muc2);//24
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5P5.txt", argv[3], argv[4], muc2);//25
+    correlators.emplace_back(namefile);
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_VKVK.txt", argv[3], argv[4], muc2);//26
+    correlators.emplace_back(namefile);
 
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5A0.txt", argv[3], argv[4], muc3);//30
+
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5A0.txt", argv[3], argv[4], muc3);//33
     correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_P5P5.txt", argv[3], argv[4], muc3);//31
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_P5P5.txt", argv[3], argv[4], muc3);//34
     correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu%.5f_VKVK.txt", argv[3], argv[4], muc3);//32
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu.%.5f_VKVK.txt", argv[3], argv[4], muc3);//35
     correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5A0.txt", argv[3], argv[4], muc3);//33
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5A0.txt", argv[3], argv[4], muc3);//30
     correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_P5P5.txt", argv[3], argv[4], muc3);//34
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_P5P5.txt", argv[3], argv[4], muc3);//31
     correlators.emplace_back(namefile);
-    mysprintf(namefile, NAMESIZE, "%s/%s_r.equal_mu%.5f_VKVK.txt", argv[3], argv[4], muc3);//35
+    mysprintf(namefile, NAMESIZE, "%s/%s_r.opposite_mu.%.5f_VKVK.txt", argv[3], argv[4], muc3);//32
     correlators.emplace_back(namefile);
 
     if (argc > 17) { // cott mu+dm
