@@ -1075,18 +1075,20 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
     // }
 
     myres->comp_cov_arb(W, Tmax - Tmin, r, prec);
-    // test covariance
+    //// test covariance
     // double** cov = myres->comp_cov(Tmax - Tmin, r);
     // for (int t = 0;t < Tmax - Tmin;t++) {
     //     for (int r = 0;r < Tmax - Tmin;r++) {
     //         double tmp = arbtod(arb_mat_entry(W, t, r));
     //         double diff = fabs(tmp - cov[t][r]);
-    //         if (diff > 1e-6) {
-    //             printf("%-4d  %-4d  %-20.12g %-20.12g diff= %-20.12g  ", t, r, tmp, cov[t][r], diff);
-    //             printf(" error in the covariance\n");
-    //             exit(1);
-    //         }
+    //         printf("%-12.5g",tmp);
+    //         // if (diff > 1e-6) {
+    //         //     printf("%-4d  %-4d  %-20.12g %-20.12g diff= %-20.12g  ", t, r, tmp, cov[t][r], diff);
+    //         //     printf(" error in the covariance\n");
+    //         //     exit(1);
+    //         // }
     //     }
+    //     printf("\n");
     // }
     if (fit_info.diag_cov == true) {
         // printf("diagonal covariance\n");
@@ -1191,12 +1193,12 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
         }
         if (same >= same_max) {
             same_max = same;
-            same_start = iter - same;
+            same_start = iter - same+1;
         }
         iter++;
     }
-    same_end = same_start + same_max;
-    same_start++;// there is an offset
+    same_end = same_start-1 + same_max;
+    // same_start++;// there is an offset
     printf("same [%d,%d]  n= %d\n", same_start, same_end, same_max);
 
     // struct fit_type fit_info;
