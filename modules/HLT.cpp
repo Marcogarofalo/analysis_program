@@ -1235,10 +1235,10 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
     file_head.l0 = store_l0;
     //////////////////////////////////// print
 
-    fprintf(fit_info.outfile_AoverB, "\n\n #%s fit in [%g,%g] chi2=%.5g  %.5g\n", description, lambdas[const_fit_info.tmax], lambdas[const_fit_info.tmin], fit_out.chi2[Njack - 1], 0.0);
+    fprintf(fit_info.outfile_AoverB, "\n\n #%s fit in [%.12g,%.12g] chi2=%.5g  %.5g\n", description, lambdas[const_fit_info.tmax], lambdas[const_fit_info.tmin], fit_out.chi2[Njack - 1], 0.0);
     fprintf(fit_info.outfile_AoverB, "%.12g  %.12g \n", fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]));
 
-    fprintf(fit_info.outfile, "\n\n #%s fit in [%g,%g] chi2=%.5g  %.5g\n", description, lambdas[const_fit_info.tmax], lambdas[const_fit_info.tmin], fit_out.chi2[Njack - 1], 0.0);
+    fprintf(fit_info.outfile, "\n\n #%s fit in [%.12g,%.12g] chi2=%.5g  %.5g\n", description, lambdas[const_fit_info.tmax], lambdas[const_fit_info.tmin], fit_out.chi2[Njack - 1], 0.0);
     fprintf(fit_info.outfile, "%.12g  %.12g \n", fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]));
 
     printf("%s= %.12g  %.12g \n", description, fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]));
