@@ -250,7 +250,7 @@ HLT_type::HLT_type(HLT_type_input info_) {
                 // arb_div(arb_mat_entry(A, t - info.tmin, r - info.tmin), aT, at, prec);
                 int n = t + r - 2 * info.tmin;
                 int sign = n % 2 == 0 ? 1 : -1; // (-1)^(n-k)
-                int binomial=1;
+                int binomial = 1;
                 // doing the binomial expansion
                 for (int k = 0;k <= n;k++) {
 
@@ -268,8 +268,8 @@ HLT_type::HLT_type(HLT_type_input info_) {
                     arb_add(arb_mat_entry(A, t - info.tmin, r - info.tmin), arb_mat_entry(A, t - info.tmin, r - info.tmin), aT, prec);
                     // update sign and binomial (which is always an integer)
                     sign *= -1;
-                    binomial*= n - k;
-                    binomial/= k + 1;
+                    binomial *= n - k;
+                    binomial /= k + 1;
 
                 }
 
@@ -1138,16 +1138,14 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
     lambdas[0] = fit_info.lambda_start;
     int  same = 0;
     double* diff = (double*)calloc(Njack, sizeof(double));
-    fprintf(fit_info.outfile_AoverB, "\n\n%-20s %-20s  %-20s  %-20s   %-20s  %-20s   %-20s  %-20s\n", "#lambda", "A", "B/Bnorm", "A0", "W", "rho", "drho", "label");
+
     // first computation
     compute_g(lambdas[same]);
     compute_A_and_B(Delta, same);
     check_reconstruction(Delta, description, same,
         fit_info, { info.E0, fit_info.maxE_check_reconstuct ,fit_info.stepsE_check_reconstuct });
     compute_tilderho(rho[same], r, fit_info);
-    fprintf(fit_info.outfile_AoverB, "%-20.12g %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g   %s\n",
-        lambdas[same], Ag[same], Bg[same], A0, Ag[same] / A0 + lambdas[same] * Bg[same],
-        rho[same][Njack - 1], myres->comp_error(rho[same]), description);
+
     printf("%-20.12g %-20.12g  %-20.12g   %-20.12g  %-20.12g    %d\n", lambdas[same], rho[same][Njack - 1],
         myres->comp_error(rho[same]), diff[Njack - 1], myres->comp_error(diff), same);
 
@@ -1169,9 +1167,9 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
         for (int j = 0;j < Njack;j++) {
             diff[j] = fabs(rho[iter - same][j] - rho[iter][j]);
         }
-        fprintf(fit_info.outfile_AoverB, "%-20.12g %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %s\n",
-            lambdas[iter], Ag[iter], Bg[iter], A0, Ag[iter] / A0 + lambdas[iter] * Bg[iter],
-            rho[iter][Njack - 1], myres->comp_error(rho[iter]), description);
+        // fprintf(fit_info.outfile_AoverB, "%-20.12g %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %s\n",
+        //     lambdas[iter], Ag[iter], Bg[iter], A0, Ag[iter] / A0 + lambdas[iter] * Bg[iter],
+        //     rho[iter][Njack - 1], myres->comp_error(rho[iter]), description);
         printf("%-20.12g %-20.12g  %-20.12g   %-20.12g  %-20.12g    %d %d\n", lambdas[iter], rho[iter][Njack - 1],
             myres->comp_error(rho[iter]), diff[Njack - 1], myres->comp_error(diff), iter, same);
 
@@ -1193,11 +1191,11 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
         }
         if (same >= same_max) {
             same_max = same;
-            same_start = iter - same+1;
+            same_start = iter - same + 1;
         }
         iter++;
     }
-    same_end = same_start-1 + same_max;
+    same_end = same_start - 1 + same_max;
     // same_start++;// there is an offset
     printf("same [%d,%d]  n= %d\n", same_start, same_end, same_max);
 
@@ -1226,17 +1224,26 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
     char name[NAMESIZE] = "HLT";
     double* chi2;
     struct fit_result fit_out = try_fit(option, const_fit_info.tmin, const_fit_info.tmax, 1, mt, rho, Njack, &chi2, const_fit_info);
+    file_head.l0 = store_l0;
 
+    //////////////////////////////////// print Aover B
+    fprintf(fit_info.outfile_AoverB, "\n\n%-20s %-20s  %-20s  %-20s   %-20s  %-20s   %-20s  %-20s  %-20s  %-20s\n", "#lambda", "A", "B/Bnorm", "A0", "W", "rho", "drho", "label", "fit", "dfit");
+    for (int i = 0;i < fit_info.nlambda_max;i++) {
+        fprintf(fit_info.outfile_AoverB, "%-20.12g %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g   %s  %-20.12g  %-20.12g\n",
+            lambdas[i], Ag[i], Bg[i], A0, Ag[i] / A0 + lambdas[i] * Bg[i],
+            rho[i][Njack - 1], myres->comp_error(rho[i]), description, fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]));
+    }
+    fprintf(fit_info.outfile_AoverB, "\n\n #%s fit in [%.12g,%.12g] chi2=%.5g  %.5g\n", description, lambdas[const_fit_info.tmax], lambdas[const_fit_info.tmin], fit_out.chi2[Njack - 1], 0.0);
+    fprintf(fit_info.outfile_AoverB, "%.12g  %.12g \n", fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]));
+
+    //////////////////////////////////// print
+    //////
     fprintf(fit_info.outfile, "\n\n%-10s %-20s  %-20s  %-20s  %-20s\n", "#lambda", "rho", "drho", "fit", "dfit");
     for (int i = 0;i < fit_info.nlambda_max;i++) {
         fprintf(fit_info.outfile, "%-20.12g %-20.12g  %-20.12g   %-20.12g  %-20.12g\n", lambdas[i], rho[i][Njack - 1],
             mt[i][1], fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]));
     }
-    file_head.l0 = store_l0;
-    //////////////////////////////////// print
 
-    fprintf(fit_info.outfile_AoverB, "\n\n #%s fit in [%.12g,%.12g] chi2=%.5g  %.5g\n", description, lambdas[const_fit_info.tmax], lambdas[const_fit_info.tmin], fit_out.chi2[Njack - 1], 0.0);
-    fprintf(fit_info.outfile_AoverB, "%.12g  %.12g \n", fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]));
 
     fprintf(fit_info.outfile, "\n\n #%s fit in [%.12g,%.12g] chi2=%.5g  %.5g\n", description, lambdas[const_fit_info.tmax], lambdas[const_fit_info.tmin], fit_out.chi2[Njack - 1], 0.0);
     fprintf(fit_info.outfile, "%.12g  %.12g \n", fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]));
