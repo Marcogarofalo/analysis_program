@@ -166,14 +166,19 @@ public:
     std::vector<double> Es = {};
     std::vector<double> lambdas = {};
     std::vector<double> Ag = {};
+    std::vector<double> Ag_ref = {};
     double A0;
     arb_t A0_arb;
+    double A0_ref;
+    arb_t A0_arb_ref;
     std::vector<double> Bg = {};
     double C0;
     arb_mat_t A;
+    arb_mat_t A_ref;
     arb_mat_t W;
     arb_mat_t R;
     arb_mat_t f;
+    arb_mat_t f_ref;
     arb_mat_t g;
     arb_t alpha_arb;
     arb_t K2;
@@ -190,9 +195,9 @@ public:
     std::function<void(arb_t, arb_t, int, const arb_t)> compute_b_re;
 
     void compute_A_integral(arb_t Ag, wrapper_smearing& Delta);
-    void compute_A_fast(arb_t Ag, wrapper_smearing& Delta);
+    void compute_A_fast(arb_t Ag, arb_t Ag_ref, wrapper_smearing& Delta);
     // void compute_A(arb_t Ag, wrapper_smearing& Delta);
-    std::function<void(arb_t, wrapper_smearing&)>  compute_A;
+    std::function<void(arb_t, arb_t, wrapper_smearing&)>  compute_A;
 
     fit_result HLT_of_corr(char** option, double**** conf_jack, const char* plateaux_masses,
         const char* description, wrapper_smearing& Delta, FILE* file_jack, fit_type_HLT fit_info);

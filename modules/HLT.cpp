@@ -123,6 +123,97 @@
 // using ARB
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+void compute_A_HLT_EXP_b(arb_t A, slong t, slong r, arb_t E0, arb_t alpha, int prec) {
+    arb_t at, aT;
+    arb_init(at);
+    arb_init(aT);
+
+    arb_set_ui(at, r + t);
+    arb_add(at, at, alpha, prec);
+    arb_mul(aT, at, E0, prec);
+    arb_neg(aT, aT);
+    arb_exp(aT, aT, prec);
+    arb_div(A, aT, at, prec);
+
+    arb_clear(at);arb_clear(aT);
+}
+
+void compute_A_HLT_EXP_bT(arb_t A, slong t, slong r, arb_t E0, arb_t alpha, int T, int prec) {
+    arb_t at, aT;
+    arb_init(at);
+    arb_init(aT);
+
+    // A[t][r] = exp(-(r + t + 2 + alpha) * E0) / (r + t + 2 + alpha);
+    arb_set_ui(at, r + t);
+    arb_add(at, at, alpha, prec);
+    // arb_sub(at, at, arb_alpha, prec);
+    arb_mul(aT, at, E0, prec);
+    arb_neg(aT, aT);
+    arb_exp(aT, aT, prec);
+    arb_div(A, aT, at, prec);
+    //     A[t][r] += exp(-(T - r + t + alpha) * E0) / (T - r + t + alpha);
+    arb_set_ui(at, T - r + t);
+    arb_add(at, at, alpha, prec);
+    // arb_sub(at, at, arb_alpha, prec);
+    arb_mul(aT, at, E0, prec);
+    arb_neg(aT, aT);
+    arb_exp(aT, aT, prec);
+    arb_div(aT, aT, at, prec);
+    arb_add(A, A, aT, prec);
+    //     A[t][r] += exp(-(T + r - t + alpha) * E0) / (T + r - t + alpha);
+    arb_set_ui(at, T + r - t);
+    arb_add(at, at, alpha, prec);
+    // arb_sub(at, at, arb_alpha, prec);
+    arb_mul(aT, at, E0, prec);
+    arb_neg(aT, aT);
+    arb_exp(aT, aT, prec);
+    arb_div(aT, aT, at, prec);
+    arb_add(A, A, aT, prec);
+    //     A[t][r] += exp(-(2 * T - r - t - 2 + alpha) * E0) / (2 * T - r - t - 2 + alpha);
+    arb_set_ui(at, 2 * T - r - t);
+    arb_add(at, at, alpha, prec);
+    // arb_sub(at, at, arb_alpha, prec);
+    arb_mul(aT, at, E0, prec);
+    arb_neg(aT, aT);
+    arb_exp(aT, aT, prec);
+    arb_div(aT, aT, at, prec);
+    arb_add(A, A, aT, prec);
+
+    arb_clear(at);arb_clear(aT);
+}
+
+void compute_A_HLT_deriv_EXP_b(arb_t A, slong t, slong r, arb_t E0, arb_t alpha, int tmin, int prec) {
+    arb_t at, aT;
+    arb_init(at);
+    arb_init(aT);
+    int n = t + r - 2 * tmin;
+    int sign = n % 2 == 0 ? 1 : -1; // (-1)^(n-k)
+    int binomial = 1;
+    // doing the binomial expansion
+    for (int k = 0;k <= n;k++) {
+
+        arb_set_ui(at, r + t - k);
+        arb_add(at, at, alpha, prec);
+        arb_mul(aT, at, E0, prec);
+        arb_neg(aT, aT);
+        arb_exp(aT, aT, prec);
+        arb_div(aT, aT, at, prec);
+
+        arb_mul_si(aT, aT, sign, prec);
+        arb_mul_ui(aT, aT, binomial, prec);
+
+
+        arb_add(A, A, aT, prec);
+        // update sign and binomial (which is always an integer)
+        sign *= -1;
+        binomial *= n - k;
+        binomial /= k + 1;
+
+    }
+
+    arb_clear(at);arb_clear(aT);
+}
+
 HLT_type::HLT_type(HLT_type_input info_) {
     info = info_;
     error(info.tmax < 0, 1, "HLT_type", "tmax not set");
@@ -136,11 +227,13 @@ HLT_type::HLT_type(HLT_type_input info_) {
 
     // init function to compute A
     if (info.A_strategy == HLT_A_fast)
-        compute_A = std::bind(&HLT_type::compute_A_fast, this, std::placeholders::_1, std::placeholders::_2);
-    else if (info.A_strategy == HLT_A_INTEGRAL)
-        compute_A = std::bind(&HLT_type::compute_A_integral, this, std::placeholders::_1, std::placeholders::_2);
+        compute_A = std::bind(&HLT_type::compute_A_fast, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+    else if (info.A_strategy == HLT_A_INTEGRAL) {
+        // compute_A = std::bind(&HLT_type::compute_A_integral, this, std::placeholders::_1, std::placeholders::_2);
+        printf("HLT_type: HLT_A_INTEGRAL not enymore supported\n");    exit(1);
+    }
     else {
-        printf("HLT_type: A_strategy not set\n A_strategy=%d", info.A_strategy);    exit(1);
+        printf("HLT_type: A_strategy not set\n A_strategy=%d\n", info.A_strategy);    exit(1);
     }
     // compute f strategy
     if (info.type_b == HLT_EXP_b)
@@ -157,11 +250,13 @@ HLT_type::HLT_type(HLT_type_input info_) {
 
     if (info.normalize_kernel)  arb_mat_init(R, info.tmax - info.tmin, 1);
     arb_mat_init(A, info.tmax - info.tmin, info.tmax - info.tmin);
+    arb_mat_init(A_ref, info.tmax - info.tmin, info.tmax - info.tmin);
 
 
-    arb_t at, aT;
+    arb_t at, aT, zero_arb;
     arb_init(at);
     arb_init(aT);
+    arb_init(zero_arb);
     arb_init(alpha_arb);
     arb_set_d(alpha_arb, info.alpha);
 
@@ -194,84 +289,23 @@ HLT_type::HLT_type(HLT_type_input info_) {
 
         }
         for (size_t r = info.tmin; r < info.tmax; r++) {
+            arb_ptr Atr = arb_mat_entry(A, t - info.tmin, r - info.tmin);
+            arb_ptr Atr_ref = arb_mat_entry(A_ref, t - info.tmin, r - info.tmin);
             if (info.type_b == HLT_EXP_b) {
-                // A[t][r] = exp(-(r + t  + alpha) * E0) / (r + t  + alpha);
-                arb_set_ui(at, r + t);
-                arb_add(at, at, alpha_arb, prec);
-                arb_mul(aT, at, E0_arb, prec);
-                arb_neg(aT, aT);
-                arb_exp(aT, aT, prec);
-                arb_div(arb_mat_entry(A, t - info.tmin, r - info.tmin), aT, at, prec);
+
+                compute_A_HLT_EXP_b(Atr, t, r, E0_arb, alpha_arb, prec);
+                compute_A_HLT_EXP_b(Atr_ref, t, r, E0_arb, zero_arb, prec);
             }
             else if (info.type_b == HLT_EXP_bT) {
                 int& T = info.T;
-                // A[t][r] = exp(-(r + t + 2 + alpha) * E0) / (r + t + 2 + alpha);
-                arb_set_ui(at, r + t);
-                arb_add(at, at, alpha_arb, prec);
-                // arb_sub(at, at, arb_alpha, prec);
-                arb_mul(aT, at, E0_arb, prec);
-                arb_neg(aT, aT);
-                arb_exp(aT, aT, prec);
-                arb_div(arb_mat_entry(A, t - info.tmin, r - info.tmin), aT, at, prec);
-                //     A[t][r] += exp(-(T - r + t + alpha) * E0) / (T - r + t + alpha);
-                arb_set_ui(at, T - r + t);
-                arb_add(at, at, alpha_arb, prec);
-                // arb_sub(at, at, arb_alpha, prec);
-                arb_mul(aT, at, E0_arb, prec);
-                arb_neg(aT, aT);
-                arb_exp(aT, aT, prec);
-                arb_div(aT, aT, at, prec);
-                arb_add(arb_mat_entry(A, t - info.tmin, r - info.tmin), arb_mat_entry(A, t - info.tmin, r - info.tmin), aT, prec);
-                //     A[t][r] += exp(-(T + r - t + alpha) * E0) / (T + r - t + alpha);
-                arb_set_ui(at, T + r - t);
-                arb_add(at, at, alpha_arb, prec);
-                // arb_sub(at, at, arb_alpha, prec);
-                arb_mul(aT, at, E0_arb, prec);
-                arb_neg(aT, aT);
-                arb_exp(aT, aT, prec);
-                arb_div(aT, aT, at, prec);
-                arb_add(arb_mat_entry(A, t - info.tmin, r - info.tmin), arb_mat_entry(A, t - info.tmin, r - info.tmin), aT, prec);
-                //     A[t][r] += exp(-(2 * T - r - t - 2 + alpha) * E0) / (2 * T - r - t - 2 + alpha);
-                arb_set_ui(at, 2 * T - r - t);
-                arb_add(at, at, alpha_arb, prec);
-                // arb_sub(at, at, arb_alpha, prec);
-                arb_mul(aT, at, E0_arb, prec);
-                arb_neg(aT, aT);
-                arb_exp(aT, aT, prec);
-                arb_div(aT, aT, at, prec);
-                arb_add(arb_mat_entry(A, t - info.tmin, r - info.tmin), arb_mat_entry(A, t - info.tmin, r - info.tmin), aT, prec);
+
+                compute_A_HLT_EXP_bT(Atr, t, r, E0_arb, alpha_arb, T, prec);
+                compute_A_HLT_EXP_bT(Atr_ref, t, r, E0_arb, zero_arb, T, prec);
             }
             else if (info.type_b == HLT_deriv_EXP_b) {
-                // arb_set_d(at, info.tmin + (r + t) / 2.0);
-                // arb_add(at, at, alpha_arb, prec);
-                // arb_mul(aT, at, E0_arb, prec);
-                // arb_neg(aT, aT);
-                // arb_exp(aT, aT, prec);
-                // arb_div(arb_mat_entry(A, t - info.tmin, r - info.tmin), aT, at, prec);
-                int n = t + r - 2 * info.tmin;
-                int sign = n % 2 == 0 ? 1 : -1; // (-1)^(n-k)
-                int binomial = 1;
-                // doing the binomial expansion
-                for (int k = 0;k <= n;k++) {
 
-                    arb_set_ui(at, r + t - k);
-                    arb_add(at, at, alpha_arb, prec);
-                    arb_mul(aT, at, E0_arb, prec);
-                    arb_neg(aT, aT);
-                    arb_exp(aT, aT, prec);
-                    arb_div(aT, aT, at, prec);
-
-                    arb_mul_si(aT, aT, sign, prec);
-                    arb_mul_ui(aT, aT, binomial, prec);
-
-
-                    arb_add(arb_mat_entry(A, t - info.tmin, r - info.tmin), arb_mat_entry(A, t - info.tmin, r - info.tmin), aT, prec);
-                    // update sign and binomial (which is always an integer)
-                    sign *= -1;
-                    binomial *= n - k;
-                    binomial /= k + 1;
-
-                }
+                compute_A_HLT_deriv_EXP_b(Atr, t, r, E0_arb, alpha_arb, info.tmin, prec);
+                compute_A_HLT_deriv_EXP_b(Atr_ref, t, r, E0_arb, zero_arb, info.tmin, prec);
 
             }
             else { printf("HLT b_T type not supported\n"); }
@@ -293,6 +327,7 @@ HLT_type::HLT_type(HLT_type_input info_) {
 
     arb_clear(at);
     arb_clear(aT);
+    arb_clear(zero_arb);
 }
 
 HLT_type::~HLT_type() {
@@ -564,6 +599,24 @@ int integrand_f(acb_ptr res, const acb_t z, void* param, slong order, slong prec
     return 0;
 }
 
+int integrand_f0(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
+    if (order > 1)
+        flint_abort();  /* Would be needed for Taylor method. */
+
+    wrapper_smearing* p = (wrapper_smearing*)param;
+
+    arb_set_ui(acb_imagref(res), 0);
+    p->function(res, z, p->params, order, prec);
+    if (p->HLT->info.normalize_kernel) acb_mul_arb(res, res, p->Norm, prec);
+
+    // arb_add_ui(p->b_tmp, p->HLT->alpha_arb, p->t, prec);
+    arb_set_ui(p->b_tmp, p->t);
+    p->HLT->compute_b_re(p->b_tmp, p->b_tmp, p->t, acb_realref(z));
+
+    arb_mul(acb_realref(res), acb_realref(res), p->b_tmp, prec);
+
+    return 0;
+}
 
 
 int integrand_f_pinf(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
@@ -745,9 +798,11 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
     if (f_allocated == true) {
         printf("HLT: recomputing f\n");
         arb_mat_clear(f);
+        arb_mat_clear(f_ref);
         arb_clear(K2);
     }
     arb_mat_init(f, info.tmax - info.tmin, 1);
+    arb_mat_init(f_ref, info.tmax - info.tmin, 1);
     arb_init(K2);
     int Maxiter = 1e+6;
     acb_calc_integrate_opt_t options;
@@ -778,17 +833,15 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
     for (int t = info.tmax - 1;t >= info.tmin;t--) {
         // double time = timestamp();
         Delta.t = t;
-        int arb_calc_result = acb_calc_integrate(s, integrand_f, param, a, b, goal, tol, options, info.prec);
         // int arb_calc_result = acb_calc_integrate(s, integrand_f_pinf, param, a, b, goal, tol, options, info.prec);
+        int arb_calc_result = acb_calc_integrate(s, integrand_f, param, a, b, goal, tol, options, info.prec);
         error(arb_calc_result == ARB_CALC_NO_CONVERGENCE, 1, "compute_f_EXP_b", "acb_calc_integrate f(t=%d)  returned ARB_CALC_NO_CONVERGENCE", t);
         acb_get_real(arb_mat_entry(f, t - info.tmin, 0), s);
-        // v[t - info.tmin] = arbtod(arb_mat_entry(f, t - info.tmin, 0));
-        // printf("f[%d]=%.12g", t, v[t - info.tmin]);
-        // if (t > info.tmin)
-        //     printf("    %.12g\n", v[t - info.tmin - 1] * exp(t * t - (t - 1) * (t - 1)));
-        // else
-        //     printf("\n");
-        // printf("time: %g s\n", timestamp() - time);
+        // f_ref
+        arb_calc_result = acb_calc_integrate(s, integrand_f0, param, a, b, goal, tol, options, info.prec);
+        error(arb_calc_result == ARB_CALC_NO_CONVERGENCE, 1, "compute_f0_EXP_b", "acb_calc_integrate f(t=%d)  returned ARB_CALC_NO_CONVERGENCE", t);
+        acb_get_real(arb_mat_entry(f_ref, t - info.tmin, 0), s);
+
     }
 
     int arb_calc_result = acb_calc_integrate(s, integrand_K2, param, a, b, goal, tol, options, info.prec);
@@ -863,7 +916,7 @@ void HLT_type::compute_A_integral(arb_t Ag, wrapper_smearing& Delta) {
 }
 
 
-void HLT_type::compute_A_fast(arb_t Ag, wrapper_smearing& Delta) {
+void HLT_type::compute_A_fast(arb_t Ag, arb_t Ag_ref, wrapper_smearing& Delta) {
     arb_mat_t gAg, gt, v;
     int& prec = info.prec;
     arb_mat_init(gAg, 1, 1);
@@ -883,8 +936,24 @@ void HLT_type::compute_A_fast(arb_t Ag, wrapper_smearing& Delta) {
     // printf("gf=");arb_printn(arb_mat_entry(gAg, 0, 0), prec / 3.33, 0); flint_printf("\n");
 
     arb_add(Ag, Ag, K2, prec);
-    // printf("K2=");arb_printn(K2, prec / 3.33, 0); flint_printf("\n");
-    // printf("A=");arb_printn(Ag, prec / 3.33, 0); flint_printf("\n");
+    ///////////////////////////
+    // A_ref
+    //////////////////////////
+    arb_set_ui(Ag_ref, 0);
+
+    arb_mat_mul(v, A_ref, g, prec);
+    arb_mat_mul(gAg, gt, v, prec);
+    arb_add(Ag_ref, Ag_ref, arb_mat_entry(gAg, 0, 0), prec);
+
+    arb_mat_mul(gAg, gt, f_ref, prec);
+    arb_mul_si(arb_mat_entry(gAg, 0, 0), arb_mat_entry(gAg, 0, 0), -2, prec);
+    arb_add(Ag_ref, Ag_ref, arb_mat_entry(gAg, 0, 0), prec);
+
+
+    // clear
+    arb_mat_clear(gAg);
+    arb_mat_clear(gt);
+    arb_mat_clear(v);
 }
 
 void HLT_type::check_reconstruction(wrapper_smearing& Delta, const char* description,
@@ -933,7 +1002,7 @@ void HLT_type::check_reconstruction(wrapper_smearing& Delta, const char* descrip
             range[0] + i * dh, d1, range[0] + i * dh, d1);
     }
     char name[NAMESIZE];
-    mysprintf(name, NAMESIZE, "%s_lam%.4f", description, lambdas[il]);
+    mysprintf(name, NAMESIZE, "%s_lam%.8g", description, lambdas[il]);
     fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", name, info.tmax, info.tmax, lambdas[il], 0.0);
     fprintf(outfile, "%.12g  %.12g \n", Ag[il] / A0, A0);
     acb_clear(res);
@@ -951,10 +1020,11 @@ void HLT_type::check_reconstruction(wrapper_smearing& Delta, const char* descrip
 
 void HLT_type::compute_A_and_B(wrapper_smearing& Delta, int  il) {
     //////////////////////////////////// A
-    arb_t A_arg;
-    arb_init(A_arg);
-    compute_A(A_arg, Delta);
+    arb_t A_arg, A_ref;
+    arb_init(A_arg);arb_init(A_ref);
+    compute_A(A_arg, A_ref, Delta);
     Ag[il] = arbtod(A_arg);
+    Ag_ref[il] = arbtod(A_ref);
     //////////////////////////////////// B
     int& Tmax = info.tmax;
     int& prec = info.prec;
@@ -971,6 +1041,7 @@ void HLT_type::compute_A_and_B(wrapper_smearing& Delta, int  il) {
     arb_mat_clear(Wg);
     arb_mat_clear(gBg);
     arb_clear(A_arg);
+    arb_clear(A_ref);
 }
 
 // r[t]=c(t+1)
@@ -1048,6 +1119,7 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
     int Njack = fit_info.Njack;
     int id = fit_info.corr_id[0];
     Ag.resize(fit_info.nlambda_max);
+    Ag_ref.resize(fit_info.nlambda_max);
     Bg.resize(fit_info.nlambda_max);
     lambdas.resize(fit_info.nlambda_max);
     double** r = malloc_2<double>(Tmax - Tmin, Njack);
@@ -1121,9 +1193,10 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
     HLT_out res(fit_info.lambdas);
 
     arb_mat_init(g, Tmax - Tmin, 1);
-    arb_init(A0_arb);
-    compute_A(A0_arb, Delta);
+    arb_init(A0_arb); arb_init(A0_arb_ref);
+    compute_A(A0_arb, A0_arb_ref, Delta);
     A0 = arbtod(A0_arb);
+    A0_ref = arbtod(A0_arb_ref);
     printf("A0=%.12g\n", A0);
 
 
@@ -1227,11 +1300,13 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
     file_head.l0 = store_l0;
 
     //////////////////////////////////// print Aover B
-    fprintf(fit_info.outfile_AoverB, "\n\n%-20s %-20s  %-20s  %-20s   %-20s  %-20s   %-20s  %-20s  %-20s  %-20s\n", "#lambda", "A", "B/Bnorm", "A0", "W", "rho", "drho", "label", "fit", "dfit");
+    fprintf(fit_info.outfile_AoverB, "\n\n%-20s %-20s  %-20s  %-20s   %-20s  %-20s   %-20s  %-20s  %-20s  %-20s  %-20s  %-20s\n",
+        "#lambda", "A", "B/Bnorm", "A0", "W", "rho", "drho", "label", "fit", "dfit", "Aref", "A0ref");
     for (int i = 0;i < fit_info.nlambda_max;i++) {
-        fprintf(fit_info.outfile_AoverB, "%-20.12g %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g   %s  %-20.12g  %-20.12g\n",
+        fprintf(fit_info.outfile_AoverB, "%-20.12g %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g   %s  %-20.12g  %-20.12g  %-20.12g  %-20.12g\n",
             lambdas[i], Ag[i], Bg[i], A0, Ag[i] / A0 + lambdas[i] * Bg[i],
-            rho[i][Njack - 1], myres->comp_error(rho[i]), description, fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]));
+            rho[i][Njack - 1], myres->comp_error(rho[i]), description, fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]),
+            Ag_ref[i], A0_ref);
     }
     fprintf(fit_info.outfile_AoverB, "\n\n #%s fit in [%.12g,%.12g] chi2=%.5g  %.5g\n", description, lambdas[const_fit_info.tmax], lambdas[const_fit_info.tmin], fit_out.chi2[Njack - 1], 0.0);
     fprintf(fit_info.outfile_AoverB, "%.12g  %.12g \n", fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]));
@@ -1259,7 +1334,8 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
     // we do not write the result
     // fwrite(fit_out.P[0], sizeof(double), Njack, file_jack);
     // corr_counter++;
-
+    arb_clear(A0_arb);
+    arb_clear(A0_arb_ref);
     free_2(Tmax - Tmin, r);
     return fit_out;
 };
