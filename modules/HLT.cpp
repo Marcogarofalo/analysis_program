@@ -259,6 +259,7 @@ HLT_type::HLT_type(HLT_type_input info_) {
     arb_init(zero_arb);
     arb_init(alpha_arb);
     arb_set_d(alpha_arb, info.alpha);
+    arb_set_ui(zero_arb,0);
 
     double alpha = info.alpha;
 
@@ -348,6 +349,13 @@ HLT_type::~HLT_type() {
         arb_mat_clear(R);
         arb_mat_clear(RT);
         arb_mat_clear(RTWR);
+    }
+
+    if (f_allocated == true) {
+        arb_mat_clear(f);
+        arb_mat_clear(f_ref);
+        arb_clear(K2);
+        arb_clear(K2_ref);
     }
 }
 
@@ -815,6 +823,7 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
         arb_mat_clear(f);
         arb_mat_clear(f_ref);
         arb_clear(K2);
+        arb_clear(K2_ref);
     }
     arb_mat_init(f, info.tmax - info.tmin, 1);
     arb_mat_init(f_ref, info.tmax - info.tmin, 1);
@@ -940,6 +949,7 @@ void HLT_type::compute_A_integral(arb_t Ag, wrapper_smearing& Delta) {
 void HLT_type::compute_A_fast(arb_t Ag, arb_t Ag_ref, wrapper_smearing& Delta) {
     arb_mat_t gAg, gt, v;
     int& prec = info.prec;
+    arb_ptr gAg00=arb_mat_entry(gAg, 0, 0);
     arb_mat_init(gAg, 1, 1);
     arb_mat_init(v, info.tmax - info.tmin, 1);
     arb_mat_init(gt, 1, info.tmax - info.tmin);
@@ -948,12 +958,12 @@ void HLT_type::compute_A_fast(arb_t Ag, arb_t Ag_ref, wrapper_smearing& Delta) {
 
     arb_mat_mul(v, A, g, prec);
     arb_mat_mul(gAg, gt, v, prec);
-    arb_add(Ag, Ag, arb_mat_entry(gAg, 0, 0), prec);
+    arb_add(Ag, Ag, gAg00, prec);
     // printf("gAg=");arb_printn(arb_mat_entry(gAg, 0, 0), prec / 3.33, 0); flint_printf("\n");
 
     arb_mat_mul(gAg, gt, f, prec);
-    arb_mul_si(arb_mat_entry(gAg, 0, 0), arb_mat_entry(gAg, 0, 0), -2, prec);
-    arb_add(Ag, Ag, arb_mat_entry(gAg, 0, 0), prec);
+    arb_mul_si(gAg00, gAg00, -2, prec);
+    arb_add(Ag, Ag, gAg00, prec);
     // printf("gf=");arb_printn(arb_mat_entry(gAg, 0, 0), prec / 3.33, 0); flint_printf("\n");
 
     arb_add(Ag, Ag, K2, prec);
@@ -964,11 +974,11 @@ void HLT_type::compute_A_fast(arb_t Ag, arb_t Ag_ref, wrapper_smearing& Delta) {
 
     arb_mat_mul(v, A_ref, g, prec);
     arb_mat_mul(gAg, gt, v, prec);
-    arb_add(Ag_ref, Ag_ref, arb_mat_entry(gAg, 0, 0), prec);
+    arb_add(Ag_ref, Ag_ref, gAg00, prec);
 
     arb_mat_mul(gAg, gt, f_ref, prec);
-    arb_mul_si(arb_mat_entry(gAg, 0, 0), arb_mat_entry(gAg, 0, 0), -2, prec);
-    arb_add(Ag_ref, Ag_ref, arb_mat_entry(gAg, 0, 0), prec);
+    arb_mul_si(gAg00, gAg00, -2, prec);
+    arb_add(Ag_ref, Ag_ref, gAg00, prec);
 
     arb_add(Ag_ref, Ag_ref, K2_ref, prec);
 
