@@ -340,7 +340,8 @@ HLT_type::~HLT_type() {
 
     if (f_allocated) {
         arb_mat_clear(f);
-        arb_init(K2);
+        arb_clear(K2);
+        arb_clear(K2_ref);
     }
 
     if (info.normalize_kernel) {
@@ -742,6 +743,20 @@ int integrand_K2(acb_ptr res, const acb_t z, void* param, slong order, slong pre
     return 0;
 }
 
+int integrand_K20(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
+    if (order > 1)
+        flint_abort();  /* Would be needed for Taylor method. */
+
+    wrapper_smearing* p = (wrapper_smearing*)param;
+    acb_set_ui(res, 1);
+    p->function(res, z, p->params, order, prec);
+    if (p->HLT->info.normalize_kernel) acb_mul_arb(res, res, p->Norm, prec);
+    acb_mul(res, res, res, prec);
+
+    return 0;
+}
+
+
 wrapper_smearing::wrapper_smearing(int  (*f)(acb_ptr, const acb_t, void*, slong, slong), std::vector<double> p, HLT_type* HLT_) {
     function = f;
     Np = p.size();
@@ -804,6 +819,7 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
     arb_mat_init(f, info.tmax - info.tmin, 1);
     arb_mat_init(f_ref, info.tmax - info.tmin, 1);
     arb_init(K2);
+    arb_init(K2_ref);
     int Maxiter = 1e+6;
     acb_calc_integrate_opt_t options;
     acb_calc_integrate_opt_init(options);
@@ -847,6 +863,11 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
     int arb_calc_result = acb_calc_integrate(s, integrand_K2, param, a, b, goal, tol, options, info.prec);
     error(arb_calc_result == ARB_CALC_NO_CONVERGENCE, 1, "compute_f_EXP_b", "acb_calc_integrate K2 returned ARB_CALC_NO_CONVERGENCE");
     acb_get_real(K2, s);
+    // K2_ref
+    arb_calc_result = acb_calc_integrate(s, integrand_K20, param, a, b, goal, tol, options, info.prec);
+    error(arb_calc_result == ARB_CALC_NO_CONVERGENCE, 1, "compute_f_EXP_b", "acb_calc_integrate K2 returned ARB_CALC_NO_CONVERGENCE");
+    acb_get_real(K2_ref, s);
+
 
     acb_clear(a);
     acb_clear(b);
@@ -949,6 +970,7 @@ void HLT_type::compute_A_fast(arb_t Ag, arb_t Ag_ref, wrapper_smearing& Delta) {
     arb_mul_si(arb_mat_entry(gAg, 0, 0), arb_mat_entry(gAg, 0, 0), -2, prec);
     arb_add(Ag_ref, Ag_ref, arb_mat_entry(gAg, 0, 0), prec);
 
+    arb_add(Ag_ref, Ag_ref, K2_ref, prec);
 
     // clear
     arb_mat_clear(gAg);

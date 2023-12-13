@@ -182,6 +182,7 @@ public:
     arb_mat_t g;
     arb_t alpha_arb;
     arb_t K2;
+    arb_t K2_ref;
     bool f_allocated = false;
     HLT_type(HLT_type_input info_);
     ~HLT_type();
