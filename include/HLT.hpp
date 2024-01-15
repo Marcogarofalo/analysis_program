@@ -16,6 +16,8 @@ enum HLT_b {
     HLT_EXP_b = 0,
     HLT_EXP_bT = 1,
     HLT_deriv_EXP_b = 2,
+    HLT_EXP_bovert = 3,
+    HLT_EXP_bovert2 = 4,
     HLT_INVALID_b
 };
 
@@ -191,6 +193,8 @@ public:
 
     void compute_deriv_bt_re(arb_t b, arb_t  apt, int t, const arb_t E0);
     void compute_bt_re(arb_t b, arb_t  apt, int t, const arb_t E0);
+    void compute_btovert_re(arb_t b, arb_t  apt, int t, const arb_t E0);
+    void compute_btovert2_re(arb_t b, arb_t  apt, int t, const arb_t E0);
     void compute_btT_re(arb_t b, arb_t  apt, int t, const arb_t E0);
     // void compute_b_re(arb_t b, int  t, const arb_t E0);
     std::function<void(arb_t, arb_t, int, const arb_t)> compute_b_re;
@@ -217,6 +221,7 @@ public:
 int gaussian_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 int theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 int c_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
+int deriv_c_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 int c1_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 int c2_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 int no_smearing_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
