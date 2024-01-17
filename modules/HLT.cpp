@@ -169,8 +169,8 @@ void compute_A_HLT_EXP_boverT2(arb_t A, slong t, slong r, arb_t E0, arb_t alpha,
     arb_exp(aT, aT, prec);
     arb_div(A, aT, at, prec);
 
-    arb_div_ui(A, A, r*r, prec);
-    arb_div_ui(A, A, t*t, prec);
+    arb_div_ui(A, A, r * r, prec);
+    arb_div_ui(A, A, t * t, prec);
     arb_clear(at);arb_clear(aT);
 }
 
@@ -299,7 +299,7 @@ HLT_type::HLT_type(HLT_type_input info_) {
     arb_init(zero_arb);
     arb_init(alpha_arb);
     arb_set_d(alpha_arb, info.alpha);
-    arb_set_ui(zero_arb,0);
+    arb_set_ui(zero_arb, 0);
 
     double alpha = info.alpha;
 
@@ -491,7 +491,7 @@ void HLT_type::compute_btovert_re(arb_t b, arb_t  apt, int t, const arb_t E0) {
     arb_neg(b, apt);
     arb_mul(b, b, E0, prec);
     arb_exp(b, b, prec);
-    arb_div_ui(b,b,t,prec);
+    arb_div_ui(b, b, t, prec);
 }
 
 void HLT_type::compute_btovert2_re(arb_t b, arb_t  apt, int t, const arb_t E0) {
@@ -499,7 +499,7 @@ void HLT_type::compute_btovert2_re(arb_t b, arb_t  apt, int t, const arb_t E0) {
     arb_neg(b, apt);
     arb_mul(b, b, E0, prec);
     arb_exp(b, b, prec);
-    arb_div_ui(b,b,t*t,prec);
+    arb_div_ui(b, b, t * t, prec);
 }
 
 
@@ -572,7 +572,7 @@ int c_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong pr
     // if (order > 1)
     //     flint_abort();  /* Would be needed for Taylor method. */
 
-    //  return 1.0 / (1 + exp((x-p[0]) / p[1]));
+    //  return P[2] / (1 + exp((x-p[0]) / p[1]));
     arb_t* p = (arb_t*)param;
 
     arb_sub(acb_realref(res), acb_realref(z), p[0], prec);
@@ -586,25 +586,49 @@ int c_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong pr
     return 0;
 }
 
+// w= (P[0]-z)/p[1]
+// p[2]*( w/sqrt(1+w^2) +1)/2
+int algebraic_th_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
+    arb_t tmp;    arb_init(tmp);
+    arb_t* p = (arb_t*)param;
+    arb_ptr r = acb_realref(res);
+
+    arb_sub(tmp, p[0], acb_realref(z), prec);
+    arb_div(tmp, tmp, p[1], prec);
+
+    arb_mul(r, tmp, tmp, prec);
+    arb_add_ui(r, r, 1, prec);
+    arb_sqrt(r, r, prec);
+
+    arb_div(r, tmp, r, prec);
+    arb_add_ui(r, r, 1, prec);
+    arb_div_ui(r, r, 2, prec);
+
+    arb_mul(r, p[2], r, prec);
+
+    arb_clear(tmp);
+    return 0;
+}
+
 int deriv_c_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
     arb_t tmp;    arb_init(tmp);
     arb_t* p = (arb_t*)param;
-    arb_ptr r=acb_realref(res);
-    arb_ptr  Es=p[0];
-    arb_ptr  sigma=p[1];
+    arb_ptr r = acb_realref(res);
+    arb_ptr  Es = p[0];
+    arb_ptr  sigma = p[1];
 
 
-    arb_div(tmp,acb_realref(z),sigma,prec);
+    arb_div(tmp, acb_realref(z), sigma, prec);
     arb_exp(r, tmp, prec);
 
-    arb_div(tmp,Es,sigma,prec);
+    arb_div(tmp, Es, sigma, prec);
     arb_exp(tmp, tmp, prec);
 
-    arb_add(r,r,tmp,prec);
-    arb_log(r,r,prec);
-    arb_mul(r,r,sigma,prec);
+    arb_add(r, r, tmp, prec);
+    arb_log(r, r, prec);
+    arb_mul(r, r, sigma, prec);
 
-    arb_sub(r,r,acb_realref(z),prec);
+    arb_sub(r, r, acb_realref(z), prec);
     arb_mul(r, p[2], r, prec);
 
     arb_clear(tmp);
@@ -1041,7 +1065,7 @@ void HLT_type::compute_A_fast(arb_t Ag, arb_t Ag_ref, wrapper_smearing& Delta) {
     arb_mat_t gAg, gt, v;
     int& prec = info.prec;
     arb_mat_init(gAg, 1, 1);
-    arb_ptr gAg00=arb_mat_entry(gAg, 0, 0);
+    arb_ptr gAg00 = arb_mat_entry(gAg, 0, 0);
     arb_mat_init(v, info.tmax - info.tmin, 1);
     arb_mat_init(gt, 1, info.tmax - info.tmin);
     arb_mat_transpose(gt, g);

@@ -226,6 +226,7 @@ int c1_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong p
 int c2_theta_s_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 int no_smearing_for_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 
+int algebraic_th_HLT(acb_ptr res, const acb_t z, void* param, slong order, slong prec);
 
 
 #endif // !HLT_H
