@@ -208,7 +208,8 @@ public:
         const char* description, wrapper_smearing& Delta, FILE* file_jack, fit_type_HLT fit_info);
 
     void compute_f_EXP_b(wrapper_smearing& Delta);
-
+    void store_f_EXP_b(std::string filename);
+    void load_f_EXP_b(std::string filename);
 
     void compute_A_and_B(wrapper_smearing& Delta, int  il);
     void compute_tilderho(double* rho, double** r, fit_type_HLT& fit_info);

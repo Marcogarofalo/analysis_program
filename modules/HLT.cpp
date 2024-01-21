@@ -4,7 +4,9 @@
 #include "tower.hpp"
 #include <gsl/gsl_integration.h>
 
+
 #include <stdio.h>
+#include <limits>
 // #include <mpir.h>
 #include "myarb.hpp"
 #include "arb_calc.h"
@@ -999,6 +1001,94 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
     f_allocated = true;
 }
 
+void HLT_type::store_f_EXP_b(std::string filename) {
+    FILE* file = open_file(filename.c_str(), "w+");
+    int count = 0;
+    count += fprintf(file, "tmin: %d\n", info.tmin);
+    count += fprintf(file, "tmax: %d\n", info.tmax);
+    count += fprintf(file, "T: %d\n", info.T);
+    count += fprintf(file, "E0: %.14g\n", info.E0);
+    count += fprintf(file, "type_b: %d\n", info.type_b);
+    count += fprintf(file, "prec: %d\n", info.prec);
+    count += fprintf(file, "alpha: %.14g\n", info.alpha);
+    count += fprintf(file, "normalize_kernel: %d\n", info.normalize_kernel);
+
+    count += fprintf(file, "integration_deg_limit: %d\n", info.integration_deg_limit);
+    count += fprintf(file, "integration_eval_limit: %d\n", info.integration_eval_limit);
+    count += fprintf(file, "integration_depth_limit: %d\n", info.integration_depth_limit);
+    count += fprintf(file, "integration_verbose: %d\n", info.integration_verbose);
+    count += fprintf(file, "integration_maxE: %.12g\n", info.integration_maxE);
+    for (int t = info.tmax - 1;t >= info.tmin;t--) {
+        arb_dump_file(file, arb_mat_entry(f, t - info.tmin, 0));
+        count += fprintf(file, "\n");
+        arb_dump_file(file, arb_mat_entry(f_ref, t - info.tmin, 0));
+        count += fprintf(file, "\n");
+    }
+    // error(count != 304, 1, "HLT_type::store_f_EXP_b", "fprintf error count=%d", count);
+    arb_dump_file(file, K2);    fprintf(file, "\n");
+    arb_dump_file(file, K2_ref);    fprintf(file, "\n");
+    fclose(file);
+}
+
+int read_and_check_HLT_info(FILE* file, int i) {
+    char s[NAMESIZE];
+    int tmp;
+    int count = fscanf(file, "%s %d\n", s, &tmp);
+    error(i != tmp, 1, "HLT_type::load_f_EXP_b", "%s differ:\nstored: %d \nloaded %d  ", s, i, tmp);
+    return count;
+}
+int read_and_check_HLT_info(FILE* file, double a) {
+    char s[NAMESIZE];
+    double tmp;
+    int count = fscanf(file, "%s %lf\n", s, &tmp);
+    printf("%s %.12g\n",s,tmp);
+    error(fabs(a - tmp) > 1e-12, 1, "HLT_type::load_f_EXP_b", "%s differ:\nstored: %.12g \nloaded %.12g diff: %.12g ", s, a, tmp,fabs(a - tmp));
+    return count;
+}
+
+void HLT_type::load_f_EXP_b(std::string filename) {
+    if (f_allocated == true) {
+        printf("HLT: recomputing f\n");
+        arb_mat_clear(f);
+        arb_mat_clear(f_ref);
+        arb_clear(K2);
+        arb_clear(K2_ref);
+    }
+    arb_mat_init(f, info.tmax - info.tmin, 1);
+    arb_mat_init(f_ref, info.tmax - info.tmin, 1);
+    arb_init(K2);
+    arb_init(K2_ref);
+
+    FILE* file = open_file(filename.c_str(), "r");
+    int count = 0;
+    count += read_and_check_HLT_info(file, info.tmin);
+    count += read_and_check_HLT_info(file, info.tmax);
+    count += read_and_check_HLT_info(file, info.T);
+    count += read_and_check_HLT_info(file, info.E0);
+    count += read_and_check_HLT_info(file, (int) info.type_b);
+    count += read_and_check_HLT_info(file, info.prec);
+    count += read_and_check_HLT_info(file, info.alpha);
+    count += read_and_check_HLT_info(file, info.normalize_kernel);
+
+    count += read_and_check_HLT_info(file, info.integration_deg_limit);
+    count += read_and_check_HLT_info(file, info.integration_eval_limit);
+    count += read_and_check_HLT_info(file, info.integration_depth_limit);
+    count += read_and_check_HLT_info(file, info.integration_verbose);
+    count += read_and_check_HLT_info(file, info.integration_maxE);
+
+    for (int t = info.tmax - 1;t >= info.tmin;t--) {
+        arb_load_file(arb_mat_entry(f, t - info.tmin, 0), file);
+        arb_load_file(arb_mat_entry(f_ref, t - info.tmin, 0), file);
+
+    }
+    arb_load_file(K2, file);
+    arb_load_file(K2_ref, file);
+    // error(count != 20, 1, "HLT_type::store_f_EXP_b", "fprintf error count=%d", count);
+
+    fclose(file);
+    f_allocated = true;
+}
+
 
 
 int integrand_A(acb_ptr res, const acb_t z, void* param, slong order, slong prec) {
@@ -1443,7 +1533,7 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
 
     char name[NAMESIZE] = "HLT";
     double* chi2;
-    struct fit_result fit_out = try_fit(option, const_fit_info.tmin, const_fit_info.tmax, 1, mt, rho, Njack, &chi2, const_fit_info);
+    struct fit_result fit_out = try_fit(option, const_fit_info.tmin, const_fit_info.tmax, 1, mt, rho, Njack, &chi2, const_fit_info);// option is not used 
     file_head.l0 = store_l0;
 
     //////////////////////////////////// print Aover B
