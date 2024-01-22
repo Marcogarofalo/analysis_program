@@ -1435,7 +1435,8 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
             printf("chi2=%.15g\n", chi2);
             char yn[NAMESIZE];
             printf("do you want to continue[y/n]:\n");
-            scanf("%s", yn);
+            int i=scanf("%s", yn);
+            error(i==0, 1, "non_linear_fit_Nf","invalid read"); 
             if (strcmp("y", yn) == 0 || strcmp("yes", yn) == 0 || strcmp("Y", yn) == 0 || strcmp("Y", yn) == 0) {
                 continue;
             }

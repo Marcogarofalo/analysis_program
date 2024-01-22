@@ -38,6 +38,14 @@ void generic_header::print_header() {
     for (double theta : thetas) printf("%g ", theta);
     printf("\ngammas ");
     for (std::string gamma : gammas) printf("%s ", gamma.c_str());
+    printf("\nsmearing ");
+    for (std::string s : smearing) printf("%s ", s.c_str());
+    printf("\nbananas ");
+    for (int banana : bananas) printf("%d ", banana);
+    printf("\noranges ");
+    for (double theta : oranges) printf("%g ", theta);
+
+    
     printf("\n");
 }
 template<class T>
@@ -54,8 +62,10 @@ template<> void write_vector<std::string>(FILE* file, std::vector<std::string> v
         for (char& c : mu) {
             fwrite(&c, 1, 1, file);
         }
-        char c='\0';
-        fwrite(&c, 1, 1, file);
+        if (mu.back()!='\0'){
+            char c='\0';
+            fwrite(&c, 1, 1, file);
+        }
     }
 }
 
@@ -92,12 +102,8 @@ void read_vector<std::string>(FILE* file, std::vector<std::string>& v) {
     int n;
     int i = fread(&n, sizeof(int), 1, file);
     v.resize(n);
-    char a[7];
     for (int j = 0;j < n;j++) {
         v[j]="";
-        // i += fread(a, sizeof(6 + 1), 1, file);
-        // v[j] = a;
-        // printf("reading %s\n", a);
         char c[1];
         do {
             i += fread(c, 1, 1, file);
@@ -144,6 +150,39 @@ void generic_header::read_header(FILE* file) {
 }
 
 
+void generic_header::read_header_jack(FILE* file) {
+    int i = 0;
+    i += fread(&Njack, sizeof(int), 1, file);
+    i += fread(&T, sizeof(int), 1, file);
+    i += fread(&L, sizeof(int), 1, file);
+    // i += fread(&size, sizeof(int), 1, file);
+    i += fread(&ncorr, sizeof(int), 1, file);
+    i += fread(&beta, sizeof(double), 1, file);
+    i += fread(&kappa, sizeof(double), 1, file);
+
+    read_vector(file, mus);
+    read_vector(file, rs);
+    read_vector(file, thetas);
+    read_vector(file, gammas);
+    read_vector(file, smearing);
+
+    read_vector(file, bananas);
+    read_vector(file, oranges);
+
+    i += fread(&size, sizeof(int), 1, file);
+    error(size != ncorr * 2 * T, 1, "generic_header::read_header",
+        "size of the data chunk=%d is not equal to ncorr*2*T=%d\n", size, ncorr * 2 * T);
+    struct_size = ftell(file);
+
+    // fseek(file, 0, SEEK_END);
+    // int tmp = ftell(file);
+    // tmp -= struct_size;
+    // int confs = tmp / (sizeof(int) + (size) * sizeof(double));
+    // error(confs != Njack, 1, "generic_header::read_header",
+    //     "size of the data chunk is not equal to ncorr*2*T\n");
+    // fseek(file, struct_size, SEEK_SET);
+
+}
 // void data_single::cut_confs(int N) {
 //     if (N >= Njack - 1) { printf("error: trying to cut the configuration up to N= %d > Njack = %d", N, Njack); exit(1); }
 
