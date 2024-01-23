@@ -800,3 +800,16 @@ double lhs_identity(int n, int e, int j, data_all gjack, struct fit_type fit_inf
 
     return r;
 }
+
+
+double rhs_const(int n, int Nvar, double* x, int Npar, double* P) {
+    double r=P[0];
+    return r;
+}
+
+double rhs_a2(int n, int Nvar, double* x, int Npar, double* P) {
+    double r;
+    double a2 = x[0];
+    r = P[0] + a2 * P[1];
+    return r;
+}

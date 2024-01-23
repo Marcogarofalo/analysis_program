@@ -273,5 +273,8 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
 
 double lhs_identity(int n, int e, int j, data_all gjack, struct fit_type fit_info);
 
+double rhs_const(int n, int Nvar, double* x, int Npar, double* P);
+double rhs_a2(int n, int Nvar, double* x, int Npar, double* P);
+
 #endif
 
