@@ -144,7 +144,7 @@ void generic_header::read_header(FILE* file) {
     tmp -= struct_size;
     int confs = tmp / (sizeof(int) + (size) * sizeof(double));
     error(confs != Njack, 1, "generic_header::read_header",
-        "size of the data chunk is not equal to ncorr*2*T\n");
+        "number of confs read %d,  while from the file size we expect %d\n",Njack,confs);
     fseek(file, struct_size, SEEK_SET);
 
 }
