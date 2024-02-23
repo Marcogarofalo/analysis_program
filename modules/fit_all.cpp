@@ -45,7 +45,7 @@ void generic_header::print_header() {
     printf("\noranges ");
     for (double theta : oranges) printf("%g ", theta);
 
-    
+
     printf("\n");
 }
 template<class T>
@@ -62,8 +62,8 @@ template<> void write_vector<std::string>(FILE* file, std::vector<std::string> v
         for (char& c : mu) {
             fwrite(&c, 1, 1, file);
         }
-        if (mu.back()!='\0'){
-            char c='\0';
+        if (mu.back() != '\0') {
+            char c = '\0';
             fwrite(&c, 1, 1, file);
         }
     }
@@ -103,7 +103,7 @@ void read_vector<std::string>(FILE* file, std::vector<std::string>& v) {
     int i = fread(&n, sizeof(int), 1, file);
     v.resize(n);
     for (int j = 0;j < n;j++) {
-        v[j]="";
+        v[j] = "";
         char c[1];
         do {
             i += fread(c, 1, 1, file);
@@ -144,7 +144,63 @@ void generic_header::read_header(FILE* file) {
     tmp -= struct_size;
     int confs = tmp / (sizeof(int) + (size) * sizeof(double));
     error(confs != Njack, 1, "generic_header::read_header",
-        "number of confs read %d,  while from the file size we expect %d\n",Njack,confs);
+        "number of confs read %d,  while from the file size we expect %d\n", Njack, confs);
+    fseek(file, struct_size, SEEK_SET);
+
+}
+
+void generic_header::read_header_debug(FILE* file) {
+    int i = 0;
+    i += fread(&Njack, sizeof(int), 1, file);
+    printf("Njack: %d\n", Njack);
+    i += fread(&T, sizeof(int), 1, file);
+    printf("T: %d\n", T);
+    i += fread(&L, sizeof(int), 1, file);
+    printf("L: %d\n", L);
+    // i += fread(&size, sizeof(int), 1, file);
+    i += fread(&ncorr, sizeof(int), 1, file);
+    printf("ncorr: %d\n", ncorr);
+    i += fread(&beta, sizeof(double), 1, file);
+    printf("beta: %g\n", beta);
+    i += fread(&kappa, sizeof(double), 1, file);
+    printf("kappa: %g\n", kappa);
+
+    read_vector(file, mus);
+    printf("mu: "); for (int i = 0;i < mus.size();i++) printf(" %g ", mus[i]); printf("\n");
+    read_vector(file, rs);
+    printf("rs: "); for (int i = 0;i < rs.size();i++) printf(" %g ", rs[i]); printf("\n");
+    read_vector(file, thetas);
+    printf("thetas: "); for (int i = 0;i < thetas.size();i++) printf(" %g ", thetas[i]); printf("\n");
+    read_vector(file, gammas);
+    printf("gammas: "); for (int i = 0;i < gammas.size();i++) printf(" %s ", gammas[i].c_str()); printf("\n");
+    read_vector(file, smearing);
+    printf("smearing: "); for (int i = 0;i < smearing.size();i++) printf(" %s ", smearing[i].c_str()); printf("\n");
+
+
+    read_vector(file, bananas);
+    printf("bananas: "); for (int i = 0;i < bananas.size();i++) printf(" %d ", bananas[i]); printf("\n");
+
+    read_vector(file, oranges);
+    printf("oranges: "); for (int i = 0;i < oranges.size();i++) printf(" %g ", oranges[i]); printf("\n");
+
+
+
+    i += fread(&size, sizeof(int), 1, file);
+    printf("size: %d\n", size);
+
+    error(size != ncorr * 2 * T, 1, "generic_header::read_header",
+        "size of the data chunk=%d is not equal to ncorr*2*T=%d\n", size, ncorr * 2 * T);
+    struct_size = ftell(file);
+
+    fseek(file, 0, SEEK_END);
+    int tmp = ftell(file);
+    printf("struct_size: %d\n", struct_size);
+    printf("ftell end of file: %d\n", tmp);
+    tmp -= struct_size;
+    int confs = tmp / (sizeof(int) + (size) * sizeof(double));
+    printf("confs: %d\n", confs);
+    error(confs != Njack, 1, "generic_header::read_header",
+        "number of confs read %d,  while from the file size we expect %d\n", Njack, confs);
     fseek(file, struct_size, SEEK_SET);
 
 }
@@ -803,7 +859,7 @@ double lhs_identity(int n, int e, int j, data_all gjack, struct fit_type fit_inf
 
 
 double rhs_const(int n, int Nvar, double* x, int Npar, double* P) {
-    double r=P[0];
+    double r = P[0];
     return r;
 }
 
