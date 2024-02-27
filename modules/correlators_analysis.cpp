@@ -121,28 +121,30 @@ double der2corr_M_eff_T(int t, int T, double** in) {
     }
     return mass;
 }
+double M_eff_T_ct_ctp1(int t, int T, double ct, double ctp1) {
 
-double M_eff_T(int t, int T, double** in) {
-    double mass;
+    double  res, tmp_mass, u, d;
+    int i;
 
-    double ct[1], ctp[1], res, tmp_mass, u, d;
-    int i, L0;
-
-    ct[0] = in[t][0];
-    ctp[0] = in[t + 1][0];
-
-    mass = log(ct[0] / ctp[0]);
+    double mass = log(ct / ctp1);
 
     res = 1;
     i = t;
     while (res > 1e-12) {
         u = 1. + exp(-mass * (T - 2. * i - 2.));
         d = 1. + exp(-mass * (T - 2. * i));
-        tmp_mass = log((ct[0] / ctp[0]) * (u / d));
+        tmp_mass = log((ct / ctp1) * (u / d));
         res = fabs(tmp_mass - mass);
         mass = tmp_mass;
     }
 
+    return mass;
+}
+
+
+double M_eff_T(int t, int T, double** in) {
+ 
+    double mass = M_eff_T_ct_ctp1(t, T, in[t][0], in[t + 1][0]);
     return mass;
 }
 
@@ -303,7 +305,7 @@ double lhs_function_f_PS_GEVP(int j, double**** in, int t, struct fit_type fit_i
     double mu1 = fit_info.ext_P[1][j];
     double mu2 = fit_info.ext_P[2][j];
 
-    
+
     double me = in[j][fit_info.corr_id[0]][t][0] * sqrt(2 * M) / sqrt((exp(-t * M) + exp(-(fit_info.T - t) * M)));
     return (mu1 + mu2) * me / (M * sinh(M));
 }
@@ -868,12 +870,12 @@ double** r_equal_value_or_vector(double** lambdat, double** vec, fit_type fit_in
 
         for (int n1 = 0; n1 < sqN; n1++) {
             for (int ni = 0; ni < sqN; ni++) {
-                norm[n1] += vec[ni + n1 * sqN][0] * amp[ni + n1 * sqN][0] ;
+                norm[n1] += vec[ni + n1 * sqN][0] * amp[ni + n1 * sqN][0];
             }
         }
         for (int n1 = 0; n1 < sqN; n1++) {
             for (int n2 = 0; n2 < sqN; n2++) {
-                amp[n1+n2*sqN][0] =  amp[n1 + n2 * sqN][0]/sqrt((norm[n2])) ;
+                amp[n1 + n2 * sqN][0] = amp[n1 + n2 * sqN][0] / sqrt((norm[n2]));
             }
         }
         for (int n = 0; n < N; n++) {
@@ -1012,7 +1014,7 @@ void add_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack,
         }
     }
 
-   
+
 
     for (int j = 0; j < Njack; j++) {
         for (int t = 0; t < file_head.l0; t++) {

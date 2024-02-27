@@ -8,6 +8,7 @@
 //////////////////////////////////////////////
 double laplacian_M_eff_T(int t, int T, double** in);
 double der2corr_M_eff_T(int t, int T, double** in);
+double M_eff_T_ct_ctp1(int t, int T, double ct, double ctp1);
 double M_eff_T(int t, int T, double** in);
 double M_eff_sinh_T(int t, int T, double** in);
 double M_eff_log(int t, int T, double** in);
