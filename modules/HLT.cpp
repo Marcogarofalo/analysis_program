@@ -1434,7 +1434,7 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
     compute_A(A0_arb, A0_arb_ref, Delta);
     A0 = arbtod(A0_arb);
     A0_ref = arbtod(A0_arb_ref);
-    printf("A0=%.12g\n", A0);
+    // printf("A0=%.12g\n", A0);
 
 
     double Bnorm = conf_jack[Njack - 1][id][Tmin][0] * conf_jack[Njack - 1][id][Tmin][0];
@@ -1456,8 +1456,8 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
         fit_info, { info.E0, fit_info.maxE_check_reconstuct ,fit_info.stepsE_check_reconstuct });
     compute_tilderho(rho[same], r, fit_info);
 
-    printf("%-20.12g %-20.12g  %-20.12g   %-20.12g  %-20.12g    %d\n", lambdas[same], rho[same][Njack - 1],
-        myres->comp_error(rho[same]), diff[Njack - 1], myres->comp_error(diff), same);
+    // printf("%-20.12g %-20.12g  %-20.12g   %-20.12g  %-20.12g    %d\n", lambdas[same], rho[same][Njack - 1],
+    //     myres->comp_error(rho[same]), diff[Njack - 1], myres->comp_error(diff), same);
 
     // update
 
@@ -1480,8 +1480,8 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
         // fprintf(fit_info.outfile_AoverB, "%-20.12g %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %s\n",
         //     lambdas[iter], Ag[iter], Bg[iter], A0, Ag[iter] / A0 + lambdas[iter] * Bg[iter],
         //     rho[iter][Njack - 1], myres->comp_error(rho[iter]), description);
-        printf("%-20.12g %-20.12g  %-20.12g   %-20.12g  %-20.12g    %d %d\n", lambdas[iter], rho[iter][Njack - 1],
-            myres->comp_error(rho[iter]), diff[Njack - 1], myres->comp_error(diff), iter, same);
+        // printf("%-20.12g %-20.12g  %-20.12g   %-20.12g  %-20.12g    %d %d\n", lambdas[iter], rho[iter][Njack - 1],
+        //     myres->comp_error(rho[iter]), diff[Njack - 1], myres->comp_error(diff), iter, same);
 
         if (diff[Njack - 1] < myres->comp_error(rho[iter])) {// if we found that the result is compatible with the previuos
             same++;
@@ -1507,7 +1507,7 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
     }
     same_end = same_start - 1 + same_max;
     // same_start++;// there is an offset
-    printf("same [%d,%d]  n= %d\n", same_start, same_end, same_max);
+    // printf("same [%d,%d]  n= %d\n", same_start, same_end, same_max);
 
     // struct fit_type fit_info;
     struct fit_type const_fit_info;
