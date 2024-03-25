@@ -1023,7 +1023,7 @@ void add_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack,
                 corr_out[j][ncorr_conf_jack + n][t][0] = r[n][0];
                 corr_out[j][ncorr_conf_jack + n][t][1] = r[n][1];
             }
-            free(r);
+            free_2(fit_info.N, r);
         }
     }
 
