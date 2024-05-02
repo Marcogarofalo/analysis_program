@@ -91,6 +91,7 @@ struct  fit_type {
     double sigma = 0.5;
 
     std::vector<int> corr_id = {};
+    std::vector<double>  ave_P = {};
     std::vector<double>  Prange = {};
     std::vector<double>  guess = {};
     std::vector<int> myen = {};
