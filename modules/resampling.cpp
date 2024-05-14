@@ -173,8 +173,10 @@ void symmetrise_jackboot(int  Np1, int var, int T, double**** in, int sym) {
     }
     for (int j = 0; j < Np1;j++) {
         for (int t = 1; t < T / 2;t++) {
-            in[j][var][t][0] = (in[j][var][t][0] + sym * in[j][var][T - t][0]) / 2.0;
-            in[j][var][T - t][0] = in[j][var][t][0];
+            for (int ri = 0; ri < 2; ri++) {
+                in[j][var][t][ri] = (in[j][var][t][ri] + sym * in[j][var][T - t][ri]) / 2.0;
+                in[j][var][T - t][ri] = in[j][var][t][ri];
+            }
         }
     }
 }
