@@ -48,6 +48,40 @@ void resampling_f::free_res(int var, int t, double**** in) {
     free(in);
 }
 
+double* resampling_f::create_copy(double* in) {
+    double* out = (double*)malloc(sizeof(double) * Njack);
+    for (int j = 0;j < Njack;j++)  out[j] = in[j];
+    return(out);
+}
+void resampling_f::copy(double* out, double* in) {
+    for (int j = 0;j < Njack;j++)  out[j] = in[j];
+
+}
+void resampling_f::add(double* out, double* in1, double* in2) {
+    for (int j = 0;j < Njack;j++)  out[j] = in1[j] + in2[j];
+
+}
+void resampling_f::mult(double* out, double* in1, double* in2) {
+    for (int j = 0;j < Njack;j++)  out[j] = in1[j] * in2[j];
+
+}
+void resampling_f::mult(double* out, double* in1, double a) {
+    for (int j = 0;j < Njack;j++)  out[j] = in1[j] * a;
+
+}
+void resampling_f::div(double* out, double* in1, double* in2) {
+    for (int j = 0;j < Njack;j++)  out[j] = in1[j] / in2[j];
+
+}
+void resampling_f::div(double* out, double* in1, double a) {
+    for (int j = 0;j < Njack;j++)  out[j] = in1[j] / a;
+
+}
+void resampling_f::linear_comb(double* out, double a, double* in1, double b, double* in2) {
+    for (int j = 0;j < Njack;j++)  out[j] = a * in1[j] + b * in2[j];
+
+}
+
 
 void resampling_f::write_res_bin(int N, double* jack, char* outname) {
     int j;
@@ -147,7 +181,7 @@ double**** resampling_boot::create(int  N, int var, int t, double**** in) {
     }
 
 
-    for (ib = 0;ib < (Njack-1);ib++) {
+    for (ib = 0;ib < (Njack - 1);ib++) {
         for (i = 0;i < N;i++) {
             b = (int)rand() % N;  //have to stay here, because I want that all the var, t , l to have the same random number 
             for (j = 0;j < var;j++) {
@@ -164,7 +198,7 @@ double**** resampling_boot::create(int  N, int var, int t, double**** in) {
         for (j = 0;j < var;j++) {
             for (k = 0;k < t;k++) {
                 for (l = 0;l < 2;l++) {
-                    boot[Njack-1][j][k][l] += in[i][j][k][l];
+                    boot[Njack - 1][j][k][l] += in[i][j][k][l];
                 }
             }
         }

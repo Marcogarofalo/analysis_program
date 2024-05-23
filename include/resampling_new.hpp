@@ -45,6 +45,14 @@ public:
   virtual void comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong prec) = 0;
 #endif // WITH_ARB
 
+  double *create_copy(double *in);
+  void copy(double *out, double *in);
+  void add(double *out, double *in1, double *in2);
+  void mult(double *out, double *in1, double *in2);
+  void mult(double *out, double *in1, double a);
+  void div(double *out, double *in1, double *in2);
+  void div(double *out, double *in1, double a);
+  void linear_comb(double *out, double a, double *in1, double b, double *in2);
 
 };
 
