@@ -1003,6 +1003,7 @@ void HLT_type::compute_f_EXP_b(wrapper_smearing& Delta) {
 
 void HLT_type::store_f_EXP_b(std::string filename) {
     FILE* file = open_file(filename.c_str(), "w+");
+    printf("writing coeff f from file: %s\n", filename.c_str());
     int count = 0;
     count += fprintf(file, "tmin: %d\n", info.tmin);
     count += fprintf(file, "tmax: %d\n", info.tmax);
@@ -1041,14 +1042,14 @@ int read_and_check_HLT_info(FILE* file, double a) {
     char s[NAMESIZE];
     double tmp;
     int count = fscanf(file, "%s %lf\n", s, &tmp);
-    printf("%s %.12g\n",s,tmp);
-    error(fabs(a - tmp) > 1e-12, 1, "HLT_type::load_f_EXP_b", "%s differ:\nstored: %.12g \nloaded %.12g diff: %.12g ", s, a, tmp,fabs(a - tmp));
+    printf("%s %.12g\n", s, tmp);
+    error(fabs(a - tmp) > 1e-12, 1, "HLT_type::load_f_EXP_b", "%s differ:\nstored: %.12g \nloaded %.12g diff: %.12g ", s, a, tmp, fabs(a - tmp));
     return count;
 }
 
 void HLT_type::load_f_EXP_b(std::string filename) {
     if (f_allocated == true) {
-        printf("HLT: recomputing f\n");
+        printf("HLT: reallocating f\n");
         arb_mat_clear(f);
         arb_mat_clear(f_ref);
         arb_clear(K2);
@@ -1060,12 +1061,13 @@ void HLT_type::load_f_EXP_b(std::string filename) {
     arb_init(K2_ref);
 
     FILE* file = open_file(filename.c_str(), "r");
+    printf("reading coeff f from file: %s\n", filename.c_str());
     int count = 0;
     count += read_and_check_HLT_info(file, info.tmin);
     count += read_and_check_HLT_info(file, info.tmax);
     count += read_and_check_HLT_info(file, info.T);
     count += read_and_check_HLT_info(file, info.E0);
-    count += read_and_check_HLT_info(file, (int) info.type_b);
+    count += read_and_check_HLT_info(file, (int)info.type_b);
     count += read_and_check_HLT_info(file, info.prec);
     count += read_and_check_HLT_info(file, info.alpha);
     count += read_and_check_HLT_info(file, info.normalize_kernel);
@@ -1465,47 +1467,73 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
     int same_max = 1;
     int same_start = 0;
     same++;
-    int iter = 1;
-    while (iter < fit_info.nlambda_max) {
+
+    for (int iter = 1; iter < fit_info.nlambda_max; iter++) {
         lambdas[iter] = lambdas[iter - 1] * fit_info.reduce_lambda;
         compute_g(lambdas[iter]);
         compute_A_and_B(Delta, iter);
         check_reconstruction(Delta, description, iter,
             fit_info, { info.E0, fit_info.maxE_check_reconstuct ,fit_info.stepsE_check_reconstuct });
         compute_tilderho(rho[iter], r, fit_info);
-
-        for (int j = 0;j < Njack;j++) {
-            diff[j] = fabs(rho[iter - same][j] - rho[iter][j]);
-        }
-        // fprintf(fit_info.outfile_AoverB, "%-20.12g %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %-20.12g  %s\n",
-        //     lambdas[iter], Ag[iter], Bg[iter], A0, Ag[iter] / A0 + lambdas[iter] * Bg[iter],
-        //     rho[iter][Njack - 1], myres->comp_error(rho[iter]), description);
-        // printf("%-20.12g %-20.12g  %-20.12g   %-20.12g  %-20.12g    %d %d\n", lambdas[iter], rho[iter][Njack - 1],
-        //     myres->comp_error(rho[iter]), diff[Njack - 1], myres->comp_error(diff), iter, same);
-
-        if (diff[Njack - 1] < myres->comp_error(rho[iter])) {// if we found that the result is compatible with the previuos
-            same++;
-        }
-        else if (same > 1) {//we need to try shifting the plateaux of 1 reset same
-            for (int ib = 1; ib < same;ib++) {
-                for (int j = 0;j < Njack;j++) {
-                    diff[j] = fabs(rho[iter - same + ib][j] - rho[iter][j]);
-                }
-                if (diff[Njack - 1] < myres->comp_error(rho[iter])) {
-                    // printf("shift the pateaux forward\n");
-                    break;
-                }
-                else { same--; }
-            }
-
-        }
-        if (same >= same_max) {
-            same_max = same;
-            same_start = iter - same + 1;
-        }
-        iter++;
     }
-    same_end = same_start - 1 + same_max;
+    if (fit_info.plateau_strategy == HLT_plateau_strategy_left) {
+
+        for (int iter = 1; iter < fit_info.nlambda_max; iter++) {
+
+            diff[Njack - 1] = fabs(rho[iter - same][Njack - 1] - rho[iter][Njack - 1]);
+
+            if (diff[Njack - 1] < myres->comp_error(rho[iter])) {// if we found that the result is compatible with the previuos
+                same++;
+            }
+            else if (same > 1) {//we need to try shifting the plateaux of 1 reset same
+                for (int ib = 1; ib < same;ib++) {
+
+                    diff[Njack - 1] = fabs(rho[iter - same + ib][Njack - 1] - rho[iter][Njack - 1]);
+                    if (diff[Njack - 1] < myres->comp_error(rho[iter])) {
+                        // printf("shift the pateaux forward\n");
+                        break;
+                    }
+                    else { same--; }
+                }
+
+            }
+            if (same >= same_max) {
+                same_max = same;
+                same_start = iter - same + 1;
+            }
+            // iter++;
+        }
+        same_end = same_start - 1 + same_max;
+    }
+    if (fit_info.plateau_strategy == HLT_plateau_strategy_right) {
+
+        for (int iter = 1; iter < fit_info.nlambda_max; iter++) {
+            diff[Njack - 1] = fabs(rho[iter - same][Njack - 1] - rho[iter][Njack - 1]);
+
+            if (diff[Njack - 1] < myres->comp_error(rho[iter])) {// if we found that the result is compatible with the previuos
+                same++;
+            }
+            else if (same > 1) {//we need to try shifting the plateaux of 1 reset same
+                for (int ib = 1; ib < same;ib++) {
+                    diff[Njack - 1] = fabs(rho[iter - same + ib][Njack - 1] - rho[iter][Njack - 1]);
+
+                    if (diff[Njack - 1] < myres->comp_error(rho[iter])) {
+                        // printf("shift the pateaux forward\n");
+                        break;
+                    }
+                    else { same--; }
+                }
+            }
+            
+            if (same >= same_max && same <= (fit_info.nsame +1)) {
+                same_max = same;
+                same_start = iter - same + 1;
+            }
+            // iter++;
+        }
+        same_end = same_start - 1 + same_max;
+    }
+
     // same_start++;// there is an offset
     // printf("same [%d,%d]  n= %d\n", same_start, same_end, same_max);
 

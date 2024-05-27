@@ -27,6 +27,13 @@ enum HLT_A_strategy {
     HLT_A_INVALID
 };
 
+enum HLT_plateau_strategy {
+    HLT_plateau_strategy_left = 0,
+    HLT_plateau_strategy_right = 1,
+    HLT_PLATEAU_STRATEGY_INVALID
+};
+
+
 // class  HLT_type_d;
 
 class HLT_out {
@@ -103,6 +110,7 @@ public:
     FILE* outfile = NULL;
     int nsame = 4;
     int nlambda_max = 20;
+    HLT_plateau_strategy plateau_strategy = HLT_plateau_strategy_left;
     double reduce_lambda = 0.75;
     bool diag_cov = false;
 };
