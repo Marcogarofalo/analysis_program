@@ -1243,7 +1243,7 @@ void HLT_type::check_reconstruction(wrapper_smearing& Delta, const char* descrip
     char name[NAMESIZE];
     mysprintf(name, NAMESIZE, "%s_lam%.8g", description, lambdas[il]);
     fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", name, info.tmax, info.tmax, lambdas[il], 0.0);
-    fprintf(outfile, "%.12g  %.12g \n", Ag[il] / A0, A0);
+    fprintf(outfile, "%.12g  %.12g  %.12g  %.12g\n", Ag[il] / A0, A0, Ag_ref[il] / A0_ref, A0_ref);
     acb_clear(res);
     arb_clear(res_re);
     acb_clear(E);
