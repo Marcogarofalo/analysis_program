@@ -143,7 +143,7 @@ double M_eff_T_ct_ctp1(int t, int T, double ct, double ctp1) {
 
 
 double M_eff_T(int t, int T, double** in) {
- 
+
     double mass = M_eff_T_ct_ctp1(t, T, in[t][0], in[t + 1][0]);
     return mass;
 }
@@ -387,7 +387,7 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
     int N = fit_info.N;                                // functions to fit
     int* en = (int*)malloc(sizeof(int) * fit_info.N); // data to fit for each function
     for (int i = 0; i < fit_info.N; i++)
-        en[0] = (tmax - tmin) / sep + 1;
+        en[i] = (tmax - tmin) / sep + 1;
     int en_tot = 0; // total data to fit
     for (int n = 0; n < N; n++) {
         en_tot += en[n];
@@ -407,7 +407,7 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
 
     chi2j = (double*)malloc(sizeof(double) * Njack);
 
-    y = double_malloc_3(Njack, tmax - tmin + 1, 2);
+    y = double_malloc_3(Njack, (tmax - tmin + 1) * fit_info.N, 2);
     x = double_malloc_3(Njack, en_tot, Nvar);
 
     for (int j = 0; j < Njack; j++) {
@@ -430,9 +430,9 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
     for (int n = 0; n < N; n++) {
         for (int i = tmin; i <= tmax; i += sep) {
             for (int j = 0; j < Njack; j++) {
-                y[j][count][0] = corr_J[i][j];
+                y[j][count][0] = corr_J[i + (file_head.l0 / 2) * n][j];
                 // y[j][count][1] = error_jackboot(option[4], Njack, corr_J[i]);
-                y[j][count][1] = corr_ave[i][1];
+                y[j][count][1] = corr_ave[i + (file_head.l0 / 2) * n][1];
 
             }
             count++;
@@ -444,7 +444,20 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
     for (int j = Njack - 1; j >= 0; j--) {
         // tmp=linear_fit( (tmax-tmin)/sep +1, x, y[j],  1,constant_fit_to_try );
 
+        // if (j == Njack - 1) {
+        //     printf("en_tot =%d\n", en_tot);
+        //     count=0;
+        //     for (int i = 0; i < N; i++) {
+        //         for (int e= 0; e < en[i]; e++) {
+        //             for (int v = 0; v < Nvar;v++) {
+        //                 printf("%g  ", x[j][count][v]);
+        //             }
 
+        //             printf("\t %g   %g  \n", y[j][count][0], y[j][count][1]);
+        //             count++;
+        //         }
+        //     }
+        // }
         non_linear_fit_result output_fit = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess, fit_info);
         fit[j] = output_fit.P;
         chi2j[j] = output_fit.chi2 / (en_tot - Npar);
@@ -505,7 +518,7 @@ struct fit_result try_fit(char** option, int tmin, int tmax, int sep, double** c
     free_2(Njack, fit);
 
     free_3(Njack, en_tot, x);
-    free_3(Njack, tmax - tmin + 1, y);
+    free_3(Njack, (tmax - tmin + 1) * fit_info.N, y);
     free(chi2j);
 
     free(en);
@@ -770,19 +783,19 @@ struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinemat
     double** r, * m, ** mt, * fit;
     int i, j, yn;
 
-    error(fit_info.N != 1, 1, "fit_fun_to_fun_of_corr", "multiple correlator fit not implemented");
-
-    r = (double**)malloc(sizeof(double*) * file_head.l0);
-    for (i = 0; i < file_head.l0; i++)
+    // error(fit_info.N != 1, 1, "fit_fun_to_fun_of_corr", "multiple correlator fit not implemented");
+    int T = file_head.l0 * fit_info.N;
+    r = (double**)malloc(sizeof(double*) * T / 2);
+    for (i = 0; i < T / 2; i++)
         r[i] = (double*)malloc(sizeof(double) * Njack);
     // mt = (double**)malloc(sizeof(double*) * file_head.l0);
-    mt = double_malloc_2(file_head.l0 / 2, 2);
+    mt = double_malloc_2(T / 2, 2);
 
     fprintf(outfile, " \n\n");
     fprintf(outfile, "#m_eff(t) of %s  propagators:1) mu %.5f r %d theta %.5f 2) mu %.5f r %d theta %.5f\n", name,
         kinematic_2pt.k2, kinematic_2pt.r2, kinematic_2pt.mom2,
         kinematic_2pt.k1, kinematic_2pt.r1, kinematic_2pt.mom1);
-    for (i = 1; i < file_head.l0 / 2; i++) {
+    for (i = 1; i < T / 2; i++) {
         for (j = 0; j < Njack; j++) {
 
             // r[i][j]= conf_jack[j][index][i][re_im];
@@ -802,10 +815,8 @@ struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinemat
 
     fwrite(fit_out.P[0], sizeof(double), Njack, file_jack);
 
-    for (i = 0; i < file_head.l0 / 2; i++)
-        free(mt[i]);
-    free(mt);
-    for (i = 0; i < file_head.l0; i++)
+    free_2(T / 2, mt);
+    for (i = 0; i < T / 2; i++)
         free(r[i]);
     free(r);
 
