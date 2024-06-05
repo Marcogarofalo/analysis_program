@@ -278,9 +278,9 @@ void fit_result::clear() {
             free(C[i][n]);
         free(C[i]);
     }
-    Npar=0;
-    Njack=0;
-    dof=0;
+    Npar = 0;
+    Njack = 0;
+    dof = 0;
     free(P);free(C);free(chi2);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1369,6 +1369,34 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
     }
     if (fit_info.linear_fit) {
         non_linear_fit_result output;
+        /////
+        int en_tot = 0;
+        for (int n = 0;n < fit_info.N;n++)
+            for (int e = 0;e < ensemble[n];e++)
+                en_tot += 1;
+
+        double* deriv;
+        double* tmp_param = (double*)malloc(Npar * sizeof(double));
+
+        int count = 0;
+        for (int n = 0;n < fit_info.N;n++) {
+            for (int e = 0;e < ensemble[n];e++) {
+                deriv = fit_info.linear_function(n, Nvar, x[count], Npar);
+                double val = 0;
+                for (int j = 0;j < Npar;j++) {
+                    tmp_param[j] = rand();
+                    val += tmp_param[j] * deriv[j];
+                }
+                if (fabs(val - fit_info.function(n, Nvar, x[count], Npar, tmp_param)) > 1e-12) {
+                    printf("Error function not linear: linear approx  %g , func   %g\n", val, fit_info.function(n, Nvar, x[count], Npar, tmp_param));
+                    exit(1);
+                }
+                free(deriv);
+            }
+            count++;
+        }
+        free(tmp_param);
+        /////
         if (precision_sum >= 1) {
             chi2_fun = compute_chi_non_linear_Nf_long;
             output.P = linear_fit_Nf<long double>(ensemble, x, y, fit_info);
@@ -1435,8 +1463,8 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
             printf("chi2=%.15g\n", chi2);
             char yn[NAMESIZE];
             printf("do you want to continue[y/n]:\n");
-            int i=scanf("%s", yn);
-            error(i==0, 1, "non_linear_fit_Nf","invalid read"); 
+            int i = scanf("%s", yn);
+            error(i == 0, 1, "non_linear_fit_Nf", "invalid read");
             if (strcmp("y", yn) == 0 || strcmp("yes", yn) == 0 || strcmp("Y", yn) == 0 || strcmp("Y", yn) == 0) {
                 continue;
             }
