@@ -175,7 +175,7 @@ void symmetrise_jackboot(int  Np1, int var, int T, double**** in, int sym) {
         for (int t = 1; t < T / 2;t++) {
             for (int ri = 0; ri < 2; ri++) {
                 in[j][var][t][ri] = (in[j][var][t][ri] + sym * in[j][var][T - t][ri]) / 2.0;
-                in[j][var][T - t][ri] = in[j][var][t][ri];
+                in[j][var][T - t][ri] = sym * in[j][var][t][ri];
             }
         }
     }
