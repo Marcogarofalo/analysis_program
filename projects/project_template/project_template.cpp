@@ -62,12 +62,12 @@ void init_global_head(generic_header head) {
     file_head.l2 = head.L;
     file_head.l3 = head.L;
     file_head.nk = 2;
-    file_head.musea = head.mus[1];
+    file_head.musea = head.mus[0];
     file_head.k = (double*)malloc(sizeof(double) * file_head.nk * 2);
     file_head.k[0] = 0;
     file_head.k[1] = 0;
-    file_head.k[2] = head.mus[1];
-    file_head.k[3] = head.mus[1];
+    file_head.k[2] = head.mus[0];
+    file_head.k[3] = head.mus[0];
 
     file_head.nmoms = 1;
     file_head.mom = (double**)malloc(sizeof(double*) * file_head.nmoms);
