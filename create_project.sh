@@ -24,7 +24,7 @@ mkdir ../$name/build
 here=$(pwd)
 cat > ../$name/build/do_cmake.sh << EOF
 cmake -DCMAKE_PREFIX_PATH=${here}/build/install_dir \\
-      -DCMAKE_CXX_FLAGS="-g -O2"  \\
+      -DCMAKE_CXX_FLAGS="-g -O2 -fopenmp"  \\
       -DWITH_ARB=OFF \\
       $2 \\
       ..
