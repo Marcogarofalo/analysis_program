@@ -17,9 +17,9 @@ add_target_gm2(fit_all_g-2 fit_all_g-2.cpp)
 add_library(
     systematics_charm STATIC
     do_analysis_charm.hpp
-    functions_amu.hpp
-    functions_amu.cpp
+
 )
+
 # target_link_libraries(systematics_charm PUBLIC mutils)
 # target_include_directories(systematics_charm PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(systematics_charm  PUBLIC analysis_program)

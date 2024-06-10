@@ -23,8 +23,11 @@
 #include "tower.hpp"
 #include "fit_all.hpp"
 extern "C" {
-#include "../external/rzeta/src/dzeta_function.h"
-#include "../external/rzeta/src/qzeta_function.h"
+// #include "../external/rzeta/src/dzeta_function.h"
+// #include "../external/rzeta/src/qzeta_function.h"
+#include "dzeta_function.h"
+#include "qzeta_function.h"
+
 }
 #include <algorithm>
 #include "non_linear_fit.hpp"

@@ -77,6 +77,7 @@ ENDIF()
 
 find_package(Eigen3 REQUIRED)
 add_subdirectory(include  include)
+#add_subdirectory(external/rzeta/src  zeta)
 #############################################
 # install package
 #############################################
@@ -88,15 +89,23 @@ include(GNUInstallDirs)
 
 target_include_directories(analysis_program 
 PUBLIC
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include;${PROJECT_SOURCE_DIR}/external/rzeta/src>"
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+PRIVATE
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+) 
+target_include_directories(zeta_function 
+PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/rzeta/src>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 PRIVATE
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
 ) 
 
 
+
 set(CONFIG_EXPORT_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/analysis_program")
-set(EXPORT_TARGETS analysis_program)
+set(EXPORT_TARGETS analysis_program zeta_function)
 
 configure_package_config_file(
   "${PROJECT_SOURCE_DIR}/analysis_program-config.cmake.in"
@@ -117,13 +126,14 @@ MESSAGE("CONFIG_EXPORT_DIR ${CONFIG_EXPORT_DIR}")
 MESSAGE("CMAKE_INSTALL_LIBDIR  ${CMAKE_INSTALL_LIBDIR}")
 MESSAGE("EXPORT_TARGETS  ${EXPORT_TARGETS}")
 
-install(TARGETS analysis_program
-  EXPORT analysis_program-targets
+install(TARGETS analysis_program zeta_function
+  EXPORT analysis_program-targets 
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
                   ${PROJECT_SOURCE_DIR}/external/rzeta/src/
+                  ${PROJECT_SOURCE_DIR}/projects/g-2/
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILES_MATCHING 
               PATTERN "*.hpp"
