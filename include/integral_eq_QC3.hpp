@@ -1,7 +1,7 @@
 #ifndef integral_eq_QC3_H
 #define integral_eq_QC3_H
 
-#include <Eigen/Dense>  
+#include <eigen3/Eigen/Dense>  
 
 
 typedef Eigen::Matrix< std::complex<  long double >, Eigen::Dynamic, Eigen::Dynamic > MatrixXcld;
