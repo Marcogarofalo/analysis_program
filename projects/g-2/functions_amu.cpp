@@ -1,5 +1,5 @@
 #include "functions_amu.hpp"
-
+#include "correlators_analysis.hpp"
 
 double integrand_K(double x, void* params) {
     double z = *(double*)params;
@@ -119,12 +119,15 @@ double integrate_reinman(int lower, int upper, double* f) {
 // }
 
 
-double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling, int isub) {
+double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a, double q2,
+    double (*int_scheme)(int, int, double*), FILE* outfile, const char* description,
+    const char* resampling, int isub) {
     constexpr double d = 0.15;
     constexpr double t1_d = 0.4 / d;
     int T = file_head.l0;
     double** fi = double_malloc_2(T / 2, Njack);
     double* amu = (double*)malloc(sizeof(double) * Njack);
+    double** amut = malloc_2<double>(T / 2, Njack);
     double* ft = (double*)malloc(sizeof(double) * T / 2);
 
     double** Kt = double_malloc_2(T / 2, Njack);
@@ -163,21 +166,23 @@ double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a,
         // }
         // printf("tmax=%d\n", tmax);
         // for (int j = 0;j < Njack;j++) {
-        amu[j] = int_scheme(0, T / 2 - 1, ft);
-
-        amu[j] *= 4 * alpha_em * alpha_em *
-            q2 / (muon_mass_MeV * muon_mass_MeV * (a[j] / 197.326963) * (a[j] / 197.326963));
+        // amu[j] = int_scheme(0, T / 2 - 1, ft);
+        for (int t_a = 1;t_a < T / 2;t_a++) {
+            amut[t_a][j] = int_scheme(0, t_a, ft);
+            amut[t_a][j] *= 4 * alpha_em * alpha_em *
+                q2 / (muon_mass_MeV * muon_mass_MeV * (a[j] / 197.326963) * (a[j] / 197.326963));
+        }
     }
-
+    myres->copy(amu, amut[T / 2 - 1]);
     fprintf(outfile, " \n\n");
     fprintf(outfile, "#\n");
     for (int t = 1; t < T / 2; t++) {
-        fprintf(outfile, "%d   %.15g   %.15g\t", t, fi[t][Njack - 1], error_jackboot(resampling, Njack, fi[t]));
-        fprintf(outfile, "%.15g   %.15g\t", Kt[t][Njack - 1], error_jackboot(resampling, Njack, Kt[t]));
-        fprintf(outfile, "%.15g   %.15g\t", 1.f, 0.f);
+        fprintf(outfile, "%d   %.15g   %.15g\t", t, amut[t][Njack - 1], error_jackboot(resampling, Njack, amut[t]));
+        fprintf(outfile, "%d   %.15g   %.15g\t", t, amu[Njack - 1], error_jackboot(resampling, Njack, amu));
+        fprintf(outfile, "%.15g   %.15g\t", fi[t][Njack - 1], error_jackboot(resampling, Njack, fi[t]));
         fprintf(outfile, "%.15g   %.15g\n", corr_sub[t][Njack - 1], error_jackboot(resampling, Njack, corr_sub[t]));
     }
-    fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 0, T / 2, 0.0, 0.0);
+    fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 1, T / 2-1, 0.0, 0.0);
     fprintf(outfile, "   %.15g   %15.g\n", amu[Njack - 1], error_jackboot(resampling, Njack, amu));
 
     free(ft);
@@ -185,6 +190,7 @@ double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a,
     free_2(T / 2, Kt);
     // free_2(T / 2, thetat);
     free_2(T / 2, corr_sub);
+    free_2(T / 2, amut);
     return amu;
 }
 
@@ -308,6 +314,186 @@ double* compute_amu_W(double**** in, int id, int Njack, double* Z, double* a, do
     free_2(T / 2, corr_sub);
     return amu;
 }
+
+
+double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile,
+    const char* description, const char* resampling, int isub, int bound, double* Mpi, double* Meff, int L) {
+    constexpr double d = 0.15;
+    constexpr double t1_d = 0.4 / d;
+    int T = file_head.l0;
+    double** fi = double_malloc_2(T / 2, Njack);
+    double** amu = malloc_2<double>(T / 2, Njack);
+    double** amu_above = malloc_2<double>(T / 2, Njack);
+    double** amu_below = malloc_2<double>(T / 2, Njack);
+    double* ft = (double*)malloc(sizeof(double) * T / 2);
+    double* above = (double*)calloc(T / 2, sizeof(double));
+    double* below = (double*)calloc(T / 2, sizeof(double));
+
+    double** Kt = double_malloc_2(T / 2, Njack);
+    // double** thetat = double_malloc_2(T / 2, Njack);
+    double** corr_sub = double_malloc_2(T / 2, Njack);
+    double* E2 = (double*)malloc(sizeof(double) * Njack);
+
+    for (int j = 0;j < Njack;j++) {
+        E2[j] = 2 * sqrt(Mpi[j] * Mpi[j] + (2 * M_PI / L) * (2 * M_PI / L));
+        ft[0] = 0;
+        for (int t_a = 1; t_a < T / 2; t_a++) {
+            double t = t_a * a[j]; // time in fm.
+            double z = muon_mass_MeV * (t / 197.326963);
+            double K = z * z * kernel_K(z);
+            // double theta = gm2_step_function(t / 0.15, t1_d);
+            double VV_sub;
+            if (isub == -2)
+                VV_sub = Z[j] * Z[j] * in[j][id][t_a][0];
+            else if (isub == -1)
+                VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] - (1.0 / (2.0 * M_PI * M_PI * pow(t_a, 5)));// perturbative
+            else
+                VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] + in[j][isub][t_a][0];// free-theory
+            ft[t_a] = VV_sub;
+
+            fi[t_a][j] = ft[t_a];
+            Kt[t_a][j] = K;
+            // thetat[t_a][j] = (1 - theta);
+            corr_sub[t_a][j] = VV_sub;
+            // printf("t=%d  K=%g   VV=%g  1-theta=%g  amu=%g\n",t_a,K, VV[t_a],1-theta, amu);
+
+        }
+        double coef = 4 * alpha_em * alpha_em *
+            q2 / (muon_mass_MeV * muon_mass_MeV * (a[j] / 197.326963) * (a[j] / 197.326963));
+        above[0] = 0;
+        below[0] = 0;
+        for (int t_c = 1; t_c < T / 2; t_c++) {
+            above[t_c] = Kt[t_c][j] * ft[t_c];
+            below[t_c] = Kt[t_c][j] * ft[t_c];
+            for (int tp = t_c + 1; tp < T / 2; tp++) {
+                above[tp] = Kt[tp][j] * ft[t_c] * exp(-E2[j] * (tp - t_c));
+                if (bound == 1) {
+                    below[tp] = Kt[tp][j] * ft[t_c] * exp(-Meff[j] * (tp - t_c));
+                }
+                else if (bound == 2) {
+                    below[tp] = 0;
+                }
+                else if (bound == 3) {
+                    double mass = M_eff_T_ct_ctp1(tp, T, in[j][id][tp][0], in[j][id][(tp + 1) % T][0]);
+                    below[tp] = Kt[tp][j] * ft[t_c] * exp(-mass * (tp - t_c));
+                }
+                else {
+                    printf("%s: bound method not valid bound = %d\n", __func__, bound);
+                    exit(1);
+                }
+            }
+            amu_above[t_c][j] = int_scheme(0, T / 2 - 1, above);
+            amu_below[t_c][j] = int_scheme(0, T / 2 - 1, below);
+
+            amu_above[t_c][j] *= coef;
+            amu_below[t_c][j] *= coef;
+            amu[t_c][j] = (amu_above[t_c][j] + amu_below[t_c][j]) / 2.0;
+        }
+        // for (int t_c = 1; t_c < T / 2; t_c++) {
+        //     amu_above[t_c][j] = Kt[t_c][j] * ft[t_c];
+        //     amu_below[t_c][j] = Kt[t_c][j] * ft[t_c];
+        // }
+        // amu[j] = int_scheme(0, T / 2 - 1, ft);
+    }
+
+    int start_fit = 1;
+    // find tmin on the average
+    printf("HERE\n");
+    for (int t_c = 1; t_c < T / 2; t_c++) {
+        if (amu_above[t_c][Njack - 1] - amu_below[t_c][Njack - 1] < myres->comp_error(amu_above[t_c])) {
+            start_fit = t_c;
+            break;
+        }
+    }
+    int end_fit = start_fit + 0.40926 / a[Njack - 1];
+
+    // struct fit_type fit_info;
+    struct fit_type const_fit_info;
+    const_fit_info.Nvar = 1;
+    const_fit_info.Npar = 1;
+    const_fit_info.N = 1;
+    const_fit_info.Njack = Njack;
+    const_fit_info.function = constant_fit;
+    const_fit_info.n_ext_P = 0;
+    const_fit_info.linear_fit = true;
+    const_fit_info.T = T;
+    struct kinematic kinematic_2pt;
+    const_fit_info.codeplateaux = true;
+    const_fit_info.tmin = start_fit;
+    const_fit_info.tmax = end_fit;
+    double** mt = malloc_2<double>(T / 2, 2);
+    for (int t = 0;t < T / 2; t++) {
+        mt[t][0] = amu[t][Njack - 1];
+        mt[t][1] = myres->comp_error(amu[t]);
+    }
+    int store_l0 = file_head.l0;
+    file_head.l0 = T;
+
+    char name[NAMESIZE] = "HLT";
+    double* chi2;
+    char** option;
+    struct fit_result fit_out = try_fit(option, const_fit_info.tmin, const_fit_info.tmax, 1, mt, amu, Njack, &chi2, const_fit_info);// option is not used 
+    file_head.l0 = store_l0;
+
+    //////////////////////////////////////////////////////////////
+    // printing
+    //////////////////////////////////////////////////////////////
+    // above
+    fprintf(outfile, " \n\n");
+    fprintf(outfile, "#\n");
+    for (int t = 1; t < T / 2; t++) {
+        fprintf(outfile, "%d   %.15g   %.15g \t", t, amu_above[t][Njack - 1], error_jackboot(resampling, Njack, amu_above[t]));
+        fprintf(outfile, "%d   %.15g   %.15g\n", t, fit_out.P[0][Njack - 1], error_jackboot(resampling, Njack, fit_out.P[0]));
+    }
+    fprintf(outfile, "\n\n #%s_above fit in [%d,%d] chi2=%.5g  %.5g\n", description, start_fit, end_fit, fit_out.chi2[Njack - 1], 0.0);
+    fprintf(outfile, "   %.15g   %15.g\n", fit_out.P[0][Njack - 1], error_jackboot(resampling, Njack, fit_out.P[0]));
+
+    // average
+
+    fprintf(outfile, " \n\n");
+    fprintf(outfile, "#\n");
+    for (int t = 1; t < T / 2; t++) {
+        fprintf(outfile, "%d   %.15g   %.15g \t", t, amu[t][Njack - 1], error_jackboot(resampling, Njack, amu[t]));
+        fprintf(outfile, "%d   %.15g   %.15g\n", t, fit_out.P[0][Njack - 1], error_jackboot(resampling, Njack, fit_out.P[0]));
+    }
+    fprintf(outfile, "\n\n #%s_ave fit in [%d,%d] chi2=%.5g  %.5g\n", description, start_fit, end_fit, fit_out.chi2[Njack - 1], 0.0);
+    fprintf(outfile, "   %.15g   %15.g\n", fit_out.P[0][Njack - 1], error_jackboot(resampling, Njack, fit_out.P[0]));
+
+    // below
+
+    fprintf(outfile, " \n\n");
+    fprintf(outfile, "#\n");
+    for (int t = 1; t < T / 2; t++) {
+        fprintf(outfile, "%d   %.15g   %.15g \t", t, amu_below[t][Njack - 1], error_jackboot(resampling, Njack, amu_below[t]));
+        fprintf(outfile, "%d   %.15g   %.15g\n", t, fit_out.P[0][Njack - 1], error_jackboot(resampling, Njack, fit_out.P[0]));
+    }
+    fprintf(outfile, "\n\n #%s_below fit in [%d,%d] chi2=%.5g  %.5g\n", description, start_fit, end_fit, fit_out.chi2[Njack - 1], 0.0);
+    fprintf(outfile, "   %.15g   %15.g\n", fit_out.P[0][Njack - 1], error_jackboot(resampling, Njack, fit_out.P[0]));
+
+
+    file_head.l0 = store_l0;
+    double* P = (double*)malloc(sizeof(double) * Njack);
+    for (size_t j = 0; j < Njack; j++) {
+        P[j] = fit_out.P[0][j];
+    }
+
+    fit_out.clear();
+    free_2(T / 2, mt);
+    free_2(T / 2, amu);
+    free_2(T / 2, amu_above);
+    free_2(T / 2, amu_below);
+
+    free(ft);
+    free(above);
+    free(below);
+    free_2(T / 2, fi);
+    free_2(T / 2, Kt);
+    // free_2(T / 2, thetat);
+    free_2(T / 2, corr_sub);
+
+    return P;
+}
+
 
 /********************************************************************************
  * Z
