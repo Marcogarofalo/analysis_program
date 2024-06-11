@@ -98,6 +98,10 @@ int main(int argc, char** argv) {
         "usage:./nissa_mpcac -p path file -bin $bin  jack/boot \n separate "
         "path and file please");
 
+    char resampling[NAMESIZE];
+    mysprintf(resampling, NAMESIZE, argv[6]);
+    printf("resampling: %s\n", resampling);
+
     char** option = argv_to_options(argv);
 
     char namefile[NAMESIZE];
@@ -155,9 +159,9 @@ int main(int argc, char** argv) {
     }
 
     double**** data_bin = binning(confs, head.ncorr, head.T, data, bin);
+    free_corr(confs, head.ncorr, head.T, data);
     double**** conf_jack = myres->create(Neff, head.ncorr, head.T, data_bin);
     free_corr(Neff, head.ncorr, head.T, data_bin);
-    free_corr(confs, head.ncorr, head.T, data);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     // print all the effective masses correlators
