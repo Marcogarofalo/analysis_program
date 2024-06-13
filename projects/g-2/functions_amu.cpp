@@ -182,7 +182,7 @@ double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a,
         fprintf(outfile, "%.15g   %.15g\t", fi[t][Njack - 1], error_jackboot(resampling, Njack, fi[t]));
         fprintf(outfile, "%.15g   %.15g\n", corr_sub[t][Njack - 1], error_jackboot(resampling, Njack, corr_sub[t]));
     }
-    fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 1, T / 2-1, 0.0, 0.0);
+    fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 1, T / 2 - 1, 0.0, 0.0);
     fprintf(outfile, "   %.15g   %15.g\n", amu[Njack - 1], error_jackboot(resampling, Njack, amu));
 
     free(ft);
@@ -322,17 +322,37 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
     constexpr double t1_d = 0.4 / d;
     int T = file_head.l0;
     double** fi = double_malloc_2(T / 2, Njack);
-    double** amu = malloc_2<double>(T / 2, Njack);
+    double** amu = malloc_2<double>(T / 2 + 10, Njack);
     double** amu_above = malloc_2<double>(T / 2, Njack);
     double** amu_below = malloc_2<double>(T / 2, Njack);
     double* ft = (double*)malloc(sizeof(double) * T / 2);
     double* above = (double*)calloc(T / 2, sizeof(double));
     double* below = (double*)calloc(T / 2, sizeof(double));
+    double** mass = malloc_2<double>(T / 2, Njack);
 
     double** Kt = double_malloc_2(T / 2, Njack);
     // double** thetat = double_malloc_2(T / 2, Njack);
     double** corr_sub = double_malloc_2(T / 2, Njack);
     double* E2 = (double*)malloc(sizeof(double) * Njack);
+
+    int t_end = T / 2 - 1;
+    for (int j = 0;j < Njack;j++) {
+        // compute the effective mass
+        for (int t_c = 1; t_c < T / 2; t_c++) {
+            mass[t_c][j] = M_eff_T_ct_ctp1(t_c, T, in[j][id][t_c][0], in[j][id][(t_c + 1) % T][0]);
+        }
+    }
+
+    for (int t_c = 2; t_c < T / 2; t_c++) {
+        // when the effective mass loose signal
+        if (mass[t_c][Njack - 1] > mass[t_c - 1][Njack - 1] ||
+            myres->comp_error(mass[t_c]) > fabs(mass[t_c][Njack - 1]) * 0.15) {
+            t_end = t_c - 1;
+            break;
+        }
+    }
+
+    printf("t_end=%d\n", t_end);
 
     for (int j = 0;j < Njack;j++) {
         E2[j] = 2 * sqrt(Mpi[j] * Mpi[j] + (2 * M_PI / L) * (2 * M_PI / L));
@@ -365,6 +385,12 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
         for (int t_c = 1; t_c < T / 2; t_c++) {
             above[t_c] = Kt[t_c][j] * ft[t_c];
             below[t_c] = Kt[t_c][j] * ft[t_c];
+
+            double min_mass;
+            // we do not propagate the error on the mass
+            if (t_c < t_end) min_mass = mass[t_c][Njack-1];
+            else min_mass = mass[t_end][Njack-1];
+
             for (int tp = t_c + 1; tp < T / 2; tp++) {
                 above[tp] = Kt[tp][j] * ft[t_c] * exp(-E2[j] * (tp - t_c));
                 if (bound == 1) {
@@ -374,8 +400,7 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
                     below[tp] = 0;
                 }
                 else if (bound == 3) {
-                    double mass = M_eff_T_ct_ctp1(tp, T, in[j][id][tp][0], in[j][id][(tp + 1) % T][0]);
-                    below[tp] = Kt[tp][j] * ft[t_c] * exp(-mass * (tp - t_c));
+                    below[tp] = Kt[tp][j] * ft[t_c] * exp(-min_mass * (tp - t_c));
                 }
                 else {
                     printf("%s: bound method not valid bound = %d\n", __func__, bound);
@@ -389,6 +414,7 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
             amu_below[t_c][j] *= coef;
             amu[t_c][j] = (amu_above[t_c][j] + amu_below[t_c][j]) / 2.0;
         }
+        amu[0][j] = 0;
         // for (int t_c = 1; t_c < T / 2; t_c++) {
         //     amu_above[t_c][j] = Kt[t_c][j] * ft[t_c];
         //     amu_below[t_c][j] = Kt[t_c][j] * ft[t_c];
@@ -396,9 +422,8 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
         // amu[j] = int_scheme(0, T / 2 - 1, ft);
     }
 
+    /////////// find tmin 
     int start_fit = 1;
-    // find tmin on the average
-    printf("HERE\n");
     for (int t_c = 1; t_c < T / 2; t_c++) {
         if (amu_above[t_c][Njack - 1] - amu_below[t_c][Njack - 1] < myres->comp_error(amu_above[t_c])) {
             start_fit = t_c;
@@ -406,8 +431,8 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
         }
     }
     int end_fit = start_fit + 0.40926 / a[Njack - 1];
-
-    // struct fit_type fit_info;
+    error(end_fit > T / 2, 1, "compute_amu_bounding", "tmax fit larger than T/2");
+    /////// plateau fit
     struct fit_type const_fit_info;
     const_fit_info.Nvar = 1;
     const_fit_info.Npar = 1;
@@ -442,33 +467,33 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
     fprintf(outfile, " \n\n");
     fprintf(outfile, "#\n");
     for (int t = 1; t < T / 2; t++) {
-        fprintf(outfile, "%d   %.15g   %.15g \t", t, amu_above[t][Njack - 1], error_jackboot(resampling, Njack, amu_above[t]));
-        fprintf(outfile, "%d   %.15g   %.15g\n", t, fit_out.P[0][Njack - 1], error_jackboot(resampling, Njack, fit_out.P[0]));
+        fprintf(outfile, "%d   %.15g   %.15g \t", t, amu_above[t][Njack - 1], myres->comp_error(amu_above[t]));
+        fprintf(outfile, "%d   %.15g   %.15g\n", t, fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]));
     }
     fprintf(outfile, "\n\n #%s_above fit in [%d,%d] chi2=%.5g  %.5g\n", description, start_fit, end_fit, fit_out.chi2[Njack - 1], 0.0);
-    fprintf(outfile, "   %.15g   %15.g\n", fit_out.P[0][Njack - 1], error_jackboot(resampling, Njack, fit_out.P[0]));
+    fprintf(outfile, "   %.15g   %15.g   %d\n", fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]), t_end);
 
     // average
 
     fprintf(outfile, " \n\n");
     fprintf(outfile, "#\n");
     for (int t = 1; t < T / 2; t++) {
-        fprintf(outfile, "%d   %.15g   %.15g \t", t, amu[t][Njack - 1], error_jackboot(resampling, Njack, amu[t]));
-        fprintf(outfile, "%d   %.15g   %.15g\n", t, fit_out.P[0][Njack - 1], error_jackboot(resampling, Njack, fit_out.P[0]));
+        fprintf(outfile, "%d   %.15g   %.15g \t", t, amu[t][Njack - 1], myres->comp_error(amu[t]));
+        fprintf(outfile, "%d   %.15g   %.15g\n", t, fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]));
     }
     fprintf(outfile, "\n\n #%s_ave fit in [%d,%d] chi2=%.5g  %.5g\n", description, start_fit, end_fit, fit_out.chi2[Njack - 1], 0.0);
-    fprintf(outfile, "   %.15g   %15.g\n", fit_out.P[0][Njack - 1], error_jackboot(resampling, Njack, fit_out.P[0]));
+    fprintf(outfile, "   %.15g   %15.g   %d\n", fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]), t_end);
 
     // below
 
     fprintf(outfile, " \n\n");
     fprintf(outfile, "#\n");
     for (int t = 1; t < T / 2; t++) {
-        fprintf(outfile, "%d   %.15g   %.15g \t", t, amu_below[t][Njack - 1], error_jackboot(resampling, Njack, amu_below[t]));
-        fprintf(outfile, "%d   %.15g   %.15g\n", t, fit_out.P[0][Njack - 1], error_jackboot(resampling, Njack, fit_out.P[0]));
+        fprintf(outfile, "%d   %.15g   %.15g \t", t, amu_below[t][Njack - 1], myres->comp_error(amu_below[t]));
+        fprintf(outfile, "%d   %.15g   %.15g\n", t, fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]));
     }
     fprintf(outfile, "\n\n #%s_below fit in [%d,%d] chi2=%.5g  %.5g\n", description, start_fit, end_fit, fit_out.chi2[Njack - 1], 0.0);
-    fprintf(outfile, "   %.15g   %15.g\n", fit_out.P[0][Njack - 1], error_jackboot(resampling, Njack, fit_out.P[0]));
+    fprintf(outfile, "   %.15g   %15.g   %d\n", fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]), t_end);
 
 
     file_head.l0 = store_l0;
@@ -482,6 +507,7 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
     free_2(T / 2, amu);
     free_2(T / 2, amu_above);
     free_2(T / 2, amu_below);
+    free_2(T / 2, mass);
 
     free(ft);
     free(above);
