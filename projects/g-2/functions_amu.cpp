@@ -394,7 +394,8 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
             for (int tp = t_c + 1; tp < T / 2; tp++) {
                 above[tp] = Kt[tp][j] * ft[t_c] * exp(-E2[j] * (tp - t_c));
                 if (bound == 1) {
-                    below[tp] = Kt[tp][j] * ft[t_c] * exp(-Meff[j] * (tp - t_c));
+                    above[tp] = Kt[tp][j] * ft[t_c] * exp(-Meff[Njack-1] * (tp - t_c));
+                    below[tp] = Kt[tp][j] * ft[t_c] * exp(-min_mass * (tp - t_c));
                 }
                 else if (bound == 2) {
                     below[tp] = 0;
