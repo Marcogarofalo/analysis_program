@@ -388,13 +388,13 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
 
             double min_mass;
             // we do not propagate the error on the mass
-            if (t_c < t_end) min_mass = mass[t_c][Njack-1];
-            else min_mass = mass[t_end][Njack-1];
+            if (t_c < t_end) min_mass = mass[t_c][j];
+            else min_mass = mass[t_end][j];
 
             for (int tp = t_c + 1; tp < T / 2; tp++) {
                 above[tp] = Kt[tp][j] * ft[t_c] * exp(-E2[j] * (tp - t_c));
                 if (bound == 1) {
-                    above[tp] = Kt[tp][j] * ft[t_c] * exp(-Meff[Njack-1] * (tp - t_c));
+                    above[tp] = Kt[tp][j] * ft[t_c] * exp(-Meff[j] * (tp - t_c));
                     below[tp] = Kt[tp][j] * ft[t_c] * exp(-min_mass * (tp - t_c));
                 }
                 else if (bound == 2) {
