@@ -1043,6 +1043,27 @@ void add_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack,
     ncorr_conf_jack = correlators_out;
 }
 
+// fun_of_corr must return a double ** [N(correlators)][2(re/im)]
+void add_correlators_no_alloc(char** option, int& ncorr_conf_jack, double****& conf_jack, double** fun_of_corr(int, double****, int, struct fit_type), struct fit_type fit_info, int Nmax) {
+
+    int correlators_out = ncorr_conf_jack + fit_info.N;
+    error(correlators_out > Nmax, 1, "add_correlators_no_alloc", "error conf_jack size: %d impossible to save %d correlators", Nmax, correlators_out);
+    int Njack = fit_info.Njack;
+
+    for (int j = 0; j < Njack; j++) {
+        for (int t = 0; t < file_head.l0; t++) {
+            double** r = fun_of_corr(j, conf_jack, t, fit_info);
+            for (int n = 0; n < fit_info.N; n++) {
+                conf_jack[j][ncorr_conf_jack + n][t][0] = r[n][0];
+                conf_jack[j][ncorr_conf_jack + n][t][1] = r[n][1];
+            }
+            free_2(fit_info.N, r);
+        }
+    }
+
+    ncorr_conf_jack = correlators_out;
+}
+
 // r[t][jack]
 void add_one_correlators(char** option, int& ncorr_conf_jack, double****& conf_jack, struct fit_type fit_info, double** r) {
 
