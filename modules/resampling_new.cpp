@@ -61,6 +61,11 @@ void resampling_f::add(double* out, double* in1, double* in2) {
     for (int j = 0;j < Njack;j++)  out[j] = in1[j] + in2[j];
 
 }
+void resampling_f::sub(double* out, double* in1, double* in2) {
+    for (int j = 0;j < Njack;j++)  out[j] = in1[j] - in2[j];
+
+}
+
 void resampling_f::mult(double* out, double* in1, double* in2) {
     for (int j = 0;j < Njack;j++)  out[j] = in1[j] * in2[j];
 
