@@ -23,8 +23,8 @@
 #include "tower.hpp"
 #include "fit_all.hpp"
 extern "C" {
-// #include "../external/rzeta/src/dzeta_function.h"
-// #include "../external/rzeta/src/qzeta_function.h"
+    // #include "../external/rzeta/src/dzeta_function.h"
+    // #include "../external/rzeta/src/qzeta_function.h"
 #include "dzeta_function.h"
 #include "qzeta_function.h"
 
@@ -116,7 +116,8 @@ double* compute_VL(int n, double** omega, double** nuA2, double* a, int T, int j
 double compute_VL_t(int n, double* omega, double* nuA2, double t);
 double** compute_DVt(int L, int Njack, double* Mpi, double* Mrho, double* a, double* grhopipi, FILE* outfile, const char* description, const char* resampling);
 double integrand_DV(double t, void* params);
-double* compute_DVt_and_integrate(int L, int Njack, double* Mpi, double* Mrho, double* a, double* grhopipi, FILE* outfile, const char* description, const char* resampling);
+double* compute_DVt_and_integrate(int L, int Njack, double* Mpi, double* Mrho, double* a, double* grhopipi, FILE* outfile, const char* description,
+    const char* resampling, int Nomegas = 25, int window = 0);
 double rhs_amu_log_a4(int n, int Nvar, double* x, int Npar, double* P);
 double linear_fit_mu_correction(int n, int Nvar, double* x, int Npar, double* P);
 double exp_MpiL(int n, int Nvar, double* x, int Npar, double* P);
@@ -133,7 +134,7 @@ double rhs_amu_pade(int n, int Nvar, double* x, int Npar, double* P);
 double rhs_amu_FVE_RF(int n, int Nvar, double* x, int Npar, double* P);
 double rhs_amu_diff_RF(int n, int Nvar, double* x, int Npar, double* P);
 double rhs_amu_diff(int n, int Nvar, double* x, int Npar, double* P);
-double rhs_amu_ratio(int n, int Nvar, double* x, int Npar, double* P) ;
+double rhs_amu_ratio(int n, int Nvar, double* x, int Npar, double* P);
 double rhs_amu_common(int n, int Nvar, double* x, int Npar, double* P);
 double rhs_amu_common_a2_FVE(int n, int Nvar, double* x, int Npar, double* P);
 double rhs_amu_common_a2_FVE_log_eq(int n, int Nvar, double* x, int Npar, double* P);
@@ -196,7 +197,7 @@ void print_fit_band_amu_W_l(char** argv, data_all gjack, struct fit_type fit_inf
 
 double rhs_2exp(int n, int Nvar, double* x, int Npar, double* P);
 
-double rhs_1exp(int n, int Nvar, double* x, int Npar, double* P) ;
+double rhs_1exp(int n, int Nvar, double* x, int Npar, double* P);
 double rhs_poly(int n, int Nvar, double* x, int Npar, double* P);
 
 
@@ -207,4 +208,4 @@ double** corr_plus_dm_correlated(int j, double**** in, int t, struct fit_type fi
 double** mu_sea_correction(int j, double**** in, int t, struct fit_type fit_info);
 
 
-void compute_syst_eq28(data_all in, const char* outpath, const char* filename) ;
+void compute_syst_eq28(data_all in, const char* outpath, const char* filename);

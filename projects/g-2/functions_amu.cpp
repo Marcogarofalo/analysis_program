@@ -1068,13 +1068,93 @@ double integrand_DV(double t, void* params) {
     // printf("%g  %g\n", t, V_sub);
     return V_sub;
 }
+double integrand_DV_full(double t, void* params) {
+    // printf("t=%g\n", t);
+    if (t < 1e-6) {
+        return 0;
+    }
 
+    constexpr int Nvar = 6;
+    double* x = (double*)params;
+    int Nomegas = (int)(x[Nvar] + 0.001);
+    double* omega = (double*)malloc(sizeof(double) * Nomegas);
+    double* nuA2 = (double*)malloc(sizeof(double) * Nomegas);
+    for (int i = 0; i < Nomegas;i++) {
+        omega[i] = x[Nvar + 1 + i];
+        nuA2[i] = x[Nvar + 1 + Nomegas + i];
 
-double* compute_DVt_and_integrate(int L, int Njack, double* Mpi, double* Mrho, double* a, double* grhopipi, FILE* outfile, const char* description, const char* resampling) {
+    }
+
+    double VinfL = compute_V_infL_t(Nvar, x, t);
+    // printf("VinfL=%g\n", VinfL);
+    double VL = compute_VL_t(Nomegas, omega, nuA2, t);
+    // printf("VL=%g\n", VL);
+    double z = muon_mass_MeV * t;
+    double K = z * z * kernel_K(z);
+    // printf("K=%g\n", K);
+
+    constexpr double d = 0.15;
+    constexpr double t0_d = 0.4 / d;
+    constexpr double t1_d = 1.0 / d;
+    double theta = 1.0; //gm2_step_function((t * 197.326963) / 0.15, t0_d) - gm2_step_function((t * 197.326963) / 0.15, t1_d);
+
+    double V_sub = (VinfL - VL) * K * theta;
+    double q2 = 1;
+
+    V_sub *= 4 * alpha_em * alpha_em * q2 / ((muon_mass_MeV) * (muon_mass_MeV));
+
+    free(omega);
+    free(nuA2);
+    // printf("%g  %g\n", t, V_sub);
+    return V_sub;
+}
+
+double integrand_DV_M(double t, void* params) {
+    // printf("t=%g\n", t);
+    if (t < 1e-6) {
+        return 0;
+    }
+
+    constexpr int Nvar = 6;
+    double* x = (double*)params;
+    int Nomegas = (int)(x[Nvar] + 0.001);
+    double* omega = (double*)malloc(sizeof(double) * Nomegas);
+    double* nuA2 = (double*)malloc(sizeof(double) * Nomegas);
+    for (int i = 0; i < Nomegas;i++) {
+        omega[i] = x[Nvar + 1 + i];
+        nuA2[i] = x[Nvar + 1 + Nomegas + i];
+
+    }
+
+    // double VinfL = compute_V_infL_t(Nvar, x, t);
+    // printf("VinfL=%g\n", VinfL);
+    double VL = compute_VL_t(Nomegas, omega, nuA2, t);
+    // printf("VL=%g\n", VL);
+    double z = muon_mass_MeV * t;
+    double K = z * z * kernel_K(z);
+    // printf("K=%g\n", K);
+
+    constexpr double d = 0.15;
+    constexpr double t0_d = 0.4 / d;
+    constexpr double t1_d = 1.0 / d;
+    double theta = 1.0; //gm2_step_function((t * 197.326963) / 0.15, t0_d) - gm2_step_function((t * 197.326963) / 0.15, t1_d);
+
+    double V_sub = (VL)*K * theta;
+    double q2 = 1;
+
+    V_sub *= 4 * alpha_em * alpha_em * q2 / ((muon_mass_MeV) * (muon_mass_MeV));
+
+    free(omega);
+    free(nuA2);
+    // printf("%g  %g\n", t, V_sub);
+    return V_sub;
+}
+
+double* compute_DVt_and_integrate(int L, int Njack, double* Mpi, double* Mrho, double* a, double* grhopipi, FILE* outfile, const char* description,
+    const char* resampling, int Nomegas, int window) {
 
     int T = file_head.l0;
     constexpr int Nvar = 6;
-    constexpr int Nomegas = 25;
     double** omega = double_malloc_2(Nomegas, Njack);
     double** nuA2 = double_malloc_2(Nomegas, Njack);
     double** DVt = double_malloc_2(T, Njack);
@@ -1198,7 +1278,13 @@ double* compute_DVt_and_integrate(int L, int Njack, double* Mpi, double* Mrho, d
         }
         double result, error;
         gsl_function F;
-        F.function = &integrand_DV;
+        if (window == 0)
+            F.function = &integrand_DV;
+        else if (window == 1)
+            F.function = &integrand_DV_full;
+        else if (window == 2) {
+            F.function = &integrand_DV_M;
+        }
         F.params = (void*)P;
 
         // gsl_integration_qagiu(&F, 0, 0, epsrel, Maxiter, w, &result, &error);
