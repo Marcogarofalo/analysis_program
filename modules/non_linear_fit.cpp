@@ -1377,6 +1377,7 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
 
         double* deriv;
         double* tmp_param = (double*)malloc(Npar * sizeof(double));
+        double* zero_param = (double*)calloc(Npar, sizeof(double));
 
         int count = 0;
         for (int n = 0;n < fit_info.N;n++) {
@@ -1384,11 +1385,13 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
                 deriv = fit_info.linear_function(n, Nvar, x[count], Npar);
                 double val = 0;
                 for (int j = 0;j < Npar;j++) {
-                    tmp_param[j] = rand();
+                    tmp_param[j] = rand() / RAND_MAX;
                     val += tmp_param[j] * deriv[j];
                 }
+                val += fit_info.function(n, Nvar, x[count], Npar, zero_param);
                 if (fabs(val - fit_info.function(n, Nvar, x[count], Npar, tmp_param)) > 1e-12) {
-                    printf("Error function not linear: linear approx  %g , func   %g\n", val, fit_info.function(n, Nvar, x[count], Npar, tmp_param));
+                    printf("Error function not linear: linear approx  %.12g , func   %.12g,  diff %.12g\n", val,
+                        fit_info.function(n, Nvar, x[count], Npar, tmp_param), val - fit_info.function(n, Nvar, x[count], Npar, tmp_param));
                     exit(1);
                 }
                 free(deriv);
@@ -1396,6 +1399,7 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
             count++;
         }
         free(tmp_param);
+        free(zero_param);
         /////
         if (precision_sum >= 1) {
             chi2_fun = compute_chi_non_linear_Nf_long;
