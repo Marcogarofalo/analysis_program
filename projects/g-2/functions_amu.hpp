@@ -41,15 +41,15 @@ constexpr double muon_mass_fm = muon_mass_MeV * 197.326963;
 constexpr double Mpi_MeV = 135;
 constexpr double Mpi_MeV_err = 0.2;
 
-enum enum_ensembles {
-    B72_64,
-    B72_96,
-    C06,
-    D54,
-    A53,
-    A40,
-    A30
-};
+// enum enum_ensembles {
+//     B72_64,
+//     B72_96,
+//     C06,
+//     D54,
+//     A53,
+//     A40,
+//     A30
+// };
 
 double integrand_K(double x, void* params);
 double kernel_K(double z, double epsrel = 1e-7);

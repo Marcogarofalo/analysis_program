@@ -1253,7 +1253,7 @@ double* compute_DVt_and_integrate(int L, int Njack, double* Mpi, double* Mrho, d
     for (int t = 1;t < T;t++) {
         fprintf(outfile, "%d   %g   %g\n", t, VinfL[Njack - 1][t], VL[Njack - 1][t]);
     }
-    fprintf(outfile, "\n\n #DVt fit in [%d,%d] chi2=%.5g  %.5g\n", 0, 0, 0.0, 0.0);
+    fprintf(outfile, "\n\n #%s_DVt fit in [%d,%d] chi2=%.5g  %.5g\n",description, 0, 0, 0.0, 0.0);
     fprintf(outfile, "%.5g  %.5g\n", 0.0, 0.0);
     printf("--------------integrate GS------------------\n");
     ///// setup integration
@@ -1302,7 +1302,7 @@ double* compute_DVt_and_integrate(int L, int Njack, double* Mpi, double* Mrho, d
     for (int t = 1; t < T / 2; t++) {
         fprintf(outfile, "%d   1   1\t", t);
     }
-    fprintf(outfile, "\n\n #DV_{W}(op,l) fit in [%d,%d] chi2=%.5g  %.5g\n", 0, T / 2, 0.0, 0.0);
+    fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n",description, 0, T / 2, 0.0, 0.0);
     fprintf(outfile, "   %.15g   %15.g\n", GS[Njack - 1], error_jackboot(resampling, Njack, GS));
 
 
