@@ -616,7 +616,9 @@ int main(int argc, char **argv){
    cout << "the file contain data up to t= ? (reply <=0 to say T)  "  << endl;
    int Tcorr_max=T;
    int CMI;
-   int fi=scanf("%d",&Tcorr_max);
+//    int fi=scanf("%d",&Tcorr_max);
+    Tcorr_max=-1;
+    int fi;
    if (Tcorr_max<=0)
         Tcorr_max=T;
    else{
@@ -718,31 +720,30 @@ int main(int argc, char **argv){
 
 
     mass=compute_effective_mass(  option, kinematic_2pt,   (char*) "P5P5", conf_jack,  Njack ,&plateaux_masses,outfile,0,"M_{PS}^{ll}");
-    mass = 
-    // for (int j=0;j<Njack;j++){
-    //     printf("%.12g\n",mass[j]);
+    // // for (int j=0;j<Njack;j++){
+    // //     printf("%.12g\n",mass[j]);
+    // // }
+    // Zfpi=compute_Zf_PS_ll(  option, kinematic_2pt, (char*) "P5P5", conf_jack, mass,  Njack ,plateaux_masses,outfile );
+    // if (argc>7){
+    //     FILE *jack_file=fopen("/dev/null","r");
+    //     struct fit_type fit_info;
+    //     fit_info.Nvar=1;
+    //     fit_info.Npar=1;
+    //     fit_info.N=1;
+    //     fit_info.Njack=Njack;
+    //     fit_info.corr_id={0,1};
+    //     fit_info.function=constant_fit ;
+    //     fit_result fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,"plateaux_masses", outfile, 
+    //         [](int j, double ****in,int t ,struct fit_type fit_info){
+    //             double r=-(in[j][1][t+1][0] -in[j][1][t][0] )/(2.*in[j][0][t][0]);
+    //             return r;
+    //         } ,
+    //         "mpcac",  fit_info, jack_file);
+    //     free_fit_result(fit_info,fit_out);
     // }
-    Zfpi=compute_Zf_PS_ll(  option, kinematic_2pt, (char*) "P5P5", conf_jack, mass,  Njack ,plateaux_masses,outfile );
-    if (argc>7){
-        FILE *jack_file=fopen("/dev/null","r");
-        struct fit_type fit_info;
-        fit_info.Nvar=1;
-        fit_info.Npar=1;
-        fit_info.N=1;
-        fit_info.Njack=Njack;
-        fit_info.corr_id={0,1};
-        fit_info.function=constant_fit ;
-        fit_result fit_out=fit_fun_to_fun_of_corr(option , kinematic_2pt ,  (char*) "P5P5", conf_jack ,"plateaux_masses", outfile, 
-            [](int j, double ****in,int t ,struct fit_type fit_info){
-                double r=-(in[j][1][t+1][0] -in[j][1][t][0] )/(2.*in[j][0][t][0]);
-                return r;
-            } ,
-            "mpcac",  fit_info, jack_file);
-        free_fit_result(fit_info,fit_out);
-    }
-    free(mass);free(Zfpi);
-    free_corr(Neff, 1, file_head.l0 ,data_bin);
-    free_jack(Njack,1 , file_head.l0, conf_jack);
+    // free(mass);free(Zfpi);
+    // free_corr(Neff, 1, file_head.l0 ,data_bin);
+    // free_jack(Njack,1 , file_head.l0, conf_jack);
  
     return 0;   
 }
