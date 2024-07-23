@@ -339,14 +339,15 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
     for (int j = 0;j < Njack;j++) {
         // compute the effective mass
         for (int t_c = 1; t_c < T / 2; t_c++) {
-            mass[t_c][j] = M_eff_T_ct_ctp1(t_c, T, in[j][id][t_c][0], in[j][id][(t_c + 1) % T][0]);
+            // mass[t_c][j] = M_eff_T_ct_ctp1(t_c, T, in[j][id][t_c][0], in[j][id][(t_c + 1) % T][0]);
+            mass[t_c][j] = log( in[j][id][t_c][0]/ in[j][id][(t_c + 1) % T][0]);
         }
     }
 
     for (int t_c = 2; t_c < T / 2; t_c++) {
         // when the effective mass loose signal
         if (mass[t_c][Njack - 1] > mass[t_c - 1][Njack - 1] ||
-            myres->comp_error(mass[t_c]) > fabs(mass[t_c][Njack - 1]) * 0.005) {
+            myres->comp_error(mass[t_c]) > fabs(mass[t_c][Njack - 1]) * 0.010) {
             t_end = t_c - 1;
             break;
         }
