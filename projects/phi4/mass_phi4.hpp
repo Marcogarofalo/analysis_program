@@ -139,18 +139,18 @@ double *scattering_len_luscher( int Njack, double *mass0, double *mass1, double 
 }
 
 
-double *mass_gamma(int var, int order,int flow ,double *ah){
-    double *r=(double*) calloc((1),sizeof(double)); 
+// double *mass_gamma(int var, int order,int flow ,double *ah){
+//     double *r=(double*) calloc((1),sizeof(double)); 
     
-    //use flow at time of the correlator
-    // we need to pass to M_eff a correlator so we create a double **c with has only the correlator at time=flow and flow+1
-    double **c=double_malloc_2(flow+2,2);
-    c[flow][0]=ah[0];
-    c[flow+1][0]=ah[1];
-    r[0]=M_eff(flow,c);
-    free_2(flow+2,c);
-    return r;
-}
+//     //use flow at time of the correlator
+//     // we need to pass to M_eff a correlator so we create a double **c with has only the correlator at time=flow and flow+1
+//     double **c=double_malloc_2(flow+2,2);
+//     c[flow][0]=ah[0];
+//     c[flow+1][0]=ah[1];
+//     r[0]=M_eff(flow,c);
+//     free_2(flow+2,c);
+//     return r;
+// }
 
 
 double   *effective_mass_phi4(char **option ,struct kinematic kinematic_2pt , char* name, double ****conf_jack, int Njack ,FILE **plateaux_masses,FILE *outfile,  int index , const char *description ){
