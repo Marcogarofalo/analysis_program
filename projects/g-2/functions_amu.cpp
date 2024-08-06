@@ -396,13 +396,13 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
                 above[tp] = Kt[tp][j] * ft[t_c] * exp(-E2[j] * (tp - t_c));
                 if (bound == 1) {
                     above[tp] = Kt[tp][j] * ft[t_c] * exp(-Meff[j] * (tp - t_c));
-                    below[tp] = Kt[tp][j] * ft[t_c] * exp(-min_mass * (tp - t_c));
+                    below[tp] = Kt[tp][j] * ft[t_c] *( exp(-min_mass * (tp - t_c))  /* +  exp(-min_mass * (T-tp - t_c))  */) ;
                 }
                 else if (bound == 2) {
                     below[tp] = 0;
                 }
                 else if (bound == 3) {
-                    below[tp] = Kt[tp][j] * ft[t_c] * exp(-min_mass * (tp - t_c));
+                    below[tp] = Kt[tp][j] * ft[t_c] * ( exp(-min_mass * (tp - t_c))  /* +  exp(-min_mass * (T-tp - t_c)) */ ) ;
                 }
                 else {
                     printf("%s: bound method not valid bound = %d\n", __func__, bound);
@@ -473,7 +473,7 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
         fprintf(outfile, "%d   %.15g   %.15g\n", t, fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]));
     }
     fprintf(outfile, "\n\n #%s_above fit in [%d,%d] chi2=%.5g  %.5g\n", description, start_fit, end_fit, fit_out.chi2[Njack - 1], 0.0);
-    fprintf(outfile, "   %.15g   %15.g   %d\n", fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]), t_end);
+    fprintf(outfile, "   %.15g   %.15g   %d\n", fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]), t_end);
 
     // average
 
@@ -484,7 +484,7 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
         fprintf(outfile, "%d   %.15g   %.15g\n", t, fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]));
     }
     fprintf(outfile, "\n\n #%s_ave fit in [%d,%d] chi2=%.5g  %.5g\n", description, start_fit, end_fit, fit_out.chi2[Njack - 1], 0.0);
-    fprintf(outfile, "   %.15g   %15.g   %d\n", fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]), t_end);
+    fprintf(outfile, "   %.15g   %.15g   %d\n", fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]), t_end);
 
     // below
 
@@ -495,7 +495,7 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
         fprintf(outfile, "%d   %.15g   %.15g\n", t, fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]));
     }
     fprintf(outfile, "\n\n #%s_below fit in [%d,%d] chi2=%.5g  %.5g\n", description, start_fit, end_fit, fit_out.chi2[Njack - 1], 0.0);
-    fprintf(outfile, "   %.15g   %15.g   %d\n", fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]), t_end);
+    fprintf(outfile, "   %.15g   %.15g   %d\n", fit_out.P[0][Njack - 1], myres->comp_error(fit_out.P[0]), t_end);
 
 
     file_head.l0 = store_l0;
