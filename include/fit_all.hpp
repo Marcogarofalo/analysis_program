@@ -272,6 +272,12 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
     struct fit_result fit_out, struct fit_result fit_out_m0, int var, int en, double h,
     std::vector<double> xval = {});
 
+//////////// correct data after fit///////
+void print_data_fit_corrected(char** argv, data_all gjack,
+    double lhs_fun(int, int, int, data_all, struct fit_type, struct fit_result fit_out),
+    struct fit_type fit_info, const char* label, struct fit_result fit_out);
+
+
 double lhs_identity(int n, int e, int j, data_all gjack, struct fit_type fit_info);
 
 double rhs_const(int n, int Nvar, double* x, int Npar, double* P);

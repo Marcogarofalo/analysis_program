@@ -849,6 +849,93 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
 }
 
 
+// **argv=[   ???, resampling, ???, output_dir ]
+void print_data_fit_corrected(char** argv, data_all gjack,
+    double lhs_fun(int, int, int, data_all, struct fit_type, struct fit_result fit_out),
+    struct fit_type fit_info, const char* label,struct fit_result fit_out) {
+    int& Npar = fit_info.Npar;
+    int& Nvar = fit_info.Nvar;
+    int& Njack = gjack.en[0].Njack;
+    int& N = fit_info.N;
+    auto& myen = fit_info.myen;
+    ////// allocation
+    if (fit_info.Nxen.size() > 0) {
+        fit_info.init_N_etot_form_Nxen();
+        N = fit_info.N;
+    }
+    else {
+        fit_info.init_Nxen_from_N_myen();
+    }
+
+    int* en = (int*)malloc(sizeof(int) * fit_info.N);// we need to init en and en_tot to allocate the other 
+    for (int n = 0;n < fit_info.N; n++) { en[n] = fit_info.Nxen[n].size(); }
+    int en_tot = 0;      for (int n = 0;n < N;n++) { en_tot += en[n]; }// total data to fit
+
+    double*** y = double_malloc_3(Njack, en_tot, 2);// 2 is mean/error
+    double*** x = double_malloc_3(Njack, en_tot, Nvar);
+    double* guess = (double*)malloc(sizeof(double) * Npar);
+
+    printf("///// fit name:  %s \n", label);
+    ////// allocation end
+    /////////////// init
+
+    //init x
+    for (int j = 0;j < Njack;j++) {
+        int count = 0;
+        for (int n = 0;n < N;n++) {
+            for (int e = 0;e < en[n];e++) {
+                for (int i = 0; i < fit_info.Nvar; i++) {
+                    x[j][count][i] = fit_info.x[i][count][j];
+                }
+                count++;
+            }
+        }
+    }
+
+    ////////////////////////////////////////// y
+    for (int i = 0; i < fit_info.Nvar; i++)  printf("x%-12d", i);
+    printf("y            dy           n\n");
+    int count = 0;
+    for (int n = 0;n < N;n++) {
+        for (int e = 0;e < en[n];e++) {
+            double* tmpj = (double*)malloc(sizeof(double) * Njack);
+            for (int j = 0;j < Njack;j++) {
+                tmpj[j] = lhs_fun(n, fit_info.Nxen[n][e], j, gjack, fit_info, fit_out);
+            }
+            double err = error_jackboot(argv[1], Njack, tmpj);
+            for (int j = 0;j < Njack;j++) {
+                y[j][e + count][0] = tmpj[j];
+                y[j][e + count][1] = err;
+            }
+
+            for (int i = 0; i < fit_info.Nvar; i++)  printf("%-13g", x[Njack - 1][e + count][i]);
+
+            printf("%-13g%-13g%-4d\n", y[Njack - 1][e + count][0], y[Njack - 1][e + count][1], n);
+            free(tmpj);
+        }
+        count += en[n];
+    }
+    //////  init end
+   
+
+    
+    // fit_out.name=label;
+    mysprintf(fit_out.name, NAMESIZE, "%s", label);
+    /////////////////////////////////////////////////////////////////////writing the result
+    print_fit_output(argv, gjack, fit_info, label, fit_out, en, x, y);
+
+    ////// free
+    free(en);
+    //free(chi2j);
+    free_3(Njack, en_tot, y);
+    free_3(Njack, en_tot, x);
+    free(guess);
+
+    ////// free end
+
+}
+
+
 
 double lhs_identity(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double r;
