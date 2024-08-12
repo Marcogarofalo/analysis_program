@@ -235,12 +235,12 @@ double FVE_GL_fast(double Lsize_w /* L/w0 */,double  aml, double af, double aB){
 }
 
 
-double FVE_GL_Mpi(double Lsize_w /* L/w0 */,double  xi,double f_PS){
+double FVE_GL_Mpi(double L_a /* L/w0 */,double  xi,double af_PS){
 
         int j;
         double pi=3.14159265358979;
         
-        double lambda=sqrt(xi)*4*pi*f_PS*((double) Lsize_w);
+        double lambda=sqrt(xi)*4*pi*af_PS*((double) L_a);
         double m[5];
 
         //printf("L=%d   aml=%g    af=%g     aB=%g\n",Lsize,aml,af,aB);
