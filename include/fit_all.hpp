@@ -277,6 +277,11 @@ void print_data_fit_corrected(char** argv, data_all gjack,
     double lhs_fun(int, int, int, data_all, struct fit_type, struct fit_result fit_out),
     struct fit_type fit_info, const char* label, struct fit_result fit_out);
 
+/// @brief read cunk of data in binary file
+/// @param stream 
+/// @param to_write where to store the information
+/// @param head header
+void read_twopt_binary(FILE* stream, double*** to_write, generic_header head);
 
 double lhs_identity(int n, int e, int j, data_all gjack, struct fit_type fit_info);
 
