@@ -240,6 +240,24 @@ double shift_and_M_eff_sinh_T(int t, int T, double** in) {
     return mass;
 }
 
+
+double shift_and_M_eff_log(int t, int T, double** in) {
+    double mass;
+
+    double ct[1], ctp[1], res, tmp_mass, u, d;
+    int i, L0;
+
+    L0 = T;
+    ct[0] = in[t][0] - in[t + 1][0];
+    ctp[0] = in[t + 1][0] - in[t + 2][0];
+
+    mass = log(ct[0] / ctp[0]);
+
+
+    return mass;
+}
+
+
 double M_eff_log(int t, int T, double** in) {
     double mass;
 
