@@ -852,7 +852,7 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
 // **argv=[   ???, resampling, ???, output_dir ]
 void print_data_fit_corrected(char** argv, data_all gjack,
     double lhs_fun(int, int, int, data_all, struct fit_type, struct fit_result fit_out),
-    struct fit_type fit_info, const char* label,struct fit_result fit_out) {
+    struct fit_type fit_info, const char* label, struct fit_result fit_out) {
     int& Npar = fit_info.Npar;
     int& Nvar = fit_info.Nvar;
     int& Njack = gjack.en[0].Njack;
@@ -916,9 +916,9 @@ void print_data_fit_corrected(char** argv, data_all gjack,
         count += en[n];
     }
     //////  init end
-   
 
-    
+
+
     // fit_out.name=label;
     mysprintf(fit_out.name, NAMESIZE, "%s", label);
     /////////////////////////////////////////////////////////////////////writing the result
@@ -935,6 +935,18 @@ void print_data_fit_corrected(char** argv, data_all gjack,
 
 }
 
+void read_twopt_binary(FILE* stream, double*** to_write, generic_header head) {
+    int fi = 0;
+    int id;
+    int i = fread(&id, sizeof(int), 1, stream);
+    for (int k = 0; k < head.ncorr; k++) {
+        for (int t = 0; t < head.T; t++) {
+            fi += fread(to_write[k][t], sizeof(double), 2, stream);
+        }
+    }
+    int exp_fi = head.T * head.ncorr * 2;
+    error(fi != exp_fi, 1, "read_twopt_binary", "total count wrong counted: %d  expected %d\n", fi, exp_fi);
+}
 
 
 double lhs_identity(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
