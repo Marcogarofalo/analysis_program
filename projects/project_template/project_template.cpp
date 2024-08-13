@@ -91,6 +91,15 @@ void read_twopt(FILE* stream, double*** to_write, generic_header head) {
     //         to_write[k][t][1]);
     //     }
     // }
+    //// binary
+    // int fi = 0;
+    // int id;
+    // int i = fread(&id, sizeof(int), 1, stream);
+    // for (int k = 0; k < head.ncorr; k++) {
+    //     for (int t = 0; t < head.T; t++) {
+    //         fi += fread(to_write[k][t], sizeof(double), 2, stream);
+    //     }
+    // }
 }
 
 int main(int argc, char** argv) {
@@ -156,6 +165,7 @@ int main(int argc, char** argv) {
     printf("kappa=%g\n", head.kappa);
     for (int iconf = 0; iconf < confs; iconf++) {
         read_twopt(infile, data[iconf], head);
+        // read_twopt_binary(infile, data[iconf], head);
     }
 
     double**** data_bin = binning(confs, head.ncorr, head.T, data, bin);
