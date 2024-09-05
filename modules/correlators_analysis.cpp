@@ -141,12 +141,51 @@ double M_eff_T_ct_ctp1(int t, int T, double ct, double ctp1) {
     return mass;
 }
 
+template<int tau>
+double M_eff_sinh_T_ct_ctptau(int t, int T, double ct, double ctp) {
+    double mass;
+
+    double res, tmp_mass, u, d;
+    double dtau = (double)tau;
+    mass = log(ct / ctp) / dtau;
+    res = 1;
+    // printf("mass  (t = %d) = %.12g\n", t, mass);
+    while (res > 1e-12) {
+        u = 1. + exp(-mass * (T - 2. * t - 2. * tau));
+        d = 1. + exp(-mass * (T - 2. * t));
+        tmp_mass = log((ct / ctp) * (u / d)) / dtau;
+        res = fabs(tmp_mass - mass);
+        // printf("mass iter = %.12g\n", mass);
+        mass = tmp_mass;
+    }
+    // printf("mass end = %.12g\n#################################################\n", mass);
+    return mass;
+}
 
 double M_eff_T(int t, int T, double** in) {
 
     double mass = M_eff_T_ct_ctp1(t, T, in[t][0], in[t + 1][0]);
     return mass;
 }
+
+template<int tau>
+double M_eff_T_tau(int t, int T, double** in) {
+
+    double mass = M_eff_sinh_T_ct_ctptau<tau>(t, T, in[t][0], in[(t + tau) % T][0]);
+    return mass;
+}
+template double M_eff_T_tau<1>(int, int, double**);
+template<> double M_eff_T_tau<2>(int t, int T, double** in) {
+    double mass;
+    if (t == T / 2 - 1)
+        mass = 0;
+    else
+        mass =  M_eff_sinh_T_ct_ctptau<2>(t, T, in[t][0], in[(t + 2) % T][0]);
+        return mass;
+}
+template double M_eff_T_tau<3>(int, int, double**);
+template double M_eff_T_tau<4>(int, int, double**);
+template double M_eff_T_tau<5>(int, int, double**);
 
 double M_eff_sinh_T(int t, int T, double** in) {
     double mass;

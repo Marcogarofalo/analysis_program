@@ -20,14 +20,16 @@ double shift_and_M_eff_sinh_T(int t, int T, double** in);
 double shift_and_M_eff_log(int t, int T, double** in);
 double log_corr(int t, int T, double** in);
 
+template<int tau> double M_eff_T_tau(int t, int T, double** in);
+
 
 double M_eff_t0_sinh_T(int t, int t0, int T, double** in);
 double M_eff_sinh_T_ct_ctp(int t, int T, double ct, double ctp);
 ///////////////////////////////////////////////
 /// lhs fit_fun_to_fun_of_corr
 //////////////////////////////////////////////
-double lhs_function_f_PS(int j, double ****in, int t, struct fit_type fit_info);
-double lhs_function_f_PS_GEVP(int j, double ****in, int t, struct fit_type fit_info);
+double lhs_function_f_PS(int j, double**** in, int t, struct fit_type fit_info);
+double lhs_function_f_PS_GEVP(int j, double**** in, int t, struct fit_type fit_info);
 //////////////////
 
 void check_correlatro_counter(int i);
@@ -58,7 +60,7 @@ struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic
 ///////////////////////////////////////////////
 /// func for add_correlators
 //////////////////////////////////////////////
-double** r_equal_value_or_vector(double** lambdat, double** vec, fit_type fit_info, int t, int t0, double **M);
+double** r_equal_value_or_vector(double** lambdat, double** vec, fit_type fit_info, int t, int t0, double** M);
 double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info);
 /// 
 struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinematic_2pt, char* name, double**** conf_jack, const char* plateaux_masses, FILE* outfile, double fun_of_corr(int, double****, int, struct fit_type), const char* description, struct fit_type fit_info, FILE* file_jack);
