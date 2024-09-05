@@ -161,6 +161,7 @@ double**** binning(int N, int var, int t, double**** data, int bin) {
 double**** binning_toNb(int N, int var, int t, double**** data, int Nb) {
     int i, j, k, l;
     double**** out;
+    error(Nb > N, 1, "binning_toNb", "not possible to creare more binning=%d than confs=%d", Nb, N);
 
     out = calloc_corr(Nb, var, t);
 
