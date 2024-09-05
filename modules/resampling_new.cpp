@@ -48,6 +48,25 @@ void resampling_f::free_res(int var, int t, double**** in) {
     free(in);
 }
 
+void resampling_f::write_jack_in_file(double* jack, char* outname) {
+    FILE* f;
+    f = open_file(outname, "w+");
+    fprintf(f, "%d\n", Njack);
+    for (int j = 0;j < Njack;j++)  fprintf(f, "%.12g\n", jack[j]);
+    fclose(f);
+}
+void resampling_f::read_jack_from_file(double* jack, char* name) {
+    FILE* f;
+    int i;
+    int ic = 0;
+    f = open_file(name, "r");
+    ic = fscanf(f, "%d\n", &i);
+    error(i != Njack, 1, "read_jack_from_file", "number of jeack do not match: \nexpected %d\nread %d\n", Njack, i);
+    for (int j = 0;j < Njack;j++)  ic += fscanf(f, "%lf\n", &jack[j]);
+    fclose(f);
+}
+
+
 double* resampling_f::create_copy(double* in) {
     double* out = (double*)malloc(sizeof(double) * Njack);
     for (int j = 0;j < Njack;j++)  out[j] = in[j];
