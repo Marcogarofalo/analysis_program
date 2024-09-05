@@ -180,7 +180,8 @@ double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a,
         fprintf(outfile, "%d   %.15g   %.15g\t", t, amut[t][Njack - 1], error_jackboot(resampling, Njack, amut[t]));
         fprintf(outfile, "%d   %.15g   %.15g\t", t, amu[Njack - 1], error_jackboot(resampling, Njack, amu));
         fprintf(outfile, "%.15g   %.15g\t", fi[t][Njack - 1], error_jackboot(resampling, Njack, fi[t]));
-        fprintf(outfile, "%.15g   %.15g\n", corr_sub[t][Njack - 1], error_jackboot(resampling, Njack, corr_sub[t]));
+        fprintf(outfile, "%.15g   %.15g\t", corr_sub[t][Njack - 1], error_jackboot(resampling, Njack, corr_sub[t]));
+        fprintf(outfile, "%.15g   %.15g\n", Kt[t][Njack - 1], error_jackboot(resampling, Njack, Kt[t]));
     }
     fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 1, T / 2 - 1, 0.0, 0.0);
     fprintf(outfile, "   %.15g   %15.g\n", amu[Njack - 1], error_jackboot(resampling, Njack, amu));
