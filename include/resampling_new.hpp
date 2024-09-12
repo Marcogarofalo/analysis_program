@@ -30,8 +30,8 @@ public:
   void free_jack(int var, int t, double**** in);
   void write_jack_bin(double* jack, char* outname);
   
-  void write_jack_in_file(double* jack, char* outname);
-  void read_jack_from_file(double* jack, char* name);
+  void write_jack_in_file(double* jack, const char* outname);
+  void read_jack_from_file(double* jack, const char* name);
 
 
 
