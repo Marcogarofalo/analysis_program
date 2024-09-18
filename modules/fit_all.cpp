@@ -472,7 +472,17 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
                     tmpx[i] = xval[i];
                 }
                 for (int i = xval.size(); i < Nvar; i++) {
-                    tmpx[i] = fit_info.x[i][en][j];
+                    if (fit_info.Nxen.size() > 0) {
+                        int ide = 0;
+                        for (int n1 = 0; n1 < n;n1++) {
+                            ide += fit_info.Nxen[n1].size();
+                        }
+                        ide += en;
+                        tmpx[i] = fit_info.x[i][ide][j];
+                    }
+                    else {
+                        tmpx[i] = fit_info.x[i][en][j];
+                    }
                 }
                 tmpx[var] = pos;
                 tmpy[j] = fit_info.function(n, Nvar, tmpx, Npar, tif[j]);
