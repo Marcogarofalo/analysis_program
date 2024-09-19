@@ -38,8 +38,8 @@ constexpr double hbarc = 197.326963;
 constexpr double muon_mass_MeV = 105.6583755;
 constexpr double alpha_em = 0.0072973525693;
 constexpr double muon_mass_fm = muon_mass_MeV * 197.326963;
-constexpr double Mpi_MeV = 135;
-constexpr double Mpi_MeV_err = 0.2;
+// constexpr double Mpi_MeV = 135;
+// constexpr double Mpi_MeV_err = 0.2;
 
 // enum enum_ensembles {
 //     B72_64,

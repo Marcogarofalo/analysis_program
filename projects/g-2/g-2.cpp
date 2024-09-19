@@ -56,6 +56,9 @@ constexpr double Metac_MeV_err = 0.004 * 1000;
 // constexpr double Mpi_MeV = 139;
 // constexpr double Mpi_MeV_err = 0.001;
 
+constexpr double Mpi_MeV = 135;
+constexpr double Mpi_MeV_err = 0.2;
+
 using namespace std;
 
 struct  kinematic kinematic_2pt;
