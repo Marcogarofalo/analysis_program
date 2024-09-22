@@ -63,6 +63,7 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
     const char* description, const char* resampling, int isub, int bound, double* Mpi, double* Meff, int L);
 double* compute_amu_sd(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling, int isub = -1);
 double* compute_amu_W(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling);
+double* compute_amu_LD(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling);
 template<int idn, int idd>
 double ZAl_lhs(int j, double**** in, int t, struct fit_type fit_info);
 template<int idn, int idd>

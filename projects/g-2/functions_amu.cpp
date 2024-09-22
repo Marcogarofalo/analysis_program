@@ -144,7 +144,9 @@ double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a,
             double K = z * z * kernel_K(z);
             // double theta = gm2_step_function(t / 0.15, t1_d);
             double VV_sub;
-            if (isub == -2)
+            // if (isub==-3)
+            //     VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] + in[j][isub][t_a][0]*(1 - theta);// it does not work, we need an extra param isub need to be the id of the tree-correlator
+            else if (isub == -2)
                 VV_sub = Z[j] * Z[j] * in[j][id][t_a][0];
             else if (isub == -1)
                 VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] - (1.0 / (2.0 * M_PI * M_PI * pow(t_a, 5)));// perturbative
@@ -316,6 +318,62 @@ double* compute_amu_W(double**** in, int id, int Njack, double* Z, double* a, do
     return amu;
 }
 
+double* compute_amu_LD(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling) {
+    constexpr double d = 0.15;
+    constexpr double t0_d = 0.4 / d;
+    constexpr double t1_d = 1.0 / d;
+    int T = file_head.l0;
+    double** fi = double_malloc_2(T / 2, Njack);
+    double* amu = (double*)malloc(sizeof(double) * Njack);
+    double* ft = (double*)malloc(sizeof(double) * T / 2);
+
+    double** Kt = double_malloc_2(T / 2, Njack);
+    double** thetat = double_malloc_2(T / 2, Njack);
+    double** corr_sub = double_malloc_2(T / 2, Njack);
+
+
+    for (int j = 0;j < Njack;j++) {
+
+        ft[0] = 0;
+        for (int t_a = 1; t_a < T / 2; t_a++) {
+            double t = t_a * a[j]; // time in fm.
+            double z = muon_mass_MeV * (t / 197.326963);
+            double K = z * z * kernel_K(z);
+            double theta = gm2_step_function(t / 0.15, t1_d);
+            double VV_sub = Z[j] * Z[j] * in[j][id][t_a][0];//- (1.0 / (2.0 * M_PI * M_PI * pow(t_a, 5)));
+            ft[t_a] = K * VV_sub * theta;
+
+            fi[t_a][j] = ft[t_a];
+            Kt[t_a][j] = K;
+            thetat[t_a][j] = theta;
+            corr_sub[t_a][j] = VV_sub;
+            // printf("t=%d  K=%g   VV=%g  1-theta=%g  amu=%g\n",t_a,K, VV[t_a],1-theta, amu);
+        }
+
+        amu[j] = int_scheme(0, T / 2 - 1, ft);
+
+        amu[j] *= 4 * alpha_em * alpha_em *
+            q2 / (muon_mass_MeV * muon_mass_MeV * (a[j] / 197.326963) * (a[j] / 197.326963));
+    }
+
+    fprintf(outfile, " \n\n");
+    fprintf(outfile, "#\n");
+    for (int t = 1; t < T / 2; t++) {
+        fprintf(outfile, "%d   %.15g   %.15g\t", t, fi[t][Njack - 1], error_jackboot(resampling, Njack, fi[t]));
+        fprintf(outfile, "%.15g   %.15g\t", Kt[t][Njack - 1], error_jackboot(resampling, Njack, Kt[t]));
+        fprintf(outfile, "%.15g   %.15g\t", thetat[t][Njack - 1], error_jackboot(resampling, Njack, thetat[t]));
+        fprintf(outfile, "%.15g   %.15g\n", corr_sub[t][Njack - 1], error_jackboot(resampling, Njack, corr_sub[t]));
+    }
+    fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 0, T / 2, 0.0, 0.0);
+    fprintf(outfile, "   %.15g   %.15g\n", amu[Njack - 1], error_jackboot(resampling, Njack, amu));
+
+    free(ft);
+    free_2(T / 2, fi);
+    free_2(T / 2, Kt);
+    free_2(T / 2, thetat);
+    free_2(T / 2, corr_sub);
+    return amu;
+}
 
 double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile,
     const char* description, const char* resampling, int isub, int bound, double* Mpi, double* Meff, int L) {
@@ -341,7 +399,7 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
         // compute the effective mass
         for (int t_c = 1; t_c < T / 2; t_c++) {
             // mass[t_c][j] = M_eff_T_ct_ctp1(t_c, T, in[j][id][t_c][0], in[j][id][(t_c + 1) % T][0]);
-            mass[t_c][j] = log( in[j][id][t_c][0]/ in[j][id][(t_c + 1) % T][0]);
+            mass[t_c][j] = log(in[j][id][t_c][0] / in[j][id][(t_c + 1) % T][0]);
         }
     }
 
@@ -397,13 +455,13 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
                 above[tp] = Kt[tp][j] * ft[t_c] * exp(-E2[j] * (tp - t_c));
                 if (bound == 1) {
                     above[tp] = Kt[tp][j] * ft[t_c] * exp(-Meff[j] * (tp - t_c));
-                    below[tp] = Kt[tp][j] * ft[t_c] *( exp(-min_mass * (tp - t_c))  /* +  exp(-min_mass * (T-tp - t_c))  */) ;
+                    below[tp] = Kt[tp][j] * ft[t_c] * (exp(-min_mass * (tp - t_c))  /* +  exp(-min_mass * (T-tp - t_c))  */);
                 }
                 else if (bound == 2) {
                     below[tp] = 0;
                 }
                 else if (bound == 3) {
-                    below[tp] = Kt[tp][j] * ft[t_c] * ( exp(-min_mass * (tp - t_c))  /* +  exp(-min_mass * (T-tp - t_c)) */ ) ;
+                    below[tp] = Kt[tp][j] * ft[t_c] * (exp(-min_mass * (tp - t_c))  /* +  exp(-min_mass * (T-tp - t_c)) */);
                 }
                 else {
                     printf("%s: bound method not valid bound = %d\n", __func__, bound);
@@ -1255,7 +1313,7 @@ double* compute_DVt_and_integrate(int L, int Njack, double* Mpi, double* Mrho, d
     for (int t = 1;t < T;t++) {
         fprintf(outfile, "%d   %g   %g\n", t, VinfL[Njack - 1][t], VL[Njack - 1][t]);
     }
-    fprintf(outfile, "\n\n #%s_DVt fit in [%d,%d] chi2=%.5g  %.5g\n",description, 0, 0, 0.0, 0.0);
+    fprintf(outfile, "\n\n #%s_DVt fit in [%d,%d] chi2=%.5g  %.5g\n", description, 0, 0, 0.0, 0.0);
     fprintf(outfile, "%.5g  %.5g\n", 0.0, 0.0);
     printf("--------------integrate GS------------------\n");
     ///// setup integration
@@ -1304,7 +1362,7 @@ double* compute_DVt_and_integrate(int L, int Njack, double* Mpi, double* Mrho, d
     for (int t = 1; t < T / 2; t++) {
         fprintf(outfile, "%d   1   1\t", t);
     }
-    fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n",description, 0, T / 2, 0.0, 0.0);
+    fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 0, T / 2, 0.0, 0.0);
     fprintf(outfile, "   %.15g   %15.g\n", GS[Njack - 1], error_jackboot(resampling, Njack, GS));
 
 
