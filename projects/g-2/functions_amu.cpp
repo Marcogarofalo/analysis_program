@@ -146,7 +146,7 @@ double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a,
             double VV_sub;
             // if (isub==-3)
             //     VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] + in[j][isub][t_a][0]*(1 - theta);// it does not work, we need an extra param isub need to be the id of the tree-correlator
-            else if (isub == -2)
+            if (isub == -2)
                 VV_sub = Z[j] * Z[j] * in[j][id][t_a][0];
             else if (isub == -1)
                 VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] - (1.0 / (2.0 * M_PI * M_PI * pow(t_a, 5)));// perturbative
