@@ -626,6 +626,8 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
         }
         fprintf(f, "\n");
     }
+    fprintf(f, "dof   %d \n", fit_out.dof);//error_jackboot(argv[1], Njack, fit_out.chi2)
+    fprintf(f, "ndata   %d \n", fit_out.dof+fit_out.Npar);//error_jackboot(argv[1], Njack, fit_out.chi2)
     fclose(f);
     free_2(Npar, cov);
 
