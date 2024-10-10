@@ -1,8 +1,12 @@
 #ifndef integral_eq_QC3_H
 #define integral_eq_QC3_H
 
-#include <eigen3/Eigen/Dense>  
-
+// #include <Eigen/Dense>  
+#if defined __GNUC__ || defined __APPLE__
+#include <Eigen/Dense>
+#else
+#include <eigen3/Eigen/Dense>
+#endif
 
 typedef Eigen::Matrix< std::complex<  long double >, Eigen::Dynamic, Eigen::Dynamic > MatrixXcld;
 typedef Eigen::Matrix< std::complex<  long double >, Eigen::Dynamic, 1 > VectorXcld;
