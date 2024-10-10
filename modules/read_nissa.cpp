@@ -7,13 +7,15 @@ void read_single_nissa(double** out, std::string contraction, std::string gamma,
     std::fstream newfile;
     bool found_contraction = false;
     bool found_gamma = false;
-
+    printf("reading...\n");
     newfile.open(namefile, std::ios::in); // open a file to perform read operation using file object
     if (newfile.is_open()) { // checking whether the file is open
         std::string tp;
+        printf("reading...\n");
         while (getline(newfile, tp)) { // read data from file object and put it into string.
             // std::cout << "lin: " << tp << ":  len:" << tp.length() << "\n";
             // printf("is lenght enough %d \n", tp.length() >= 16);
+            printf("%d\n", tp.length());
             if (tp.length() >= 18) {
                 if (tp.compare(1/*pos*/, 1/*leng*/, "#") == 0) {
                     // printf("is there # %d \n", tp.substr(1, 2).compare("#"));
@@ -187,12 +189,17 @@ void read_all_nissa_gamma(double*** out, std::string namefile, int Ncorr, int T,
         std::string tp;
         if (check) {
             while (getline(newfile, tp)) { // read data from file object and put it into string.  
-                if (!tp.empty()) {
-                    if (tp.compare(0, 1, "+") == 0 || tp.compare(0, 1, "-") == 0) {
+                // if (!tp.empty()) {
+                std::vector<std::string> tpi = split(tp, ' ');
+                if (tpi.size() > 0) {
+                    // if (tp.compare(0, 1, "+") == 0 || tp.compare(0, 1, "-") == 0) {
+                    if (tpi[0].compare("#") != 0) {
                         Tc = 0;
-                        while (!tp.empty()) {
+                        // while (!tp.empty()) {
+                        while (!tpi.size() == 0) {
                             Tc++;
                             getline(newfile, tp);
+                            tpi = split(tp, ' ');
                         }
                         Ncorrc++;
                     }
@@ -208,23 +215,31 @@ void read_all_nissa_gamma(double*** out, std::string namefile, int Ncorr, int T,
         int corr = 0;
         int id = 0;
         while (getline(newfile, tp)) { // read data from file object and put it into string.
-            if (!tp.empty()) {
-                if (tp.compare(0, 1, "+") == 0 || tp.compare(0, 1, "-") == 0) {
+            // if (!tp.empty()) {
+            std::vector<std::string> tpi = split(tp, ' ');
+            if (tpi.size() > 0) {
+                // if (tp.compare(0, 1, "+") == 0 || tp.compare(0, 1, "-") == 0) {
+                if (tpi[0].compare("#") != 0) {
                     if (corr == id_gamma[id_sort[id]]) {// we read a sorted what
                         int t = 0;
-                        while (!tp.empty()) {
-                            std::vector<std::string> x = split(tp, '\t');
+                        // while (!tp.empty()) {
+                        while (!tpi.size() == 0) {
+                            // std::vector<std::string> x = split(tp, '\t');
+                            std::vector<std::string> x = split(tp, ' ');
                             out[id_sort[id]][t][0] = std::stod(x[0]);
                             out[id_sort[id]][t][1] = std::stod(x[1]);
                             t++;
                             getline(newfile, tp);
+                            tpi = split(tp, ' ');
                         }
                         id++;
                         if (id == id_gamma.size()) return;
                     }
                     else {
-                        while (!tp.empty()) {
+                        while (!tpi.size() == 0) {
+                        // while (!tp.empty()) {
                             getline(newfile, tp);
+                            tpi = split(tp, ' ');
                         }
                     }
                     corr++;
@@ -253,13 +268,18 @@ struct_nissa_out_info::struct_nissa_out_info(std::string namefile) {
     if (newfile.is_open()) { // checking whether the file is open
         while (getline(newfile, tp)) {
             if (tp.length() >= 18) {
-                if (tp.compare(1/*pos*/, 1/*leng*/, "#") == 0) {
-                    if (tp.compare(3, 11, "Contraction") == 0) {
+                std::vector<std::string> tpi = split(tp, ' ');
+                // if (tp.compare(1/*pos*/, 1/*leng*/, "#") == 0) {
+                if (tpi[0].compare(0/*pos*/, 1/*leng*/, "#") == 0) {
+                    // if (tp.compare(3, 11, "Contraction") == 0) {
+                    if (tpi[1].compare(0, 11, "Contraction") == 0) {
                         Ncontr++;
                         tmp_gamma = 0;
                         while (getline(newfile, tp)) {
-                            if (tp.length() >= 3) {
-                                if (tp.compare(3, 11, "Contraction") == 0) {
+                            std::vector<std::string> tpi = split(tp, ' ');
+                            if (tpi.size() > 1) {
+                                // if (tp.compare(3, 11, "Contraction") == 0) {
+                                if (tpi[1].compare(0, 11, "Contraction") == 0) {
                                     if (Ncontr == 1) Ngamma = tmp_gamma;
                                     else if (Ngamma != tmp_gamma) {
                                         printf("error in %s:\n", __func__);
@@ -270,16 +290,21 @@ struct_nissa_out_info::struct_nissa_out_info(std::string namefile) {
                                     Ncontr++;
                                     tmp_gamma = 0;
                                 }
-                                else if (tp.compare(1/*pos*/, 1/*leng*/, "#") == 0) {
+                                // else if (tp.compare(1/*pos*/, 1/*leng*/, "#") == 0) {
+                                else if (tpi[0].compare(0/*pos*/, 1/*leng*/, "#") == 0) {
                                     if (Ncontr == 1) {
-                                        std::vector<std::string> x = split(tp, ' ');
-                                        gamma.emplace_back(x[1]);
+                                        // std::vector<std::string> x = split(tp, ' ');
+                                        // gamma.emplace_back(x[1]);
+                                        gamma.emplace_back(tpi[1]);
                                     }
                                     getline(newfile, tp);
                                     int t = 0;
-                                    while (!tp.empty()) {
+                                    // while (!tp.empty()) {
+                                    std::vector<std::string> tpi = split(tp, ' ');
+                                    while (!tpi.size() == 0) {
                                         t++;
                                         getline(newfile, tp);
+                                        tpi = split(tp, ' ');
                                     }
 
                                     tmp_gamma++;
