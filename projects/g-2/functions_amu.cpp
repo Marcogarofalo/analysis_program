@@ -199,7 +199,10 @@ double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a,
 
 
 
-double* compute_amu_sd(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling, int isub) {
+double* compute_amu_sd(double**** in, int id, int Njack, double* Z, double* a, double q2,
+    double (*int_scheme)(int, int, double*), FILE* outfile, const char* description,
+    const char* resampling, int isub,  int tmin) {
+ 
     constexpr double d = 0.15;
     constexpr double t1_d = 0.4 / d;
     int T = file_head.l0;
@@ -221,7 +224,9 @@ double* compute_amu_sd(double**** in, int id, int Njack, double* Z, double* a, d
             double K = z * z * kernel_K(z);
             double theta = gm2_step_function(t / 0.15, t1_d);
             double VV_sub;
-            if (isub == -1)
+            if (isub == -2)
+                VV_sub = Z[j] * Z[j] * in[j][id][t_a][0];
+            else if (isub == -1)
                 VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] - (1.0 / (2.0 * M_PI * M_PI * pow(t_a, 5)));// perturbative
             else
                 VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] + in[j][isub][t_a][0];// free-theory
@@ -234,7 +239,7 @@ double* compute_amu_sd(double**** in, int id, int Njack, double* Z, double* a, d
             // printf("t=%d  K=%g   VV=%g  1-theta=%g  amu=%g\n",t_a,K, VV[t_a],1-theta, amu);
         }
 
-        amu[j] = int_scheme(0, T / 2 - 1, ft);
+        amu[j] = int_scheme(tmin, T / 2 - 1, ft);
 
         amu[j] *= 4 * alpha_em * alpha_em *
             q2 / (muon_mass_MeV * muon_mass_MeV * (a[j] / 197.326963) * (a[j] / 197.326963));
