@@ -31,11 +31,11 @@ ENDIF()
 
 #using the globally installed version of Eigen: sudo apt-get libeigen3-dev
 # Eigen
+
 IF(NOT DEFINED EIGEN3_INCLUDE_DIR)
   find_package(Eigen3 REQUIRED)
   MESSAGE("Eigen: " ${EIGEN3_INCLUDE_DIR})
 ENDIF()
-# INCLUDE_DIRECTORIES ( "${EIGEN3_INCLUDE_DIR}" )
 
 
 #using the globally installed version of Eigen: sudo apt-get libeigen3-dev
@@ -75,7 +75,6 @@ IF(WITH_ARB)
 ENDIF()
 
 
-find_package(Eigen3 REQUIRED)
 add_subdirectory(include  include)
 #add_subdirectory(external/rzeta/src  zeta)
 #############################################
