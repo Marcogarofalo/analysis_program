@@ -19,6 +19,8 @@ add_target_with_lib_clover(fit_all_clover fit_all_clover.cpp)
 add_target_with_lib_clover(form_factors form_factors.cpp)
 add_target_with_lib_clover(form_factors_out_max_twist form_factors_out_max_twist.cpp)
 add_target_with_lib_clover(petros_correlators petros_correlators.cpp)
+add_target_with_lib_clover(prace2gm2 prace2gm2.cpp)
+
 
 
 
