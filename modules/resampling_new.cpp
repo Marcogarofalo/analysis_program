@@ -63,7 +63,7 @@ void resampling_f::read_jack_from_file(double* jack, const char* name) {
     ic = fscanf(f, "%d\n", &i);
     error(i != Njack, 1, "read_jack_from_file", "number of jeack do not match: \nexpected %d\nread %d\n", Njack, i);
     for (int j = 0;j < Njack;j++)  ic += fscanf(f, "%lf\n", &jack[j]);
-    error(ic != Njack+1, 1, "read_jack_from_file", "invalid read counter: \nexpected %d\nread %d\n", Njack+1, ic);
+    error(ic != Njack + 1, 1, "read_jack_from_file", "invalid read counter: \nexpected %d\nread %d\n", Njack + 1, ic);
     fclose(f);
 }
 
@@ -267,6 +267,31 @@ double resampling_jack::comp_error(double* in) {
 
     return r[1];
 }
+
+void resampling_f::mult_error(double* out, double* in, double d) {
+    double r = 0;
+    int N = Njack - 1;
+
+    double kappa = 1 - d;
+    for (int j = 0;j < N;j++)
+        r += in[j];
+
+    r /= ((double)N);
+
+    for (int j = 0;j < N;j++) {
+        out[j] = in[j] + (r - in[j]) * kappa;
+        //error(in[i]!=in[i],1,"mean_and_error_jack_biased","errore jack=%d is nan",i);
+    }
+
+}
+
+void resampling_f::add_error_quadrature(double* out, double* in, double d) {
+    double err = comp_error(in);
+    double kappa = sqrt(1 + d * d / (err * err));
+    out[Njack - 1] = in[Njack - 1];
+    mult_error(out, in, kappa);
+}
+
 
 
 double* resampling_jack::create_fake(double mean, double error, int seed) {

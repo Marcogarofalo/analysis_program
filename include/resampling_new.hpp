@@ -60,6 +60,8 @@ public:
   void div(double *out, double *in1, double a);
   void linear_comb(double *out, double a, double *in1, double b, double *in2);
 
+  void mult_error(double* out,  double* in, double d);
+  void add_error_quadrature(double* out,  double* in, double d);
 };
 
 class resampling_jack : public resampling_f {

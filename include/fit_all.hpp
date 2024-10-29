@@ -14,7 +14,7 @@ public:
     int Njack=0;
     int T=0;
     int L=0;
-    int size=0;// how many doublers there are in data block
+    int size=0;// how many doubles there are in data block
     int ncorr=0;
 
     double beta=0;
