@@ -621,7 +621,7 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
     }
     for (int i = 0;i < fit_info.Npar;i++) {
         for (int j = 0;j < fit_info.Npar;j++) {
-            fprintf(f, "%-16.3g", cov[i][j]);
+            fprintf(f, "%-23.10g", cov[i][j]);
 
         }
         fprintf(f, "\n");
