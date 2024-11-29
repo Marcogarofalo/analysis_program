@@ -166,22 +166,22 @@ void generic_header::read_header_debug(FILE* file) {
     printf("kappa: %g\n", kappa);
 
     read_vector(file, mus);
-    printf("mu: "); for (int i = 0;i < mus.size();i++) printf(" %g ", mus[i]); printf("\n");
+    printf("mu[%ld]: ",mus.size()); for (int i = 0;i < mus.size();i++) printf(" %g ", mus[i]); printf("\n");
     read_vector(file, rs);
-    printf("rs: "); for (int i = 0;i < rs.size();i++) printf(" %g ", rs[i]); printf("\n");
+    printf("rs[%ld]: ",rs.size()); for (int i = 0;i < rs.size();i++) printf(" %g ", rs[i]); printf("\n");
     read_vector(file, thetas);
-    printf("thetas: "); for (int i = 0;i < thetas.size();i++) printf(" %g ", thetas[i]); printf("\n");
+    printf("thetas[%ld]: ",thetas.size()); for (int i = 0;i < thetas.size();i++) printf(" %g ", thetas[i]); printf("\n");
     read_vector(file, gammas);
-    printf("gammas: "); for (int i = 0;i < gammas.size();i++) printf(" %s ", gammas[i].c_str()); printf("\n");
+    printf("gammas[%ld]: ",gammas.size()); for (int i = 0;i < gammas.size();i++) printf(" %s ", gammas[i].c_str()); printf("\n");
     read_vector(file, smearing);
-    printf("smearing: "); for (int i = 0;i < smearing.size();i++) printf(" %s ", smearing[i].c_str()); printf("\n");
+    printf("smearing[%ld]: "); for (int i = 0;i < smearing.size();i++) printf(" %s ", smearing[i].c_str()); printf("\n");
 
 
     read_vector(file, bananas);
-    printf("bananas: "); for (int i = 0;i < bananas.size();i++) printf(" %d ", bananas[i]); printf("\n");
+    printf("bananas[%ld]: ",bananas.size()); for (int i = 0;i < bananas.size();i++) printf(" %d ", bananas[i]); printf("\n");
 
     read_vector(file, oranges);
-    printf("oranges: "); for (int i = 0;i < oranges.size();i++) printf(" %g ", oranges[i]); printf("\n");
+    printf("oranges[%ld]: ",oranges.size()); for (int i = 0;i < oranges.size();i++) printf(" %g ", oranges[i]); printf("\n");
 
 
 
