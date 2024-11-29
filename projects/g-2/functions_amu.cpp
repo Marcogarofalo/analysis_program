@@ -201,8 +201,8 @@ double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a,
 
 double* compute_amu_sd(double**** in, int id, int Njack, double* Z, double* a, double q2,
     double (*int_scheme)(int, int, double*), FILE* outfile, const char* description,
-    const char* resampling, int isub,  int tmin) {
- 
+    const char* resampling, int isub, int tmin) {
+
     constexpr double d = 0.15;
     constexpr double t1_d = 0.4 / d;
     int T = file_head.l0;
@@ -670,23 +670,36 @@ template double lhs_ct<14>(int, double****, int, fit_type);
 double* interpol_Z(int Nmus, int Njack, double** Meta, double** Z, double* aMetas_exp,
     FILE* outfile, const char* description, const char* resampling) {
     //  Z(s1) = ( 1  Meta(s1) )  (P[0])
-    //  Z(s1) = ( 1  Meta(s2) )  (P[1])
+    //  Z(s2) = ( 1  Meta(s2) )  (P[1])
 
     double** matrix = double_malloc_2(Nmus, Nmus);
     double* Zj = (double*)malloc(sizeof(double) * Nmus);
     double* Zint = (double*)malloc(sizeof(double) * Njack);
     for (int j = 0;j < Njack;j++) {
+        // printf("######################\njack %d\n",j);
         for (int i = 0;i < Nmus;i++) {
             Zj[i] = Z[i][j];
+            // printf("%20.12g  =", Zj[i]);
             for (int k = 0;k < Nmus;k++) {
                 matrix[i][k] = pow(Meta[i][j], k);
+                // printf("%20.12g ", matrix[i][k]);
             }
+            // printf("\n");
         }
         double* P = LU_decomposition_solver(Nmus, matrix, Zj);
         Zint[j] = 0;
+        // printf("P:");
         for (int k = 0;k < Nmus;k++) {
+            // printf("%20.12g  ", P[k]);
             Zint[j] += pow(aMetas_exp[j], k) * P[k];
         }
+        // printf("\n   ms_MK=%20.12g  %20.12g \n",aMetas_exp[j], error_jackboot(resampling, Njack, aMetas_exp));
+        // printf("\n   value=%20.12g  \n",Zint[j]);
+        if(Nmus==2){
+            Zint[j] = ((Z[0][j]-Z[1][j])*aMetas_exp[j] -Z[0][j]*Meta[1][j] + Z[1][j]*Meta[0][j] )/(Meta[0][j]-Meta[1][j]);
+            // printf("\n   value exact=%20.12g  \n",Zint[j]);
+        }
+        // printf("%20.12g  %20.12g\n",Z[0][j], Z[1][j] );
         free(P);
     }
     free(Zj);
