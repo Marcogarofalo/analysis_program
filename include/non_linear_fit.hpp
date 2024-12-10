@@ -106,6 +106,8 @@ struct  fit_type {
     bool GEVP_tpt0 = false;
     bool GEVP_swap_t_t0 = false;
     int GEVP_ignore_warning_after_t = 1000;
+    bool sort_by_vector = false;
+    int t_sorting_vectors = 4;
 
     // HANKEL
     int HENKEL_size = 1;

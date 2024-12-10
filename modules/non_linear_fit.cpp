@@ -203,6 +203,8 @@ void fit_type::restore_default() {
     GEVP_tpt0 = false;
     GEVP_swap_t_t0 = false;
     GEVP_ignore_warning_after_t = 1000;
+    sort_by_vector = false;
+    t_sorting_vectors = 4;
 
     HENKEL_size = 1;
     if (n_ext_P > 0) {

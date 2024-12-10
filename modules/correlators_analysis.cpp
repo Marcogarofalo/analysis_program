@@ -15,6 +15,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
+// #include <ranges>
+#include <algorithm>
 
 #include "correlators_analysis.hpp"
 #include "global.hpp"
@@ -180,8 +182,8 @@ template<> double M_eff_T_tau<2>(int t, int T, double** in) {
     if (t == T / 2 - 1)
         mass = 0;
     else
-        mass =  M_eff_sinh_T_ct_ctptau<2>(t, T, in[t][0], in[(t + 2) % T][0]);
-        return mass;
+        mass = M_eff_sinh_T_ct_ctptau<2>(t, T, in[t][0], in[(t + 2) % T][0]);
+    return mass;
 }
 template double M_eff_T_tau<3>(int, int, double**);
 template double M_eff_T_tau<4>(int, int, double**);
@@ -1055,8 +1057,53 @@ double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
 
     int n = fit_info.n;
     double** r;
-    r = r_equal_value_or_vector(lambdat, vec, fit_info, t, t0, M);
+    if (fit_info.sort_by_vector) {
+        fit_info.sort_by_vector = false;
+        int tmp_vv = fit_info.value_or_vector;
+        fit_info.value_or_vector = 1;
+        int tmp_N = fit_info.N;
+        if (tmp_vv == 0)
+            fit_info.N *= fit_info.N;
+        double** vec0 = GEVP_matrix(j, in, t, fit_info);
+        fit_info.sort_by_vector = true;
+        fit_info.value_or_vector = tmp_vv;
+        fit_info.N = tmp_N;
+        std::vector<double> lamr(N);
+        std::vector<double> crossp(N);
+        r = double_malloc_2(fit_info.N, 2);
+        for (int i = 0; i < N; i++) {
+            lamr[i] = lambdat[i][0];
+            for (int j = 0;j < N;j++) {
+                crossp[j] = 0;
+                for (int k = 0;k < N;k++) {
+                    crossp[j] += vec0[k + i * N][0] * vec[k + j * N][0] + vec0[k + i * N][1] * vec[k + j * N][1];
+                }
+            }
+            // auto x = std::ranges::max_element(crossp);
+            // int id = std::ranges::distance(crossp.begin(), x);
+            auto x = std::max_element(crossp.begin(), crossp.end());
+            int id = std::distance(crossp.begin(), x);
 
+            if (fit_info.value_or_vector == 0) {
+                r[i][0] = lambdat[id][0];
+                r[i][1] = lambdat[id][1];
+            }
+            else if (fit_info.value_or_vector == 1) {
+                for (int n = 0; n < N; n++) {
+                    r[n + i * N][0] = vec[n + id * N][0];
+                    r[n + i * N][1] = vec[n + id * N][1];
+                }
+            }
+            else if (fit_info.value_or_vector == 2) {
+                printf("fit_info.value_or_vector == 2 (ampitudes) not supported");
+                exit(1);
+            }
+
+        }
+    }
+    else {
+        r = r_equal_value_or_vector(lambdat, vec, fit_info, t, t0, M);
+    }
     free_2(N * N, M);
     free_2(N * N, Mt0);
     free_2(N, lambdat);
