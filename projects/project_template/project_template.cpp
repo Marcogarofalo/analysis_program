@@ -129,7 +129,8 @@ int main(int argc, char** argv) {
     //////////////////////////////////// setup jackboot and binning
     int confs = head.Njack;
     int bin = atoi(argv[5]);
-    int Neff = confs / bin;
+    // int Neff = confs / bin; // standard binning
+    int Neff = bin; // binning_toNb 
     int Njack;
     if (strcmp(argv[6], "jack") == 0) {
         Njack = Neff + 1;
@@ -158,7 +159,11 @@ int main(int argc, char** argv) {
     head.write_header(jack_file);
 
     //////////////////////////////////// confs
-    double**** data = calloc_corr(confs, head.ncorr, head.T);
+    int ncorr_new = head.ncorr ; // current number of correlators
+    int Max_corr = head.ncorr + 6; // max number of correlators 
+    
+    
+    double**** data = calloc_corr(confs, Max_corr, head.T);
 
     printf("confs=%d\n", confs);
     printf("ncorr=%d\n", head.ncorr);
@@ -168,10 +173,11 @@ int main(int argc, char** argv) {
         // read_twopt_binary(infile, data[iconf], head);
     }
 
-    double**** data_bin = binning(confs, head.ncorr, head.T, data, bin);
-    free_corr(confs, head.ncorr, head.T, data);
-    double**** conf_jack = myres->create(Neff, head.ncorr, head.T, data_bin);
-    free_corr(Neff, head.ncorr, head.T, data_bin);
+    // double ****data_bin = binning(confs, Max_corr, head.T, data, bin);
+    double**** data_bin = binning_toNb(confs, Max_corr, head.T, data, bin);
+    free_corr(confs, Max_corr, head.T, data);
+    double ****conf_jack = myres->create(Neff, Max_corr, head.T, data_bin);
+    free_corr(Neff, Max_corr, head.T, data_bin);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     // print all the effective masses correlators
