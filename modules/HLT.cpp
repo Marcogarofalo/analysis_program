@@ -1602,6 +1602,7 @@ fit_result HLT_type::HLT_of_corr(char** option, double**** conf_jack, const char
     arb_clear(A0_arb);
     arb_clear(A0_arb_ref);
     free_2(Tmax - Tmin, r);
+    free(diff);
     return fit_out;
 };
 
