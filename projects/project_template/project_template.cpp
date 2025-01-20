@@ -122,10 +122,29 @@ int main(int argc, char** argv) {
     FILE* infile = open_file(namefile, "r");
 
     //////////////////////////////////// read and setup header
-    generic_header head = read_head(infile);
+    generic_header head;
+    head.read_header_debug(infile);
     head.print_header();
     init_global_head(head);
 
+    //////////////////////////////////////////////////////////////
+    // reads
+    //////////////////////////////////////////////////////////////
+    int ncorr_new = head.ncorr ; // current number of correlators
+    int Max_corr = head.ncorr + 6; // max number of correlators 
+    
+    double**** data = calloc_corr(head.Njack, Max_corr, head.T);
+
+    printf("confs=%d\n", head.Njack);
+    printf("ncorr=%d\n", head.ncorr);
+    printf("kappa=%g\n", head.kappa);
+    for (int iconf = 0; iconf < head.Njack; iconf++) {
+        read_twopt(infile, data[iconf], head);
+    }
+
+    //////////////////////////////////////////////////////////////
+    // binning and resampling
+    //////////////////////////////////////////////////////////////
     //////////////////////////////////// setup jackboot and binning
     int confs = head.Njack;
     int bin = atoi(argv[5]);
@@ -147,7 +166,16 @@ int main(int argc, char** argv) {
     // now Njack need to be the number of jacks
     head.Nconf = head.Njack;
     head.Njack = Njack;
-    //////////////////////////////////// setup output files
+
+    // double ****data_bin = binning(confs, Max_corr, head.T, data, bin);
+    double**** data_bin = binning_toNb(confs, Max_corr, head.T, data, bin);
+    free_corr(confs, Max_corr, head.T, data);
+    double ****conf_jack = myres->create(Neff, Max_corr, head.T, data_bin);
+    free_corr(Neff, Max_corr, head.T, data_bin);
+
+    //////////////////////////////////////////////////////////////
+    // setup output files
+    //////////////////////////////////////////////////////////////
     mysprintf(namefile, NAMESIZE, "%s/out/%s_output", option[3], option[6]);
     printf("writing output in :\n %s \n", namefile);
     FILE* outfile = open_file(namefile, "w+");
@@ -157,27 +185,6 @@ int main(int argc, char** argv) {
     FILE* jack_file = open_file(namefile, "w+");
     // write_header_g2(jack_file, head);
     head.write_header(jack_file);
-
-    //////////////////////////////////// confs
-    int ncorr_new = head.ncorr ; // current number of correlators
-    int Max_corr = head.ncorr + 6; // max number of correlators 
-    
-    
-    double**** data = calloc_corr(confs, Max_corr, head.T);
-
-    printf("confs=%d\n", confs);
-    printf("ncorr=%d\n", head.ncorr);
-    printf("kappa=%g\n", head.kappa);
-    for (int iconf = 0; iconf < confs; iconf++) {
-        read_twopt(infile, data[iconf], head);
-        // read_twopt_binary(infile, data[iconf], head);
-    }
-
-    // double ****data_bin = binning(confs, Max_corr, head.T, data, bin);
-    double**** data_bin = binning_toNb(confs, Max_corr, head.T, data, bin);
-    free_corr(confs, Max_corr, head.T, data);
-    double ****conf_jack = myres->create(Neff, Max_corr, head.T, data_bin);
-    free_corr(Neff, Max_corr, head.T, data_bin);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     // print all the effective masses correlators
