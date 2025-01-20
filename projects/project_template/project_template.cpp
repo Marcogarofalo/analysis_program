@@ -130,9 +130,9 @@ int main(int argc, char** argv) {
     //////////////////////////////////////////////////////////////
     // reads
     //////////////////////////////////////////////////////////////
-    int ncorr_new = head.ncorr ; // current number of correlators
+    int ncorr_new = head.ncorr; // current number of correlators
     int Max_corr = head.ncorr + 6; // max number of correlators 
-    
+
     double**** data = calloc_corr(head.Njack, Max_corr, head.T);
 
     printf("confs=%d\n", head.Njack);
@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
     // double ****data_bin = binning(confs, Max_corr, head.T, data, bin);
     double**** data_bin = binning_toNb(confs, Max_corr, head.T, data, bin);
     free_corr(confs, Max_corr, head.T, data);
-    double ****conf_jack = myres->create(Neff, Max_corr, head.T, data_bin);
+    double**** conf_jack = myres->create(Neff, Max_corr, head.T, data_bin);
     free_corr(Neff, Max_corr, head.T, data_bin);
 
     //////////////////////////////////////////////////////////////
@@ -298,4 +298,11 @@ int main(int argc, char** argv) {
     check_correlatro_counter(1);
     // free_fit_result(fit_info, fit_out);
     fit_info.restore_default();
+
+    //////////////////////////////////////////////////////////////
+    // read from plateau file
+    //////////////////////////////////////////////////////////////
+    // double mean, err;
+    // int seed;
+    // line_read_param(option, "name", mean, err, seed, namefile_plateaux);
 }
