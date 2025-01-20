@@ -181,6 +181,21 @@ void symmetrise_jackboot(int  Np1, int var, int T, double**** in, int sym) {
     }
 }
 
+void symmetrise_jackboot_reim(int  Np1, int var, int T, double**** in, int reim, int sym) {
+    if ((T % 2) == 1) {
+        printf("error in symmetrise_jackboot: you can not symmetryse if T is not even\n T= %d\n", T);
+        exit(1);
+    }
+    int ri = reim;
+    for (int j = 0; j < Np1;j++) {
+        for (int t = 1; t < T / 2;t++) {
+
+            in[j][var][t][ri] = (in[j][var][t][ri] + sym * in[j][var][T - t][ri]) / 2.0;
+            in[j][var][T - t][ri] = sym * in[j][var][t][ri];
+
+        }
+    }
+}
 
 
 double* mean_jack(int N, int var, int t, int call, double**** jack, double function_jack(int, int, int, double***)) {
