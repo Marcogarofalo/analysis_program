@@ -56,7 +56,7 @@ double* plateau_correlator_function(char** option, struct kinematic kinematic_2p
 
 struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic_2pt, char* name, double**** conf_jack, const char* plateaux_masses, FILE* outfile, int index, int re_im, const char* description, struct fit_type fit_info, FILE* file_jack);
 
-
+void print_result_in_file(FILE* outfile, double* res, const char* name, double chi2, int tmin, int tmax);
 ///////////////////////////////////////////////
 /// func for add_correlators
 //////////////////////////////////////////////
