@@ -53,6 +53,7 @@ public:
   double *create_copy(double *in);
   void copy(double *out, double *in);
   void add(double *out, double *in1, double *in2);
+  void add(double *out, double *in1, double a);
   void sub(double *out, double *in1, double *in2);
   void mult(double *out, double *in1, double *in2);
   void mult(double *out, double *in1, double a);
