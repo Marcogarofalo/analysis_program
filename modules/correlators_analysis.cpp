@@ -1020,7 +1020,7 @@ double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
             }
         }
     }
-    else if (ncorr == N * N) {
+    else if (ncorr == N * N || (ncorr == N && fit_info.value_or_vector==1)) {
         for (int i = 0; i < N; i++) {// col
             for (int k = 0; k < N; k++) {// raw
                 int ik = i + k * N;
