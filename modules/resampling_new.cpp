@@ -248,6 +248,23 @@ double**** resampling_boot::create(int  N, int var, int t, double**** in) {
 }
 
 
+double resampling_jack::comp_mean_unbias(double* in) {
+    double r=0;
+    int i, N;
+
+    N = Njack - 1;
+
+    for (i = 0;i < N;i++)
+        r += in[i];
+
+    r /= ((double)N);
+
+    r = ((double)N) * in[N] - ((double)(N - 1)) * r;
+
+
+    return r;
+}
+
 
 double resampling_jack::comp_error(double* in) {
     double r[2] = { 0,0 };
@@ -327,6 +344,25 @@ double* resampling_boot::create_fake(double mean, double error, int seed) {
 
     return r;
 }
+
+double resampling_boot::comp_mean_unbias(double* in) {
+    double r=0;
+    int i, N;
+
+    printf("\n\n ########################### calling resampling_boot::comp_mean_unbias NEVER TESTED ##########\n");
+
+    N = Njack - 1;
+
+    for (i = 0;i < N;i++)
+        r += in[i];
+
+    r /= ((double)N);
+
+    r = 2* in[N] -  r;
+
+    return r;
+}
+
 
 
 //returns the  error from set of N  jacknife called *in  and the average stored in in[N]
