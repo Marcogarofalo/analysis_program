@@ -174,7 +174,7 @@ void generic_header::read_header_debug(FILE* file) {
     read_vector(file, gammas);
     printf("gammas[%ld]: ",gammas.size()); for (int i = 0;i < gammas.size();i++) printf(" %s ", gammas[i].c_str()); printf("\n");
     read_vector(file, smearing);
-    printf("smearing[%ld]: "); for (int i = 0;i < smearing.size();i++) printf(" %s ", smearing[i].c_str()); printf("\n");
+    printf("smearing[%ld]: ", smearing.size()); for (int i = 0;i < smearing.size();i++) printf(" %s ", smearing[i].c_str()); printf("\n");
 
 
     read_vector(file, bananas);
