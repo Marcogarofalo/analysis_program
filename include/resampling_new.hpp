@@ -37,6 +37,7 @@ public:
 
   virtual double**** create(int  N, int var, int t, double**** in) = 0;
   // double* mean_and_error(  double* in);
+  virtual double comp_mean_unbias(double* in) = 0;
   virtual double comp_error(double* in) = 0;
   virtual double* create_fake(double mean, double error, int seed) = 0;
   // double** comp_covariance(int Nobs,  double** in);
@@ -70,6 +71,7 @@ public:
   resampling_jack();
   resampling_jack(int N);
   double**** create(int  N, int var, int t, double**** in);
+  double comp_mean_unbias(double* in);
   double comp_error(double* in);
   double* create_fake(double mean, double error, int seed);
   double** comp_cov(int Nobs, double** in);
@@ -86,6 +88,7 @@ public:
   resampling_boot(int N);
   resampling_boot(int N, int o_seed);
   double**** create(int  N, int var, int t, double**** in);
+  double comp_mean_unbias(double* in);
   double comp_error(double* in);
   double* create_fake(double mean, double error, int seed);
   double** comp_cov(int Nobs, double** in);
