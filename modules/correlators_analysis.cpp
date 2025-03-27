@@ -1222,6 +1222,6 @@ void print_result_in_file(FILE* outfile, double* res, const char* name, double c
         fprintf(outfile, "%.15g   %.15g\n", 0.0, 0.0);
     }
     fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", name, tmin, tmax, chi2, 0.0);
-    fprintf(outfile, "   %.15g   %15.g\n", res[myres->Njack - 1], myres->comp_error(res));
+    fprintf(outfile, "   %.15g   %.15g\n", res[myres->Njack - 1], myres->comp_error(res));
 
 }
