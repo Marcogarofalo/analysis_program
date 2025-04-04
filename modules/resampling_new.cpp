@@ -2,7 +2,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <arb_mat.h>
 #include <cmath>
 
 #include "mutils.hpp"
@@ -12,6 +11,7 @@
 #include "tower.hpp"
 
 #ifdef WITH_ARB
+#include <arb_mat.h>
 #include "arb.h"
 #endif // WITH_ARB
 // resampling::resampling(const char* name, int N) {
