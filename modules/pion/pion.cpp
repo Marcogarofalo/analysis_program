@@ -2,21 +2,10 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
+#include <cmath>
 
 #include "global.hpp"
-
 #include "resampling.hpp"
-#include "read.hpp"
-//#include "m_eff.hpp"
-#include "gnuplot.hpp"
-//#include "eigensystem.hpp"
-#include "linear_fit.hpp"
-#include "various_fits.hpp"
-#include "rand.hpp"
 #include "non_linear_fit.hpp"
 #include "pion.hpp"
 

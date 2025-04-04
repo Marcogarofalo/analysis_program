@@ -1,6 +1,13 @@
 #define read_nissa_C
 #include "read_nissa.hpp"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <fstream>
+#include <memory>
+
 #include "mutils.hpp"
+#include "tower.hpp"
 
 
 void read_single_nissa(double** out, std::string contraction, std::string gamma, std::string namefile) {

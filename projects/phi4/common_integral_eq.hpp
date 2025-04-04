@@ -1,5 +1,6 @@
 #ifndef common_integral_eq_QC3_H
 #define common_integral_eq_QC3_H
+#include <complex>
 using namespace std::complex_literals;
 
 data_all setup_data_for_fits(int NE, int Njack, double*** M, double*** F);

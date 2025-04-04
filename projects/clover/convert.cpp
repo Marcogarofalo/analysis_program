@@ -2,11 +2,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 #include <time.h>
-#include <string.h>
-#include <complex.h>
-#include "read.hpp"
+
 #include "global.hpp"
 #include "mutils.hpp"
 

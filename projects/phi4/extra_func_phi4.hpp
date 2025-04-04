@@ -2,8 +2,11 @@
 #define extra_fun_phi4_H
 
 
-#include "fit_all.hpp"
 #include <cstdlib>
+
+#include "fit_all.hpp"
+
+class data_all;
 #ifdef PYTHON
 #include "QC3_interface.hpp"
 #endif

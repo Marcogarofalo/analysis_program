@@ -2,16 +2,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
 #include <iostream>
+#include <string>
 
-#include <fstream>
 #include "mutils.hpp"
 #include "global.hpp"
-#include "tower.hpp"
 #include "gamma_analysis.hpp"
 
 using namespace std;

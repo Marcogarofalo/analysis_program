@@ -3,17 +3,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
+#include <vector>
 
-#include <unistd.h>
-#include <sys/time.h>
-#include <fcntl.h>
 #include "global.hpp"
-
-
-#include "linear_fit.hpp"
 #include "non_linear_fit.hpp"
 #include "tower.hpp"
 

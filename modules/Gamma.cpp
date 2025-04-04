@@ -1,7 +1,9 @@
 #define GAMMA_C
 
-#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
 #include <cmath>
+
 #include "global.hpp"
 #include "tower.hpp"
 #include "m_eff.hpp"

@@ -1,8 +1,11 @@
-#include <math.h>
-#include <complex.h>
-#include "tower.hpp"
+#include <stdio.h>
+#include <stdlib.h>
+#include <algorithm>
+#include <cmath>
+#include <complex>
+#include <new>
+#include <utility>
 #include <Eigen/Dense>  
-#include <iostream>
 #include "integral_eq_QC3.hpp"
 
 using namespace std::complex_literals;

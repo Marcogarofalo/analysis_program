@@ -2,14 +2,17 @@
 #define header_phi4_H
 
 
+#include <math.h>
+#include <stdio.h>
 #include <array>
-#include <cstring> 
+#include <cstring>
 #include <cstdlib>
 #include <iostream>
 #include <iterator>
 #include <fstream>
 #include <string>
 #include <vector>
+
 #include "global.hpp"
 #include "mutils.hpp"
 #include "tower.hpp"

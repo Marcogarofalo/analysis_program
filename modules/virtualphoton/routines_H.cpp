@@ -3,16 +3,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
 #include <string.h>
-#include <complex.h>
-#include "linear_fit.hpp"
+
 #include "mutils.hpp"
 #include "resampling.hpp"
 #include "m_eff.hpp"
-#include "gnuplot.hpp"
 #include "global.hpp"
-#include <tower.hpp>
 
 
 double   *H_AV(char **option ,struct kinematic_G kinematic_2pt_G , char* name, double ****conf_jack,double *mass_jack_fit_k2k1,  double* mass_rest, double *oPp, int Njack ,FILE *plateaux_masses,FILE *outfile,int index,int *sym )

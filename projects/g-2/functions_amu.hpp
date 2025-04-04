@@ -6,6 +6,8 @@
 #include <time.h>
 #include <string.h>
 #include <complex.h>
+#include <gsl/gsl_integration.h>
+#include <gsl/gsl_deriv.h>
 
 #include "global.hpp"
 #include "resampling.hpp"
@@ -17,11 +19,9 @@
 #include "linear_fit.hpp"
 #include "various_fits.hpp"
 #include "mutils.hpp"
-
-#include <gsl/gsl_integration.h>
-#include <gsl/gsl_deriv.h>
 #include "tower.hpp"
 #include "fit_all.hpp"
+
 extern "C" {
     // #include "../external/rzeta/src/dzeta_function.h"
     // #include "../external/rzeta/src/qzeta_function.h"
@@ -30,7 +30,14 @@ extern "C" {
 
 }
 #include <algorithm>
+#include <cmath>
+#include <complex>
+#include <vector>
+
 #include "non_linear_fit.hpp"
+
+class data_all;
+
 static int once = 0;
 
 using namespace std::complex_literals;

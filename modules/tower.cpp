@@ -1,11 +1,7 @@
 #define tower_C
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
+
 #include "tower.hpp"
 
 

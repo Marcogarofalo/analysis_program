@@ -2,12 +2,12 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
-#include <iostream>
-#include "integral_eq_QC3.hpp"
+#include <algorithm>
+#include <cmath>
+#include <initializer_list>
+#include <string>
+#include <vector>
+
 #include "mutils.hpp"
 #include "non_linear_fit.hpp"
 #include "common_integral_eq.hpp"
@@ -15,6 +15,8 @@
 #include "tower.hpp"
 #include "resampling.hpp"
 #include "resampling_new.hpp"
+#include "fit_all.hpp"
+#include "global.hpp"
 
 
 

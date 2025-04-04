@@ -1,14 +1,9 @@
 #define FVE_C
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
+#include <cmath>
+
 #include "fve.hpp"
 #include "bessel.hpp"
-#include "global.hpp"
 
 
 void volume(double xl,double *g1t,double *g2tm, double *g2tf, double *g2tv ,double g0,double g1,double g2,double g3,double coef1,double coef2,double coef3 ){

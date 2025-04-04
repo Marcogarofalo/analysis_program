@@ -2,16 +2,17 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
 #include <string.h>
-#include <complex.h>
+#include <cmath>
+
 #include "mutils.hpp"
 #include "resampling.hpp"
 #include "resampling_new.hpp"
 #include "rand.hpp"
 #include "global.hpp"
 #include "tower.hpp"
+
+struct _IO_FILE;
 
 
 

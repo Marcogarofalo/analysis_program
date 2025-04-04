@@ -2,10 +2,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
 #include <string.h>
-#include <complex.h>
+#include <cmath>
+
 #include "linear_fit.hpp"
 #include "mutils.hpp"
 #include "resampling.hpp"

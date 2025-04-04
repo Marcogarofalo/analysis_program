@@ -1,11 +1,15 @@
 #define MINIMIZER_C
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <vector>
+#include <random>
+#include <string>
+
 #include "non_linear_fit.hpp"
 #include "mutils.hpp"
 #include "tower.hpp"
 #include "resampling.hpp"
-#include <random>
 
 
 // minimize a function respect to the parameters Npar

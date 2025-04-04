@@ -1,14 +1,16 @@
 #define zeta_interpolation_C
 
-#include <vector>
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <string>
-
 #include <global.hpp>
 #include <linear_fit.hpp>
 #include <tower.hpp>
+#include <ext/alloc_traits.h>
+#include <vector>
+#include <string>
+#include <memory>
+
 #include "header_phi4.hpp"
 #include "zeta_interpolation.hpp"
 #include "resampling.hpp"

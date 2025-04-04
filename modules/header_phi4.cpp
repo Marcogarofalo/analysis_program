@@ -2,14 +2,15 @@
 
 #include "header_phi4.hpp"
 
-#include <array>
-#include <cstring> 
 #include <cstdlib>
 #include <iostream>
-#include <iterator>
 #include <fstream>
 #include <string>
 #include <vector>
+#include <memory>
+
+#include "mutils.hpp"
+#include "tower.hpp"
 
 void read_header_phi4(FILE *stream, cluster::IO_params &params ){
     size_t i;  

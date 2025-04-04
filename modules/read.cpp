@@ -3,9 +3,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
+#include <algorithm>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "mutils.hpp"
 #include "read.hpp"
 #include "global.hpp"

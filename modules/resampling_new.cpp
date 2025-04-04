@@ -2,10 +2,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
+#include <arb_mat.h>
+#include <cmath>
+
 #include "mutils.hpp"
 #include "resampling_new.hpp"
 #include "rand.hpp"

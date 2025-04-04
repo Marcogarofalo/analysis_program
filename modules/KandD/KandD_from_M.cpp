@@ -3,26 +3,17 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
+#include <cmath>
 
 #include "global.hpp"
-
 #include "resampling.hpp"
-#include "read.hpp"
-//#include "m_eff.hpp"
-#include "gnuplot.hpp"
 //#include "eigensystem.hpp"
 #include "linear_fit.hpp"
-#include "various_fits.hpp"
-#include "rand.hpp"
 #include "non_linear_fit.hpp"
-#include "KandD.hpp" 
-#include "fve.hpp" 
+#include "KandD.hpp"
+#include "fve.hpp"
  
-#include <omp.h>
+// #include <omp.h>
 
 
 double one_line(int n, int Nvar, double *x,int Npar,double  *P){

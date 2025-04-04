@@ -3,14 +3,17 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
 #include <string.h>
-#include <complex.h>
+#include <ext/alloc_traits.h>
 #include <cmath>
+#include <memory>
+#include <vector>
+
 #include "mutils.hpp"
 
 #define MAXIT 10000
+
+#include <random>
 
 //#include "jacknife.h"
 //#include "bootstrap.h"
@@ -18,7 +21,6 @@
 #include "non_linear_fit.hpp"
 #include "tower.hpp"
 #include "global.hpp"
-#include <random>
 #include "fit_all.hpp"
 #include "sorting.hpp"
 #include "resampling.hpp"

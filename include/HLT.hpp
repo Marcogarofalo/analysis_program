@@ -2,12 +2,13 @@
 #define HLT_H
 #include <array>
 #include <functional>
+#include <string>
+#include <vector>
 
 #include "global.hpp"
 #include "resampling.hpp"
 #include "resampling_new.hpp"
 #include "non_linear_fit.hpp"
-
 #include "arb.h"
 #include "acb_calc.h"
 

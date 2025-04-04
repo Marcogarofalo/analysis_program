@@ -1,8 +1,19 @@
 #define QC3_interface_C
 
-#include <Python.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string>
+
 #include "QC3_interface.hpp"
+#include "abstract.h"
+#include "floatobject.h"
+#include "import.h"
+#include "longobject.h"
+#include "object.h"
+#include "pyerrors.h"
+#include "pythonrun.h"
+#include "tupleobject.h"
+#include "unicodeobject.h"
 
 double test_python(double a ){
     static PyObject *pName, *pModule;

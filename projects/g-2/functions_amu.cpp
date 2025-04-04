@@ -1,5 +1,24 @@
 #include "functions_amu.hpp"
+
+#include <ext/alloc_traits.h>
+#include <gsl/gsl_deriv.h>
+#include <gsl/gsl_integration.h>
+#include <gsl/gsl_math.h>
+#include <math.h>
+#include <stdlib.h>
+#include <algorithm>
+#include <string>
+
 #include "correlators_analysis.hpp"
+#include "dzeta_function.h"
+#include "fit_all.hpp"
+#include "global.hpp"
+#include "linear_fit.hpp"
+#include "mutils.hpp"
+#include "non_linear_fit.hpp"
+#include "resampling.hpp"
+#include "resampling_new.hpp"
+#include "tower.hpp"
 
 double integrand_K(double x, void* params) {
     double z = *(double*)params;

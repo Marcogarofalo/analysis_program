@@ -3,19 +3,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
 
 #include "global.hpp"
 #include "resampling.hpp"
 #include "resampling_new.hpp"
 #include "read.hpp"
-#include "m_eff.hpp"
-#include "gnuplot.hpp"
-#include "eigensystem.hpp"
-#include "linear_fit.hpp"
-#include "various_fits.hpp"
 #include "mutils.hpp"
 #include "functions_amu.hpp"
 #include "correlators_analysis.hpp"
@@ -25,12 +17,11 @@
 // #include "lhs_functions.hpp"
 
 #include <string>
-#include <cstring> 
-#include <string>
-#include <fstream>
+#include <cstring>
 #include <memory>
-
-#include <gsl/gsl_integration.h>
+#include <algorithm>
+#include <iostream>
+#include <vector>
 
 constexpr double Metas_MeV = 689.89;
 constexpr double Metas_MeV_err = 0.49;

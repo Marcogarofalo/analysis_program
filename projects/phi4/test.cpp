@@ -3,34 +3,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
-
-#include "global.hpp"
-
-#include "resampling.hpp"
-#include "read.hpp"
-#include "m_eff.hpp"
-#include "gnuplot.hpp"
-#include "eigensystem.hpp"
-#include "linear_fit.hpp"
-#include "various_fits.hpp"
-#include "mutils.hpp"
-#include <string>
-#include "correlators_analysis.hpp"
-#include "eigensystem.hpp"
-
-#include <cstring> 
-#include <string>
 #include <fstream>
 #include <memory>
+#include <vector>
 
-
-//local folder
-#include "mass_phi4.hpp"
-#include "fit_function.hpp"
+#include "global.hpp"
+#include "resampling.hpp"
+#include "mutils.hpp"
 #include "header_phi4.hpp"
+#include "tower.hpp"
+
 using namespace std;
 
 int main(int argc, char **argv){

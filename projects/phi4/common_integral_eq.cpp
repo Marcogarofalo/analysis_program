@@ -1,6 +1,11 @@
 #define common_integral_eq_C
-#include <complex.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <vector>
+#include <complex>
+#include <string>
+
 #include "mutils.hpp"
 #include "global.hpp"
 #include "tower.hpp"

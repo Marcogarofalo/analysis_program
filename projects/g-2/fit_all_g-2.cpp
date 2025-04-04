@@ -2,17 +2,16 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
+#include <ext/alloc_traits.h>
+#include <string>
+#include <cstring>
+#include <memory>
+#include <vector>
+#include <cmath>
+#include <initializer_list>
 
 #include "global.hpp"
 #include "resampling.hpp"
-#include "read.hpp"
-// #include "m_eff.hpp"
-// #include "gnuplot.hpp"
-#include "eigensystem.hpp"
-#include "linear_fit.hpp"
-#include "various_fits.hpp"
 #include "mutils.hpp"
 #include "functions_amu.hpp"
 // #include "correlators_analysis.hpp"
@@ -21,15 +20,6 @@
 #include "tower.hpp"
 #include "fit_all.hpp"
 #include "resampling_new.hpp"
-#include "global.hpp"
-
-#include <string>
-#include <cstring> 
-#include <string>
-#include <fstream>
-#include <memory>
-#include <vector>
-#include <map>
 
 enum enum_ensembles {
     B72_64,

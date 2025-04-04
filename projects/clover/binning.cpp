@@ -5,17 +5,8 @@
 #include <math.h>
 #include <time.h>
 #include <string.h>
-#include <complex.h>
 
 #include "global.hpp"
-
-#include "resampling.hpp"
-#include "read.hpp"
-#include "m_eff.hpp"
-#include "gnuplot.hpp"
-#include "eigensystem.hpp"
-#include "linear_fit.hpp"
-#include "various_fits.hpp"
 #include "mutils.hpp"
 
 

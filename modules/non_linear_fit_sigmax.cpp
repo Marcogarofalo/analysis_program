@@ -4,10 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
-#include "mutils.hpp"
+
 #include "tower.hpp"
 
 #define MAXIT 1000000

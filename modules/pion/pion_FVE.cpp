@@ -3,28 +3,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
 
 #include "global.hpp"
-
 #include "resampling.hpp"
-#include "read.hpp"
-//#include "m_eff.hpp"
-#include "gnuplot.hpp"
-//#include "eigensystem.hpp"
-#include "linear_fit.hpp"
-#include "various_fits.hpp"
-#include "rand.hpp"
 #include "non_linear_fit.hpp"
 #include "pion.hpp"
 #include "fve.hpp"
 #include "mutils.hpp"
 
-#include <unistd.h>
-
-#include <omp.h>
+// #include <omp.h>
 
 double flagl3b = 3.53;
 double flagl4b = 4.73;
@@ -557,7 +544,7 @@ double** fit_Mpi_fw_chiral_FVE_P1_P3(struct database_file_jack* jack_files, stru
     }
 
 
-#pragma omp parallel for  private(tmp,i,count,n,e,im,x)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2)
+// #pragma omp parallel for  private(tmp,i,count,n,e,im,x)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2)
     for (j = 0;j < Njack;j++) {
         count = 0;
         x = (double**)malloc(sizeof(double*) * (en_tot));
@@ -735,7 +722,7 @@ double** fit_Mpi_fw_chiral_FVE(struct database_file_jack* jack_files, struct hea
     }
 
 
-#pragma omp parallel for  private(tmp,i,count,n,e,im,x)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2)
+// #pragma omp parallel for  private(tmp,i,count,n,e,im,x)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2)
     for (j = 0;j < Njack;j++) {
         count = 0;
         x = (double**)malloc(sizeof(double*) * (en_tot));
@@ -1123,7 +1110,7 @@ double** fit_Mpi_fw_chiral_FVE_P40_prior(struct database_file_jack* jack_files, 
     }
 
 
-#pragma omp parallel for  private(tmp,i)  shared(N, en,x, y , Nvar,  Npar,guess,Njack,r,chi2)     
+// #pragma omp parallel for  private(tmp,i)  shared(N, en,x, y , Nvar,  Npar,guess,Njack,r,chi2)     
     for (j = 0;j < Njack;j++) {
         tmp = non_linear_fit_Nf(N, en, x, y[j], Nvar, Npar, Mw2_fw_chiral_FVE_prior, guess).P;
 
@@ -1279,7 +1266,7 @@ double** fit_Mpi_fw_chiral_FVE_flag(struct database_file_jack* jack_files, struc
     }
 
 
-#pragma omp parallel for  private(tmp,i)  shared(N, en,x, y , Nvar,  Npar,guess,Njack,r,chi2)    
+// #pragma omp parallel for  private(tmp,i)  shared(N, en,x, y , Nvar,  Npar,guess,Njack,r,chi2)    
     for (j = 0;j < Njack;j++) {
         tmp = non_linear_fit_Nf(N, en, x, y[j], Nvar, Npar, Mw2_fw_chiral_FVE, guess).P;
 
@@ -1418,7 +1405,7 @@ double** fit_fw_of_Mw_chiral_FVE(struct database_file_jack* jack_files, struct h
 
 
 
-#pragma omp parallel for  private(tmp,i,n,e,x,count,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2)
+// #pragma omp parallel for  private(tmp,i,n,e,x,count,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2)
     for (j = 0;j < Njack;j++) {
         x = (double**)malloc(sizeof(double*) * (en_tot));
         count = 0;
@@ -1589,7 +1576,7 @@ double** fit_Mpi_fw_chiral_FVE_P40(struct database_file_jack* jack_files, struct
 
 
 
-#pragma omp parallel for  private(tmp,i,n,e,x,count,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2,en_tot)
+// #pragma omp parallel for  private(tmp,i,n,e,x,count,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2,en_tot)
     for (j = 0;j < Njack;j++) {
         x = (double**)malloc(sizeof(double*) * (en_tot));
         count = 0;
@@ -1744,7 +1731,7 @@ double** fit_fw_of_Mw_chiral_FVE_P40(struct database_file_jack* jack_files, stru
     }
 
 
-#pragma omp parallel for  private(tmp,i,n,e,x,count,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2)
+// #pragma omp parallel for  private(tmp,i,n,e,x,count,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2)
     for (j = 0;j < Njack;j++) {
         x = (double**)malloc(sizeof(double*) * (en_tot));
         count = 0;

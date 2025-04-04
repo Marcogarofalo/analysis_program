@@ -1,28 +1,22 @@
 #define correlators_analysis_C
-#include <complex.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 //#include "eigensystem.hpp"
 
-#include <cstring>
 #include <fstream>
-#include <iostream>
 #include <iterator>
 #include <random>
-#include <sstream>
 #include <string>
 #include <vector>
 // #include <ranges>
 #include <algorithm>
+#include <cmath>
+#include <memory>
 
 #include "correlators_analysis.hpp"
 #include "global.hpp"
 #include "gnuplot.hpp"
-#include "linear_fit.hpp"
-#include "m_eff.hpp"
 #include "mutils.hpp"
 #include "non_linear_fit.hpp"
 #include "read.hpp"

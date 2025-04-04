@@ -1,19 +1,12 @@
 #define CONTROL
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
+#include <arb_mat.h>
+#include <vector>
 
 #include "HLT.hpp"
 #include "mutils.hpp"
-
-
 #include "arb.h"
-#include "acb_modular.h"
-#include "acb_calc.h"
 
 
 double no_smearing(double x, double* p) {

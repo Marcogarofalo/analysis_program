@@ -1,10 +1,21 @@
 #define extra_func_phi4_C
 
 #include "extra_func_phi4.hpp"
+
+#include <math.h>
+#include <stdio.h>
+#include <algorithm>
+#include <complex>
+#include <cstdlib>
+#include <vector>
+
 #include "mutils.hpp"
 #include "tower.hpp"
 #include "resampling.hpp"
 #include "zeta_interpolation.hpp"
+#include "QC3_interface.hpp"
+#include "global.hpp"
+
 extern "C" {
 #include "../external/rzeta/src/dzeta_function.h"
 }

@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
 #include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "global.hpp"
 #include "non_linear_fit.hpp"
@@ -15,6 +15,7 @@
 #include "mutils.hpp"
 #include "read.hpp"
 #include "sorting.hpp"
+#include "tower.hpp"
 
 generic_header set_header() {
     generic_header head;
@@ -23,7 +24,7 @@ generic_header set_header() {
 
 
 template<typename T>
-T read_param(std::string namefile, std::string namepar) {
+T read_param(const char * namefile, std::string namepar) {
     std::fstream newfile;
     int line = 0;
     T out;
@@ -53,11 +54,11 @@ T read_param(std::string namefile, std::string namepar) {
     }
 
     if (match == 0) {
-        printf("param %s not found in file %s\n", namepar.c_str(), namefile.c_str());
+        printf("param %s not found in file %s\n", namepar.c_str(), namefile);
         exit(1);
     }
     if (match > 1) {
-        printf("multiple lines line of param  %s in file  %s\n", namepar.c_str(), namefile.c_str());
+        printf("multiple lines line of param  %s in file  %s\n", namepar.c_str(), namefile);
         exit(1);
     }
     return out;
@@ -65,7 +66,7 @@ T read_param(std::string namefile, std::string namepar) {
 }
 
 template<typename T>
-std::vector<T> read_vector(std::string namefile, std::string namepar) {
+std::vector<T> read_vector(const char * namefile, std::string namepar) {
     std::fstream newfile;
     int line = 0;
     std::vector<T> out;
@@ -98,11 +99,11 @@ std::vector<T> read_vector(std::string namefile, std::string namepar) {
     }
 
     if (match == 0) {
-        printf("param %s not found in file %s\n", namepar.c_str(), namefile.c_str());
+        printf("param %s not found in file %s\n", namepar.c_str(), namefile);
         exit(1);
     }
     if (match > 1) {
-        printf("multiple lines line of param  %s in file  %s\n", namepar.c_str(), namefile.c_str());
+        printf("multiple lines line of param  %s in file  %s\n", namepar.c_str(), namefile);
         exit(1);
     }
     return out;

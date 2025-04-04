@@ -1,35 +1,27 @@
 #define CONTROL
 
-#include <complex.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
-#include "global.hpp"
-
-#include "correlators_analysis.hpp"
-#include "eigensystem.hpp"
-#include "gnuplot.hpp"
-#include "header_phi4.hpp"
-#include "linear_fit.hpp"
-#include "m_eff.hpp"
-#include "mutils.hpp"
-#include "read.hpp"
-#include "resampling.hpp"
-#include "various_fits.hpp"
-#include "zeta_interpolation.hpp"
+#include <QC3_interface.hpp>
 #include <cstring>
 #include <fstream>
 #include <memory>
-#include <string>
+#include <cmath>
+#include <vector>
 
+#include "global.hpp"
+#include "header_phi4.hpp"
+#include "linear_fit.hpp"
+#include "mutils.hpp"
+#include "resampling.hpp"
+#include "zeta_interpolation.hpp"
 // local folder
 #include "fit_function.hpp"
-#include "mass_phi4.hpp"
-
-#include <QC3_interface.hpp>
+#include "fileutils.h"
+#include "non_linear_fit.hpp"
+#include "pylifecycle.h"
+#include "pymem.h"
+#include "tower.hpp"
 
 using namespace std;
 int Ne = 0;

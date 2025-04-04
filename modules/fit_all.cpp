@@ -3,26 +3,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
 #include <string.h>
-#include <complex.h>
-
+#include <ext/alloc_traits.h>
 #include <iostream>
-#include <fstream>
 #include <string>
-#include <cstring>
-#include <sstream>
 #include <vector>
-#include <iterator>
 #include <random>
+#include <memory>
 
 #include "tower.hpp"
 #include "fit_all.hpp"
-#include "linear_fit.hpp"
 #include "non_linear_fit.hpp"
 #include "mutils.hpp"
 #include "resampling.hpp"
 #include "resampling_new.hpp"
+#include "global.hpp"
 
 void generic_header::print_header() {
     printf("Njack %i\n", Njack);

@@ -3,31 +3,23 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
 #include <string.h>
-#include <complex.h>
+#include <string>
+#include <iostream>
+#include <vector>
 
 #include "global.hpp"
 #include "resampling.hpp"
 #include "resampling_new.hpp"
 #include "read.hpp"
-#include "m_eff.hpp"
-#include "gnuplot.hpp"
-#include "eigensystem.hpp"
-#include "linear_fit.hpp"
-#include "various_fits.hpp"
 #include "mutils.hpp"
 #include "mass_phi4.hpp"
 #include "header_phi4.hpp"
 #include "correlators_analysis.hpp"
-#include "eigensystem.hpp"
 #include "lhs_functions.hpp"
+#include "non_linear_fit.hpp"
+#include "tower.hpp"
 
-#include <string>
-#include <cstring> 
-#include <string>
-#include <fstream>
-#include <memory>
 using namespace std;
 
 

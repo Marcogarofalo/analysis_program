@@ -1,4 +1,4 @@
-#ifndef indicaes_H
+#ifndef indices_H
 #define indices_H
  
 #include <stdlib.h>

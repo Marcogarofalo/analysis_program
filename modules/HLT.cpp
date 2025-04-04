@@ -1,17 +1,21 @@
 #define HLT_C
 #include "HLT.hpp"
-#include "global.hpp"
-#include "tower.hpp"
-#include <gsl/gsl_integration.h>
-
 
 #include <stdio.h>
-#include <limits>
+#include <acb_calc.h>
+#include <arb.h>
+#include <mag.h>
+#include <math.h>
+#include <stdlib.h>
+
+#include "global.hpp"
+#include "tower.hpp"
 // #include <mpir.h>
 #include "myarb.hpp"
 #include "arb_calc.h"
 #include "mutils.hpp"
 #include "correlators_analysis.hpp"
+#include "resampling_new.hpp"
 
 
 // HLT_type_d::HLT_type_d(int tmax, int L0, double E0_, int njack, HLT_b type_b, double alpha) {

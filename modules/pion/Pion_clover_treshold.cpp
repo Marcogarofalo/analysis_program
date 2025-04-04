@@ -3,31 +3,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
 
 #include "global.hpp"
-
 #include "resampling.hpp"
-#include "read.hpp"
-//#include "m_eff.hpp"
-#include "gnuplot.hpp"
 //#include "eigensystem.hpp"
 #include "linear_fit.hpp"
-#include "various_fits.hpp"
-#include "rand.hpp"
 #include "non_linear_fit.hpp"
-#include "continuum_reph.hpp"
-#include "fve.hpp"
-#include "indices.hpp"
-#include "global_reph.hpp"
 #include "tower.hpp"
 
-
-#include <unistd.h>
-
-#include <omp.h> 
+// #include <omp.h> 
 static void init_fit(int N, struct header* head, int Njack, struct data_jack* gJ, int Nvar, int Npar, int** en, int* en_tot, double**** x, double*** sigmax, double** chi2m, double** rm, double*** r, double*** fit, double**** y, double** chi2, double**** C, double threshold) {
     int imoms, imomt, imom0, iG, i, n, e, j;
     int count;

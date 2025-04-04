@@ -3,16 +3,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
 #include <string.h>
-#include <complex.h>
+
 #include "linear_fit.hpp"
 #include "mutils.hpp"
 #include "resampling.hpp"
 #include "m_eff1.hpp"
 #include "gnuplot.hpp"
 #include "global.hpp"
-#include "eigensystem.hpp"
 
 
 double M_eff1(  int t, double **in){

@@ -2,31 +2,21 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
 #include <string.h>
-#include <complex.h>
+#include <ext/alloc_traits.h>
 #include <memory>
+#include <vector>
+#include <cmath>
+#include <string>
 
 #include "global.hpp"
-
 #include "resampling.hpp"
-#include "read.hpp"
-//#include "m_eff.hpp"
-#include "gnuplot.hpp"
-//#include "eigensystem.hpp"
-#include "linear_fit.hpp"
-#include "various_fits.hpp"
-#include "rand.hpp"
 #include "non_linear_fit.hpp"
 #include "pion.hpp"
 #include "KandD.hpp"
-#include "global_fit_KandD.hpp"
 #include "tower.hpp"
 #include "mutils.hpp"
-
 #include "fve.hpp"
-#include <vector>
 
 
 

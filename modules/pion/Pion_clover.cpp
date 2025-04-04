@@ -2,32 +2,18 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
+#include <mutils.hpp>
+#include <cmath>
+#include <vector>
 
 #include "global.hpp"
-
 #include "resampling.hpp"
-#include "read.hpp"
-//#include "m_eff.hpp"
-#include "gnuplot.hpp"
 //#include "eigensystem.hpp"
 #include "linear_fit.hpp"
-#include "various_fits.hpp"
-#include "rand.hpp"
 #include "non_linear_fit.hpp"
-#include "continuum_reph.hpp"
-#include "fve.hpp"
-#include "indices.hpp"
-#include "global_reph.hpp"
 #include "tower.hpp"
-#include <mutils.hpp>
 
-#include <unistd.h>
-
-#include <omp.h> 
+// #include <omp.h> 
 static void init_fit(int N, struct header* head, int Njack, struct data_jack* gJ, int Nvar, int Npar, int** en, int* en_tot, double**** x, double*** sigmax, double** chi2m, double** rm, double*** r, double*** fit, double**** y, double** chi2, double**** C, int ensembles_here) {
     int imoms, imomt, imom0, iG, i, n, e, j;
     int count;
@@ -318,7 +304,7 @@ struct fit_result fit_Mpi_fw_chiral_FVE_clover(struct database_file_jack* jack_f
       free(guess);
       guess=guess1;
       */
-#pragma omp parallel for  private(tmp,i,count,n,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2,C,x,cov,cov_yx1,cov1)
+//#pragma omp parallel for  private(tmp,i,count,n,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2,C,x,cov,cov_yx1,cov1)
     for (j = 0;j < Njack;j++) {
         //if (j==0){     }
         tmp = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess).P;
@@ -585,7 +571,7 @@ struct fit_result fit_Mpiw0s0_fwMpi4_chiral_FVE_clover(struct database_file_jack
 
     guess = guess_for_non_linear_fit_Nf(N, en, x[Njack - 1], y[Njack - 1], Nvar, Npar, fit_info.function, guess);
 
-#pragma omp parallel for  private(tmp,i,count,n,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2,C,x,cov,cov_yx1,cov1)
+// #pragma omp parallel for  private(tmp,i,count,n,im)  shared(N, en, y , Nvar,  Npar,guess,Njack,r,chi2,C,x,cov,cov_yx1,cov1)
     for (j = 0;j < Njack;j++) {
         //if (j==0){     }
         tmp = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess).P;

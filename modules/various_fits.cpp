@@ -2,13 +2,9 @@
  
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
 #include <string.h>
-#include <complex.h>
 
 #include "global.hpp"
-
 #include "resampling.hpp"
 #include "gnuplot.hpp"
 #include "linear_fit.hpp"

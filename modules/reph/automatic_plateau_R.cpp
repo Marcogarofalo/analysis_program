@@ -3,9 +3,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
 #include <string.h>
-#include <complex.h>
+#include <vector>
+#include <memory>
+
 #include "linear_fit.hpp"
 #include "mutils.hpp"
 #include "resampling.hpp"
@@ -13,9 +14,6 @@
 #include "gnuplot.hpp"
 #include "global.hpp"
 #include "continuum_reph.hpp"
-#include "mutils.hpp"
-
-#include <vector>
  /*
 double Rmur(int t, double ***in,double mass, double oPp,struct kinematic_G kinematic_2pt_G,int index,int *sym){
       double RA=0;
@@ -235,8 +233,8 @@ double   *compute_Rmur_auto_plateau(char **option ,struct kinematic_G kinematic_
            fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
    }
 
-   if (sym[index]==0);   sprintf(label,"R_A_mu");
-   if (sym[index]==1);   sprintf(label,"R_V_mu");
+   if (sym[index]==0)   sprintf(label,"R_A_mu");
+   if (sym[index]==1)   sprintf(label,"R_V_mu");
    fit=fit_plateaux_G_int(option, kinematic_2pt_G ,  name,"R_{mu}",mt,r,  Njack,plateaux_masses,outfile,tmin,tmax);
   // write_jack_bin(Njack,fit,file_jack.f_PS);
 
@@ -328,8 +326,8 @@ double   *H_over_H0_autoplateaux(char **option ,struct kinematic_G kinematic_2pt
            fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
    }
 
-   if (sym[index]==0);   sprintf(label,"R_A_mu");
-   if (sym[index]==1);   sprintf(label,"R_V_mu");
+   if (sym[index]==0)   sprintf(label,"R_A_mu");
+   if (sym[index]==1)   sprintf(label,"R_V_mu");
    fit=fit_plateaux_G_int(option, kinematic_2pt_G ,  name,"FA_from_H0_auto",mt,r,  Njack,plateaux_masses,outfile,tmin,tmax);
   // write_jack_bin(Njack,fit,file_jack.f_PS);
 

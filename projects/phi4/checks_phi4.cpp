@@ -5,29 +5,17 @@
 #include <math.h>
 #include <time.h>
 #include <string.h>
-#include <complex.h>
+#include <iostream>
 
 #include "global.hpp"
-
 #include "resampling.hpp"
 #include "read.hpp"
-#include "m_eff.hpp"
-#include "gnuplot.hpp"
-#include "eigensystem.hpp"
-#include "linear_fit.hpp"
-#include "various_fits.hpp"
 #include "mutils.hpp"
-#include <string>
 #include "mass_phi4.hpp"
 #include "header_phi4.hpp"
 #include "correlators_analysis.hpp"
-#include "eigensystem.hpp"
-#include "lhs_functions.hpp"
+#include "tower.hpp"
 
-#include <cstring> 
-#include <string>
-#include <fstream>
-#include <memory>
 using namespace std;
 
 struct  kinematic kinematic_2pt;

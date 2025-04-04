@@ -1,14 +1,12 @@
 #define FVE_K_C
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
 #include <complex>
+#include <cmath>
+
 #include "fve.hpp"
 #include "bessel.hpp"
-#include "global.hpp" 
+#include "global.hpp"
 
 
 double   dl1r = 3.80000e-04  ,   dl2r = 1.59000e-03  ,   dl3r =-2.91000e-03  ,   dl4r = 0.00000e+00;

@@ -3,19 +3,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
 
-#include <unistd.h>
-#include <sys/time.h>
-#include <fcntl.h>
 #include "global.hpp"
-
-
-#include "linear_fit.hpp"
 #include "non_linear_fit.hpp"
 #include "tower.hpp"
+
 double f(int n, int Nvar, double* x, int Npar, double* P) {
 
     return  P[0] * exp(x[0] * P[1]);

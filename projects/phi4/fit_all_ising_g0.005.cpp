@@ -2,36 +2,25 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
+#include <QC3_interface.hpp>
+#include <cstring>
+#include <fstream>
+#include <memory>
+#include <cmath>
+#include <vector>
 
 #include "global.hpp"
 #include "resampling.hpp"
-#include "read.hpp"
-#include "m_eff.hpp"
-#include "gnuplot.hpp"
-#include "eigensystem.hpp"
 #include "linear_fit.hpp"
-#include "various_fits.hpp"
 #include "mutils.hpp"
-#include <string>
-#include "correlators_analysis.hpp"
-#include "eigensystem.hpp"
 #include "header_phi4.hpp"
 #include "zeta_interpolation.hpp"
-#include <cstring> 
-#include <string>
-#include <fstream>
-#include <memory>
-
-
-//local folder
-#include "mass_phi4.hpp"
 #include "fit_function.hpp"
-
-#include <QC3_interface.hpp>
+#include "fileutils.h"
+#include "non_linear_fit.hpp"
+#include "pylifecycle.h"
+#include "pymem.h"
+#include "tower.hpp"
 
 
 

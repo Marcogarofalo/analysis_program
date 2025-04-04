@@ -3,30 +3,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
 
 #include "global.hpp"
-
 #include "resampling.hpp"
-#include "read.hpp"
-//#include "m_eff.h"
-#include "gnuplot.hpp"
-//#include "eigensystem.h"
-#include "linear_fit.hpp"
-#include "various_fits.hpp"
-#include "rand.hpp"
 #include "non_linear_fit.hpp"
 #include "continuum_reph.hpp"
-#include "fve.hpp"
 #include "indices.hpp"
 #include "global_reph.hpp"
 #include "mutils.hpp"
-
-
-#include <unistd.h>
-#include <omp.h> 
+// #include <omp.h> 
 
 
 
