@@ -843,6 +843,7 @@ struct fit_result fit_fun_to_fun_of_corr(char** option, struct kinematic kinemat
     int i, j, yn;
 
     // error(fit_info.N != 1, 1, "fit_fun_to_fun_of_corr", "multiple correlator fit not implemented");
+    error(file_head.l0 != fit_info.T, 1, "fit_fun_to_fun_of_corr", "T not equal to l0");
     int T = file_head.l0 * fit_info.N;
     r = (double**)malloc(sizeof(double*) * T / 2);
     for (i = 0; i < T / 2; i++)
@@ -976,6 +977,16 @@ double** r_equal_value_or_vector(double** lambdat, double** vec, fit_type fit_in
     return r;
 }
 
+bool is_used(std::vector<int>& id_list, int i, int id) {
+    bool id_used = false;
+    for (int i1 = 0; i1 < i; i1++) {
+        if (id_list[i1] == id) {
+            id_used = true;
+        }
+    }
+    return id_used;
+}
+
 double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
     double ct, ctp;
     int N = fit_info.N;
@@ -1012,31 +1023,43 @@ double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
                 int corr_ik = fit_info.corr_id[count];
                 int ik = i + k * N;
                 int ki = k + i * N;
-                M[ik][0] = in[j][corr_ik][t][0];
-                Mt0[ik][0] = in[j][corr_ik][t0][0];
+                for (int reim = 0;reim < 2;reim++) {
+                    M[ik][reim] = in[j][corr_ik][t][reim];
+                    Mt0[ik][reim] = in[j][corr_ik][t0][reim];
+                }
                 M[ki][0] = M[ik][0];
                 Mt0[ki][0] = Mt0[ik][0];
+
+                M[ki][1] = -M[ik][1];
+                Mt0[ki][1] = -Mt0[ik][1];
                 count++;
             }
         }
     }
-    else if (ncorr == N * N || (ncorr == N && fit_info.value_or_vector==1)) {
+    else if (ncorr == N * N ) {
         for (int i = 0; i < N; i++) {// col
             for (int k = 0; k < N; k++) {// raw
                 int ik = i + k * N;
                 int corr_ik = fit_info.corr_id[ik];
-                M[ik][0] = in[j][corr_ik][t][0];
-                Mt0[ik][0] = in[j][corr_ik][t0][0];
+                for (int reim = 0;reim < 2;reim++) {
+                    M[ik][reim] = in[j][corr_ik][t][reim];
+                    Mt0[ik][reim] = in[j][corr_ik][t0][reim];
+                }
             }
         }
         for (int i = 0; i < N; i++) {
-            for (int k = i + 1; k < N; k++) {
+            for (int k = i ; k < N; k++) {
                 int ik = i + k * N;
                 int ki = k + i * N;
                 M[ik][0] = (M[ik][0] + M[ki][0]) / 2.0;
                 Mt0[ik][0] = (Mt0[ik][0] + Mt0[ki][0]) / 2.0;
                 M[ki][0] = M[ik][0];
                 Mt0[ki][0] = Mt0[ik][0];
+
+                M[ik][1] = (M[ik][1] - M[ki][1]) / 2.0;
+                Mt0[ik][1] = (Mt0[ik][1] - Mt0[ki][1]) / 2.0;
+                M[ki][1] = -M[ik][1];
+                Mt0[ki][1] = -Mt0[ik][1];
             }
         }
     }
@@ -1063,27 +1086,44 @@ double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
         fit_info.value_or_vector = 1;
         int tmp_N = fit_info.N;
         if (tmp_vv == 0)
-            fit_info.N *= fit_info.N;
-        double** vec0 = GEVP_matrix(j, in, t, fit_info);
+            fit_info.N *= fit_info.N;// don't worry when we ask for the values we define N = sqrt(fit_info.N)
+        double** vec0 = GEVP_matrix(j, in, fit_info.t_sorting_vectors, fit_info);
         fit_info.sort_by_vector = true;
         fit_info.value_or_vector = tmp_vv;
         fit_info.N = tmp_N;
         std::vector<double> lamr(N);
         std::vector<double> crossp(N);
+        std::vector<int> id_list(N, -1);
         r = double_malloc_2(fit_info.N, 2);
+
         for (int i = 0; i < N; i++) {
             lamr[i] = lambdat[i][0];
             for (int j = 0;j < N;j++) {
                 crossp[j] = 0;
                 for (int k = 0;k < N;k++) {
                     crossp[j] += vec0[k + i * N][0] * vec[k + j * N][0] + vec0[k + i * N][1] * vec[k + j * N][1];
+                    // crossp[j] += vec0[k + i * N][0] - vec[k + j * N][0] + vec0[k + i * N][1] - vec[k + j * N][1];
                 }
             }
+            
             // auto x = std::ranges::max_element(crossp);
             // int id = std::ranges::distance(crossp.begin(), x);
             auto x = std::max_element(crossp.begin(), crossp.end());
             int id = std::distance(crossp.begin(), x);
+            while (is_used(id_list, i, id)) {
+                x = std::max_element(crossp.begin(), crossp.end(), [x](auto const& e1, auto const& e2) {
+                    if (e1 < *x)
+                        return e2 < *x && e1 < e2;
+                    else
+                        return true; // true means that the new best is e2
+                    });
+                id = std::distance(crossp.begin(), x);
+            }
+            id_list[i] = id;
+        }
 
+        for (int i = 0; i < N; i++) {
+            int id = id_list[i];
             if (fit_info.value_or_vector == 0) {
                 r[i][0] = lambdat[id][0];
                 r[i][1] = lambdat[id][1];
