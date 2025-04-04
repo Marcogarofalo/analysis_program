@@ -1381,6 +1381,7 @@ int main(int argc, char** argv) {
     file_head.k[2] = mu1;    file_head.k[3] = mu2;
     fit_info.ext_P[0] = mass[1];
     fit_info.ext_P[1] = E2[2];
+    fit_info.T = file_head.l0;
     fit_out = fit_function_to_corr(option, kinematic_2pt, (char*)"P5P5", conf_jack, namefile_plateaux, outfile, 7, 0/*reim*/, "E3", fit_info
         , jack_file);
     free_fit_result(fit_info, fit_out);
