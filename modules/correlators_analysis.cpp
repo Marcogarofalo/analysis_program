@@ -1091,13 +1091,11 @@ double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
         fit_info.sort_by_vector = true;
         fit_info.value_or_vector = tmp_vv;
         fit_info.N = tmp_N;
-        std::vector<double> lamr(N);
         std::vector<double> crossp(N);
         std::vector<int> id_list(N, -1);
         r = double_malloc_2(fit_info.N, 2);
 
         for (int i = 0; i < N; i++) {
-            lamr[i] = lambdat[i][0];
             for (int j = 0;j < N;j++) {
                 crossp[j] = 0;
                 for (int k = 0;k < N;k++) {
