@@ -666,35 +666,41 @@ int main(int argc, char** argv) {
 
     std::string name_ens(argv[6]);
     ik1 = 0;
-    ik2 = ik1;
-    r2 = 0;
-    imom1 = 0;
-    imom2 = 0;
-    get_kinematic(ik1, 0, ik1, 0, 0, 0);
-    char gm2_namefile[NAMESIZE];
-    std::vector<std::string>  gammas = { "V0P5","P5P5" };
+    for (ik2 = 0; ik2 < 3;ik2++) {
+        // ik2 = ik1;
+        r2 = 0;
+        imom1 = 0;
+        imom2 = 0;
+        get_kinematic(ik2, 0, ik1, 0, 0, 0);
+        char gm2_namefile[NAMESIZE];
+        std::vector<std::string>  gammas = { "V0P5","P5P5","A0P5" };
 
-    std::vector<std::string> opeq = { "opposite","equal" };
-    std::vector<int> reim = { 1,0 };
-    std::vector<int> symr = { -1,1 };
-    for (int r1 = 0;r1 < 2;r1++) {
-        for (int ig = 0; ig < gammas.size();ig++) {
-            mysprintf(gm2_namefile, NAMESIZE, "%s_r.%s_mu.%.5f_%s.txt", name_ens.c_str(), opeq[r1].c_str(), kinematic_2pt.k1, gammas[ig].c_str()); //op = TM
-            FILE* gm2_file = open_file(gm2_namefile, "w+");
-            contraction_index(&ii, gammas[ig].c_str());
-            printf("%d   %s   %d\n", ig, gammas[ig].c_str(), ii);
-            for (i = 0;i < confs;i++) {
-                fprintf(gm2_file, "\n");
-                fprintf(gm2_file, "# %04d_r1\n", i);
-                fprintf(gm2_file, "\n");
-                read_twopt(f_ll, size, i, data[i][0], si_2pt, ii, imom2, imom1, ik2, r2, ik1, r1, symr[ig]);
-                for (int t = 0;t < file_head.l0 / 2 + 1;t++) {
+        std::vector<std::string> opeq = { "opposite","equal" };
+        std::vector<int> reim = { 1,0 };
+        std::vector<int> symr = { -1,1 };
+        for (int r1 = 0;r1 < 2;r1++) {
+            for (int ig = 0; ig < gammas.size();ig++) {
+                if (ik1 == ik2)
+                    mysprintf(gm2_namefile, NAMESIZE, "%s_r.%s_mu.%.5f_%s.txt", name_ens.c_str(), opeq[r1].c_str(), kinematic_2pt.k1, gammas[ig].c_str()); //op = TM
+                else
+                    mysprintf(gm2_namefile, NAMESIZE, "%s_r.%s_mu.%.5f_mu.%.5f_%s.txt", name_ens.c_str(), opeq[r1].c_str(), kinematic_2pt.k1, kinematic_2pt.k2, gammas[ig].c_str()); //op = TM
 
-                    double out = data[i][0][t][reim[ig]] + (symr[ig]) * data[i][0][(file_head.l0 - t) % file_head.l0][reim[ig]];
-                    fprintf(gm2_file, "%.12g\n", out / 2.0);
+                FILE* gm2_file = open_file(gm2_namefile, "w+");
+                contraction_index(&ii, gammas[ig].c_str());
+                printf("%d   %s   %d\n", ig, gammas[ig].c_str(), ii);
+                for (i = 0;i < confs;i++) {
+                    fprintf(gm2_file, "\n");
+                    fprintf(gm2_file, "# %04d_r1\n", i);
+                    fprintf(gm2_file, "\n");
+                    read_twopt(f_ll, size, i, data[i][0], si_2pt, ii, imom2, imom1, ik2, r2, ik1, r1, symr[ig]);
+                    for (int t = 0;t < file_head.l0 / 2 + 1;t++) {
+
+                        double out = data[i][0][t][reim[ig]] + (symr[ig]) * data[i][0][(file_head.l0 - t) % file_head.l0][reim[ig]];
+                        fprintf(gm2_file, "%.12g\n", out / 2.0);
+                    }
                 }
+                fclose(gm2_file);
             }
-            fclose(gm2_file);
         }
     }
 
