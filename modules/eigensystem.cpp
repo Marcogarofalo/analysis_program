@@ -5,7 +5,7 @@
 #include <Eigen/Dense>  
 #include "eigensystem.hpp"
 #include "sorting.hpp"
-#include <vector>
+// #include <vector>
 
 void complexEigenproblem(double** A, int N, double** eigenvalues, double** eigenvectors) {
     int i, j;
@@ -78,6 +78,7 @@ int generalysed_Eigenproblem(double** A, double** B, int N, double*** eigenvalue
     c = b.inverse() * a;
 
     Eigen::ComplexEigenSolver<Eigen::MatrixXcd> ces;
+    // Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXcd> ces(a,b);
     ces.compute(c);
 
     //   Eigen::LLT<Eigen::MatrixXcd> lltOfA(c); // compute the Cholesky decomposition of A
@@ -131,12 +132,12 @@ int generalysed_Eigenproblem(double** A, double** B, int N, double*** eigenvalue
     }
 
     Eigen::VectorXcd v;
-    std::complex<double> norm;
 
     double* lambda = (double*)malloc(sizeof(double) * N);
     int* order = (int*)malloc(sizeof(int) * N);
     for (int i = 0;i < N;i++) {
         lambda[i] = real(ces.eigenvalues()[i]);
+        // lambda[i] = (ces.eigenvalues()[i]);
         order[i] = i;
     }
     quickSort(order, lambda, 0, N - 1);
@@ -148,11 +149,10 @@ int generalysed_Eigenproblem(double** A, double** B, int N, double*** eigenvalue
         v = ces.eigenvectors().col(ii);
 
         Eigen::VectorXcd res = c * v - ces.eigenvalues()[ii] * v;
-        double sum = 0;
-        for (int i = 0; i < N;i++)
-            sum += real(res(i) * conj(res(i)));
+        // Eigen::VectorXcd res = a * v - ces.eigenvalues()[ii] * b* v;
+        double sum = res.norm();
         if (sum > 1e-6) {
-            printf("error eigenvalues\n");
+            printf("error eigenvalues: deviation = %g\n",sum);
             std::cout << c * v << std::endl;
             std::cout << "   l=" << ces.eigenvalues()[ii] << std::endl;
             std::cout << ces.eigenvalues()[ii] * v << std::endl;
@@ -232,7 +232,7 @@ void GEVP_real(double** A, double** B, int N, double*** eigenvalues, double*** e
     }
 
     Eigen::VectorXcd v;
-    std::complex<double> norm;
+    // std::complex<double> norm;
 
     double* lambda = (double*)malloc(sizeof(double) * N);
     int* order = (int*)malloc(sizeof(int) * N);
@@ -281,7 +281,7 @@ void complexeigenSolver(double** A, int N, double*** eigenvalues, double*** eige
     ces.compute(a);
 
     Eigen::VectorXcd v;
-    std::complex<double> norm;
+    // std::complex<double> norm;
 
     double* lambda = (double*)malloc(sizeof(double) * N);
     int* order = (int*)malloc(sizeof(int) * N);
