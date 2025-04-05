@@ -2,9 +2,6 @@
 #include <QC3_interface.hpp>
 #include <stdlib.h>
 
-#include "fileutils.h"
-#include "pylifecycle.h"
-#include "pymem.h"
 
 int main(int argc, char **argv)
 {

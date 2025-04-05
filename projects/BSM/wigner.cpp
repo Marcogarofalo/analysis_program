@@ -1,34 +1,23 @@
 #define CONTROL
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
-#include <cstring> 
-#include <string>
-#include <fstream>
-#include <memory>
-#include <random>
-
-
-
-#include "global.hpp"
-
-#include "resampling.hpp"
-#include "read.hpp"
-#include "m_eff.hpp"
-#include "gnuplot.hpp"
-#include "eigensystem.hpp"
-#include "linear_fit.hpp"
-#include "various_fits.hpp"
-#include "mutils.hpp"
-#include <string>
-#include "correlators_analysis.hpp"
-#include "eigensystem.hpp"
-#include "lhs_functions.hpp"
-#include "header_BSM.hpp"
+#include <stdlib.h>                  // for malloc, free, atoi, calloc, exit
+#include <string.h>                  // for strcmp
+#include <time.h>                    // for clock_t
+#include <cstdio>                    // for printf, FILE, fscanf, sprintf, NULL
+#include <fstream>                   // for std
+#include <memory>                    // for allocator_traits<>::value_type
+#include <random>                    // for mt19937
+#include <string>                    // for string, basic_string
+#include <vector>                    // for vector
+#include "correlators_analysis.hpp"  // for fit_fun_to_fun_of_corr, check_co...
+#include "global.hpp"                // for file_head, header, NAMESIZE, kin...
+#include "header_BSM.hpp"            // for header_BSM, check_header_BSM
+#include "lhs_functions.hpp"         // for ration_corr_min_half, GPS_BSM
+#include "mutils.hpp"                // for mysprintf, open_file, error
+#include "non_linear_fit.hpp"        // for free_fit_result, fit_type, fit_r...
+#include "read.hpp"                  // for symmetrise_corr, free_corr, call...
+#include "resampling.hpp"            // for create_resampling
+#include "tower.hpp"                 // for double_malloc_2
 
 using namespace std;
 

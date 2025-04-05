@@ -2,21 +2,23 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
+// #include <math.h>
+// #include <time.h>
 #include <string.h>
-#include <complex.h>
+// #include <complex.h>
+#include <cmath>               // for M_PI, sqrt, fabs, sin, pow, asinh
+#include <vector>              // for vector
 
 #include "global.hpp"
 #include "global_reph.hpp"
 #include "resampling.hpp"
-#include "read.hpp"
+// #include "read.hpp"
 //#include "m_eff.hpp"
-#include "gnuplot.hpp"
+// #include "gnuplot.hpp"
 //#include "eigensystem.hpp"
 #include "linear_fit.hpp"
 #include "various_fits.hpp"
-#include "rand.hpp"
+// #include "rand.hpp"
 #include "non_linear_fit.hpp"
 //#include "pion.hpp"
 //#include "KandD.hpp"
@@ -2447,9 +2449,9 @@ void  print_fit_info(char** argv, int jack_tot, struct fit_result fit_out, struc
     for (j = 0;j < jack_tot;j++) {
         for (i = 0;i < fit_info.Npar;i++) {
             for (k = 0;k < i;k++)
-                jack_tot, fit_out.C[i][k][j] /= sqrt(fit_out.C[i][i][j] * fit_out.C[k][k][j]);
+                fit_out.C[i][k][j] /= sqrt(fit_out.C[i][i][j] * fit_out.C[k][k][j]);
             for (k = i + 1;k < fit_info.Npar;k++)
-                jack_tot, fit_out.C[i][k][j] /= sqrt(fit_out.C[i][i][j] * fit_out.C[k][k][j]);
+                fit_out.C[i][k][j] /= sqrt(fit_out.C[i][i][j] * fit_out.C[k][k][j]);
         }
     }
 

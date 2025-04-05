@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "header_phi4.hpp"
-
+#include "global.hpp"
 
 
 class  zeta_interpolation{

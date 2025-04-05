@@ -2,7 +2,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <ext/alloc_traits.h>
 #include <string>
 #include <cstring>
 #include <memory>

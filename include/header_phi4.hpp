@@ -4,19 +4,11 @@
 
 #include <math.h>
 #include <stdio.h>
-#include <array>
 #include <cstring>
-#include <cstdlib>
 #include <iostream>
-#include <iterator>
-#include <fstream>
 #include <string>
 #include <vector>
 
-#include "global.hpp"
-#include "mutils.hpp"
-#include "tower.hpp"
-#include "fit_all.hpp"
 
 using namespace std;
 

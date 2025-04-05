@@ -5,10 +5,10 @@
 #include <math.h>
 #include <time.h>
 #include <string.h>
-#include <complex.h>
+// #include <complex.h>
 
-#include <unistd.h>
- #include <sys/time.h>
+// #include <unistd.h>
+//  #include <sys/time.h>
  #include <fcntl.h>
  
  
@@ -16,17 +16,17 @@
 #include "resampling.hpp"
 #include "read.hpp"
 #include "m_eff.hpp"
-#include "gnuplot.hpp"
-#include "eigensystem.hpp"
-#include "linear_fit.hpp"
+// #include "gnuplot.hpp"
+// #include "eigensystem.hpp"
+// #include "linear_fit.hpp"
 #include "various_fits.hpp"
 #include "indices.hpp"
 #include "continuum_reph.hpp"
-#include "tower.hpp"
+// #include "tower.hpp"
 #include "mutils.hpp"
 
-#include <unistd.h>
-#include <omp.h>
+// #include <unistd.h>
+// #include <omp.h>
 
 int head_allocated=0;
 
@@ -34,7 +34,7 @@ int Nboot=100;
 int fdA,fdV;
 struct  kinematic kinematic_2pt;
 struct  kinematic_G kinematic_2pt_G;
-#include <iostream>     // std::cout
+// #include <iostream>     // std::cout
 #include <fstream>      // std::ifstream
 int r_value(int r)
 {

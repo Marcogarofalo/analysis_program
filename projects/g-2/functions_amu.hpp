@@ -1,42 +1,24 @@
 #pragma once
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
-#include <gsl/gsl_integration.h>
-#include <gsl/gsl_deriv.h>
 
-#include "global.hpp"
-#include "resampling.hpp"
-#include "resampling_new.hpp"
-#include "read.hpp"
-#include "m_eff.hpp"
-#include "gnuplot.hpp"
-#include "eigensystem.hpp"
-#include "linear_fit.hpp"
-#include "various_fits.hpp"
-#include "mutils.hpp"
-#include "tower.hpp"
-#include "fit_all.hpp"
+// #include "global.hpp"
 
 extern "C" {
     // #include "../external/rzeta/src/dzeta_function.h"
     // #include "../external/rzeta/src/qzeta_function.h"
-#include "dzeta_function.h"
-#include "qzeta_function.h"
+// #include "dzeta_function.h"
+// #include "qzeta_function.h"
 
 }
-#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <vector>
 
-#include "non_linear_fit.hpp"
 
 class data_all;
+// class fit_type;
+// class fit_result;
 
 static int once = 0;
 

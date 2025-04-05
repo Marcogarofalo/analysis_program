@@ -22,10 +22,7 @@
 #include "fit_function.hpp"
 #include "fit_all.hpp"
 #include "extra_func_phi4.hpp"
-#include "fileutils.h"
 #include "non_linear_fit.hpp"
-#include "pylifecycle.h"
-#include "pymem.h"
 #include "tower.hpp"
 
 

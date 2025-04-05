@@ -25,7 +25,7 @@
 
 
 #include <unistd.h>
-#include <omp.h>
+// #include <omp.h>
 
 int Nboot=100;
 int fdA,fdV;

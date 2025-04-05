@@ -4,14 +4,15 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <stdio.h>             // for FILE, NULL
+
+#include <acb.h>               // for acb_t, acb_ptr
+#include <arb_mat.h>           // for arb_mat_t
+#include "arb.h"
+#include "arb_calc.h"          // for slong
 
 #include "global.hpp"
-#include "resampling.hpp"
-#include "resampling_new.hpp"
 #include "non_linear_fit.hpp"
-#include "arb.h"
-#include "acb_calc.h"
-
 
 enum HLT_b {
     HLT_EXP_b = 0,

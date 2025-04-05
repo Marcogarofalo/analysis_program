@@ -2,13 +2,14 @@
 #define extra_fun_phi4_H
 
 
-#include <cstdlib>
+// #include <cstdlib>
+// #include "fit_all.hpp"
 
-#include "fit_all.hpp"
-
-class data_all;
+class data_all; // forward declaration
+// class fit_type; // forward declaration
+// class fit_result; // forward declaration
 #ifdef PYTHON
-#include "QC3_interface.hpp"
+// #include "QC3_interface.hpp"
 #endif
 // #include "mass_phi4.hpp"
 

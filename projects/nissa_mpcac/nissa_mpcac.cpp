@@ -1,33 +1,19 @@
 #define CONTROL
+#include <math.h>                    // for exp
+#include <stdio.h>                   // for FILE, fscanf, printf, fwrite
+#include <stdlib.h>                  // for malloc, free, atoi
+#include <string.h>                  // for strcmp
+#include <fstream>                   // for std
+#include <vector>                    // for vector
+#include "correlators_analysis.hpp"  // for fit_fun_to_fun_of_corr, plateau_...
+#include "fit_all.hpp"               // for generic_header
+#include "global.hpp"                // for NAMESIZE, file_head, header, myres
+#include "mutils.hpp"                // for mysprintf, open_file, error
+#include "non_linear_fit.hpp"        // for fit_type, fit_result, free_fit_r...
+#include "read.hpp"                  // for free_corr, binning, calloc_corr
+#include "resampling.hpp"            // for symmetrise_jackboot
+#include "resampling_new.hpp"        // for resampling_f, resampling_boot
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
-
-#include "global.hpp"
-#include "resampling.hpp"
-#include "resampling_new.hpp"
-#include "read.hpp"
-#include "m_eff.hpp"
-#include "gnuplot.hpp"
-#include "eigensystem.hpp"
-#include "linear_fit.hpp"
-#include "various_fits.hpp"
-#include "mutils.hpp"
-
-
-#include "correlators_analysis.hpp"
-#include "eigensystem.hpp"
-
-
-#include <string>
-#include <cstring> 
-#include <string>
-#include <fstream>
-#include <memory>
 using namespace std;
 struct  kinematic kinematic_2pt;
 

@@ -1168,8 +1168,8 @@ double   *compute_Rmur(char **option ,struct kinematic_G kinematic_2pt_G , char*
            fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
    }
 
-   if (sym[index]==0);   mysprintf(label,NAMESIZE,"R_A_mu");
-   if (sym[index]==1);   mysprintf(label,NAMESIZE,"R_V_mu");
+   if (sym[index]==0)   mysprintf(label,NAMESIZE,"R_A_mu");
+   if (sym[index]==1)   mysprintf(label,NAMESIZE,"R_V_mu");
    fit=fit_plateaux_G(option, kinematic_2pt_G ,  name,"R_{mu}",mt,r,  Njack,plateaux_masses,outfile);
   // write_jack_bin(Njack,fit,file_jack.f_PS);
 
@@ -1230,8 +1230,8 @@ double   *H_over_H0(char **option ,struct kinematic_G kinematic_2pt_G , char* na
            fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
    }
 
-   if (sym[index]==0);   mysprintf(label,NAMESIZE,"H_H0_A_mu");
-   if (sym[index]==1);   mysprintf(label,NAMESIZE,"H_H0_V_mu");
+   if (sym[index]==0)   mysprintf(label,NAMESIZE,"H_H0_A_mu");
+   if (sym[index]==1)   mysprintf(label,NAMESIZE,"H_H0_V_mu");
    fit=fit_plateaux_G(option, kinematic_2pt_G ,  name,"H_H0_{mu}",mt,r,  Njack,plateaux_masses,outfile);
   // write_jack_bin(Njack,fit,file_jack.f_PS);
 
@@ -1390,8 +1390,8 @@ double   *H_minus_H0(char **option ,struct kinematic_G kinematic_2pt_G , char* n
            fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
    }
 
-   if (sym[index]==0);   mysprintf(label,NAMESIZE,"H_H0_A_mu");
-   if (sym[index]==1);   mysprintf(label,NAMESIZE,"HmH0_V_mu");
+   if (sym[index]==0)   mysprintf(label,NAMESIZE,"H_H0_A_mu");
+   if (sym[index]==1)   mysprintf(label,NAMESIZE,"HmH0_V_mu");
    fit=fit_plateaux_G(option, kinematic_2pt_G ,  name,"HmH0_{mu}",mt,r,  Njack,plateaux_masses,outfile);
   // write_jack_bin(Njack,fit,file_jack.f_PS);
 
@@ -1496,8 +1496,8 @@ double   *H_minus_H0_HA(char **option ,struct kinematic_G kinematic_2pt_G , char
            fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
    }
 
-   if (sym[index]==0);   mysprintf(label,NAMESIZE,"H_H0_A_mu");
-   if (sym[index]==1);   mysprintf(label,NAMESIZE,"HmH0_V_mu");
+   if (sym[index]==0)   mysprintf(label,NAMESIZE,"H_H0_A_mu");
+   if (sym[index]==1)   mysprintf(label,NAMESIZE,"HmH0_V_mu");
    fit=fit_plateaux_G(option, kinematic_2pt_G ,  name,"HmH0_HA_{mu}",mt,r,  Njack,plateaux_masses,outfile);
   // write_jack_bin(Njack,fit,file_jack.f_PS);
 
@@ -1553,8 +1553,8 @@ double   *compute_Rmur_from_meff(char **option ,struct kinematic_G kinematic_2pt
            fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
    }
 
-   if (sym[index]==0);   mysprintf(label,NAMESIZE,"R_A_mu");
-   if (sym[index]==1);   mysprintf(label,NAMESIZE,"R_V_mu");
+   if (sym[index]==0)   mysprintf(label,NAMESIZE,"R_A_mu");
+   if (sym[index]==1)   mysprintf(label,NAMESIZE,"R_V_mu");
    fit=fit_plateaux_G(option, kinematic_2pt_G ,  name,"R_{mu}",mt,r,  Njack,plateaux_masses,outfile);
   // write_jack_bin(Njack,fit,file_jack.f_PS);
 
@@ -1602,8 +1602,8 @@ double   *compute_CAmur(char **option ,struct kinematic_G kinematic_2pt_G , char
            fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
    }
 
-   if (index==0);   mysprintf(label,NAMESIZE,"R_A_mu");
-   if (index==1);   mysprintf(label,NAMESIZE,"R_V_mu");
+   if (index==0)   mysprintf(label,NAMESIZE,"R_A_mu");
+   if (index==1)   mysprintf(label,NAMESIZE,"R_V_mu");
    fit=fit_plateaux_G(option, kinematic_2pt_G ,  name,"R_{mu}",mt,r,  Njack,plateaux_masses,outfile);
   // write_jack_bin(Njack,fit,file_jack.f_PS);
 

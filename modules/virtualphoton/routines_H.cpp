@@ -61,8 +61,8 @@ double   *H_AV(char **option ,struct kinematic_G kinematic_2pt_G , char* name, d
            fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
    }
 
-   if (sym[index]==0);   mysprintf(label,NAMESIZE,"HA");
-   if (sym[index]==1);   mysprintf(label,NAMESIZE,"HV");
+   if (sym[index]==0)   mysprintf(label,NAMESIZE,"HA");
+   if (sym[index]==1)   mysprintf(label,NAMESIZE,"HV");
    fit=fit_plateaux_G(option, kinematic_2pt_G ,  name,label,mt,r,  Njack,plateaux_masses,outfile);
   // write_jack_bin(Njack,fit,file_jack.f_PS);
 
@@ -121,8 +121,8 @@ double   *meffH(char **option ,struct kinematic_G kinematic_2pt_G , char* name, 
            fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
    }
 
-   if (sym[index]==0);   mysprintf(label,NAMESIZE,"meff_HA");
-   if (sym[index]==1);   mysprintf(label,NAMESIZE,"m_eff_HV");
+   if (sym[index]==0)   mysprintf(label,NAMESIZE,"meff_HA");
+   if (sym[index]==1)   mysprintf(label,NAMESIZE,"m_eff_HV");
    fit=fit_plateaux_G(option, kinematic_2pt_G ,  name,label,mt,r,  Njack,plateaux_masses,outfile);
   // write_jack_bin(Njack,fit,file_jack.f_PS);
 
@@ -211,8 +211,8 @@ double   *H_over_H0_vir(char **option ,struct kinematic_G kinematic_2pt_G , char
            fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
    }
 
-   if (sym[index]==0);   mysprintf(label,NAMESIZE,"H_H0_A_mu");
-   if (sym[index]==1);   mysprintf(label,NAMESIZE,"H_H0_V_mu");
+   if (sym[index]==0)   mysprintf(label,NAMESIZE,"H_H0_A_mu");
+   if (sym[index]==1)   mysprintf(label,NAMESIZE,"H_H0_V_mu");
    fit=fit_plateaux_G(option, kinematic_2pt_G ,  name,"H_H0_A",mt,r,  Njack,plateaux_masses,outfile);
   // write_jack_bin(Njack,fit,file_jack.f_PS);
 
@@ -301,8 +301,8 @@ double   *H_minus_H0_HA_vir(char **option ,struct kinematic_G kinematic_2pt_G , 
            fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
    }
 
-   if (sym[index]==0);   mysprintf(label,NAMESIZE,"H_H0_A_mu");
-   if (sym[index]==1);   mysprintf(label,NAMESIZE,"HmH0_V_mu");
+   if (sym[index]==0)   mysprintf(label,NAMESIZE,"H_H0_A_mu");
+   if (sym[index]==1)   mysprintf(label,NAMESIZE,"HmH0_V_mu");
    fit=fit_plateaux_G(option, kinematic_2pt_G ,  name,"HmH0_V_HA",mt,r,  Njack,plateaux_masses,outfile);
   // write_jack_bin(Njack,fit,file_jack.f_PS);
 

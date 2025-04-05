@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <ext/alloc_traits.h>
 #include <memory>
 #include <vector>
 #include <cmath>

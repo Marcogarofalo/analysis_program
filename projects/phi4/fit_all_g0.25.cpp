@@ -17,10 +17,7 @@
 #include "zeta_interpolation.hpp"
 // local folder
 #include "fit_function.hpp"
-#include "fileutils.h"
 #include "non_linear_fit.hpp"
-#include "pylifecycle.h"
-#include "pymem.h"
 #include "tower.hpp"
 
 using namespace std;

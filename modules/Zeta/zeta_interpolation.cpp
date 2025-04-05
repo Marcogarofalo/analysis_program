@@ -6,7 +6,6 @@
 #include <global.hpp>
 #include <linear_fit.hpp>
 #include <tower.hpp>
-#include <ext/alloc_traits.h>
 #include <vector>
 #include <string>
 #include <memory>

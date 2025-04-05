@@ -28,7 +28,7 @@
 #include "virtualphoton_routines.hpp"
 
 #include <unistd.h>
-#include <omp.h>
+// #include <omp.h>
 #include <vector> 
 
 

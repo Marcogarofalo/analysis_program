@@ -413,8 +413,8 @@ double   *H_minus_H0_autoplateaux(char **option ,struct kinematic_G kinematic_2p
            fprintf(outfile,"%d   %.15e    %.15e\n",i,mt[i][0],mt[i][1]);
    }
 
-   if (sym[index]==0);   sprintf(label,"R_A_mu");
-   if (sym[index]==1);   sprintf(label,"R_V_mu");
+   if (sym[index]==0)   sprintf(label,"R_A_mu");
+   if (sym[index]==1)   sprintf(label,"R_V_mu");
    fit=fit_plateaux_G_int(option, kinematic_2pt_G ,  name,"HmH0_{mu}_auto",mt,r,  Njack,plateaux_masses,outfile,tmin,tmax);
   // write_jack_bin(Njack,fit,file_jack.f_PS);
 

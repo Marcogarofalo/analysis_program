@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <ext/alloc_traits.h>
 #include <cmath>
 #include <memory>
 #include <vector>

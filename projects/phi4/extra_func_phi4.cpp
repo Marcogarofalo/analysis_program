@@ -48,7 +48,7 @@ void print_fit_band_phi4(char** argv, data_all gjack, struct fit_type fit_info,
             if (fit_info.x[var][e][Njack - 1] > max)
                 max = fit_info.x[var][e][Njack - 1];
         }
-        if (min = max)  printf("no variation in this direction\n");
+        if (min == max)  printf("no variation in this direction\n");
         min -= (max - min) / 10.0;
         max += (max - min) / 10.0;
 
@@ -114,7 +114,7 @@ void print_fit_band_QC3_phi4(char** argv, data_all gjack, struct fit_type fit_in
             if (fit_info.x[var][e][Njack - 1] > max)
                 max = fit_info.x[var][e][Njack - 1];
         }
-        if (min = max)  printf("no variation in this direction\n");
+        if (min == max)  printf("no variation in this direction\n");
         min -= (max - min) / 10.0;
         max += (max - min) / 10.0;
 

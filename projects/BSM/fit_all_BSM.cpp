@@ -1,37 +1,17 @@
 #define CONTROL
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <time.h>
-#include <string.h>
-#include <complex.h>
-
-#include "global.hpp"
-
-#include "resampling.hpp"
-#include "read.hpp"
-#include "m_eff.hpp"
-#include "gnuplot.hpp"
-#include "eigensystem.hpp"
-#include "linear_fit.hpp"
-#include "various_fits.hpp"
-#include "mutils.hpp"
-#include <string>
-#include "correlators_analysis.hpp"
-#include "eigensystem.hpp"
-
-#include <cstring> 
-#include <string>
-#include <fstream>
-#include <memory>
-
-
-//local folder
-#include "header_BSM.hpp"
-#include "lhs_functions.hpp"
-#include "fit_data.hpp"
-
+#include <stdio.h>             // for printf, fclose, fprintf, FILE
+#include <stdlib.h>            // for malloc, free
+#include <fstream>             // for std
+#include <memory>              // for allocator_traits<>::value_type
+#include <vector>              // for vector
+#include "fit_data.hpp"        // for fit_data, rhs_critical_eta_mu_m0_simple
+#include "global.hpp"          // for NAMESIZE
+#include "header_BSM.hpp"      // for emplace_back_par_data, data_BSM, heade...
+#include "mutils.hpp"          // for mysprintf, error, open_file
+#include "non_linear_fit.hpp"  // for fit_type, fit_result, free_fit_result
+#include "resampling.hpp"      // for error_jackboot
+#include "tower.hpp"           // for free_2, swap_indices
 
 
 using namespace std;

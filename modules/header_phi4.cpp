@@ -2,9 +2,7 @@
 
 #include "header_phi4.hpp"
 
-#include <cstdlib>
 #include <iostream>
-#include <fstream>
 #include <string>
 #include <vector>
 #include <memory>

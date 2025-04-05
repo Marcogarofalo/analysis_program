@@ -4,7 +4,8 @@
 #include "header_BSM.hpp"
 #include "resampling.hpp"
 #include <random>
-
+#include "fit_all.hpp"
+#include "non_linear_fit.hpp"
 
 double rhs_one_line(int n, int Nvar, double* x, int Npar, double* P) {
     return P[0] + P[1] * x[0];

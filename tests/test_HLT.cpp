@@ -1,7 +1,6 @@
 #define CONTROL
 
 #include <stdio.h>
-#include <arb_mat.h>
 #include <vector>
 
 #include "HLT.hpp"
