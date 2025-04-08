@@ -10,7 +10,7 @@
 #include <vector>
 
 
-using namespace std;
+// // using namespace std;
 
 struct data_phi {
     int Njack;
@@ -211,7 +211,7 @@ void read_Njack_Nobs(FILE* stream, cluster::IO_params params, int& Njack, int& N
 void read_dataj(FILE* stream, cluster::IO_params params, data_phi& dj);
 void read_header_phi4(FILE* stream, cluster::IO_params& params);
 void write_header_phi4(FILE* stream, cluster::IO_params params);
-vector<data_phi> create_generalised_resampling_phi(vector<data_phi>& dataj, vector<cluster::IO_params> paramsj);
+std::vector<data_phi> create_generalised_resampling_phi(std::vector<data_phi>& dataj, std::vector<cluster::IO_params> paramsj);
 
 
 #endif

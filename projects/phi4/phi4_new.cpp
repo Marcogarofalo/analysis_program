@@ -20,7 +20,7 @@
 #include "non_linear_fit.hpp"
 #include "tower.hpp"
 
-using namespace std;
+// // using namespace std;
 
 
 int id_GEVP_031_p1;
@@ -1052,11 +1052,11 @@ int main(int argc, char** argv) {
     int count = 0;
     confs = read_nconfs(infile, params);
     //confs=confs/10;
-    cout << "correlators =" << params.data.ncorr << endl;
+    std::cout << "correlators =" << params.data.ncorr <<  std::endl;
     // compute what will be the neff after the binning 
     int bin = atoi(argv[6]);
     int Neff = confs / bin;
-    cout << "effective configurations after binning (" << bin << "):  " << Neff << endl;
+    std::cout << "effective configurations after binning (" << bin << "):  " << Neff <<  std::endl;
 
     int Njack;
     if (strcmp(argv[7], "jack") == 0) {

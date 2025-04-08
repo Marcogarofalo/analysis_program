@@ -50,7 +50,7 @@ constexpr double Metac_MeV_err = 0.004 * 1000;
 constexpr double Mpi_MeV = 135;
 constexpr double Mpi_MeV_err = 0.2;
 
-using namespace std;
+// using namespace std;
 
 struct  kinematic kinematic_2pt;
 
@@ -111,8 +111,8 @@ public:
         long int tmp;
         int s = file_head.l1 + 1 + 3;
         int count = 0;
-        string line;
-        ifstream file(stream);
+        std::string line;
+        std::ifstream file(stream);
         while (getline(file, line)) {
             count++;
             if (line.compare(0, 1, "#") == 0) {
@@ -136,8 +136,8 @@ public:
         long int tmp;
         int s = T + 1 + 3;
         int count = 0;
-        string line;
-        ifstream file(stream);
+        std::string line;
+        std::ifstream file(stream);
         while (getline(file, line)) {
             count++;
             if (line.compare(0, 1, "#") == 0) {
@@ -254,13 +254,13 @@ void read_twopt(const char namefile[NAMESIZE], configuration_class& confs, int T
         std::string tp;
         for (int i = 0;i < confs.iconfs.size();i++) {
             getline(newfile, tp);
-            // cout<< tp<< endl;
+            // std::cout<< tp<< std::endl;
             getline(newfile, tp);
             // printf("%s \n", tp.c_str());
             if (tp.compare(0, 1, "#") == 0) {
-                string tp1 = tp;
-                int r = stoi(tp1.erase(0, 8));
-                int ic = stoi(tp.erase(7).erase(0, 1).c_str());
+                std::string tp1 = tp;
+                int r =  std::stoi(tp1.erase(0, 8));
+                int ic =  std::stoi(tp.erase(7).erase(0, 1).c_str());
                 // printf("%s  %d   %d\n",tp.c_str(), r, ic);
                 bool new_rep = true;
                 for (int ir = 0; ir < confs.rep.size(); ir++) {
@@ -277,9 +277,9 @@ void read_twopt(const char namefile[NAMESIZE], configuration_class& confs, int T
                     confs.rep.emplace_back(tmp);
                 }
             }
-            // cout<< tp<< endl;
+            // std::cout<< tp<< std::endl;
             getline(newfile, tp);
-            // cout<< tp<< endl;
+            // std::cout<< tp<< std::endl;
 
             for (int t = 0;t < T / 2 + 1;t++) {
                 getline(newfile, tp);
@@ -863,7 +863,7 @@ int main(int argc, char** argv) {
         else {
             myconfs[count].confs_after_binning = myconfs[count].iconfs.size();
         }
-        cout << "number of different configurations:" << myconfs[count].confs_after_binning << endl;
+        std::cout << "number of different configurations:" << myconfs[count].confs_after_binning << std::endl;
         count++;
         // printf("checking confs from file: %s\n", name.c_str());
         // // auto check_iconfs = read_nconfs(name.c_str());
@@ -885,7 +885,7 @@ int main(int argc, char** argv) {
     int bin = atoi(argv[6]);
     int Neff = bin;
 
-    // cout << "effective configurations after binning ( bin size " << confs / bin << "):  " << Neff << endl;
+    // std::cout << "effective configurations after binning ( bin size " << confs / bin << "):  " << Neff << std::endl;
 
     int Njack;
     if (strcmp(argv[9], "jack") == 0) {

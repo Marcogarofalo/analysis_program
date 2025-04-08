@@ -120,7 +120,7 @@ void read_dataj(FILE *stream,cluster::IO_params params, data_phi &dj){
     
 }
 
-void emplace_back_par_data( char *namefile , vector<cluster::IO_params> &paramsj, vector<data_phi> &dataj){
+void emplace_back_par_data( char *namefile , std::vector<cluster::IO_params> &paramsj, std::vector<data_phi> &dataj){
     cluster::IO_params params;
     data_phi  data;
     FILE *f=open_file(namefile,"r");
@@ -135,7 +135,7 @@ void emplace_back_par_data( char *namefile , vector<cluster::IO_params> &paramsj
 }
 
 
-vector<data_phi> create_generalised_resampling_phi(  vector<data_phi> &dataj, vector<cluster::IO_params> paramsj ){
+std::vector<data_phi> create_generalised_resampling_phi(  std::vector<data_phi> &dataj, std::vector<cluster::IO_params> paramsj ){
     // if the length is the same return dataj
     int same=0;
     for( auto &d :dataj){
@@ -144,12 +144,12 @@ vector<data_phi> create_generalised_resampling_phi(  vector<data_phi> &dataj, ve
             same++;
     }
     if (same==dataj.size()){
-        cout << "all the files have the same number of jack/boot , do nothing"<<endl;
+        std::cout << "all the files have the same number of jack/boot , do nothing"<<std::endl;
         return dataj;
     }
     else{
-        cout << "creating generalised jack"<<endl;
-        vector<data_phi> gjack;
+        std::cout << "creating generalised jack" << std::endl;
+        std::vector<data_phi> gjack;
         //gjack.resize(dataj.size());
         //jac_tot is the summ of all jackknife +1 
         //remember alle the dataj have one extra entry for the mean
@@ -157,8 +157,8 @@ vector<data_phi> create_generalised_resampling_phi(  vector<data_phi> &dataj, ve
         for( int e=0 ; e<dataj.size();e++)
             jack_tot+=dataj[e].Njack;
         jack_tot=jack_tot-dataj.size()+1;
-        cout << "ensembles "<< dataj.size() << endl;
-        cout<< "jack tot= "<< jack_tot<< endl;
+        std::cout << "ensembles "<< dataj.size() << std::endl;
+        std::cout<< "jack tot= "<< jack_tot<< std::endl;
         
         //get Nobs the minimum number of observable between the diles
         int Nobs=1000;
@@ -175,7 +175,7 @@ vector<data_phi> create_generalised_resampling_phi(  vector<data_phi> &dataj, ve
                 tmp.Nobs=Nobs;
                 // tmp.header.L=paramsj[e].data.L[1];
                 // tmp.header.T=paramsj[e].data.L[0];
-                cout<< Nobs<<" " <<jack_tot<< endl;
+                std::cout<< Nobs<<" " <<jack_tot<< std::endl;
                 tmp.jack=double_malloc_2( Nobs, jack_tot);
                 int counter=0;
                 for(int e1=0;e1<dataj.size();e1++){
@@ -197,7 +197,7 @@ vector<data_phi> create_generalised_resampling_phi(  vector<data_phi> &dataj, ve
                 free_2(dataj[e].Nobs, dataj[e].jack);
                 gjack.emplace_back(tmp);
             }
-            vector<data_phi>().swap(dataj);
+            std::vector<data_phi>().swap(dataj);
             
             return gjack;
             

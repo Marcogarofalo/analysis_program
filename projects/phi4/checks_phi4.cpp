@@ -16,7 +16,7 @@
 #include "correlators_analysis.hpp"
 #include "tower.hpp"
 
-using namespace std;
+// using namespace std;
 
 struct  kinematic kinematic_2pt;
 
@@ -659,11 +659,11 @@ int main(int argc, char** argv) {
 
     int count = 0;
     confs = read_nconfs(infile, params);
-    cout << "correlators =" << params.data.ncorr << endl;
+    std::cout << "correlators =" << params.data.ncorr << std::endl;
     // compute what will be the neff after the binning 
     int bin = atoi(argv[6]);
     int Neff = confs / bin;
-    cout << "effective configurations after binning (" << bin << "):  " << Neff << endl;
+    std::cout << "effective configurations after binning (" << bin << "):  " << Neff << std::endl;
 
     int Njack;
     if (strcmp(argv[7], "jack") == 0)

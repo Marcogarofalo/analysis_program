@@ -9,7 +9,7 @@
 #include <random>
 #include <string>
 #include <vector>
-// #include <ranges>
+#include <ranges>
 #include <algorithm>
 #include <cmath>
 #include <memory>
@@ -24,6 +24,9 @@
 #include "resampling_new.hpp"
 #include "tower.hpp"
 #include "eigensystem.hpp"
+
+namespace stdr = std::ranges;
+namespace stdv = std::views;
 
 void check_correlatro_counter(int i) {
     if (corr_counter != i) {
@@ -1030,7 +1033,7 @@ double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
             }
         }
     }
-    else if (ncorr == N * N ) {
+    else if (ncorr == N * N) {
         for (int i = 0; i < N; i++) {// col
             for (int k = 0; k < N; k++) {// raw
                 int ik = i + k * N;
@@ -1042,7 +1045,7 @@ double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
             }
         }
         for (int i = 0; i < N; i++) {
-            for (int k = i ; k < N; k++) {
+            for (int k = i; k < N; k++) {
                 int ik = i + k * N;
                 int ki = k + i * N;
                 M[ik][0] = (M[ik][0] + M[ki][0]) / 2.0;
@@ -1086,7 +1089,11 @@ double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
         fit_info.value_or_vector = tmp_vv;
         fit_info.N = tmp_N;
         std::vector<double> crossp(N);
-        std::vector<int> id_list(N, -1);
+#ifdef DEBUG
+    std::vector<int> id_list_old(N, -1);
+#endif // DEBUG
+        std::vector<int> id_list;
+        id_list.reserve(N);
         r = double_malloc_2(fit_info.N, 2);
 
         for (int i = 0; i < N; i++) {
@@ -1097,21 +1104,41 @@ double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
                     // crossp[j] += vec0[k + i * N][0] - vec[k + j * N][0] + vec0[k + i * N][1] - vec[k + j * N][1];
                 }
             }
-            
+
+#ifdef DEBUG
             // auto x = std::ranges::max_element(crossp);
             // int id = std::ranges::distance(crossp.begin(), x);
-            auto x = std::max_element(crossp.begin(), crossp.end());
-            int id = std::distance(crossp.begin(), x);
-            while (is_used(id_list, i, id)) {
-                x = std::max_element(crossp.begin(), crossp.end(), [x](auto const& e1, auto const& e2) {
-                    if (e1 < *x)
-                        return e2 < *x && e1 < e2;
+            auto x_old = std::max_element(crossp.begin(), crossp.end());
+            int id_old = std::distance(crossp.begin(), x_old);
+            while (is_used(id_list_old, i, id_old)) {
+                x_old = std::max_element(crossp.begin(), crossp.end(), [x_old](auto const& e1, auto const& e2) {
+                    if (e1 < *x_old)
+                        return e2 < *x_old && e1 < e2;
                     else
                         return true; // true means that the new best is e2
                     });
-                id = std::distance(crossp.begin(), x);
+                id_old = std::distance(crossp.begin(), x_old);
             }
-            id_list[i] = id;
+            id_list_old[i] = id_old;
+#endif // DEBUG
+            // int id = crossp | stdv::filter([x](auto const& e) { return e > *x; }) ;
+            // int id = stdv::iota(0u, crossp.size()) |
+            //     stdv::filter([&](std::size_t i)  { return !id_list.contains(crossp[i]); }) |
+            auto id = stdr::max(
+                stdv::iota(0u, crossp.size()) |
+                stdv::filter([id_list](std::size_t ii) {
+                    return stdr::find(id_list, ii) == id_list.end(); // filter the one we do not find
+                    })
+                , [crossp](auto const& e1, auto const& e2) {
+                    return crossp[e1] < crossp[e2];
+                }
+            );
+            // int id = stdr::distance(crossp.begin(), &x);
+            id_list.push_back(id);
+#ifdef DEBUG
+            // printf("DEBUG ON\n");
+            error(id_list[i] != id_list_old[i], 1, "GEVP_matrix", "id_list[i] != id_list_old[i] %d %d", id_list[i], id_list_old[i]);
+#endif // DEBUG
         }
 
         for (int i = 0; i < N; i++) {

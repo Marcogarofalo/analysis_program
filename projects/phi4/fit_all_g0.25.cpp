@@ -20,10 +20,10 @@
 #include "non_linear_fit.hpp"
 #include "tower.hpp"
 
-using namespace std;
+// using namespace std;
 int Ne = 0;
 
-void print_fit_band_L_M(char **argv, vector<data_phi> gjack, struct fit_type fit_info, struct fit_type fit_info_m0, const char *label, struct fit_result fit_out, struct fit_result fit_out_m0, vector<cluster::IO_params> params, std::vector<int> myen, std::vector<int> Lrange = {16, 50})
+void print_fit_band_L_M(char **argv, std::vector<data_phi> gjack, struct fit_type fit_info, struct fit_type fit_info_m0, const char *label, struct fit_result fit_out, struct fit_result fit_out_m0, std::vector<cluster::IO_params> params, std::vector<int> myen, std::vector<int> Lrange = {16, 50})
 {
 	int Npar = fit_info.Npar;
 	int Nvar = fit_info.Nvar + fit_info.n_ext_P;
@@ -125,7 +125,7 @@ void print_fit_band_L_M(char **argv, vector<data_phi> gjack, struct fit_type fit
 	free_2(Njack, tif_m0);
 }
 
-void print_fit_band_E3_vs_L(char **argv, vector<data_phi> gjack, struct fit_type fit_info, struct fit_type fit_info_m0, const char *label, struct fit_result fit_out, struct fit_result fit_out_m0, vector<cluster::IO_params> params, std::vector<int> myen, struct fit_type fit_info_E3_poly, fit_result fit_E3_poly, std::vector<int> Lrange = {16, 50})
+void print_fit_band_E3_vs_L(char **argv, std::vector<data_phi> gjack, struct fit_type fit_info, struct fit_type fit_info_m0, const char *label, struct fit_result fit_out, struct fit_result fit_out_m0, std::vector<cluster::IO_params> params, std::vector<int> myen, struct fit_type fit_info_E3_poly, fit_result fit_E3_poly, std::vector<int> Lrange = {16, 50})
 {
 	int Npar = fit_info.Npar;
 	int Nvar = fit_info.Nvar + fit_info.n_ext_P;
@@ -227,7 +227,7 @@ void print_fit_band_E3_vs_L(char **argv, vector<data_phi> gjack, struct fit_type
 	free_2(Njack, tif_E3_poly);
 }
 
-void print_kiso_P0_inf_L_M(char **argv, vector<data_phi> gjack, struct fit_type fit_info, struct fit_type fit_info_m0, const char *label, struct fit_result fit_out, struct fit_result fit_out_m0, vector<cluster::IO_params> params, std::vector<int> myen, struct fit_type fit_info_E3_poly, fit_result fit_E3_poly, std::vector<int> Lrange = {16, 50})
+void print_kiso_P0_inf_L_M(char **argv, std::vector<data_phi> gjack, struct fit_type fit_info, struct fit_type fit_info_m0, const char *label, struct fit_result fit_out, struct fit_result fit_out_m0, std::vector<cluster::IO_params> params, std::vector<int> myen, struct fit_type fit_info_E3_poly, fit_result fit_E3_poly, std::vector<int> Lrange = {16, 50})
 {
 	int Npar = fit_info.Npar;
 	int Nvar = fit_info.Nvar + fit_info.n_ext_P;
@@ -355,7 +355,7 @@ void print_kiso_P0_inf_L_M(char **argv, vector<data_phi> gjack, struct fit_type 
 	free_2(Njack, tif_E3_poly);
 }
 
-void print_phase_shift(char **argv, vector<data_phi> gjack, struct fit_type fit_info, const char *label, struct fit_result fit_out)
+void print_phase_shift(char **argv, std::vector<data_phi> gjack, struct fit_type fit_info, const char *label, struct fit_result fit_out)
 {
 
 	char namefile[NAMESIZE];
@@ -411,8 +411,8 @@ int main(int argc, char **argv)
 	fclose(f);
 	*/
 
-	vector<cluster::IO_params> paramsj;
-	vector<data_phi> dataj;
+	std::vector<cluster::IO_params> paramsj;
+	std::vector<data_phi> dataj;
 
 	int Ne = 0;
 	cluster::IO_params params;
@@ -457,7 +457,7 @@ int main(int argc, char **argv)
 
 	printf("E1_0 =%f   %f\n", dataj[0].jack[1][dataj[0].Njack - 1], error_jackboot(argv[1], dataj[0].Njack, dataj[0].jack[1]));
 
-	vector<data_phi> gjack = create_generalised_resampling_phi(dataj, paramsj);
+	std::vector<data_phi> gjack = create_generalised_resampling_phi(dataj, paramsj);
 	printf("GEVP_E2_01 =%f   %f\n", gjack[1].jack[19][gjack[1].Njack - 1], error_jackboot(argv[1], gjack[1].Njack, gjack[1].jack[19]));
 	Ne = gjack.size();
 	printf("number of ensembles = %d\n", Ne);

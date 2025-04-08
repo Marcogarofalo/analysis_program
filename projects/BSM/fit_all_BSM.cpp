@@ -14,11 +14,11 @@
 #include "tower.hpp"           // for free_2, swap_indices
 
 
-using namespace std;
+// using namespace std;
 // int NeW=0;
 
 
-void print_fit_band_eta(char** argv, vector<data_BSM> gjack, struct fit_type fit_info, const char* label, struct fit_result fit_out, vector<header_BSM> params, std::vector<int> myenW, std::vector<double> range = { -1.7,-1 }) {
+void print_fit_band_eta(char** argv, std::vector<data_BSM> gjack, struct fit_type fit_info, const char* label, struct fit_result fit_out, std::vector<header_BSM> params, std::vector<int> myenW, std::vector<double> range = { -1.7,-1 }) {
     int Npar = fit_info.Npar;
     int Nvar = fit_info.Nvar + fit_info.n_ext_P;
     int Njack = gjack[0].Njack;
@@ -80,8 +80,8 @@ int main(int argc, char** argv) {
     error(argc != 4, 1, "main ",
         "usage:./fit_all_phi4  jack/boot   path_to_jack   output_dir");
 
-    vector<header_BSM> paramsj;
-    vector<data_BSM> dataj;
+    std::vector<header_BSM> paramsj;
+    std::vector<data_BSM> dataj;
 
     int NeW = 0;
     int NeNG = 0;
@@ -124,7 +124,7 @@ int main(int argc, char** argv) {
 
     NeW = dataj.size();
     printf("number of ensembles W = %d\n", NeW);
-    vector<int> myenW(NeW);
+    std::vector<int> myenW(NeW);
     for (int i = 0;i < NeW; i++)  myenW[i] = i;
 
 
@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
 
     NeNG = dataj.size() - NeW;
     printf("number of ensembles NG = %d\n", NeNG);
-    vector<int> myenNG(NeNG);
+    std::vector<int> myenNG(NeNG);
     for (int i = NeW;i < NeW + NeNG; i++)  myenNG[i - NeW] = i;
 
 
@@ -189,7 +189,7 @@ int main(int argc, char** argv) {
 
     int NeW3 = dataj.size() - (NeW + NeNG);
     printf("number of ensembles W(rho3) = %d\n", NeW3);
-    vector<int> myenW3(NeW3);
+    std::vector<int> myenW3(NeW3);
     for (int i = (NeW + NeNG);i < (NeW + NeNG) + NeW3; i++)  myenW3[i - (NeW + NeNG)] = i;
 
     mysprintf(namefile, NAMESIZE, "%s/b5.85/L20T40/NG/eta_m2.05_M02_-0.045000_mu03_0.0224_csw_1.0_rho3_NG/jackknife/%s_T40_L20_rho3.000000_eta-2.050000_csw1.000000_mu030.022400_m0-0.045000", argv[2], argv[1]);
@@ -233,7 +233,7 @@ int main(int argc, char** argv) {
 
     int NeNG3 = dataj.size() - (NeW + NeNG + NeW3);
     printf("number of ensembles NG(rho3) = %d\n", NeNG3);
-    vector<int> myenNG3(NeNG3);
+    std::vector<int> myenNG3(NeNG3);
     for (int i = (NeW + NeNG + NeW3);i < (NeW + NeNG + NeW3) + NeNG3; i++) {
         myenNG3[i - (NeW + NeNG + NeW3)] = i;
         printf("en[%d]=%d\n", i - (NeW + NeNG + NeW3), myenNG3[i - (NeW + NeNG + NeW3)]);
@@ -244,7 +244,7 @@ int main(int argc, char** argv) {
     /* for (int j=0; j<dataj[0].Njack; j++)
          printf("%d   %g\n",j,dataj[0].jack[3][j]);
     */
-    vector<data_BSM> gjack = create_generalised_resampling(dataj);
+    std::vector<data_BSM> gjack = create_generalised_resampling(dataj);
 
 
     int Njack = gjack[0].Njack;

@@ -10,6 +10,10 @@ project(analysis_program  VERSION 0.1.0 LANGUAGES CXX C)
 #-g # then compile , then open gdb, write the commands : file $namefile; run  $options ; bt
 # valgrind --leak-check=yes --track-origins=yes  ./program   #compile with -g to have line number
 
+# Enable C++20
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)  # optional: disables compiler-specific extensio
 MESSAGE("using CXX:" ${CMAKE_CXX_STANDARD} )
 
 

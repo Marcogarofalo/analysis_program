@@ -18,7 +18,7 @@
 #include "gamma_analysis.hpp"
 #include "tower.hpp"
 
-using namespace std;
+// using namespace std;
 
 
 double ration_corr_min_half(int j, double**** in, int t, struct fit_type fit_info) {

@@ -19,7 +19,7 @@
 #include "resampling.hpp"            // for create_resampling
 #include "tower.hpp"                 // for double_malloc_2
 
-using namespace std;
+// using namespace std;
 
 struct  kinematic kinematic_2pt;
 

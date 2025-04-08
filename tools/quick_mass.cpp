@@ -24,7 +24,7 @@
 #include "gamma_analysis.hpp"
 
 #include<fstream>
-using namespace std;
+// using namespace std;
 
 struct  kinematic kinematic_2pt;
 
@@ -609,11 +609,11 @@ int main(int argc, char **argv){
         infile1=open_file(argv[7],"r");
 
    int count=0;
-   string line;
-   ifstream file(argv[2]);
+   std::string line;
+   std::ifstream file(argv[2]);
    while (getline(file, line))
         count++;
-   cout << "the file contain data up to t= ? (reply <=0 to say T)  "  << endl;
+        std::cout << "the file contain data up to t= ? (reply <=0 to say T)  "  <<  std::endl;
    int Tcorr_max=T;
    int CMI;
 //    int fi=scanf("%d",&Tcorr_max);
@@ -622,12 +622,12 @@ int main(int argc, char **argv){
    if (Tcorr_max<=0)
         Tcorr_max=T;
    else{
-       cout << "CMI format? no=0  yes=1"<<endl;
+    std::cout << "CMI format? no=0  yes=1"<< std::endl;
        fi+=scanf("%d",&CMI);
    }
 
 
-   cout << "Numbers of lines in the file : " << count << endl;
+   std::cout << "Numbers of lines in the file : " << count <<  std::endl;
    confs=count/Tcorr_max;
    //confs=count;
    
@@ -635,7 +635,7 @@ int main(int argc, char **argv){
    int Neff=confs/bin;
    int Njack=Neff+1;
    
-   cout << "Numbers of configurations in the file : " << confs << endl;
+   std::cout << "Numbers of configurations in the file : " << confs <<  std::endl;
    
    data=calloc_corr(confs, 2,  file_head.l0 );
 

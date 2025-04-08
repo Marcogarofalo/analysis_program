@@ -32,7 +32,7 @@
 #include <string>
 #include <fstream>
 #include <memory>
-using namespace std;
+// using namespace std;
 struct  kinematic kinematic_2pt;
 
 double afm=0.0908026;

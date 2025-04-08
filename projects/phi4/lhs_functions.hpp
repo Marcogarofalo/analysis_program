@@ -20,7 +20,7 @@
 #include "non_linear_fit.hpp"
 #include "resampling.hpp"
 #include "tower.hpp"
-using namespace std;
+// using namespace std;
 
 template <int id, int ids>
 double remove_exp_and_meff(int j, double**** in, int t, struct fit_type fit_info) {

@@ -14,7 +14,7 @@
 #include "resampling.hpp"            // for symmetrise_jackboot
 #include "resampling_new.hpp"        // for resampling_f, resampling_boot
 
-using namespace std;
+// using namespace std;
 struct  kinematic kinematic_2pt;
 
 double afm=0.0908026;

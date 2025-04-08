@@ -13,7 +13,7 @@
 #include "tower.hpp"
 #include "mutils.hpp"
 
-using namespace std;
+// using namespace std;
 
 enum correlators {
     JTILDEA1P1TRIVIAL = 0,
@@ -60,15 +60,16 @@ void read_header_BSM(header_BSM& head, FILE* stream) {
         chr = getc(stream);
     }
     rewind(stream);
-
-    fscanf(stream, "T  %d\n", &head.T);
-    fscanf(stream, "L  %d\n", &head.L);
-    fscanf(stream, "rho  %lf\n", &head.rho);
-    fscanf(stream, "eta  %lf\n", &head.eta);
-    fscanf(stream, "csw  %lf\n", &head.csw);
-    fscanf(stream, "mu03  %lf\n", &head.mu03);
-    fscanf(stream, "m0  %lf\n", &head.m0);
+    size_t fi=0;
+    fi+=fscanf(stream, "T  %d\n", &head.T);
+    fi+=fscanf(stream, "L  %d\n", &head.L);
+    fi+=fscanf(stream, "rho  %lf\n", &head.rho);
+    fi+=fscanf(stream, "eta  %lf\n", &head.eta);
+    fi+=fscanf(stream, "csw  %lf\n", &head.csw);
+    fi+=fscanf(stream, "mu03  %lf\n", &head.mu03);
+    fi+=fscanf(stream, "m0  %lf\n", &head.m0);
     head.confs = (count_lines - 7) / head.T;
+    error(fi != 7, 1, "read_header_BSM", "error reading header BSM file");
     error((count_lines - 7) % head.T != 0, 1, "read_header_BSM", "numer of line= %d - header_lines=%d is not a multiple of T=%d", count_lines, 7, head.T);
 
 }
@@ -92,41 +93,44 @@ void check_header_BSM(header_BSM head, FILE* stream, std::string namefile) {
 
     //     error(head.confs!=(count_lines-7)/head.T,1,"header","file: %s \n confs does not match ref=%d read=%d ",namefile.c_str(),head.confs,(count_lines-7)/head.T);
 
-    int tmp;
-    fscanf(stream, "T  %d\n", &tmp); error(tmp != head.T, 1, "check header ", "file: %s \n T does not match ref=%d read=%d ", namefile.c_str(), head.T, tmp);
-    fscanf(stream, "L  %d\n", &tmp); error(tmp != head.L, 1, "check header ", "file: %s \n L does not match ref=%d read=%d ", namefile.c_str(), head.L, tmp);
+    int tmp, fi=0;
+    fi+=fscanf(stream, "T  %d\n", &tmp); error(tmp != head.T, 1, "check header ", "file: %s \n T does not match ref=%d read=%d ", namefile.c_str(), head.T, tmp);
+    fi+=fscanf(stream, "L  %d\n", &tmp); error(tmp != head.L, 1, "check header ", "file: %s \n L does not match ref=%d read=%d ", namefile.c_str(), head.L, tmp);
     double tmp1;
-    fscanf(stream, "rho  %lf\n", &tmp1); error(fabs(tmp1 - head.rho) > 1e-6, 1, "check header ", "file: %s \n rho does not match ref=%f read=%f ", namefile.c_str(), head.rho, tmp1);
-    fscanf(stream, "eta  %lf\n", &tmp1); error(fabs(tmp1 - head.eta) > 1e-6, 1, "check header ", "file: %s \n rho does not match ref=%f read=%f ", namefile.c_str(), head.eta, tmp1);
-    fscanf(stream, "csw  %lf\n", &tmp1); error(fabs(tmp1 - head.csw) > 1e-6, 1, "check header ", "file: %s \n rho does not match ref=%f read=%f ", namefile.c_str(), head.csw, tmp1);
-    fscanf(stream, "mu03  %lf\n", &tmp1); error(fabs(tmp1 - head.mu03) > 1e-6, 1, "check header ", "file: %s \n rho does not match ref=%f read=%f ", namefile.c_str(), head.mu03, tmp1);
-    fscanf(stream, "m0  %lf\n", &tmp1); error(fabs(tmp1 - head.m0) > 1e-6, 1, "check header ", "file: %s \n rho does not match ref=%f read=%f ", namefile.c_str(), head.m0, tmp1);
+    fi+=fscanf(stream, "rho  %lf\n", &tmp1); error(fabs(tmp1 - head.rho) > 1e-6, 1, "check header ", "file: %s \n rho does not match ref=%f read=%f ", namefile.c_str(), head.rho, tmp1);
+    fi+=fscanf(stream, "eta  %lf\n", &tmp1); error(fabs(tmp1 - head.eta) > 1e-6, 1, "check header ", "file: %s \n rho does not match ref=%f read=%f ", namefile.c_str(), head.eta, tmp1);
+    fi+=fscanf(stream, "csw  %lf\n", &tmp1); error(fabs(tmp1 - head.csw) > 1e-6, 1, "check header ", "file: %s \n rho does not match ref=%f read=%f ", namefile.c_str(), head.csw, tmp1);
+    fi+=fscanf(stream, "mu03  %lf\n", &tmp1); error(fabs(tmp1 - head.mu03) > 1e-6, 1, "check header ", "file: %s \n rho does not match ref=%f read=%f ", namefile.c_str(), head.mu03, tmp1);
+    fi+=fscanf(stream, "m0  %lf\n", &tmp1); error(fabs(tmp1 - head.m0) > 1e-6, 1, "check header ", "file: %s \n rho does not match ref=%f read=%f ", namefile.c_str(), head.m0, tmp1);
+    error(fi!=7, 1, "check header ", "file: %s \n header does not match ref=%d read=%d ", namefile.c_str(), 7, fi);
 }
 
 void write_header_BSM_bin(header_BSM head, FILE* stream) {
-    fwrite(&head.T, sizeof(int), 1, stream);
-    fwrite(&head.L, sizeof(int), 1, stream);
-    fwrite(&head.rho, sizeof(double), 1, stream);
-    fwrite(&head.eta, sizeof(double), 1, stream);
-    fwrite(&head.csw, sizeof(double), 1, stream);
-    fwrite(&head.mu03, sizeof(double), 1, stream);
-    fwrite(&head.m0, sizeof(double), 1, stream);
-    fwrite(&head.Njack, sizeof(double), 1, stream);
-
+    size_t fi=0;
+    fi+=fwrite(&head.T, sizeof(int), 1, stream);
+    fi+=fwrite(&head.L, sizeof(int), 1, stream);
+    fi+=fwrite(&head.rho, sizeof(double), 1, stream);
+    fi+=fwrite(&head.eta, sizeof(double), 1, stream);
+    fi+=fwrite(&head.csw, sizeof(double), 1, stream);
+    fi+=fwrite(&head.mu03, sizeof(double), 1, stream);
+    fi+=fwrite(&head.m0, sizeof(double), 1, stream);
+    fi+=fwrite(&head.Njack, sizeof(double), 1, stream);
+    error(fi != 8, 1, "write_header_BSM_bin", "error writing header BSM bin file");
 }
 
 
 void read_header_BSM_bin(header_BSM& head, FILE* stream) {
-    fread(&head.T, sizeof(int), 1, stream);
-    fread(&head.L, sizeof(int), 1, stream);
-    fread(&head.rho, sizeof(double), 1, stream);
-    fread(&head.eta, sizeof(double), 1, stream);
-    fread(&head.csw, sizeof(double), 1, stream);
-    fread(&head.mu03, sizeof(double), 1, stream);
-    fread(&head.m0, sizeof(double), 1, stream);
-    fread(&head.Njack, sizeof(double), 1, stream);
+    size_t fi=0;
+    fi+=fread(&head.T, sizeof(int), 1, stream);
+    fi+=fread(&head.L, sizeof(int), 1, stream);
+    fi+=fread(&head.rho, sizeof(double), 1, stream);
+    fi+=fread(&head.eta, sizeof(double), 1, stream);
+    fi+=fread(&head.csw, sizeof(double), 1, stream);
+    fi+=fread(&head.mu03, sizeof(double), 1, stream);
+    fi+=fread(&head.m0, sizeof(double), 1, stream);
+    fi+=fread(&head.Njack, sizeof(double), 1, stream);
     head.size_header_bin = ftell(stream);
-
+    error(fi != 8, 1, "read_header_BSM_bin", "error reading header BSM bin file");
 }
 
 
@@ -171,7 +175,7 @@ void read_dataj(FILE* stream, header_BSM  params, data_BSM& dj) {
 
 }
 
-void emplace_back_par_data(char* namefile, vector<header_BSM>& paramsj, vector<data_BSM>& dataj) {
+void emplace_back_par_data(char* namefile, std::vector<header_BSM>& paramsj, std::vector<data_BSM>& dataj) {
     printf("%s\n",namefile);
     header_BSM params;
     data_BSM  data;
@@ -187,7 +191,7 @@ void emplace_back_par_data(char* namefile, vector<header_BSM>& paramsj, vector<d
 }
 
 
-vector<data_BSM> create_generalised_resampling(vector<data_BSM>& dataj) {
+std::vector<data_BSM> create_generalised_resampling(std::vector<data_BSM>& dataj) {
     // if the length is the same return dataj
     int same = 0;
     for (auto& d : dataj) {
@@ -196,12 +200,12 @@ vector<data_BSM> create_generalised_resampling(vector<data_BSM>& dataj) {
             same++;
     }
     if (same == dataj.size()) {
-        cout << "all the files have the same number of jack/boot , do nothing" << endl;
+        std::cout << "all the files have the same number of jack/boot , do nothing" << std::endl;
         return dataj;
     }
     else {
-        cout << "creating generalised jack" << endl;
-        vector<data_BSM> gjack;
+        std::cout << "creating generalised jack" << std::endl;
+        std::vector<data_BSM> gjack;
         //gjack.resize(dataj.size());
         //jac_tot is the summ of all jackknife +1 
         //remember alle the dataj have one extra entry for the mean
@@ -209,8 +213,8 @@ vector<data_BSM> create_generalised_resampling(vector<data_BSM>& dataj) {
         for (int e = 0; e < dataj.size();e++)
             jack_tot += dataj[e].Njack;
         jack_tot = jack_tot - dataj.size() + 1;
-        cout << "ensembles " << dataj.size() << endl;
-        cout << "jack tot= " << jack_tot << endl;
+        std::cout << "ensembles " << dataj.size() << std::endl;
+        std::cout << "jack tot= " << jack_tot << std::endl;
 
         //get Nobs the minimum number of observable between the files
         int Nobs = 1000;
@@ -225,7 +229,7 @@ vector<data_BSM> create_generalised_resampling(vector<data_BSM>& dataj) {
             data_BSM tmp;
             tmp.Njack = jack_tot;
             tmp.Nobs = Nobs;
-            cout << Nobs << " " << jack_tot << endl;
+            std::cout << Nobs << " " << jack_tot << std::endl;
             tmp.jack = double_malloc_2(Nobs, jack_tot);
             int counter = 0;
             for (int e1 = 0;e1 < dataj.size();e1++) {
@@ -247,7 +251,7 @@ vector<data_BSM> create_generalised_resampling(vector<data_BSM>& dataj) {
             free_2(dataj[e].Nobs, dataj[e].jack);
             gjack.emplace_back(tmp);
         }
-        vector<data_BSM>().swap(dataj);
+        std::vector<data_BSM>().swap(dataj);
 
         return gjack;
 

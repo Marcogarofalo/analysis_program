@@ -26,7 +26,7 @@
 #include <cstring> 
 #include <string>
 #include <fstream>
-using namespace std;
+// using namespace std;
 
 struct  kinematic kinematic_2pt;
 
@@ -528,14 +528,14 @@ int main(int argc, char **argv){
    while (getline(file, line))
         count++;
  
-   cout << "Numbers of lines in the file : " << count << endl;
+   std::cout << "Numbers of lines in the file : " << count << std::endl;
    confs=count/T;
-   cout << "Numbers of configurations in the file : " << confs << endl;
+   std::cout << "Numbers of configurations in the file : " << confs << std::endl;
    
    // compute what will be the neff after the binning 
    int bin=atoi(argv[13]);
    int Neff=confs/bin;
-   cout << "effective configurations after binning (" << bin  <<"):  "<<Neff << endl;
+   std::cout << "effective configurations after binning (" << bin  <<"):  "<<Neff << std::endl;
 
    int Njack;
    if( strcmp(argv[14],"jack")==0)

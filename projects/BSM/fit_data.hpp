@@ -233,7 +233,7 @@ double lhs_continuum_MPS(int n, int e, int j, data_all  gjack, struct fit_type f
     return gjack.en[e].jack[0][j] * sqrt(gjack.en[e].jack[2][j]);//r0 M_PS
 }
 
-double lhs_fit_two_func(int n, int e, int j, vector<header_BSM> params, vector<data_BSM> gjack, struct fit_type fit_info) {
+double lhs_fit_two_func(int n, int e, int j, std::vector<header_BSM> params, std::vector<data_BSM> gjack, struct fit_type fit_info) {
     double r;
     int n1 = fit_info.corr_id[0];
     int n2 = fit_info.corr_id[1];
@@ -245,7 +245,7 @@ double lhs_fit_two_func(int n, int e, int j, vector<header_BSM> params, vector<d
     return r;
 }
 
-double lhs_critical_eta_mu_m0(int n, int e, int j, vector<header_BSM> params, vector<data_BSM> gjack, struct fit_type fit_info) {
+double lhs_critical_eta_mu_m0(int n, int e, int j, std::vector<header_BSM> params, std::vector<data_BSM> gjack, struct fit_type fit_info) {
     double r;
     if (n == 0)
         r = gjack[e].jack[3][j]; //r_AWI
@@ -255,7 +255,7 @@ double lhs_critical_eta_mu_m0(int n, int e, int j, vector<header_BSM> params, ve
     return r;
 }
 
-double lhs_critical_eta_mu_m0_loc(int n, int e, int j, vector<header_BSM> params, vector<data_BSM> gjack, struct fit_type fit_info) {
+double lhs_critical_eta_mu_m0_loc(int n, int e, int j, std::vector<header_BSM> params, std::vector<data_BSM> gjack, struct fit_type fit_info) {
     double r;
     if (n == 0)
         r = gjack[e].jack[7][j]; //r_AWI
@@ -266,11 +266,11 @@ double lhs_critical_eta_mu_m0_loc(int n, int e, int j, vector<header_BSM> params
 }
 
 
-double lhs_GPS(int n, int e, int j, vector<header_BSM> params, vector<data_BSM> gjack, struct fit_type fit_info) {
+double lhs_GPS(int n, int e, int j, std::vector<header_BSM> params, std::vector<data_BSM> gjack, struct fit_type fit_info) {
 
     return gjack[e].jack[22][j];
 }
-double lhs_mpcac_MPS2(int n, int e, int j, vector<header_BSM> params, vector<data_BSM> gjack, struct fit_type fit_info) {
+double lhs_mpcac_MPS2(int n, int e, int j, std::vector<header_BSM> params, std::vector<data_BSM> gjack, struct fit_type fit_info) {
     double r;
     if (n == 0)
         r = gjack[e].jack[4][j] * gjack[e].jack[21][j] * fit_info.ext_P[1][j]; //2m_pcac* ZV *GPS // GPS=ZV^-1
@@ -286,7 +286,7 @@ double lhs_mpcac_MPS2(int n, int e, int j, vector<header_BSM> params, vector<dat
 //// print output
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void print_fit_output(char** argv, vector<data_BSM> gjack, struct fit_type fit_info, const char* label, struct fit_result fit_out, int* en, double*** x, double*** y, vector<header_BSM> params, std::vector<int> myen) {
+void print_fit_output(char** argv, std::vector<data_BSM> gjack, struct fit_type fit_info, const char* label, struct fit_result fit_out, int* en, double*** x, double*** y, std::vector<header_BSM> params, std::vector<int> myen) {
     int Npar = fit_info.Npar;
     int Nvar = fit_info.Nvar + fit_info.n_ext_P;
     int Njack = gjack[0].Njack;
@@ -360,7 +360,7 @@ void print_fit_output(char** argv, vector<data_BSM> gjack, struct fit_type fit_i
 }
 
 
-struct fit_result fit_data(char** argv, vector<header_BSM> params, vector<data_BSM> gjack, double lhs_fun(int, int, int, vector<header_BSM>, vector<data_BSM>, struct fit_type), struct fit_type fit_info, const char* label, std::vector<int> myen) {
+struct fit_result fit_data(char** argv, std::vector<header_BSM> params, std::vector<data_BSM> gjack, double lhs_fun(int, int, int, std::vector<header_BSM>, std::vector<data_BSM>, struct fit_type), struct fit_type fit_info, const char* label, std::vector<int> myen) {
     int Npar = fit_info.Npar;
     int Nvar = fit_info.Nvar + fit_info.n_ext_P;
     int Njack = gjack[0].Njack;

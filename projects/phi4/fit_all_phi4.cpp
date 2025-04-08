@@ -33,7 +33,7 @@
 #include "header_phi4.hpp"
 
 
-using namespace std;
+// using namespace std;
 int Ne=0;
 
 
@@ -60,8 +60,8 @@ int main(int argc, char **argv){
      fclose(f);
      */
     
-     vector<cluster::IO_params> paramsj;
-     vector<data_phi> dataj;
+     std::vector<cluster::IO_params> paramsj;
+     std::vector<data_phi> dataj;
      
      int Ne=0; 
      cluster::IO_params params;
@@ -116,12 +116,12 @@ int main(int argc, char **argv){
      printf("E1_0 =%f   %f\n", dataj[0].jack[1][dataj[0].Njack-1], error_jackboot(argv[1],dataj[0].Njack, dataj[0].jack[1]  ) );
     
      
-     vector<data_phi> gjack= create_generalised_resampling( dataj );
+     std::vector<data_phi> gjack= create_generalised_resampling( dataj );
      printf("GEVP_E2_01 =%f   %f\n", gjack[1].jack[19][gjack[1].Njack-1], error_jackboot(argv[1],gjack[1].Njack, gjack[1].jack[19]  ) );
      Ne=gjack.size();
      printf("number of ensembles = %d\n",Ne);
      
-     vector<int> myen(Ne);
+     std::vector<int> myen(Ne);
      for(int i=0;i< Ne; i++)  myen[i]=i;
      
      ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -212,10 +212,10 @@ int main(int argc, char **argv){
      
      
      /////////////reload the data
-    /* cout << endl <<"reload the data" << endl;
-     vector<data_phi>().swap(dataj);
-     vector<data_phi>().swap(gjack);
-     vector<cluster::IO_params>().swap(paramsj);
+    /* std::cout << std::endl <<"reload the data" << std::endl;
+     std::vector<data_phi>().swap(dataj);
+     std::vector<data_phi>().swap(gjack);
+     std::vector<cluster::IO_params>().swap(paramsj);
      dataj.resize(0);
      gjack.resize(0);
      paramsj.resize(0);
