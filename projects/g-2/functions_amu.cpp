@@ -718,8 +718,8 @@ double* interpol_Z(int Nmus, int Njack, double** Meta, double** Z, double* aMeta
         }
         // printf("\n   ms_MK=%20.12g  %20.12g \n",aMetas_exp[j], error_jackboot(resampling, Njack, aMetas_exp));
         // printf("\n   value=%20.12g  \n",Zint[j]);
-        if(Nmus==2){
-            Zint[j] = ((Z[0][j]-Z[1][j])*aMetas_exp[j] -Z[0][j]*Meta[1][j] + Z[1][j]*Meta[0][j] )/(Meta[0][j]-Meta[1][j]);
+        if (Nmus == 2) {
+            Zint[j] = ((Z[0][j] - Z[1][j]) * aMetas_exp[j] - Z[0][j] * Meta[1][j] + Z[1][j] * Meta[0][j]) / (Meta[0][j] - Meta[1][j]);
             // printf("\n   value exact=%20.12g  \n",Zint[j]);
         }
         // printf("%20.12g  %20.12g\n",Z[0][j], Z[1][j] );
