@@ -1090,7 +1090,7 @@ double** GEVP_matrix(int j, double**** in, int t, struct fit_type fit_info) {
         fit_info.N = tmp_N;
         std::vector<double> crossp(N);
 #ifdef DEBUG
-    std::vector<int> id_list_old(N, -1);
+        std::vector<int> id_list_old(N, -1);
 #endif // DEBUG
         std::vector<int> id_list;
         id_list.reserve(N);
