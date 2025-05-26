@@ -151,6 +151,9 @@ struct fit_result {
     double*** C;
     char name[NAMESIZE];
     void clear();
+    // ~fit_result() {
+    //     clear();
+    // }
 
 };
 EXTERN fit_type default_fit_info;

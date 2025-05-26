@@ -295,7 +295,7 @@ int main(int argc, char** argv) {
     fit_info.N = 1;
     fit_info.Njack = Njack;
     fit_info.n_ext_P = 1;
-    fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
+    // fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
 
 
     fit_info.function = constant_fit;
@@ -538,7 +538,7 @@ int main(int argc, char** argv) {
     fit_info.N = 1;
     fit_info.Njack = Njack;
     fit_info.n_ext_P = 1;
-    fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
+    // fit_info.ext_P = (double**)malloc(sizeof(double*) * fit_info.n_ext_P);
 
 
     fit_info.function = constant_fit;
@@ -622,7 +622,39 @@ int main(int argc, char** argv) {
     // compare_and_error(G10abs, G1_0_GEVP1im.P[0], errors, Njack, "G10_GEVP-im");
 
 
+    // clean up
+    fit_info.restore_default();
+    free(G0); free(G1);
+    free(G0_i); free(G1_i);
+    free(G01); free(G10);
+    free(G01_i); free(G10_i);
+    free(G0abs); free(G1abs);
+    free(G01abs); free(G10abs);
+    free(m1_GEVPc);
+    free(m0_GEVPc);
+    free(m0_GEVP); free(m1_GEVP);
+    free(m0_GEVP1); free(m1_GEVP1);
+    free(zero);
+    G0_GEVP.clear();
+    G1_GEVP.clear();
+    G0_GEVP1.clear();
+    G1_GEVP1.clear();
+    G0_GEVPr.clear();
+    G1_GEVPr.clear();
+    G0_1_GEVP.clear();
+    G1_1_GEVP.clear();
+    G0_1_GEVP1r.clear();
+    G1_0_GEVP1r.clear();
 
+    G1_0_GEVP1.clear();
+    G0_1_GEVP1.clear();
+    
+    free(m0); free(m1);
+    free_corr( Njack,Nmax, T, conf_jack);
+    for (int i = 0; i < 7; i++) {
+     free(option[i]);
+    }
+     free(option);
 
     //////////////////////////////////////////////////////////////
     // collect errors
