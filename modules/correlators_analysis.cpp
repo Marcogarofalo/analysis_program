@@ -928,39 +928,72 @@ double** r_equal_value_or_vector(double** lambdat, double** vec, fit_type fit_in
         int sqN = sqrt(N);
         double** amp = calloc_2<double>(N, 2);
         double* norm = (double*)calloc(sqN, sizeof(double));
+        // double* norm1 = (double*)calloc(sqN, sizeof(double));
         for (int n1 = 0; n1 < sqN; n1++) {
             for (int n2 = 0; n2 < sqN; n2++) {
                 for (int ni = 0; ni < sqN; ni++) {
-                    amp[n1 + n2 * sqN][0] += M[n1 + ni * sqN][0] * vec[ni + n2 * sqN][0];
+                    std::complex<double> v(vec[ni + n2 * sqN][0], vec[ni + n2 * sqN][1]);
+                    std::complex<double> m(M[n1 + ni * sqN][0], M[n1 + ni * sqN][1]);
+                    // amp[n1 + n2 * sqN][0] += M[n1 + ni * sqN][0] * vec[ni + n2 * sqN][0];
+                    amp[n1 + n2 * sqN][0] += (m * (v)).real();
+                    amp[n1 + n2 * sqN][1] += (m * (v)).imag();
                 }
             }
         }
 
         for (int n1 = 0; n1 < sqN; n1++) {
+            std::complex<double> sum(0.0, 0.0);
             for (int ni = 0; ni < sqN; ni++) {
-                norm[n1] += vec[ni + n1 * sqN][0] * amp[ni + n1 * sqN][0];
+                std::complex<double> v1(amp[ni + n1 * sqN][0], amp[ni + n1 * sqN][1]);
+                std::complex<double> v2(vec[ni + n1 * sqN][0], vec[ni + n1 * sqN][1]);
+                // norm[n1] += vec[ni + n1 * sqN][0] * amp[ni + n1 * sqN][0];
+                sum += (std::conj(v2) * v1);
+                // norm[n1] += (std::conj(v2) * v1).real();
+            }
+            norm[n1] = std::abs(sum);
+            // norm[n1] = sum.real() ;
+        }
+        for (int n1 = 0; n1 < sqN; n1++) {
+            for (int n2 = 0; n2 < sqN; n2++) {
+                amp[n1 + n2 * sqN][0] = amp[n1 + n2 * sqN][0] / std::sqrt((norm[n2]));
+                amp[n1 + n2 * sqN][1] = amp[n1 + n2 * sqN][1] / std::sqrt((norm[n2]));
             }
         }
         for (int n1 = 0; n1 < sqN; n1++) {
             for (int n2 = 0; n2 < sqN; n2++) {
-                amp[n1 + n2 * sqN][0] = amp[n1 + n2 * sqN][0] / sqrt((norm[n2]));
+                int n12 = n1 + n2 * sqN;
+                int n21 = n2 + n1 * sqN;
+                if ((t - t0) > 0) {
+                    r[n12][0] = amp[n21][0];
+                    r[n12][1] = amp[n21][1];
+                }
+                else {
+                    // int comps = sqrt(N);
+                    // error(comps * comps != N, 1, "r_equal_value_or_vector:", "N not a square!");
+                    // int id = n / comps;
+                    // int comp = n % comps;
+                    // id = comp + (comps - 1 - id) * comps;
+                    int id = n2 + (sqN - 1 - n1) * sqN;
+                    r[n12][0] = amp[id][0];
+                    r[n12][1] = amp[id][1];
+                }
             }
         }
-        for (int n = 0; n < N; n++) {
-            if ((t - t0) >= 0) {
-                r[n][0] = amp[n][0];
-                r[n][1] = amp[n][1];
-            }
-            else {
-                int comps = sqrt(N);
-                error(comps * comps != N, 1, "r_equal_value_or_vector:", "N not a square!");
-                int id = n / comps;
-                int comp = n % comps;
-                id = comp + (comps - 1 - id) * comps;
-                r[n][0] = amp[id][0];
-                r[n][1] = amp[id][1];
-            }
-        }
+        // for (int n = 0; n < N; n++) {
+        //     if ((t - t0) > 0) {
+        //         r[n][0] = amp[n][0];
+        //         r[n][1] = amp[n][1];
+        //     }
+        //     else {
+        //         int comps = sqrt(N);
+        //         error(comps * comps != N, 1, "r_equal_value_or_vector:", "N not a square!");
+        //         int id = n / comps;
+        //         int comp = n % comps;
+        //         id = comp + (comps - 1 - id) * comps;
+        //         r[n][0] = amp[id][0];
+        //         r[n][1] = amp[id][1];
+        //     }
+        // }
         free_2(N, amp);
         free(norm);
     }

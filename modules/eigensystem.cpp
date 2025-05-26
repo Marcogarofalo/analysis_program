@@ -74,12 +74,22 @@ int generalysed_Eigenproblem(double** A, double** B, int N, double*** eigenvalue
             b(i, j) = C(B[i + j * N][0], B[i + j * N][1]);
         }
     }
-    Eigen::MatrixXcd c(N, N);
-    c = b.inverse() * a;
+    // Eigen::MatrixXcd c(N, N);
+    // std::cout<<  "mattrix b\n"<<b;
+    // Eigen::MatrixXcd L(b.llt().matrixL());
+    // std::cout<<  "\ncolesky b\n"<< L;
 
-    Eigen::ComplexEigenSolver<Eigen::MatrixXcd> ces;
-    // Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXcd> ces(a,b);
-    ces.compute(c);
+    // c = b.inverse() * a;
+    // std::cout<<  "\nstandard c\n"<< c;
+    // std::cout<<  "\ncolesky c\n"<< L.transpose().inverse() *a * L.inverse();
+    // std::cout<< "\n";
+    // Eigen::ComplexEigenSolver<Eigen::MatrixXcd> ces;
+    // ces.compute(c);
+    // Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> ces;
+    // ces.compute(c);
+    
+    // Eigen::GeneralizedEigenSolver<Eigen::MatrixXcd> ces(a,b)
+    Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXcd> ces(a,b);
 
     //   Eigen::LLT<Eigen::MatrixXcd> lltOfA(c); // compute the Cholesky decomposition of A
     //   if(lltOfA.info() == Eigen::NumericalIssue){
@@ -90,54 +100,54 @@ int generalysed_Eigenproblem(double** A, double** B, int N, double*** eigenvalue
     //            std::cout<< ces.eigenvalues()[i]<< std::endl;
     //   }    
     int err = 0;
-    if (verbosity >= 0) {
-        for (int i = 0;i < N;i++) {
-            if (imag(ces.eigenvalues()[i]) > 1e-8 || real(ces.eigenvalues()[i]) < 0) {
-                err = 1;
-            }
-        }
-        for (int i = 0;i < N;i++) {
-            for (int j = 0;j < N;j++) {
-                if (imag(ces.eigenvectors().col(i)[j]) > 1e-8) {
-                    err = 2;
-                }
-            }
-        }
-        if (err >= 1) {
-            std::cout << "non semi-positive definitie matrix!" << std::endl;
-            std::cout << c << std::endl;
-            for (int i = 0;i < N;i++) {
-                std::cout << ces.eigenvalues()[i] << std::endl;
-            }
-        }
-        if (err >= 2) {
-            std::cout << "eigenvectors (columns) are coplex!" << std::endl;
-            std::cout << ces.eigenvectors() << std::endl;
-        }
-        if (verbosity >= 3) {
-            printf("the GEVP\n");
-            printf("{");
-            for (int i = 0;i < N;i++) {
-                printf("{");
-                for (int j = 0;j < N;j++)
-                    printf("%.15f,\t", real(c(i, j)));
-                printf("},\n");
-            }
-            printf("}\n");
-            for (int i = 0;i < N;i++) {
-                std::cout << ces.eigenvalues()[i] << std::endl;
-            }
-            std::cout << ces.eigenvectors() << std::endl;
-        }
-    }
+    // if (verbosity >= 0) {
+    //     for (int i = 0;i < N;i++) {
+    //         if (imag(ces.eigenvalues()[i]) > 1e-8 || real(ces.eigenvalues()[i]) < 0) {
+    //             err = 1;
+    //         }
+    //     }
+    //     for (int i = 0;i < N;i++) {
+    //         for (int j = 0;j < N;j++) {
+    //             if (imag(ces.eigenvectors().col(i)[j]) > 1e-8) {
+    //                 err = 2;
+    //             }
+    //         }
+    //     }
+    //     if (err >= 1) {
+    //         std::cout << "non semi-positive definitie matrix!" << std::endl;
+    //         std::cout << c << std::endl;
+    //         for (int i = 0;i < N;i++) {
+    //             std::cout << ces.eigenvalues()[i] << std::endl;
+    //         }
+    //     }
+    //     if (err >= 2) {
+    //         std::cout << "eigenvectors (columns) are coplex!" << std::endl;
+    //         std::cout << ces.eigenvectors() << std::endl;
+    //     }
+    //     if (verbosity >= 3) {
+    //         printf("the GEVP\n");
+    //         printf("{");
+    //         for (int i = 0;i < N;i++) {
+    //             printf("{");
+    //             for (int j = 0;j < N;j++)
+    //                 printf("%.15f,\t", real(c(i, j)));
+    //             printf("},\n");
+    //         }
+    //         printf("}\n");
+    //         for (int i = 0;i < N;i++) {
+    //             std::cout << ces.eigenvalues()[i] << std::endl;
+    //         }
+    //         std::cout << ces.eigenvectors() << std::endl;
+    //     }
+    // }
 
     Eigen::VectorXcd v;
 
     double* lambda = (double*)malloc(sizeof(double) * N);
     int* order = (int*)malloc(sizeof(int) * N);
     for (int i = 0;i < N;i++) {
-        lambda[i] = real(ces.eigenvalues()[i]);
-        // lambda[i] = (ces.eigenvalues()[i]);
+        // lambda[i] = real(ces.eigenvalues()[i]);
+        lambda[i] = (ces.eigenvalues()[i]);
         order[i] = i;
     }
     quickSort(order, lambda, 0, N - 1);
@@ -148,14 +158,15 @@ int generalysed_Eigenproblem(double** A, double** B, int N, double*** eigenvalue
         (*eigenvalues)[i][1] = 0;
         v = ces.eigenvectors().col(ii);
 
-        Eigen::VectorXcd res = c * v - ces.eigenvalues()[ii] * v;
-        // Eigen::VectorXcd res = a * v - ces.eigenvalues()[ii] * b* v;
+        // Eigen::VectorXcd res = c * v - ces.eigenvalues()[ii] * v;
+        Eigen::VectorXcd res = a * v - ces.eigenvalues()[ii] * b* v;
         double sum = res.norm();
         if (sum > 1e-6) {
             printf("error eigenvalues: deviation = %g\n",sum);
-            std::cout << c * v << std::endl;
+            // std::cout << c * v << std::endl;
             std::cout << "   l=" << ces.eigenvalues()[ii] << std::endl;
-            std::cout << ces.eigenvalues()[ii] * v << std::endl;
+            // std::cout << ces.eigenvalues()[ii] * v << std::endl;
+            std::cout << res << std::endl;
             exit(1);
         }
         //       Eigen::VectorXcd v1=ces.eigenvectors().col(order[(N-1-i+1)%N]);
