@@ -84,6 +84,12 @@ jobs:
       run: |
            cd tests
            ./test_non_linear_fit
+    
+    - name: test GEVP
+      working-directory: ${{github.workspace}}/build
+      run: |
+           cd tests
+           ./test_GEVP
 
     - name: test creation of a new project
       # Use a bash shell so we can use the same syntax for environment variable
