@@ -30,6 +30,7 @@ double M_eff_sinh_T_ct_ctp(int t, int T, double ct, double ctp);
 //////////////////////////////////////////////
 double lhs_function_f_PS(int j, double**** in, int t, struct fit_type fit_info);
 double lhs_function_f_PS_GEVP(int j, double**** in, int t, struct fit_type fit_info);
+double lhs_function_abs_GEVP(int j, double**** in, int t, struct fit_type fit_info);
 //////////////////
 
 void check_correlatro_counter(int i);
@@ -55,8 +56,11 @@ double* plateau_correlator_function(char** option, struct kinematic kinematic_2p
 
 
 struct fit_result fit_function_to_corr(char** option, struct kinematic kinematic_2pt, char* name, double**** conf_jack, const char* plateaux_masses, FILE* outfile, int index, int re_im, const char* description, struct fit_type fit_info, FILE* file_jack);
-
+/****************************************************************************
+ * print a double* res in a file in the format to be read by quarto
+****************************************************************************/
 void print_result_in_file(FILE* outfile, double* res, const char* name, double chi2, int tmin, int tmax);
+
 ///////////////////////////////////////////////
 /// func for add_correlators
 //////////////////////////////////////////////

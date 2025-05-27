@@ -44,16 +44,7 @@ double lhs_function_me_im_GEVP(int j, double**** in, int t, struct fit_type fit_
     double me = in[j][id][t][1] * std::sqrt(2 * M) / std::sqrt((std::exp(-t * M) + std::exp(-(fit_info.T - t) * M)));
     return me;
 }
-double lhs_function_abs_GEVP(int j, double**** in, int t, struct fit_type fit_info) {
-    int id = fit_info.corr_id[0];
-    double amp = 0;
-    double M = fit_info.ext_P[0][j];
 
-
-    double tmp = in[j][id][t][0] * in[j][id][t][0] + in[j][id][t][1] * in[j][id][t][1];
-    double me = std::sqrt(tmp * 2 * M / ((std::exp(-t * M) + std::exp(-(fit_info.T - t) * M))));
-    return me;
-}
 
 void compare_and_error(double* correct, double* value, std::vector<std::string>& errors, int Njack, std::string name) {
     int Nerr = 0;

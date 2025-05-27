@@ -366,6 +366,16 @@ double lhs_function_f_PS_GEVP(int j, double**** in, int t, struct fit_type fit_i
     return (mu1 + mu2) * me / (M * sinh(M));
 }
 
+double lhs_function_abs_GEVP(int j, double**** in, int t, struct fit_type fit_info) {
+    int id = fit_info.corr_id[0];
+    double amp = 0;
+    double M = fit_info.ext_P[0][j];
+
+    double tmp = in[j][id][t][0] * in[j][id][t][0] + in[j][id][t][1] * in[j][id][t][1];
+    double me = std::sqrt(tmp * 2 * M / ((std::exp(-t * M) + std::exp(-(fit_info.T - t) * M))));
+    return me;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
