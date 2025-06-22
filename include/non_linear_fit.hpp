@@ -133,6 +133,8 @@ struct  fit_type {
     double** cov;
     double** cov1;
     void compute_cov_fit(char** argv, data_all gjack, double lhs_fun(int, int, int, data_all, struct fit_type));
+    void make_covariance_block_diagonal_in_n();
+    void make_covariance_block_diagonal_in_e();
     void compute_cov1_fit();
     void restore_default();
     void malloc_x();
