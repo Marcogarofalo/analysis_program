@@ -301,6 +301,7 @@ void resampling_f::mult_error(double* out, double* in, double d) {
         out[j] = in[j] + (r - in[j]) * kappa;
         //error(in[i]!=in[i],1,"mean_and_error_jack_biased","errore jack=%d is nan",i);
     }
+    out[N]=in[N];
 
 }
 
