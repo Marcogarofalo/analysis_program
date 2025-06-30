@@ -125,6 +125,7 @@ struct  fit_type {
     bool codeplateaux = false;
     int tmin = -1;
     int tmax = -1;
+    int sep = 1; // separation between the time slices
     // 
     bool strict_checks = true;
 
