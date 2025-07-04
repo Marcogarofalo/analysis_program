@@ -606,7 +606,7 @@ struct fit_result fit_fun_to_corr(char** option, struct kinematic kinematic_2pt,
         tmax = fit_info.tmax;
         sep = fit_info.sep;
         if (tmin < 1) { printf("error: tmin=%d too small\n", tmin); exit(1); }
-        if (tmax >= file_head.l0 / 2) { printf("error: tmax=%d too small\n", tmax); exit(1); }
+        if (tmax >= file_head.l0 / 2) { printf("error: tmax=%d too small, l0/2 = %d\n", tmax, file_head.l0 / 2); exit(1); }
         if (tmax < 0) { printf("error: tmax=%d not initilized\n", tmax); exit(1); }
     }
     else {
