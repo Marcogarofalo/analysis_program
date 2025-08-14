@@ -118,10 +118,10 @@ void fit_type::compute_cov_fit(char** argv, data_all gjack, double lhs_fun(int, 
 void fit_type::make_covariance_block_diagonal_in_e(){
     int ie = 0, ie1 = 0;
     for (int n = 0;n < this->N;n++) {
-        for (int e = 0;e < this->myen.size();e++) {
+        for (int e = 0;e < this->Nxen[n].size();e++) {
             ie1 = 0;
             for (int n1 = 0;n1 < this->N;n1++) {
-                for (int e1 = 0;e1 < this->myen.size();e1++) {
+                for (int e1 = 0;e1 < this->Nxen[n1].size();e1++) {
                     if (e != e1)   this->cov[ie][ie1] = 0;
                     ie1++;
                 }
@@ -134,10 +134,10 @@ void fit_type::make_covariance_block_diagonal_in_e(){
 void fit_type::make_covariance_block_diagonal_in_n(){
     int ie = 0, ie1 = 0;
     for (int n = 0;n < this->N;n++) {
-        for (int e = 0;e < this->myen.size();e++) {
+        for (int e = 0;e < this->Nxen[n].size();e++) {
             ie1 = 0;
             for (int n1 = 0;n1 < this->N;n1++) {
-                for (int e1 = 0;e1 < this->myen.size();e1++) {
+                for (int e1 = 0;e1 < this->Nxen[n1].size();e1++) {
                     if (n != n1)   this->cov[ie][ie1] = 0;
                     ie1++;
                 }
