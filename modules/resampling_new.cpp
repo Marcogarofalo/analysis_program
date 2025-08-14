@@ -8,6 +8,7 @@
 #include "resampling_new.hpp"
 #include "rand.hpp"
 #include "global.hpp"
+#include "tower.hpp"
 
 #ifdef WITH_ARB
 #include "arb.h"
@@ -246,7 +247,7 @@ double**** resampling_boot::create(int  N, int var, int t, double**** in) {
 
 
 double resampling_jack::comp_mean_unbias(double* in) {
-    double r=0;
+    double r = 0;
     int i, N;
 
     N = Njack - 1;
@@ -301,7 +302,7 @@ void resampling_f::mult_error(double* out, double* in, double d) {
         out[j] = in[j] + (r - in[j]) * kappa;
         //error(in[i]!=in[i],1,"mean_and_error_jack_biased","errore jack=%d is nan",i);
     }
-    out[N]=in[N];
+    out[N] = in[N];
 
 }
 
@@ -344,7 +345,7 @@ double* resampling_boot::create_fake(double mean, double error, int seed) {
 }
 
 double resampling_boot::comp_mean_unbias(double* in) {
-    double r=0;
+    double r = 0;
     int i, N;
 
     printf("\n\n ########################### calling resampling_boot::comp_mean_unbias NEVER TESTED ##########\n");
@@ -356,7 +357,7 @@ double resampling_boot::comp_mean_unbias(double* in) {
 
     r /= ((double)N);
 
-    r = 2* in[N] -  r;
+    r = 2 * in[N] - r;
 
     return r;
 }
@@ -567,3 +568,52 @@ void resampling_boot::comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong pre
     arb_clear(tmpl);
 }
 #endif // WITH_ARB
+
+
+
+double** resampling_jack::create_fake_covariance(double* mean, int N, double** cov, int seed) {
+    int i, k;
+    double** r, ** r1;
+
+    double** covj = (double**)malloc(sizeof(double*) * N);
+    for (i = 0;i < N;i++) {
+        covj[i] = (double*)malloc(sizeof(double) * N);
+        for (k = 0;k < N;k++) {
+            covj[i][k] = cov[i][k] / (Njack - 2);
+        }
+    }
+
+    r = (double**)malloc(sizeof(double*) * Njack);
+    srand(seed);
+    for (i = 0;i < Njack - 1;i++) {
+        r[i] = generate_correlatedNoise(N, mean, covj);//generateGaussianNoise(mean,  error/sqrt(Njack-2));
+    }
+    r[Njack - 1] = (double*)malloc(sizeof(double) * N);
+    for (i = 0;i < N;i++) {
+        r[Njack - 1][i] = mean[i];
+        free(covj[i]);
+    }
+    free(covj);
+
+    r1 = swap_indices(Njack, N, r);
+    free_2(Njack, r);
+    return r1;
+}
+
+double** resampling_boot::create_fake_covariance(double* mean, int N, double** cov, int seed) {
+    int i;
+    double** r, ** r1;
+
+    r = (double**)malloc(sizeof(double*) * Njack);
+    srand(seed);
+    for (i = 0;i < Njack - 1;i++) {
+        r[i] = generate_correlatedNoise(N, mean, cov);
+    }
+    r[Njack - 1] = (double*)malloc(sizeof(double) * N);
+    for (i = 0;i < N;i++)
+        r[Njack - 1][i] = mean[i];
+
+    r1 = swap_indices(Njack, N, r);
+    free_2(Njack, r);
+    return r1;
+}

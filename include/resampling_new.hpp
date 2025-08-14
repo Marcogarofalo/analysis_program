@@ -29,7 +29,7 @@ public:
   // resampling_f(const char* name, int N);
   void free_jack(int var, int t, double**** in);
   void write_jack_bin(double* jack, char* outname);
-  
+
   void write_jack_in_file(double* jack, const char* outname);
   void read_jack_from_file(double* jack, const char* name);
 
@@ -40,6 +40,7 @@ public:
   virtual double comp_mean_unbias(double* in) = 0;
   virtual double comp_error(double* in) = 0;
   virtual double* create_fake(double mean, double error, int seed) = 0;
+  virtual double** create_fake_covariance(double* mean, int N, double** cov, int seed) = 0;
   // double** comp_covariance(int Nobs,  double** in);
 
   // double** fake_sampling_covariance( double* mean,  double** cov, int seed);
@@ -51,19 +52,19 @@ public:
   virtual void comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong prec) = 0;
 #endif // WITH_ARB
 
-  double *create_copy(double *in);
-  void copy(double *out, double *in);
-  void add(double *out, double *in1, double *in2);
-  void add(double *out, double *in1, double a);
-  void sub(double *out, double *in1, double *in2);
-  void mult(double *out, double *in1, double *in2);
-  void mult(double *out, double *in1, double a);
-  void div(double *out, double *in1, double *in2);
-  void div(double *out, double *in1, double a);
-  void linear_comb(double *out, double a, double *in1, double b, double *in2);
+  double* create_copy(double* in);
+  void copy(double* out, double* in);
+  void add(double* out, double* in1, double* in2);
+  void add(double* out, double* in1, double a);
+  void sub(double* out, double* in1, double* in2);
+  void mult(double* out, double* in1, double* in2);
+  void mult(double* out, double* in1, double a);
+  void div(double* out, double* in1, double* in2);
+  void div(double* out, double* in1, double a);
+  void linear_comb(double* out, double a, double* in1, double b, double* in2);
 
-  void mult_error(double* out,  double* in, double d);
-  void add_error_quadrature(double* out,  double* in, double d);
+  void mult_error(double* out, double* in, double d);
+  void add_error_quadrature(double* out, double* in, double d);
 };
 
 class resampling_jack : public resampling_f {
@@ -74,6 +75,7 @@ public:
   double comp_mean_unbias(double* in);
   double comp_error(double* in);
   double* create_fake(double mean, double error, int seed);
+  double** create_fake_covariance(double* mean, int N, double** cov, int seed);
   double** comp_cov(int Nobs, double** in);
 #ifdef WITH_ARB
   void comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong prec);
@@ -91,6 +93,7 @@ public:
   double comp_mean_unbias(double* in);
   double comp_error(double* in);
   double* create_fake(double mean, double error, int seed);
+  double** create_fake_covariance(double* mean, int N, double** cov, int seed);
   double** comp_cov(int Nobs, double** in);
 #ifdef WITH_ARB
   void comp_cov_arb(arb_mat_t r, int Nobs, double** in, slong prec);
