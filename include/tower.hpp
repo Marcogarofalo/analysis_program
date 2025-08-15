@@ -16,6 +16,7 @@ double  ****double_malloc_4(int size1,int size2, int size3,int size4);
     
 double **swap_indices(int N,int Njack, double **in);
 
+template<typename T>  T  ****malloc_4(int size1,int size2, int size3, int size4);
 template<typename T>  T  ***malloc_3(int size1,int size2, int size3);
 template<typename T>  T  **malloc_2(int size1,int size2);
 template<typename T>  T  **calloc_2(int size1,int size2);
