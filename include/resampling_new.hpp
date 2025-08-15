@@ -56,7 +56,12 @@ public:
   void copy(double* out, double* in);
   void add(double* out, double* in1, double* in2);
   void add(double* out, double* in1, double a);
+  void add(double* out, double* in1);
+  void add(double* out, double a);
   void sub(double* out, double* in1, double* in2);
+  void sub(double* out, double* in1, double a);
+  void sub(double* out, double* in1);
+  void sub(double* out, double a);
   void mult(double* out, double* in1, double* in2);
   void mult(double* out, double* in1, double a);
   void div(double* out, double* in1, double* in2);
