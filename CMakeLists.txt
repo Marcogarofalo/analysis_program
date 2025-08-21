@@ -75,7 +75,26 @@ ENDIF()
 
 
 IF(WITH_ARB)
-  set(CMAKE_CXX_FLAGS  " ${CMAKE_CXX_FLAGS} ${CXXFLAGS} -DWITH_ARB   ")
+  if(NOT DEFINED ARB_ROOT)
+        message(FATAL_ERROR "WITH_ARB=ON but ARB_ROOT is not specified. Use -DARB_ROOT=/path/to/flint")
+  endif()
+  set(CMAKE_CXX_FLAGS  " ${CMAKE_CXX_FLAGS} ${CXXFLAGS} -DWITH_ARB  ")#-larb -lflint -lgmp -lmpfr 
+  # Find GMP and MPFR (required by Flint/Arb)
+  # find_package(GMP REQUIRED)
+  # find_package(MPFR REQUIRED)
+  
+  # Include directories
+  include_directories(
+      ${ARB_ROOT}/include
+      ${ARB_ROOT}/include/flint
+  )
+
+  # Library directories
+  link_directories(${ARB_ROOT}/lib)
+  MESSAGE(${ARB_ROOT}/lib)
+  set(ARB_LIBS flint)
+
+  # include_directories(${CMAKE_INCLUDE_PATH})
 ENDIF()
 
 

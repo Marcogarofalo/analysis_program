@@ -129,7 +129,7 @@ ENDIF()
 
 if(WITH_ARB)
   target_link_libraries(analysis_program PUBLIC mpfr)
-  target_link_libraries(analysis_program PUBLIC flint-arb flint)
+  target_link_libraries(analysis_program PUBLIC ${ARB_LIBS} )
 ENDIF()
 
 set_target_properties(analysis_program PROPERTIES LINKER_LANGUAGE CXX)

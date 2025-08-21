@@ -12,6 +12,7 @@
 
 #ifdef WITH_ARB
 #include "arb.h"
+#include "arb_mat.h"
 #endif // WITH_ARB
 // resampling::resampling(const char* name, int N) {
 //     Njack == N;
