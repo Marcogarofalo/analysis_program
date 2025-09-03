@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+std::string read_string(FILE* file);
 class generic_header {
 public:
     int struct_size=0;
@@ -287,6 +288,9 @@ double lhs_identity(int n, int e, int j, data_all gjack, struct fit_type fit_inf
 
 double rhs_const(int n, int Nvar, double* x, int Npar, double* P);
 double rhs_a2(int n, int Nvar, double* x, int Npar, double* P);
+
+fit_result read_file_P(std::string file_der);
+
 
 #endif
 
