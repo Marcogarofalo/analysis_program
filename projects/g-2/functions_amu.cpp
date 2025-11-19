@@ -404,7 +404,7 @@ double* compute_amu_LD(double**** in, int id, int Njack, double* Z, double* a, d
 }
 
 double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile,
-    const char* description, const char* resampling, int isub, int bound, double* Mpi, double* Meff, int L) {
+    const char* description, const char* resampling, int isub, int bound, double* Mpi, double* Meff, int L, bounding_info_struct bound_info) {
     constexpr double d = 0.15;
     constexpr double t1_d = 0.4 / d;
     int T = file_head.l0;
@@ -443,7 +443,12 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
     printf("t_end=%d\n", t_end);
 
     for (int j = 0;j < Njack;j++) {
-        E2[j] = 2 * sqrt(Mpi[j] * Mpi[j] + (2 * M_PI / L) * (2 * M_PI / L));
+        if (bound_info.upper_bound_type==1){
+            E2[j] = 2 * sqrt(Mpi[j] * Mpi[j] + (2 * M_PI / L) * (2 * M_PI / L));
+        }
+        else{
+            E2[j] = bound_info.Mrho[j];
+        }
         ft[0] = 0;
         for (int t_a = 1; t_a < T / 2; t_a++) {
             double t = t_a * a[j]; // time in fm.
@@ -513,14 +518,26 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
 
     /////////// find tmin 
     int start_fit = 1;
-    for (int t_c = 1; t_c < T / 2; t_c++) {
-        if (amu_above[t_c][Njack - 1] - amu_below[t_c][Njack - 1] < myres->comp_error(amu_above[t_c])) {
-            start_fit = t_c;
-            break;
+    int end_fit = 1;
+    if (bound_info.tmin == -1) {
+        for (int t_c = 1; t_c < T / 2; t_c++) {
+            if (amu_above[t_c][Njack - 1] - amu_below[t_c][Njack - 1] < myres->comp_error(amu_above[t_c])) {
+                start_fit = t_c;
+                break;
+            }
         }
     }
-    int end_fit = start_fit + 0.40926 / a[Njack - 1];
-    error(end_fit > T / 2, 1, "compute_amu_bounding", "tmax fit larger than T/2");
+    else {
+        start_fit = bound_info.tmin;
+    }
+    if (bound_info.tmax == -1) {
+        end_fit = start_fit + 0.40926 / a[Njack - 1];
+        // error(end_fit > T / 2, 1, "compute_amu_bounding", "tmax fit larger than T/2");
+        if(end_fit >= T / 2) end_fit = T / 2-1;
+    }
+    else {
+        end_fit = bound_info.tmax;
+    }
     /////// plateau fit
     struct fit_type const_fit_info;
     const_fit_info.Nvar = 1;

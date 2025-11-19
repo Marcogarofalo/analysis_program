@@ -39,6 +39,14 @@ constexpr double muon_mass_fm = muon_mass_MeV * 197.326963;
 //     A40,
 //     A30
 // };
+struct bounding_info_struct {
+    int tmin = -1;
+    int tmax = -1;
+    int upper_bound_type = 1; // 1: 2Mpi with mom; 2: Mrho
+    double *Mrho; 
+};
+
+inline bounding_info_struct default_bounding;
 
 double integrand_K(double x, void* params);
 double kernel_K(double z, double epsrel = 1e-7);
@@ -49,8 +57,8 @@ double integrate_simpson38(int lower, int upper, double* f);
 double integrate_reinman(int lower, int upper, double* f);
 double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling, int isub = -1);
 double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile,
-    const char* description, const char* resampling, int isub, int bound, double* Mpi, double* Meff, int L);
-double* compute_amu_sd(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling, int isub = -1, int tmin=0);
+    const char* description, const char* resampling, int isub, int bound, double* Mpi, double* Meff, int L, bounding_info_struct bound_info = default_bounding);
+double* compute_amu_sd(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling, int isub = -1, int tmin = 0);
 double* compute_amu_W(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling);
 double* compute_amu_LD(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling);
 template<int idn, int idd>
