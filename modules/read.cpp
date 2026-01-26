@@ -69,6 +69,47 @@ template void line_read_param<int>(char**, const char*, int&, int&, int&, const 
 template void line_read_param<double>(char**, const char*, double&, double&, int&, const char*);
 template void line_read_param<std::string>(char**, const char*, std::string&, std::string&, int&, const char*);
 
+int how_many_matches_in_line_read_param(char** option, const char* corr, const char* namefile_plateaux) {
+
+    int line = 0;
+    char namefile[NAMESIZE];
+    mysprintf(namefile, NAMESIZE, "%s/%s", option[3], namefile_plateaux);
+    std::fstream newfile;
+
+    newfile.open(namefile, std::ios::in); // open a file to perform read operation using file object
+    int match = 0;
+    if (newfile.is_open()) { // checking whether the file is open
+        std::string tp;
+        while (getline(newfile, tp)) { // read data from file object and put it into string.
+            line++;
+            std::vector<std::string> x = split(tp, ' ');
+
+            std::string name = option[6];
+            std::string correlator = corr;
+            if (x.empty() == 0) {
+                if (x[0].compare(name) == 0 && x[1].compare(correlator) == 0) {
+                    // value = convert<T>(x[2]);
+                    // error = convert<T>(x[3]);
+                    // seed = stoi(x[4]);
+                    // std::cout << "correlator " << correlator << " name " << name << " value " <<
+                    //     value << " error " << error << " seed " << seed << "\n";
+                    match++;
+                    // break;
+                }
+            }
+        }
+        newfile.close(); // close the file object.
+    }
+    else {
+        printf("correlators_analysis.cpp line_read_plateaux\n");
+        printf("\t unable to open %s", namefile);
+        exit(1);
+    }
+    
+    return match;
+}
+
+
 double**** malloc_corr(int N, int var, int t) {
     double**** out;
     int i, j, k;
