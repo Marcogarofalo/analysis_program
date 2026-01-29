@@ -39,6 +39,7 @@ public:
   // double* mean_and_error(  double* in);
   virtual double comp_mean_unbias(double* in) = 0;
   virtual double comp_error(double* in) = 0;
+  double mean(double* in) const { return in[Njack - 1]; };
   virtual double* create_fake(double mean, double error, int seed) = 0;
   virtual double** create_fake_covariance(double* mean, int N, double** cov, int seed) = 0;
   // double** comp_covariance(int Nobs,  double** in);
