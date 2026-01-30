@@ -207,8 +207,8 @@ void windowing(int var, int order, int rep, int nconf, int flow, double* a, doub
     free(tmp);
     fprintf(file_tau, "%d   \t %d %g\n", flow, 0, 0.5);
 
-    double tauint = -0.5;// so in the first iteration it goes to 0.5
-    for (i = 0;i < nconf;i++) {
+    double tauint = 0.5;
+    for (i = 1;i < nconf;i++) {
         tmp = Gamma(i, var, order, rep, nconf, a, bba);
         gammaFbb[i] = Gammaf(var, order, tmp, fbba);
         fprintf(file_gamma, "%d\t", i);
