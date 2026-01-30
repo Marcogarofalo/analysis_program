@@ -216,6 +216,10 @@ void windowing(int var, int order, int rep, int nconf, int flow, double* a, doub
         fprintf(file_gamma, "%g\t%g", gammaFbb[i][0], tauint);
         
         fprintf(file_gamma, "\n");
+        for (i1 = 0;i1 < alpha;i1++)
+            free(tmp[i1]);
+        free(tmp);
+        free(gammaFbb[i]);
     }
     fprintf(file_gamma, "\n\n");
 
