@@ -334,7 +334,7 @@ double* resampling_jack::create_fake(double mean, double error, int seed) {
     double* r;
 
     r = (double*)malloc(sizeof(double) * Njack);
-    srand(seed);
+    if (seed > 0) srand(seed);
     for (i = 0;i < Njack - 1;i++) {
         r[i] = generateGaussianNoise(mean, error / sqrt(Njack - 2));
     }
@@ -349,7 +349,7 @@ double* resampling_boot::create_fake(double mean, double error, int seed) {
     double* r;
 
     r = (double*)malloc(sizeof(double) * Njack);
-    srand(seed);
+    if (seed > 0)srand(seed);
     for (i = 0;i < Njack - 1;i++) {
         r[i] = generateGaussianNoise(mean, error);
     }
