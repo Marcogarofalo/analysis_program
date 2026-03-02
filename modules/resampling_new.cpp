@@ -598,7 +598,7 @@ double** resampling_jack::create_fake_covariance(double* mean, int N, double** c
     }
 
     r = (double**)malloc(sizeof(double*) * Njack);
-    srand(seed);
+    if (seed > 0) srand(seed);
     for (i = 0;i < Njack - 1;i++) {
         r[i] = generate_correlatedNoise(N, mean, covj);//generateGaussianNoise(mean,  error/sqrt(Njack-2));
     }
@@ -619,7 +619,7 @@ double** resampling_boot::create_fake_covariance(double* mean, int N, double** c
     double** r, ** r1;
 
     r = (double**)malloc(sizeof(double*) * Njack);
-    srand(seed);
+    if (seed > 0) srand(seed);
     for (i = 0;i < Njack - 1;i++) {
         r[i] = generate_correlatedNoise(N, mean, cov);
     }
