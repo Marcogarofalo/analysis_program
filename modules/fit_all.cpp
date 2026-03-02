@@ -85,7 +85,7 @@ void generic_header::write_header(FILE* file) {
 }
 
 std::string read_string(FILE* file) {
-    int i=0;
+    int i = 0;
     std::string v = "";
     char c[1];
     do {
@@ -555,6 +555,7 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
     FILE* f;
 
     mysprintf(namefile, NAMESIZE, "%s/%s_fit_data.txt", argv[3], label);
+    printf("writing: %s\n", namefile);
     f = open_file(namefile, "w+");
     int count = 0;
     for (int n = 0;n < N;n++) {
@@ -572,6 +573,7 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
     fclose(f);
     ////////////// parameter print and correlation matrix
     mysprintf(namefile, NAMESIZE, "%s/%s_fit_P.tex", argv[3], label);
+    printf("writing: %s\n", namefile);
     f = open_file(namefile, "w+");
     fprintf(f, "\\begin{gather}\n");
     fprintf(f, "\\chi^2/d.o.f.=%g \\\\ \n", fit_out.chi2[Njack - 1]);//error_jackboot(argv[1], Njack, fit_out.chi2)
@@ -591,7 +593,6 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
         }
     }
 
-    double det = determinantOfMatrix(cov, Npar);
 
     fprintf(f, "{\\tiny\\begin{gather}\n C=\\begin{pmatrix}\n");
     for (int i = 0;i < fit_info.Npar;i++) {
@@ -614,10 +615,15 @@ void print_fit_output(char** argv, data_all gjack, struct fit_type fit_info,
         if (i != fit_info.Npar) fprintf(f, "\\\\ \n");
         else fprintf(f, "\n");
     }
-    fprintf(f, "\\end{pmatrix}\n\\\\det=%g\\\\ \\end{gather}}\n", det);
+    fprintf(f, "\\end{pmatrix}\n");
+    if (fit_info.compute_det_of_cov == true) {
+        double det = determinantOfMatrix(cov, Npar);
+        fprintf(f, "\\\\det=%g\\\\ \\end{gather}}\n", det);
+    }
     fclose(f);
     ////////////////////////////////////////////////////////////////////////////////////////////
     mysprintf(namefile, NAMESIZE, "%s/%s_fit_P.dat", argv[3], label);
+    printf("writing: %s\n", namefile);
     f = open_file(namefile, "w+");
     fprintf(f, "npar   %d \n", fit_out.Npar);//error_jackboot(argv[1], Njack, fit_out.chi2)
     fprintf(f, "chi2dof   %g \n", fit_out.chi2[Njack - 1]);//error_jackboot(argv[1], Njack, fit_out.chi2)

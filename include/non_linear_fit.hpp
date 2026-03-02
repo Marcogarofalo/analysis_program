@@ -128,6 +128,7 @@ struct  fit_type {
     int sep = 1; // separation between the time slices
     // 
     bool strict_checks = true;
+    bool compute_det_of_cov = false;
 
     //
     std::vector<double> band_range{};
