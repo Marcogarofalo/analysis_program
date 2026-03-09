@@ -16,7 +16,14 @@ void  FVE_Mpi(double afm,double dl1phys, double dl2phys,double dl3phys, double d
 double FVE_GL(double Lsize_w,double  aml, double af, double aB);
 double FVE_GL_fast(double Lsize_w,double  aml, double af, double aB);
 double FVE_GL_Mpi(double L_a/* L/w0 */,double  xi,double af_PS);
-
+struct delta_fve_NNLO_CDH
+{
+     double dM;
+     double df;
+};
+double g_tilda_2(double lamb);
+double g_tilda_2(double lamb);
+delta_fve_NNLO_CDH Delta_pi_NNLO_CDH(double L_a, double xi, double af_PS);
 
 #endif
 
