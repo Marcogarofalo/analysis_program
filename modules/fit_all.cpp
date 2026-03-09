@@ -972,6 +972,24 @@ void read_twopt_binary(FILE* stream, double*** to_write, generic_header head) {
 }
 
 
+int get_count_x_in_lhs(int n, int e, struct fit_type fit_info) {
+    int count = 0;
+
+    for (int in = 0;in < n;in++) {
+        for (int ie : fit_info.Nxen[in]) {
+            count++;
+        }
+    }
+    for (int ee : fit_info.Nxen[n]) {
+        if (ee == e) {
+            break;
+        }
+        count++;
+    }
+    return count;
+}
+
+
 double lhs_identity(int n, int e, int j, data_all gjack, struct fit_type fit_info) {
     double r;
     r = gjack.en[e].jack[fit_info.corr_id[n]][j];

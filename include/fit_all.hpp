@@ -10,17 +10,17 @@
 std::string read_string(FILE* file);
 class generic_header {
 public:
-    int struct_size=0;
-    int Nconf=0;
-    int Njack=0;
-    int T=0;
-    int L=0;
-    int size=0;// how many doubles there are in data block
-    int ncorr=0;
+    int struct_size = 0;
+    int Nconf = 0;
+    int Njack = 0;
+    int T = 0;
+    int L = 0;
+    int size = 0;// how many doubles there are in data block
+    int ncorr = 0;
 
-    double beta=0;
-    double kappa=0;
-    
+    double beta = 0;
+    double kappa = 0;
+
     std::vector<double> mus{};
     std::vector<double> rs{};
     std::vector<double> thetas{};
@@ -31,10 +31,10 @@ public:
 
 
     void print_header();
-    void write_header(FILE *file);
-    void read_header(FILE *file);
-    void read_header_debug(FILE *file);
-    void read_header_jack(FILE *file);
+    void write_header(FILE* file);
+    void read_header(FILE* file);
+    void read_header_debug(FILE* file);
+    void read_header_jack(FILE* file);
     // generic_header() : T(0), L(0), mus{}, thetas{} {
     //     // std::cout << "header constr 0" << std::endl;
     // }
@@ -93,10 +93,10 @@ public:
 
     std::string resampling;
 
-    void init_error() ;
+    void init_error();
     void reset_error();
 
-    double error_jack(int i) ;
+    double error_jack(int i);
 
     // useless function, you can not cut the jackknife, you need to cut the confs from the beginning  
     // void cut_confs(int N);
@@ -187,7 +187,7 @@ public:
         for (int e = 0;e < ens;e++)
             en[e].init_error();
     }
-    
+
     void add_fit(struct fit_result fit_out);
     // useless function, you can not cut the jackknife, you need to cut the confs from the beginning  
     // void cut_confs(int N);
@@ -284,6 +284,7 @@ void print_data_fit_corrected(char** argv, data_all gjack,
 /// @param head header
 void read_twopt_binary(FILE* stream, double*** to_write, generic_header head);
 
+int get_count_x_in_lhs(int n, int e, struct fit_type fit_info);
 double lhs_identity(int n, int e, int j, data_all gjack, struct fit_type fit_info);
 
 double rhs_const(int n, int Nvar, double* x, int Npar, double* P);
