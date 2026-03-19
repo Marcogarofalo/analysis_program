@@ -16,7 +16,7 @@
 // option[3] path
 // option[6] file
 template<class T>
-void line_read_param(char** option, const char* corr, T& value, T& error, int& seed, const char* namefile_plateaux) {
+void line_read_param(char** option, const char* corr, T& value, T& error_v, int& seed, const char* namefile_plateaux) {
 
     int line = 0;
     char namefile[NAMESIZE];
@@ -35,11 +35,13 @@ void line_read_param(char** option, const char* corr, T& value, T& error, int& s
             std::string correlator = corr;
             if (x.empty() == 0) {
                 if (x[0].compare(name) == 0 && x[1].compare(correlator) == 0) {
+                    error(x.size()!=5, 1, "correlators_analysis.cpp line_read_plateaux",
+                          "line %d in file %s does not have the right format\n expected: name correlator value error seed\n found: %s\n", line, namefile, tp.c_str());
                     value = convert<T>(x[2]);
-                    error = convert<T>(x[3]);
+                    error_v = convert<T>(x[3]);
                     seed = stoi(x[4]);
                     std::cout << "correlator " << correlator << " name " << name << " value " <<
-                        value << " error " << error << " seed " << seed << "\n";
+                        value << " error " << error_v << " seed " << seed << "\n";
                     match++;
                     // break;
                 }
