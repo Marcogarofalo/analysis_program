@@ -201,8 +201,8 @@ double M_eff_sinh_T(int t, int T, double** in) {
     res = 1;
     i = t;
     while (res > 1e-12) {
-        u = -1. + exp(-mass * (L0 - 1 - 2. * i - 2.));
-        d = -1. + exp(-mass * (L0 - 1 - 2. * i));
+        u = -1. + exp(-mass * (L0  - 2. * i - 2.));
+        d = -1. + exp(-mass * (L0  - 2. * i));
         tmp_mass = log((ct[0] / ctp[0]) * (u / d));
         res = fabs(tmp_mass - mass);
         mass = tmp_mass;
