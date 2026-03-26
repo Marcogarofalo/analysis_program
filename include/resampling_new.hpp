@@ -54,6 +54,7 @@ public:
 #endif // WITH_ARB
 
   double* create_copy(double* in);
+  double* create_zero();
   void copy(double* out, double* in);
   void add(double* out, double* in1, double* in2);
   void add(double* out, double* in1, double a);

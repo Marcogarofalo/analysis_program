@@ -66,7 +66,11 @@ void resampling_f::read_jack_from_file(double* jack, const char* name) {
     fclose(f);
 }
 
-
+double* resampling_f::create_zero() {
+    double* out = (double*)malloc(sizeof(double) * Njack);
+    for (int j = 0;j < Njack;j++)  out[j] = 0;
+    return(out);
+}
 double* resampling_f::create_copy(double* in) {
     double* out = (double*)malloc(sizeof(double) * Njack);
     for (int j = 0;j < Njack;j++)  out[j] = in[j];
