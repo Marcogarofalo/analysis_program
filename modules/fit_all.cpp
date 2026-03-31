@@ -492,7 +492,7 @@ void print_fit_band(char** argv, data_all gjack, struct fit_type fit_info,
                 tmpx[var] = pos;
                 tmpy[j] = fit_info.function(n, Nvar, tmpx, Npar, tif[j]);
             }
-            fprintf(f, "%g  \t %g  %g\n", pos, tmpy[Njack - 1], error_jackboot(argv[1], Njack, tmpy));
+            fprintf(f, "%.12g  \t %.12g  %.12g\n", pos, tmpy[Njack - 1], error_jackboot(argv[1], Njack, tmpy));
             pos += h;
         }
         free(tmpy);free(tmpx);
