@@ -2,6 +2,7 @@
 #define MYARB
 
 #include "arb.h"
+#include "acb.h"
 #include <stdexcept>
 
 class myarb {
