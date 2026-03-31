@@ -812,18 +812,30 @@ FILE *open_file(const char * name, const char * option){
 }
 
 void mysprintf(char *str, size_t size, const char *format, ...){
-    int i;
-    
-    char *str_internal;
-    str_internal=(char*) malloc(sizeof(char)*size);
-    va_list args;
-    va_start(args, format);
-    i=vsnprintf (str_internal,size,format, args);
-    //perror (str);
-    va_end (args);
-    error(i>=size,0,"mysprintf","string size=%d larger then the size of char=%d ",i,size);
-    snprintf(str,size,"%s",str_internal);
-    free(str_internal);
+   if (!str || size == 0) {
+      error(1, 0, "mysprintf", "Invalid destination buffer");
+      return;
+   }
+
+   char *str_internal = (char*) malloc(sizeof(char) * size);
+   if (!str_internal) {
+      error(1, 0, "mysprintf", "Memory allocation failed");
+      return;
+   }
+
+   va_list args;
+   va_start(args, format);
+   int i = vsnprintf(str_internal, size, format, args);
+   va_end(args);
+
+   if (i < 0 || i >= size) {
+      error(1, 0, "mysprintf", "Formatted string size=%d exceeds buffer size=%d", i, size);
+      free(str_internal);
+      return;
+   }
+
+   snprintf(str, size, "%s", str_internal);
+   free(str_internal);
 }
 
 
