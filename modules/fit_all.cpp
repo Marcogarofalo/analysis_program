@@ -742,9 +742,43 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
             fit[j] = single_jack_fit.P;
             fit_out.chi2[j] = single_jack_fit.chi2 / (en_tot - Npar);
 
+            int max=0;
+            std::mt19937 mt_rand(123);
+            while (fabs(fit_out.chi2[j] - fit_out.chi2[Njack - 1]) / fit_out.chi2[Njack - 1] > fit_info.chi2_gap_jackboot && max < fit_info.guess_per_jack && !fit_info.linear_fit) {
+                printf("jack %d has a chi2/dof= %g   while the mean has chi2/dof=%g \n retry\n", j, fit_out.chi2[j], fit_out.chi2[Njack - 1]);
+
+                double* guess1 = (double*)malloc(sizeof(double) * Npar);
+                for (int i = 0; i < Npar; i++)
+                    guess1[i] = guess[i] + guess[i] * mt_rand() / ((double)10 * mt_rand.max());
+                guess1 = guess_for_non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess1, fit_info);
+
+
+                non_linear_fit_result tmp1 = non_linear_fit_Nf(N, en, x[j], y[j], Nvar, Npar, fit_info.function, guess1, fit_info);
+                double* tmp_fit = tmp1.P;
+                double tmp_chi2 = tmp1.chi2;
+
+                if (tmp_chi2 < fit_out.chi2[j]) {
+                    fit_out.chi2[j] = tmp_chi2;
+                    for (int i = 0; i < Npar; i++)
+                        fit[j][i] = tmp_fit[i];
+                }
+
+                printf("%d  chi= %g  P=\t", j, fit_out.chi2[j]);
+                for (int i = 0; i < fit_info.Npar; i++) {
+                    printf("%g\t", fit[j][i]);
+                }
+                printf("\n");
+
+                free(tmp_fit);
+                free(guess1);
+
+                max++;
+            }
+
             if (fit_info.verbosity > 0) {
-                printf("jack =%d  chi2/dof=%g   chi2=%g   time=%g   \nfinal set: ", j, fit_out.chi2[j], fit_out.chi2[j] * (en_tot - Npar), timestamp() - a);
+                printf("jack =%d  chi2/dof=%g   chi2=%g   time=%g   \n", j, fit_out.chi2[j], fit_out.chi2[j] * (en_tot - Npar), timestamp() - a);
                 if (fit_info.verbosity > 1) {
+                    printf("final set: ");
                     for (int i = 0;i < Npar;i++)
                         printf("P[%d]=%g \t", i, fit[j][i]);
                     printf("\n");
