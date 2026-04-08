@@ -31,7 +31,19 @@
 
 // }
 
+double resampling_f::comp_mean_resampling(double* in) {
+    double r = 0;
+    int i, N;
 
+    N = Njack - 1;
+
+    for (i = 0;i < N;i++)
+        r += in[i];
+
+    r /= ((double)N);
+
+    return r;
+  };
 
 void resampling_f::free_res(int var, int t, double**** in) {
     int i, j, k;

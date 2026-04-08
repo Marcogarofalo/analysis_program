@@ -38,6 +38,7 @@ public:
   virtual double**** create(int  N, int var, int t, double**** in) = 0;
   // double* mean_and_error(  double* in);
   virtual double comp_mean_unbias(double* in) = 0;
+  double comp_mean_resampling(double* in);
   virtual double comp_error(double* in) = 0;
   double mean(double* in) const { return in[Njack - 1]; };
   virtual double* create_fake(double mean, double error, int seed) = 0;
