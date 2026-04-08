@@ -1836,6 +1836,15 @@ non_linear_fit_result non_linear_fit_Nf(int N, int* ensemble, double** x, double
         }
     }
 
+    if (verbosity > 0) {
+        printf("final chi2=%g\n", chi2);
+        if (verbosity > 1) {
+            for (j = 0;j < Npar;j++)
+                printf("  P[%d]=%g", j, P_tmp[j]);
+            printf("\n");
+        }
+    }
+
     free_2(Npar, alpha_l);
     free_2(Npar, alpha);
 
