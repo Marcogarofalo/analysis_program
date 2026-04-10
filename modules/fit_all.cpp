@@ -420,7 +420,18 @@ void data_all::add_space_for_n_observables(int n) {
     return;
 
 }
-
+void data_all::create(int Ne_, int Nobs_, int Njack_, const char* resampling) {
+    en = new data_single[Ne_];
+    ens = Ne_;
+    resampling = resampling;
+    for (int e = 0;e < ens;e++) {
+        en[e].Nobs = Nobs_;
+        en[e].Njack = Njack_;
+        double** tmp = double_malloc_2(Nobs_, Njack_);
+        en[e].jack = tmp;
+        en[e].resampling = resampling;
+    }
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// print band
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -742,7 +753,7 @@ struct fit_result fit_all_data(char** argv, data_all gjack,
             fit[j] = single_jack_fit.P;
             fit_out.chi2[j] = single_jack_fit.chi2 / (en_tot - Npar);
 
-            int max=0;
+            int max = 0;
             std::mt19937 mt_rand(123);
             while (fabs(fit_out.chi2[j] - fit_out.chi2[Njack - 1]) / fit_out.chi2[Njack - 1] > fit_info.chi2_gap_jackboot && max < fit_info.guess_per_jack && !fit_info.linear_fit) {
                 printf("jack %d has a chi2/dof= %g   while the mean has chi2/dof=%g \n retry\n", j, fit_out.chi2[j], fit_out.chi2[Njack - 1]);

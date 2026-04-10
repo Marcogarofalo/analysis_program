@@ -193,6 +193,8 @@ public:
     // void cut_confs(int N);
     void create_generalised_resampling();
     void add_space_for_n_observables(int n);
+
+    void create(int Ne_, int Nobs_, int Njack_, const char* resampling);
     // data_all() {};
 
     // data_all(int N) : ens(N) {
