@@ -306,6 +306,15 @@ void free_fit_result(struct  fit_type  fit_info, struct fit_result  out) {
     free(out.P);free(out.C);free(out.chi2);
 
 }
+void fit_result::fit_to_tif(){
+    tif = double_malloc_2(Njack, Npar);
+    for (int i = 0;i < Npar;i++) {
+        for (int j = 0;j < Njack;j++) {
+            tif[j][i] = P[i][j];
+        }
+    }
+    allocated_tif = true;
+}
 
 void fit_result::clear() {
     for (int i = 0; i < Npar;i++) {
@@ -318,6 +327,12 @@ void fit_result::clear() {
     Njack = 0;
     dof = 0;
     free(P);free(C);free(chi2);
+    if (allocated_tif) {
+        for (int j = 0;j < Njack;j++)
+            free(tif[j]);
+        free(tif);
+        allocated_tif = false;
+    }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////

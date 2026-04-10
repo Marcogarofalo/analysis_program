@@ -155,6 +155,10 @@ struct fit_result {
     double*** C;
     char name[NAMESIZE];
     void clear();
+
+    double** tif;
+    bool allocated_tif = false;
+    void fit_to_tif();
     // ~fit_result() {
     //     clear();
     // }
