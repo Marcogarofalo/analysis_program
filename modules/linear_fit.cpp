@@ -162,6 +162,15 @@ double* cholesky_solver(int n, double** a, double* b)
     return x;
 }
 
+void L_solver(double* x, int n, double** L, double* b) {
+    int i, k;
+    double sum;
+    for (i = 0;i < n;i++) {
+        for (sum = b[i], k = i - 1;k >= 0;k--)
+            sum -= L[i][k] * x[k];
+        x[i] = sum / L[i][i];
+}
+
 void make_the_matrix_positive(double** M, int N, double eps) {
     double yn = is_it_positive(M, N);
     while (yn > 0) {

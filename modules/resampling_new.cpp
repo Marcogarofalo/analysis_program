@@ -9,6 +9,7 @@
 #include "rand.hpp"
 #include "global.hpp"
 #include "tower.hpp"
+#include "linear_fit.hpp"
 
 #ifdef WITH_ARB
 #include "arb.h"
@@ -43,7 +44,7 @@ double resampling_f::comp_mean_resampling(double* in) {
     r /= ((double)N);
 
     return r;
-  };
+};
 
 void resampling_f::free_res(int var, int t, double**** in) {
     int i, j, k;
@@ -646,4 +647,70 @@ double** resampling_boot::create_fake_covariance(double* mean, int N, double** c
     r1 = swap_indices(Njack, N, r);
     free_2(Njack, r);
     return r1;
+}
+
+
+void resampling_f::change_mean_and_error(double* out, double* in, double new_mean, double new_error) {
+    double old_mean = this->mean(in);
+    double old_error = this->comp_error(in);
+
+    // Guard against division by zero (e.g., if all jackknife samples are identical)
+    if (old_error < 1e-18) { // Small epsilon check
+        printf("resampling_f::change_mean_and_error\n");
+        printf("Warning: old_error is very small (%.2e), cannot rescale errors. Returning original data.\n", old_error);
+        exit(1);
+    }
+
+    double a = new_error / old_error;
+    double b = new_mean - a * old_mean;
+    for (int j = 0;j < Njack;j++) {
+        out[j] = a * in[j] + b;
+    }
+}
+void resampling_f::change_mean_and_error(double* in, double new_mean, double new_error) {
+    this->change_mean_and_error(in, in, new_mean, new_error);
+}
+double* resampling_f::create_new_jack_correlated(double* in, double new_mean, double new_error) {
+    double* out = (double*)malloc(sizeof(double) * Njack);
+    this->change_mean_and_error(out, in, new_mean, new_error);
+    return out;
+}
+double* resampling_f::create_fake_exact(double mean, double error, int seed) {
+    double* out = this->create_fake(mean, error, seed);
+    this->change_mean_and_error(out, mean, error);
+    return out;
+}
+
+void resampling_f::change_mean_and_error_covarinace(double** out, double** in, int N, double* new_mean, double** new_cov) {
+    double** cov = this->comp_cov(N, in);
+    double** Lo = cholesky_decomposition(cov, N);
+    double** L = cholesky_decomposition(new_cov, N);
+
+    double* mean_o = (double*)malloc(sizeof(double) * N);
+    for (int i = 0;i < N;i++) {
+        mean_o[i] = this->mean(in[i]);
+    }
+    double* tmp1 = (double*)malloc(sizeof(double) * N);
+    double* tmp = (double*)malloc(sizeof(double) * N);
+    for (int j = 0;j < Njack;j++) {
+        for (int i = 0; i < N;i++) {
+            tmp1[i] = in[i][j] - mean_o[i];
+        }
+        // double* tmp = LU_decomposition_solver(N, Lo, tmp1);
+        L_solver(tmp, N, Lo, tmp1);
+
+        for (int i = 0; i < N;i++) {
+            out[i][j] = 0;
+            for (int k = 0; k < N;k++) {
+                out[i][j] += L[i][k] * tmp[k];
+            }
+            out[i][j] += new_mean[i];
+        }
+    }
+    free_2(N, cov);
+    free_2(N, Lo);
+    free_2(N, L);
+    free(mean_o);
+    free(tmp);
+    free(tmp1);
 }

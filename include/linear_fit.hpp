@@ -11,6 +11,7 @@
 
 double** cholesky_decomposition(double** a, int n);
 double* cholesky_solver(int n, double** a, double* b);
+void L_solver(double* x, int n, double** L, double* b);
 double* cholesky_solver_if_possible(int n, double** a, double* b);
 void make_the_matrix_positive(double** M, int N, double eps=1e-12);
 double** symmetric_matrix_inverse(int N, double** M);

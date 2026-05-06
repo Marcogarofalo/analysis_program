@@ -73,6 +73,15 @@ public:
 
   void mult_error(double* out, double* in, double d);
   void add_error_quadrature(double* out, double* in, double d);
+
+  void change_mean_and_error(double* out, double* in, double mean, double error);
+  void change_mean_and_error(double* in, double mean, double error);
+  double* create_new_jack_correlated(double* in, double mean, double error);
+
+  double* create_fake_exact(double mean, double error, int seed);
+
+  void change_mean_and_error_covarinace(double** out, double** in, int N, double* new_mean, double** new_cov);
+
 };
 
 class resampling_jack : public resampling_f {

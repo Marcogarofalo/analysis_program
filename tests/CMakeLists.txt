@@ -16,5 +16,7 @@ add_target_with_lib(benchmark benchmark.cpp)
 
 add_target_with_lib(test_GEVP test_GEVP.cpp)
 
+add_target_with_lib(modify_jacks modify_jacks.cpp)
+
 
 
