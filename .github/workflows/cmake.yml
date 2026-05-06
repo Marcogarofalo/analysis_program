@@ -91,6 +91,12 @@ jobs:
            cd tests
            ./test_GEVP
 
+    - name: test resampling
+      working-directory: ${{github.workspace}}/build
+      run: |
+           cd tests
+           ./modify_jacks
+
     - name: test creation of a new project
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
