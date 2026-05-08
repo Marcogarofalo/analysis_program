@@ -61,10 +61,12 @@ int main() {
     }
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
+            cov_exact[i][j] = 0;
             for (int k = 0; k < N; ++k) {
                 cov_exact[i][j] += A[i][k] * A[j][k];
             }
         }
+        // cov_exact[i][i] += 1; // make it positive def
     }
 
 
@@ -72,9 +74,9 @@ int main() {
     double** jacks = myres->create_fake_covariance(mean_vec, N, cov_exact, 533);
     printf("generated jacks\n");
     for (int i = 0; i < N; i++) {
-        printf("mean[%d]: %g\n",i, myres->mean(jacks[i])-mean_vec[i]);
+        printf("mean[%d]: %g\n", i, myres->mean(jacks[i]) - mean_vec[i]);
     }
-    
+
     printf(" devition of covariance matrix:\n");
     double** cov_j = myres->comp_cov(N, jacks);
     for (int i = 0; i < N; i++) {
@@ -87,20 +89,21 @@ int main() {
 
 
     double** jacks1 = myres->create_fake_covariance(mean_vec, N, cov_exact, 533);
+    printf("linear transformation to make the cov exact\n");
     myres->change_mean_and_error_covarinace(jacks1, jacks, N, mean_vec, cov_exact);
 
     printf("After linear transformation\n");
     for (int i = 0; i < N; i++) {
-        printf("mean[%d]: %g\n",i, myres->mean(jacks[i])-mean_vec[i]);
+        printf("mean[%d]: %g\n", i, myres->mean(jacks[i]) - mean_vec[i]);
     }
 
     printf(" devition of covariance matrix:\n");
     cov_j = myres->comp_cov(N, jacks1);
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-            double dev=std::fabs(cov_j[i][j] - cov_exact[i][j]);
+            double dev = std::fabs(cov_j[i][j] - cov_exact[i][j]);
             printf("%-20.12g ", dev);
-            if (dev> 1e-11){
+            if (dev > 1e-11) {
                 printf("\nerror: deviation between the cov matrix given and the generated one\n");
                 exit(1);
             }
