@@ -114,14 +114,13 @@ void fit_type::compute_cov_fit(char** argv, data_all gjack, double lhs_fun(int, 
     covariancey = true;
 }
 
-
-void fit_type::make_covariance_block_diagonal_in_e(){
+void fit_type::make_covariance_block_diagonal_in_e() {
     int ie = 0, ie1 = 0;
     for (int n = 0;n < this->N;n++) {
-        for (int e = 0;e < this->Nxen[n].size();e++) {
+        for (int e : this->Nxen[n]) {
             ie1 = 0;
             for (int n1 = 0;n1 < this->N;n1++) {
-                for (int e1 = 0;e1 < this->Nxen[n1].size();e1++) {
+                for (int e1 :  this->Nxen[n1]) {
                     if (e != e1)   this->cov[ie][ie1] = 0;
                     ie1++;
                 }
@@ -131,7 +130,23 @@ void fit_type::make_covariance_block_diagonal_in_e(){
     }
 }
 
-void fit_type::make_covariance_block_diagonal_in_n(){
+// void fit_type::make_covariance_block_diagonal_in_e() {
+//     int ie = 0, ie1 = 0;
+//     for (int n = 0;n < this->N;n++) {
+//         for (int e = 0;e < this->Nxen[n].size();e++) {
+//             ie1 = 0;
+//             for (int n1 = 0;n1 < this->N;n1++) {
+//                 for (int e1 = 0;e1 < this->Nxen[n1].size();e1++) {
+//                     if (e != e1)   this->cov[ie][ie1] = 0;
+//                     ie1++;
+//                 }
+//             }
+//             ie++;
+//         }
+//     }
+// }
+
+void fit_type::make_covariance_block_diagonal_in_n() {
     int ie = 0, ie1 = 0;
     for (int n = 0;n < this->N;n++) {
         for (int e = 0;e < this->Nxen[n].size();e++) {
@@ -306,7 +321,7 @@ void free_fit_result(struct  fit_type  fit_info, struct fit_result  out) {
     free(out.P);free(out.C);free(out.chi2);
 
 }
-void fit_result::fit_to_tif(){
+void fit_result::fit_to_tif() {
     tif = double_malloc_2(Njack, Npar);
     for (int i = 0;i < Npar;i++) {
         for (int j = 0;j < Njack;j++) {
@@ -1891,7 +1906,7 @@ double* guess_for_non_linear_fit_Nf(int N, int* ensemble, double** x, double** y
       //      guess[i]=((r/rm)-0.5)*2;
     if (fit_info.unstable) for (i = 0;i < Npar;i++) P[i] = guess[i];
     else P = non_linear_fit_Nf(N, ensemble, x, y, Nvar, Npar, fun, guess, fit_info).P;
-    double norm_chi2 =  (en_tot - Npar) ==0 ? 1 : (en_tot - Npar);
+    double norm_chi2 = (en_tot - Npar) == 0 ? 1 : (en_tot - Npar);
     chi2 = compute_chi_non_linear_Nf(N, ensemble, x, y, P, Nvar, Npar, fun) / norm_chi2;
     if (!isnan(chi2) && !isinf(chi2))    jmax = 3 + ((int)(chi2 * 2));
     else jmax = 35;
