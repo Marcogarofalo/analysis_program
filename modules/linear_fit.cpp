@@ -169,6 +169,7 @@ void L_solver(double* x, int n, double** L, double* b) {
         for (sum = b[i], k = i - 1;k >= 0;k--)
             sum -= L[i][k] * x[k];
         x[i] = sum / L[i][i];
+    }
 }
 
 void make_the_matrix_positive(double** M, int N, double eps) {
