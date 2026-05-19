@@ -29,6 +29,7 @@ int main() {
     tmp[0] = x_j;
     tmp[1] = shifted;
     double** cov = myres->comp_cov(2, tmp);
+    free_2(2, tmp);
     printf("correlation matrix:\n");
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
@@ -85,7 +86,7 @@ int main() {
             printf("%-20.12g ", std::fabs(cov_j[i][j] - cov_exact[i][j]));
         }        printf("\n");
     }
-    free_2(2, cov_j);
+    free_2(N, cov_j);
 
 
     double** jacks1 = myres->create_fake_covariance(mean_vec, N, cov_exact, 533);
@@ -111,5 +112,11 @@ int main() {
         }        printf("\n");
     }
 
+    free(mean_vec);
+    free_2(N, cov_exact);
+    free_2(N, jacks);
+    free_2(N, jacks1);
+    free_2(N, cov_j);
+    free_2(2, cov);
 
 }
