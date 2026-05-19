@@ -47,6 +47,24 @@ void free_4(int size1, int size2, int size3, double**** p) {
     free(p);
 }
 
+void free_5(int size1, int size2, int size3, int size4, double***** p) {
+    int i, j, k, l;
+
+    for (i = 0;i < size1;i++) {
+        for (j = 0;j < size2;j++) {
+            for (k = 0;k < size3;k++) {
+                for (l = 0;l < size4;l++) {
+                    free(p[i][j][k][l]);
+                }
+                free(p[i][j][k]);
+            }
+            free(p[i][j]);
+        }
+        free(p[i]);
+    }
+    free(p);
+}
+
 double** double_malloc_2(int size1, int size2) {
     int i;
     double** p;
@@ -195,3 +213,29 @@ T**** malloc_4(int size1, int size2, int size3, int size4) {
 }
 template double**** malloc_4<double>(int, int, int, int);
 template int**** malloc_4<int>(int, int, int, int);
+
+
+template<typename T>
+T***** malloc_5(int size1, int size2, int size3, int size4, int size5) {
+    int i, j;
+    T***** p;
+
+    p = (T*****)malloc(sizeof(T****) * size1);
+    for (i = 0;i < size1;i++) {
+        p[i] = (T****)malloc(sizeof(T***) * size2);
+        for (j = 0;j < size2;j++) {
+            p[i][j] = (T***)malloc(sizeof(T**) * size3);
+            for (int k = 0;k < size3;k++) {
+                p[i][j][k] = (T**)malloc(sizeof(T*) * size4);
+                for (int l = 0;l < size4;l++) {
+                    p[i][j][k][l] = (T*)malloc(sizeof(T) * size5);
+                }
+            }
+        }
+    }
+
+
+    return p;
+}
+template double***** malloc_5<double>(int, int, int, int, int);
+template int***** malloc_5<int>(int, int, int, int, int);
