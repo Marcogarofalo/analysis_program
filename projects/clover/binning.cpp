@@ -509,23 +509,23 @@ int main(int argc, char **argv){
   }
    // f=fopen("./meas_2pts_bin10.dat","r");
    mysprintf(namefile,NAMESIZE,"%s/data/to_read_ll_bin.dat",argv[3]);
-   f_ll=fopen(namefile,"r"); if (f_ll==NULL) {printf("2pt file not found\n"); exit(0);}
+   f_ll=fopen(namefile,"r"); if (f_ll==NULL) {printf("2pt file not found\n"); exit(1);}
    mysprintf(namefile,NAMESIZE,"%s/data/to_read_sl_bin.dat",argv[3]);
-   f_sl=fopen(namefile,"r"); if (f_sl==NULL) {printf("2pt file not found\n"); exit(0);}
+   f_sl=fopen(namefile,"r"); if (f_sl==NULL) {printf("2pt file not found\n"); exit(1);}
    mysprintf(namefile,NAMESIZE,"%s/data/to_read_ls_bin.dat",argv[3]);
-   f_ls=fopen(namefile,"r"); if (f_ls==NULL) {printf("2pt file not found\n"); exit(0);}
+   f_ls=fopen(namefile,"r"); if (f_ls==NULL) {printf("2pt file not found\n"); exit(1);}
    mysprintf(namefile,NAMESIZE,"%s/data/to_read_ss_bin.dat",argv[3]);
-   f_ss=fopen(namefile,"r"); if (f_ss==NULL) {printf("2pt file not found\n"); exit(0);}
+   f_ss=fopen(namefile,"r"); if (f_ss==NULL) {printf("2pt file not found\n"); exit(1);}
    
    
    mysprintf(namefile,NAMESIZE,"%s/data/to_read_ll_bin%d.dat",argv[3],bin);
-   FILE *out_f_ll=fopen(namefile,"w+"); if (f_ll==NULL) {printf("2pt file not found\n"); exit(0);}
+   FILE *out_f_ll=fopen(namefile,"w+"); if (f_ll==NULL) {printf("2pt file not found\n"); exit(1);}
    mysprintf(namefile,NAMESIZE,"%s/data/to_read_sl_bin%d.dat",argv[3],bin);
-   FILE *out_f_sl=fopen(namefile,"w+"); if (f_sl==NULL) {printf("2pt file not found\n"); exit(0);}
+   FILE *out_f_sl=fopen(namefile,"w+"); if (f_sl==NULL) {printf("2pt file not found\n"); exit(1);}
    mysprintf(namefile,NAMESIZE,"%s/data/to_read_ls_bin%d.dat",argv[3],bin);
-   FILE *out_f_ls=fopen(namefile,"w+"); if (f_ls==NULL) {printf("2pt file not found\n"); exit(0);}
+   FILE *out_f_ls=fopen(namefile,"w+"); if (f_ls==NULL) {printf("2pt file not found\n"); exit(1);}
    mysprintf(namefile,NAMESIZE,"%s/data/to_read_ss_bin%d.dat",argv[3],bin);
-   FILE *out_f_ss=fopen(namefile,"w+"); if (f_ss==NULL) {printf("2pt file not found\n"); exit(0);}
+   FILE *out_f_ss=fopen(namefile,"w+"); if (f_ss==NULL) {printf("2pt file not found\n"); exit(1);}
    
    read_file_head_bin(f_ll);
    write_file_head(out_f_ll);

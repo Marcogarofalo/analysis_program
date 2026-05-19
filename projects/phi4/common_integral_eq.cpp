@@ -125,7 +125,7 @@ void compute_M3(int NE, double Emin, double dE, int Njack, std::vector<double>& 
         //     F[i][0][Njack - 1], error_jackboot("jack", Njack, F[i][0]), F[i][1][Njack - 1], error_jackboot("jack", Njack, F[i][1])
         // );
         printf("%-10g%-10d%-10g%-20.12g%-18g%-22.12g%-20g\n",E3[i],N,eps, F[i][0][Njack - 1], error_jackboot("jack", Njack, F[i][0]), F[i][1][Njack - 1], error_jackboot("jack", Njack, F[i][1]));
-        // exit(0);
+        // exit(1);
     }
 }
 

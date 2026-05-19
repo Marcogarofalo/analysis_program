@@ -120,7 +120,7 @@ int   aaa ;
    sprintf(sout,"%s_bin.dat",argv[1]);
    printf("HERE2\n");
    f1=fopen(sout,"w+");
-   if (f1==NULL) {printf("unable to open binary file\n"); exit(0);}
+   if (f1==NULL) {printf("unable to open binary file\n"); exit(1);}
    write_file_head(f1);
    printf("HERE1\n");
    

@@ -50,7 +50,7 @@ double** cholesky_decomposition(double** a, int n) {
                     }
                     L1=cholesky_decomposition(L,  n);
                     return L1;*/
-                    exit(0);
+                    exit(1);
                 }
                 L[i][i] = sqrt(sum);
             }

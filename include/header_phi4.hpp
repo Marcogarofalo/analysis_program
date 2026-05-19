@@ -135,7 +135,7 @@ namespace cluster {
                 std::cout << "using O2 version of the two scalars lambdaC0=lambdaC1=muC/2: \n" << std::endl;
                 if (data.lambdaC1 != 0 || data.muC != 0) {
                     std::cout << "if formulation = O2  you need to set lambdaC1= muC2=0 " << std::endl;
-                    exit(0);
+                    exit(1);
                 }
                 data.lambdaC1 = data.lambdaC0;
                 data.muC = 2. * data.lambdaC0;
@@ -174,11 +174,11 @@ namespace cluster {
             reader += fscanf(infile, "start_measure = %d\n", &data.start_measure);
             if (data.append < 0 || data.replica < 0) {
                 std::cout << "append and replica value must not be negative!" << std::endl;
-                exit(0);
+                exit(1);
             }
             if (data.append == 1 && data.start_measure != 0) {
                 std::cout << "if append mode you can not wait for termalization" << std::endl;
-                exit(0);
+                exit(1);
             }
 
             //data.start_measure += data.restart;

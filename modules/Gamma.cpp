@@ -173,13 +173,13 @@ void windowing(int var, int order, int rep, int nconf, int flow, double* a, doub
     FILE* file_tau = NULL;
     file_tau = fopen("tau_int", "w+");
     if (file_tau == NULL) {
-        printf("unable to open analysis file"); exit(0);
+        printf("unable to open analysis file"); exit(1);
     }
 
     FILE* file_gamma = NULL;
     file_gamma = fopen("gamma_int", "w+");
     if (file_gamma == NULL) {
-        printf("unable to open analysis file"); exit(0);
+        printf("unable to open analysis file"); exit(1);
     }
 
     alpha = (order + 1) * var;
