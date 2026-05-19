@@ -714,3 +714,11 @@ void resampling_f::change_mean_and_error_covarinace(double** out, double** in, i
     free(tmp);
     free(tmp1);
 }
+
+double** resampling_f::create_fake_covariance_exact(double* mean, int N, double** cov, int seed){
+    double ** tmp = this->create_fake_covariance( mean,  N,  cov,  seed);
+    // double **out = malloc_2<double>(N, Njack);
+    change_mean_and_error_covarinace(tmp, tmp, N, mean, cov);
+    // free_2(N, tmp);
+    return tmp;
+}

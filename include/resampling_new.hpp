@@ -81,6 +81,7 @@ public:
   double* create_fake_exact(double mean, double error, int seed);
 
   void change_mean_and_error_covarinace(double** out, double** in, int N, double* new_mean, double** new_cov);
+  double** create_fake_covariance_exact(double* mean, int N, double** cov, int seed);
 
 };
 
