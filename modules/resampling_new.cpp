@@ -73,9 +73,9 @@ void resampling_f::read_jack_from_file(double* jack, const char* name) {
     int ic = 0;
     f = open_file(name, "r");
     ic = fscanf(f, "%d\n", &i);
-    error(i != Njack, 1, "read_jack_from_file", "number of jeack do not match: \nexpected %d\nread %d\n", Njack, i);
+    error(i != Njack, 1, "read_jack_from_file", "number of jack do not match: %s\nexpected %d\nread %d\n", name, Njack, i);
     for (int j = 0;j < Njack;j++)  ic += fscanf(f, "%lf\n", &jack[j]);
-    error(ic != Njack + 1, 1, "read_jack_from_file", "invalid read counter: \nexpected %d\nread %d\n", Njack + 1, ic);
+    error(ic != Njack + 1, 1, "read_jack_from_file", "invalid read counter: %s\nexpected %d\nread %d\n", name, Njack + 1, ic);
     fclose(f);
 }
 
