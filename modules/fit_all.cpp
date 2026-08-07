@@ -549,6 +549,43 @@ int determinantOfMatrix(double** matrix, int N) {
     return determinant;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// print output
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void add_point_to_fitted_datafile(char** argv, data_all gjack,
+    struct fit_type fit_info, const char* label, std::vector<double> x, double mean, double myerror, const char* labeln, int v){
+
+    char namefile[NAMESIZE];
+    FILE* f;
+
+    mysprintf(namefile, NAMESIZE, "%s/%s_fit_data.txt", argv[3], label);
+
+    error(fit_info.Nvar != x.size(), 1, "add_point_to_fitted_datafile", "file=%s fit_info.Nvar=%d != x.size()=%ld\n", namefile, fit_info.Nvar, x.size());
+    // "a" opens the file for writing at the end of the file (append)
+    printf("appending to: %s\n", namefile);
+    f = open_file(namefile, "a"); 
+    
+    if (f == NULL) {
+        printf("Error opening file for appending!\n");
+        return;
+    }
+    
+    for (int v = 0; v < fit_info.Nvar;v++) {
+        fprintf(f, " %.12g\t ", x[v]);
+    }
+    fprintf(f, " %.12g   %.12g  \t ", mean, myerror);
+    fprintf(f, " %d   \n ", fit_info.N);
+    
+    fclose(f);
+
+    mysprintf(namefile, NAMESIZE, "%s/%s_fit_out_n%d_%s.txt", argv[3], label, fit_info.N, labeln);
+    f = open_file(namefile, "w+");
+    fprintf(f, "%.12f  %.12g   %.12g  \t ", x[v], mean, myerror);
+
+}
+
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// print output

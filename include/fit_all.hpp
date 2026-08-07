@@ -294,6 +294,7 @@ double rhs_a2(int n, int Nvar, double* x, int Npar, double* P);
 
 fit_result read_file_P(std::string file_der);
 
+void add_point_to_fitted_datafile(char** argv, data_all gjack, struct fit_type fit_info, const char* label, std::vector<double> x, double mean, double error, const char* labeln, int v);
 
 #endif
 
