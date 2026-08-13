@@ -584,7 +584,7 @@ void add_point_to_fitted_datafile(char** argv, data_all gjack,
     mysprintf(namefile, NAMESIZE, "%s/%s_fit_out_n%d_%s.txt", argv[3], label, fit_info.N, labeln);
     f = open_file(namefile, "w+");
     fprintf(f, "%.12f  %.12g   %.12g  \t ", x[v], mean, myerror);
-    fclose(f); 
+    fclose(f);
 
 }
 
@@ -1147,54 +1147,63 @@ fit_result read_file_P(std::string file_der) {
 }
 
 
-double *BAIC(database_for_BAIC df){
+double* BAIC(database_for_BAIC df) {
 
 
     std::vector<double> w(df.fit_res.size());
-    double sum=0;
-    for (size_t i = 0; i < w.size(); i++)
-    {
-        w[i] = exp(-0.5*(df.fit_chi2[i]*df.fit_dof[i]+2*df.fit_npar[i]-2*df.fit_ndata[i]))/df.fit_mult[i];
+    double sum = 0;
+    for (size_t i = 0; i < w.size(); i++) {
+        w[i] = exp(-0.5 * (df.fit_chi2[i] * df.fit_dof[i] + 2 * df.fit_npar[i] - 2 * df.fit_ndata[i])) / df.fit_mult[i];
         sum += w[i];
         // printf("fit %ld: chi2=%g, npar=%d, ndata=%d, dof=%d, mult=%d, weight=%g\n", i, fit_chi2[i], fit_npar[i], fit_ndata[i], fit_dof[i], fit_mult[i], w[i]);
     }
     // printf("sum of weights = %g\n", sum);
-    for (size_t i = 0; i < w.size(); i++)
-    {
+    for (size_t i = 0; i < w.size(); i++) {
         w[i] /= sum;
         // printf("fit %ld: chi2=%g, npar=%d, ndata=%d, dof=%d, mult=%d, weight=%g\n", i, fit_chi2[i], fit_npar[i], fit_ndata[i], fit_dof[i], fit_mult[i], w[i]);
     }
-    double *avej = myres->create_zero();  
-    for(int j=0; j < myres->Njack;j++){
-        double m=0;
-        for (size_t i = 0; i < w.size(); i++)
-        {
-            avej[j] += w[i]*df.fit_res[i][j];
+    double* avej = myres->create_zero();
+    for (int j = 0; j < myres->Njack;j++) {
+        double m = 0;
+        for (size_t i = 0; i < w.size(); i++) {
+            avej[j] += w[i] * df.fit_res[i][j];
         }
     }
 
 
-    double m=0;
-    for (size_t i = 0; i < df.fit_res.size(); i++){
-        m += w[i]*myres->mean(df.fit_res[i].data());
+    double m = 0;
+    for (size_t i = 0; i < df.fit_res.size(); i++) {
+        m += w[i] * myres->mean(df.fit_res[i].data());
     }
     std::vector<double> err(df.fit_res.size());
-    for (size_t i = 0; i < err.size(); i++){
+    for (size_t i = 0; i < err.size(); i++) {
         err[i] = myres->comp_error(df.fit_res[i].data());
     }
-    double stat=0;
-    for (size_t i = 0; i < w.size(); i++)
-    {
-        stat += w[i]*err[i]*err[i];
-    }  
-    double syst=0;
-    for (size_t i = 0; i < w.size(); i++)
-    {
-        syst += w[i]*(myres->mean(df.fit_res[i].data())-m)*(myres->mean(df.fit_res[i].data())-m);
+    double stat = 0;
+    for (size_t i = 0; i < w.size(); i++) {
+        stat += w[i] * err[i] * err[i];
     }
-    double dm = sqrt(stat+syst);
+    double syst = 0;
+    for (size_t i = 0; i < w.size(); i++) {
+        syst += w[i] * (myres->mean(df.fit_res[i].data()) - m) * (myres->mean(df.fit_res[i].data()) - m);
+    }
+    double dm = sqrt(stat + syst);
     printf("jack BAIC = %g  %g\n", myres->mean(avej), myres->comp_error(avej));
     printf("BAIC: %g +- %g  (stat=%g, syst=%g)\n", m, dm, sqrt(stat), sqrt(syst));
     myres->change_mean_and_error(avej, m, dm);
     return avej;
+}
+
+void database_for_BAIC::add_fit(fit_type& fit_info, fit_result& fit_out, std::string name, int mult) {
+    for (int j = 0;j < myres->Njack;j++) {
+        fit_res[counter][j] = fit_out.P[0][j];
+        fit_chi2[counter] = myres->mean(fit_out.chi2);
+    }
+    counter++;
+    fit_name.push_back(name);
+    fit_chi2.push_back(myres->mean(fit_out.chi2));
+    fit_npar.push_back(fit_out.Npar);
+    fit_ndata.push_back(fit_info.entot);
+    fit_dof.push_back(fit_info.entot - fit_info.Npar);
+    fit_mult.push_back(mult);
 }
