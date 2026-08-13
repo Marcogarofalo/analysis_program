@@ -294,7 +294,60 @@ double rhs_a2(int n, int Nvar, double* x, int Npar, double* P);
 
 fit_result read_file_P(std::string file_der);
 
-void add_point_to_fitted_datafile(char** argv, data_all gjack, struct fit_type fit_info, const char* label, std::vector<double> x, double mean, double error, const char* labeln, int v);
+void add_point_to_fitted_datafile(char** argv, data_all gjack, struct fit_type fit_info, const char* label, std::vector<double> x, double mean, double error, const char* labeln, int v, bool append=true);
+
+
+class database_for_BAIC {
+public:
+  std::vector<std::vector<double>> fit_res;
+  std::vector<std::string> fit_name;
+  std::vector<double> fit_chi2;
+  std::vector<int> fit_npar;
+  std::vector<int> fit_ndata;
+  std::vector<int> fit_dof;
+  std::vector<int> fit_mult;
+  int counter = 0;
+
+  database_for_BAIC(int Nfits) : fit_res(Nfits, std::vector<double>(myres->Njack)) {
+    fit_name.reserve(Nfits);
+    fit_chi2.reserve(Nfits);
+    fit_npar.reserve(Nfits);
+    fit_ndata.reserve(Nfits);
+    fit_dof.reserve(Nfits);
+    fit_mult.reserve(Nfits);
+  }
+
+  void add_fit(struct fit_type fit_info, struct  fit_result fit_out, std::string name = "", int mult = 1) {
+    for (int j = 0;j < myres->Njack;j++) {
+      fit_res[counter][j] = fit_out.P[0][j];
+      fit_chi2[counter] = myres->mean(fit_out.chi2);
+    }
+    counter++;
+    fit_name.push_back(name);
+    fit_chi2.push_back(myres->mean(fit_out.chi2));
+    fit_npar.push_back(fit_out.Npar);
+    fit_ndata.push_back(fit_info.entot);
+    fit_dof.push_back(fit_info.entot - fit_info.Npar);
+    fit_mult.push_back(mult);
+  }
+
+  void print() {
+    printf("printing database_for_BAIC\n");
+    printf("size of fit_res: %ld\n", fit_res.size());
+    printf("size of fit_name: %ld\n", fit_name.size());
+    printf("size of fit_npar: %ld\n", fit_npar.size());
+    printf("size of fit_dof: %ld\n", fit_dof.size());
+    printf("size of fit_mult: %ld\n", fit_mult.size());
+    printf("name   v    dv   chi2  npar  ndata  dof  mult\n");
+    for (int i = 0; i < counter; i++) {
+      printf("%s  %g   %g  %g   %d  %d  %d   %d\n", fit_name[i].c_str(), myres->mean(fit_res[i].data()), myres->comp_error(fit_res[i].data()),
+        fit_chi2[i], fit_npar[i], fit_ndata[i], fit_dof[i], fit_mult[i]);
+    }
+  }
+};
+
+double* BAIC(database_for_BAIC df);
+
 
 #endif
 

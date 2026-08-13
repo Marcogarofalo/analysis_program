@@ -554,7 +554,7 @@ int determinantOfMatrix(double** matrix, int N) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void add_point_to_fitted_datafile(char** argv, data_all gjack,
-    struct fit_type fit_info, const char* label, std::vector<double> x, double mean, double myerror, const char* labeln, int v){
+    struct fit_type fit_info, const char* label, std::vector<double> x, double mean, double myerror, const char* labeln, int v, bool append) {
 
     char namefile[NAMESIZE];
     FILE* f;
@@ -563,25 +563,28 @@ void add_point_to_fitted_datafile(char** argv, data_all gjack,
 
     error(fit_info.Nvar != x.size(), 1, "add_point_to_fitted_datafile", "file=%s fit_info.Nvar=%d != x.size()=%ld\n", namefile, fit_info.Nvar, x.size());
     // "a" opens the file for writing at the end of the file (append)
-    printf("appending to: %s\n", namefile);
-    f = open_file(namefile, "a"); 
-    
+    // 2. Dynamically choose the file open mode based on the flag
+    const char* mode = append ? "a" : "w";
+    printf("%s file: %s\n", append ? "Appending to" : "Creating/Overwriting", namefile);
+    f = open_file(namefile, mode);
+
     if (f == NULL) {
         printf("Error opening file for appending!\n");
         return;
     }
-    
+
     for (int v = 0; v < fit_info.Nvar;v++) {
         fprintf(f, " %.12g\t ", x[v]);
     }
     fprintf(f, " %.12g   %.12g  \t ", mean, myerror);
     fprintf(f, " %d   \n ", fit_info.N);
-    
+
     fclose(f);
 
     mysprintf(namefile, NAMESIZE, "%s/%s_fit_out_n%d_%s.txt", argv[3], label, fit_info.N, labeln);
     f = open_file(namefile, "w+");
     fprintf(f, "%.12f  %.12g   %.12g  \t ", x[v], mean, myerror);
+    fclose(f); 
 
 }
 
@@ -1141,4 +1144,57 @@ fit_result read_file_P(std::string file_der) {
     delete[] cov_ptr;
     f_der.close();
     return fit_out;
+}
+
+
+double *BAIC(database_for_BAIC df){
+
+
+    std::vector<double> w(df.fit_res.size());
+    double sum=0;
+    for (size_t i = 0; i < w.size(); i++)
+    {
+        w[i] = exp(-0.5*(df.fit_chi2[i]*df.fit_dof[i]+2*df.fit_npar[i]-2*df.fit_ndata[i]))/df.fit_mult[i];
+        sum += w[i];
+        // printf("fit %ld: chi2=%g, npar=%d, ndata=%d, dof=%d, mult=%d, weight=%g\n", i, fit_chi2[i], fit_npar[i], fit_ndata[i], fit_dof[i], fit_mult[i], w[i]);
+    }
+    // printf("sum of weights = %g\n", sum);
+    for (size_t i = 0; i < w.size(); i++)
+    {
+        w[i] /= sum;
+        // printf("fit %ld: chi2=%g, npar=%d, ndata=%d, dof=%d, mult=%d, weight=%g\n", i, fit_chi2[i], fit_npar[i], fit_ndata[i], fit_dof[i], fit_mult[i], w[i]);
+    }
+    double *avej = myres->create_zero();  
+    for(int j=0; j < myres->Njack;j++){
+        double m=0;
+        for (size_t i = 0; i < w.size(); i++)
+        {
+            avej[j] += w[i]*df.fit_res[i][j];
+        }
+    }
+
+
+    double m=0;
+    for (size_t i = 0; i < df.fit_res.size(); i++){
+        m += w[i]*myres->mean(df.fit_res[i].data());
+    }
+    std::vector<double> err(df.fit_res.size());
+    for (size_t i = 0; i < err.size(); i++){
+        err[i] = myres->comp_error(df.fit_res[i].data());
+    }
+    double stat=0;
+    for (size_t i = 0; i < w.size(); i++)
+    {
+        stat += w[i]*err[i]*err[i];
+    }  
+    double syst=0;
+    for (size_t i = 0; i < w.size(); i++)
+    {
+        syst += w[i]*(myres->mean(df.fit_res[i].data())-m)*(myres->mean(df.fit_res[i].data())-m);
+    }
+    double dm = sqrt(stat+syst);
+    printf("jack BAIC = %g  %g\n", myres->mean(avej), myres->comp_error(avej));
+    printf("BAIC: %g +- %g  (stat=%g, syst=%g)\n", m, dm, sqrt(stat), sqrt(syst));
+    myres->change_mean_and_error(avej, m, dm);
+    return avej;
 }
