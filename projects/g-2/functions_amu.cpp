@@ -84,22 +84,52 @@ double kernel_K_W(double z, double epsrel) {
 
 
 double integrate_simpson38(int lower, int upper, double* f) {
-    double integration = 0;
-    integration = f[lower] + f[upper];
-    for (int i = 1; i <= (upper - lower); i++) {
-        int k = lower + i;
+    // double integration = 0;
+    // integration = f[lower] + f[upper];
+    // for (int i = 1; i <= (upper - lower); i++) {
+    //     int k = lower + i;
 
-        if (i % 3 == 0) {
-            integration += 2 * f[k];
-        }
-        else {
-            integration += 3 * f[k];
-        }
+    //     if (i % 3 == 0) {
+    //         integration += 2 * f[k];
+    //     }
+    //     else {
+    //         integration += 3 * f[k];
+    //     }
 
+    // }
+
+    // integration *= 3.0 / 8.0;
+    // return integration;
+    int reminder = (upper - lower) % 3;
+    int final_38 = (upper - lower) - reminder;
+
+    double integration = f[lower] + f[final_38];
+    if (upper - lower % 3)
+        for (int i = 1; i < final_38; i++) {
+            int k = lower + i;
+
+            if (i % 3 == 0) {
+                integration += 2 * f[k];
+            }
+            else {
+                integration += 3 * f[k];
+            }
+
+        }
+    integration *= 3.0 / 8.0;
+
+    double sum = 0.0;
+    if (reminder != 0) {
+        sum = f[final_38] + f[upper];
+        for (int i = 1; i < upper - final_38; ++i) {
+            int k = final_38 + i;
+            sum += 2.0 * f[k];
+        }
+        sum /= 2.0;
     }
 
-    integration *= 3.0 / 8.0;
-    return integration;
+
+    return integration + sum;
 }
 
 double integrate_reinman(int lower, int upper, double* f) {
@@ -220,6 +250,74 @@ double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a,
     return amu;
 }
 
+double* compute_amu_sd_smooth(double**** in, int id, int Njack, double* Z, double* a, double q2,
+    double (*int_scheme)(int, int, double*), FILE* outfile, const char* description,
+    const char* resampling, int isub, double tmin_fm, int kernel_id) {
+
+    constexpr double d = 0.15;
+    constexpr double t1_d = 0.4 / d;
+    int T = file_head.l0;
+    double** fi = double_malloc_2(T / 2, Njack);
+    double* amu = (double*)malloc(sizeof(double) * Njack);
+    double* ft = (double*)malloc(sizeof(double) * T / 2);
+
+    double** Kt = double_malloc_2(T / 2, Njack);
+    double** thetat = double_malloc_2(T / 2, Njack);
+    double** corr_sub = double_malloc_2(T / 2, Njack);
+
+
+    for (int j = 0;j < Njack;j++) {
+
+        ft[0] = 0;
+        for (int t_a = 1; t_a < T / 2; t_a++) {
+            double t = t_a * a[j]; // time in fm.
+            double z = muon_mass_MeV * (t / 197.326963);
+            double K = z * z * kernel_K(z);
+            double theta = gm2_step_function(t / 0.15, t1_d);
+            double VV_sub;
+            if (isub == -2)
+                VV_sub = Z[j] * Z[j] * in[j][id][t_a][0];
+            else if (isub == -1)
+                VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] - (1.0 / (2.0 * M_PI * M_PI * pow(t_a, 5)));// perturbative
+            else
+                VV_sub = Z[j] * Z[j] * in[j][id][t_a][0] + in[j][isub][t_a][0];// free-theory
+            ft[t_a] = K * VV_sub * (1 - theta);
+
+            fi[t_a][j] = ft[t_a];
+            Kt[t_a][j] = K;
+            thetat[t_a][j] = (1 - theta);
+            corr_sub[t_a][j] = VV_sub;
+
+            if (t < tmin_fm) {
+                if (kernel_id == 0) ft[t_a] *= exp(-2 * (tmin_fm / t - 1) * (tmin_fm / t - 1));
+                else if (kernel_id == 1) ft[t_a] *= 1 - exp(-pow(t / tmin_fm, 4));
+            }
+        }
+
+        amu[j] = int_scheme(0, T / 2 - 1, ft);
+
+        amu[j] *= 4 * alpha_em * alpha_em *
+            q2 / (muon_mass_MeV * muon_mass_MeV * (a[j] / 197.326963) * (a[j] / 197.326963));
+    }
+
+    fprintf(outfile, " \n\n");
+    fprintf(outfile, "#\n");
+    for (int t = 1; t < T / 2; t++) {
+        fprintf(outfile, "%d   %.15g   %.15g\t", t, fi[t][Njack - 1], error_jackboot(resampling, Njack, fi[t]));
+        fprintf(outfile, "%.15g   %.15g\t", Kt[t][Njack - 1], error_jackboot(resampling, Njack, Kt[t]));
+        fprintf(outfile, "%.15g   %.15g\t", thetat[t][Njack - 1], error_jackboot(resampling, Njack, thetat[t]));
+        fprintf(outfile, "%.15g   %.15g\n", corr_sub[t][Njack - 1], error_jackboot(resampling, Njack, corr_sub[t]));
+    }
+    fprintf(outfile, "\n\n #%s fit in [%d,%d] chi2=%.5g  %.5g\n", description, 0, T / 2, 0.0, 0.0);
+    fprintf(outfile, "   %.15g   %15.g\n", amu[Njack - 1], error_jackboot(resampling, Njack, amu));
+
+    free(ft);
+    free_2(T / 2, fi);
+    free_2(T / 2, Kt);
+    free_2(T / 2, thetat);
+    free_2(T / 2, corr_sub);
+    return amu;
+}
 
 
 double* compute_amu_sd(double**** in, int id, int Njack, double* Z, double* a, double q2,
@@ -443,10 +541,10 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
     printf("t_end=%d\n", t_end);
 
     for (int j = 0;j < Njack;j++) {
-        if (bound_info.upper_bound_type==1){
+        if (bound_info.upper_bound_type == 1) {
             E2[j] = 2 * sqrt(Mpi[j] * Mpi[j] + (2 * M_PI / L) * (2 * M_PI / L));
         }
-        else{
+        else {
             E2[j] = bound_info.Mrho[j];
         }
         ft[0] = 0;
@@ -533,7 +631,7 @@ double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double
     if (bound_info.tmax == -1) {
         end_fit = start_fit + 0.40926 / a[Njack - 1];
         // error(end_fit > T / 2, 1, "compute_amu_bounding", "tmax fit larger than T/2");
-        if(end_fit >= T / 2) end_fit = T / 2-1;
+        if (end_fit >= T / 2) end_fit = T / 2 - 1;
     }
     else {
         end_fit = bound_info.tmax;

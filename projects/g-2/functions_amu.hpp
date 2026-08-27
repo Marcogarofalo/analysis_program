@@ -59,6 +59,9 @@ double* compute_amu_full(double**** in, int id, int Njack, double* Z, double* a,
 double* compute_amu_bounding(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile,
     const char* description, const char* resampling, int isub, int bound, double* Mpi, double* Meff, int L, bounding_info_struct bound_info = default_bounding);
 double* compute_amu_sd(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling, int isub = -1, int tmin = 0);
+double* compute_amu_sd_smooth(double**** in, int id, int Njack, double* Z, double* a, double q2,
+    double (*int_scheme)(int, int, double*), FILE* outfile, const char* description,
+    const char* resampling, int isub, double tmin_fm, int kernel_id=0);
 double* compute_amu_W(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling);
 double* compute_amu_LD(double**** in, int id, int Njack, double* Z, double* a, double q2, double (*int_scheme)(int, int, double*), FILE* outfile, const char* description, const char* resampling);
 template<int idn, int idd>
